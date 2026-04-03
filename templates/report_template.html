@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<!--
+  AI Trading Assistant — Report Template v3.0 (Jinja2)
+  업데이트: 2026-04-01
+  변경 이력:
+    v3.0: Jinja2 템플릿 변환, 통화 토글(USD/KRW), Signal Reference 상세화, 업데이트 버튼
+    v2.1: Portfolio Overview Row 3 배당 카드 추가
+    v2.0: Portfolio Overview 섹션 추가, Full Holdings Table 확장
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Report — {{ date }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fff; color: #1a1a1a; font-size: 14px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .header-controls { float: right; margin-top: -36px; display: flex; gap: 8px; align-items: center; }
+  .header-controls button { padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 13px; }
+  #currencyToggle { background: #f0f0f0; color: #333; }
+  #currencyToggle:hover { background: #e0e0e0; }
+  #updateBtn { background: #3498db; color: #fff; }
+  #updateBtn:hover { background: #2980b9; }
+  #updateBtn:disabled { background: #95a5a6; cursor: not-allowed; }
+  #updateStatus { font-size: 12px; color: #888; }
+  .macro-banner { border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; border-left: 5px solid #e74c3c; background: #fff5f5; }
+  .macro-banner.yellow { border-color: #f39c12; background: #fffbf0; }
+  .macro-banner.green { border-color: #27ae60; background: #f0fff4; }
+  .macro-grid { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 10px; }
+  .macro-item { font-size: 13px; }
+  .macro-item span { font-weight: 700; }
+  .macro-note { font-size: 11px; color: #888; margin-top: 8px; }
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .sum-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 110px; text-align: center; border-top: 4px solid #ccc; }
+  .sum-card.exit { border-color: #e74c3c; } .sum-card.exit2 { border-color: #e67e22; }
+  .sum-card.buy { border-color: #27ae60; } .sum-card.watch { border-color: #f39c12; }
+  .sum-card.hold { border-color: #95a5a6; }
+  .sum-card .num { font-size: 32px; font-weight: 800; line-height: 1; }
+  .sum-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
+  .sum-card.exit .num { color: #e74c3c; } .sum-card.exit2 .num { color: #e67e22; }
+  .sum-card.buy .num { color: #27ae60; } .sum-card.watch .num { color: #f39c12; }
+  .port-summary-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .port-card { background: #f8f9fa; border-radius: 8px; padding: 12px 16px; flex: 1; min-width: 150px; border-top: 3px solid #3498db; }
+  .port-card.green { border-color: #27ae60; } .port-card.blue { border-color: #3498db; }
+  .port-card.gray { border-color: #95a5a6; } .port-card.orange { border-color: #e67e22; }
+  .port-card.teal { border-color: #1abc9c; }
+  .port-card .pc-label { font-size: 10px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .port-card .pc-value { font-size: 20px; font-weight: 800; color: #1a1a1a; line-height: 1.2; }
+  .port-card .pc-sub { font-size: 12px; color: #666; margin-top: 3px; }
+  .port-card .pc-sub.pos { color: #27ae60; font-weight: 600; }
+  .port-card .pc-sub.neg { color: #e74c3c; font-weight: 600; }
+  .port-card .pc-sub.warn { color: #e67e22; font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .badge-exit { background: #e74c3c; color: #fff; } .badge-tp1 { background: #e67e22; color: #fff; }
+  .badge-BUY { background: #27ae60; color: #fff; }
+  .badge-WATCH { background: #f39c12; color: #fff; } .badge-HOLD { background: #95a5a6; color: #fff; }
+  .badge-CASH { background: #3498db; color: #fff; } .badge-BOND { background: #1abc9c; color: #fff; }
+  .card-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .ticker-card { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; flex: 1; min-width: 220px; max-width: 340px; border-left: 5px solid #ccc; }
+  .ticker-card.exit { border-color: #e74c3c; } .ticker-card.tp1 { border-color: #e67e22; }
+  .ticker-card.buy { border-color: #27ae60; } .ticker-card.watch { border-color: #f39c12; }
+  .ticker-card.bond { border-color: #1abc9c; } .ticker-card.hold { border-color: #95a5a6; }
+  .ticker-card .ticker { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+  .ticker-card .name { font-size: 11px; color: #888; margin-bottom: 8px; }
+  .ticker-card .price { font-size: 20px; font-weight: 700; }
+  .ticker-card .chg { font-size: 12px; margin-left: 6px; }
+  .ticker-card .chg.up { color: #27ae60; } .ticker-card .chg.dn { color: #e74c3c; }
+  .ticker-card .metrics { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12px; }
+  .ticker-card .reason { font-size: 12px; margin-top: 10px; color: #444; border-top: 1px solid #e0e0e0; padding-top: 8px; }
+  .holdings-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .holdings-tbl th { background: #f0f0f0; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; white-space: nowrap; }
+  .holdings-tbl th.tbl-num, .holdings-tbl td.tbl-num { text-align: right; }
+  .holdings-tbl td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  .holdings-tbl tr:hover td { background: #fafafa; }
+  .cls-tag { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .cls-etf { background: #eef2ff; color: #4f46e5; } .cls-growth { background: #f0fdf4; color: #166534; }
+  .cls-value { background: #fefce8; color: #854d0e; } .cls-bond { background: #f0fdfa; color: #0f766e; }
+  .cls-cash { background: #f0f9ff; color: #0369a1; } .cls-metal { background: #fdf4ff; color: #7e22ce; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f0f0f0; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  tr:hover td { background: #fafafa; }
+  .tbl-num { text-align: right; } .pnl-pos { color: #27ae60; font-weight: 600; } .pnl-neg { color: #e74c3c; font-weight: 600; }
+  .judge-block { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+  .judge-block h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .cond-list { list-style: none; font-size: 12px; } .cond-list li { padding: 2px 0; }
+  .cond-list li::before { margin-right: 6px; }
+  .cond-ok::before { content: "✅"; } .cond-no::before { content: "❌"; } .cond-na::before { content: "⬜"; }
+  .ref-section { margin-bottom: 16px; }
+  .ref-section h3 { font-size: 13px; font-weight: 700; margin: 12px 0 8px; color: #555; }
+  .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+  .ref-table th { background: #f0f0f0; padding: 6px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+  .ref-table td { padding: 6px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+  .ref-table td ul { margin: 2px 0 2px 16px; padding: 0; }
+  .ref-table td ul li { padding: 1px 0; }
+  .ref-table .signal-col { width: 130px; white-space: nowrap; }
+  .ref-table .action-col { width: 80px; }
+  .source-table { font-size: 12px; } .source-table td { padding: 4px 10px; }
+  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
+  .alert-box { background: #fff0f0; border: 2px solid #e74c3c; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; }
+  .alert-box strong { color: #e74c3c; font-size: 15px; }
+  @media (max-width: 600px) { .ticker-card { min-width: 100%; max-width: 100%; } .sum-card { min-width: 80px; } .port-card { min-width: 140px; } .header-controls { float: none; margin: 8px 0; } }
+</style>
+</head>
+<body data-usdkrw="{{ usd_krw_raw }}">
+<div class="container">
+
+  <h1>📊 AI Trading Assistant — Signal Report</h1>
+  <div class="header-controls">
+    <button id="currencyToggle" onclick="toggleCurrency()">💱 ₩ 원화 보기</button>
+    <a href="#scanner" style="padding:6px 14px;background:#27ae60;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🔍 S&amp;P</a>
+    <a href="#scanner-etf" style="padding:6px 14px;background:#3498db;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">📊 ETF</a>
+    <a href="#scanner-kospi" style="padding:6px 14px;background:#e74c3c;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🇰🇷 KOSPI</a>
+    <button id="updateBtn" onclick="runPipeline()">🔄 업데이트</button>
+    <span id="updateStatus"></span>
+  </div>
+  <p class="subtitle">
+    {{ date_ko }} &nbsp;|&nbsp;
+    데이터 수집: {{ fetched_at }} &nbsp;|&nbsp;
+    기술지표: yfinance &nbsp;|&nbsp;
+    포트폴리오: {{ portfolio_source }}
+  </p>
+
+  {% if alert_msg %}
+  <div class="alert-box">
+    <strong>{{ alert_msg }}</strong><br>
+    <span style="font-size:13px;color:#555;">BIL(현금) 제외 주요 종목 청산 신호. 최우선 대응 필요.</span>
+  </div>
+  {% endif %}
+
+  <div class="macro-banner {{ master_class }}">
+    <strong>{{ master_label }}</strong>
+    <div class="macro-grid">
+      <div class="macro-item">QQQ: <span>{{ qqq_price }}</span> vs MA200 <span>{{ qqq_ma200 }}</span> → {{ qqq_status }}</div>
+      <div class="macro-item">SPY: <span>{{ spy_price }}</span> vs MA200 <span>{{ spy_ma200 }}</span> → {{ spy_status }}</div>
+      <div class="macro-item">VIX: <span>{{ vix }}</span></div>
+      <div class="macro-item">30Y 국채: <span>{{ yield_30y }}%</span></div>
+      <div class="macro-item">USD/KRW: <span>₩{{ usd_krw }}</span></div>
+    </div>
+    <p class="macro-note">⚠️ 위 지표는 시장 참고용입니다. 개별 종목 시그널은 순수 기술지표(RSI·MACD·MA·BB·ADX·거래량)로만 판정됩니다.</p>
+  </div>
+
+  <h2>요약</h2>
+  <div class="summary-grid">
+    <div class="sum-card exit"><div class="num">{{ n_tp2 }}</div><div class="lbl">TP2 EXIT</div></div>
+    <div class="sum-card exit2"><div class="num">{{ n_tp1 }}</div><div class="lbl">TP1 TRIM</div></div>
+    <div class="sum-card buy"><div class="num">{{ n_buy }}</div><div class="lbl">BUY</div></div>
+    <div class="sum-card watch"><div class="num">{{ n_watch }}</div><div class="lbl">WATCH</div></div>
+    <div class="sum-card hold"><div class="num">{{ n_hold }}</div><div class="lbl">HOLD/CASH</div></div>
+  </div>
+
+  <h2>📊 Portfolio Overview</h2>
+  <div class="port-summary-grid">
+    <div class="port-card green">
+      <div class="pc-label">Total Value</div>
+      <div class="pc-value money" data-usd="{{ total_value }}">${{ total_value|comma }}</div>
+      <div class="pc-sub {{ 'pos' if total_pnl >= 0 else 'neg' }}">{{ '+' if total_pnl >= 0 else '' }}${{ total_pnl|comma }} ({{ total_pnl_pct|sign_pct }})</div>
+    </div>
+    <div class="port-card gray">
+      <div class="pc-label">Cost Basis</div>
+      <div class="pc-value money" data-usd="{{ cost_basis }}">${{ cost_basis|comma }}</div>
+      <div class="pc-sub">투자 원금</div>
+    </div>
+    <div class="port-card blue">
+      <div class="pc-label">Holdings</div>
+      <div class="pc-value">{{ n_holdings }}</div>
+      <div class="pc-sub">{{ n_categories }} categories</div>
+    </div>
+    <div class="port-card blue">
+      <div class="pc-label">Cash (BIL)</div>
+      <div class="pc-value money" data-usd="{{ cash_value }}">${{ cash_value|comma }}</div>
+      <div class="pc-sub">{{ cash_pct|pct1 }}% of portfolio</div>
+    </div>
+  </div>
+  <div class="port-summary-grid">
+    <div class="port-card orange">
+      <div class="pc-label">VIX</div>
+      <div class="pc-value" style="color:{{ '#e74c3c' if vix and vix >= 30 else '#e67e22' if vix and vix >= 20 else '#27ae60' }};">{{ vix }}</div>
+      <div class="pc-sub warn">{{ vix_note }}</div>
+    </div>
+    <div class="port-card teal">
+      <div class="pc-label">30Y Treasury</div>
+      <div class="pc-value" style="color:#e67e22;">{{ yield_30y }}%</div>
+      <div class="pc-sub">{{ yield_note }}</div>
+    </div>
+    <div class="port-card gray">
+      <div class="pc-label">USD/KRW</div>
+      <div class="pc-value">₩{{ usd_krw }}</div>
+      <div class="pc-sub">{{ krw_equiv }}</div>
+    </div>
+  </div>
+  <div class="port-summary-grid">
+    <div class="port-card green">
+      <div class="pc-label">예상 연 배당금</div>
+      <div class="pc-value money" data-usd="{{ div_annual }}">${{ div_annual|comma }}</div>
+      <div class="pc-sub">TTM 배당 기준 (yfinance)</div>
+    </div>
+    <div class="port-card green">
+      <div class="pc-label">월 평균 배당</div>
+      <div class="pc-value money" data-usd="{{ div_monthly }}">${{ div_monthly|comma }}</div>
+      <div class="pc-sub">{{ div_top }}</div>
+    </div>
+    <div class="port-card green">
+      <div class="pc-label">배당수익률</div>
+      <div class="pc-value">{{ div_yield|pct2 }}%</div>
+      <div class="pc-sub">포트폴리오 총가치 기준</div>
+    </div>
+  </div>
+
+  <h2>📋 Full Holdings Table</h2>
+  <table class="holdings-tbl">
+    <thead>
+      <tr>
+        <th>#</th><th>Ticker</th><th>Class</th>
+        <th class="tbl-num">보유주수</th><th class="tbl-num">평균단가</th><th class="tbl-num">현재가</th>
+        <th class="tbl-num">평가금액</th><th class="tbl-num">비중</th><th class="tbl-num">P&amp;L%</th><th>Signal</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in holdings %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><b>{{ h.ticker }}</b></td>
+        <td><span class="cls-tag {{ h.cls_tag }}">{{ h.cls }}</span></td>
+        <td class="tbl-num">{{ h.shares|shares_fmt }}</td>
+        <td class="tbl-num money" data-usd="{{ h.avg_cost }}">${{ h.avg_cost|f2 }}</td>
+        <td class="tbl-num money" data-usd="{{ h.price }}">${{ h.price|f2 }}</td>
+        <td class="tbl-num money" data-usd="{{ h.value }}">${{ h.value|comma }}</td>
+        <td class="tbl-num">{{ (h.value / total_value * 100)|f1 }}%</td>
+        <td class="tbl-num {{ 'pnl-pos' if h.pnl_pct >= 0 else 'pnl-neg' }}">{{ h.pnl_pct|sign_pct }}</td>
+        <td>
+          <span class="badge {{ h.signal|badge_class }}">{{ h.signal }}</span>
+          {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: {{ prev_signal_map[h.ticker] }})</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if tp2_signals %}
+  <h2>🚨 Action Required — Take Profit</h2>
+  <h3 style="color:#e74c3c; margin-bottom:12px;">TAKE PROFIT 2 — 대량 익절 ({{ tp2_signals|length }}종목)</h3>
+  <div class="card-grid">
+    {% for h in tp2_signals %}
+    <div class="ticker-card exit">
+      <div class="ticker">{{ h.ticker }} <span class="badge badge-exit">{{ h.signal }}</span>
+        {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
+        <span style="font-size:11px;color:#888;margin-left:6px">어제: {{ prev_signal_map[h.ticker] }}</span>
+        {% endif %}
+      </div>
+      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-usd="{{ h.value }}">${{ h.value|comma }}</span></div>
+      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics">
+        <span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span>
+        <span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span>
+        <span>MACD hist: {{ h.macd_hist|f4 if h.macd_hist else 'N/A' }}</span>
+        <span>ADX: {{ h.adx|f1 if h.adx else 'N/A' }}</span>
+      </div>
+      <div class="reason">💡 {{ h.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if tp1_signals %}
+  <h3 style="color:#e67e22; margin:16px 0 12px;">TAKE PROFIT 1 — 1차 익절 30% ({{ tp1_signals|length }}종목)</h3>
+  <div class="card-grid">
+    {% for h in tp1_signals %}
+    <div class="ticker-card tp1">
+      <div class="ticker">{{ h.ticker }} <span class="badge badge-tp1">{{ h.signal }}</span></div>
+      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-usd="{{ h.value }}">${{ h.value|comma }}</span></div>
+      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics">
+        <span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span>
+        <span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span>
+        <span>MACD hist: {{ h.macd_hist|f4 if h.macd_hist else 'N/A' }}</span>
+        <span>ADX: {{ h.adx|f1 if h.adx else 'N/A' }}</span>
+      </div>
+      <div class="reason">💡 {{ h.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if buy_signals or bond_signals or watch_signals %}
+  <h2>✅ Opportunities — Entry / Watch</h2>
+  {% endif %}
+
+  {% if buy_signals %}
+  <h3 style="color:#27ae60; margin-bottom:12px;">BUY — 분할매수 검토 ({{ buy_signals|length }}종목)</h3>
+  <div class="card-grid">
+    {% for h in buy_signals %}
+    <div class="ticker-card buy">
+      <div class="ticker">{{ h.ticker }} <span class="badge badge-BUY">{{ h.signal }}</span>
+        {% if h.buy_confirmed %}
+        <span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ h.buy_streak }}일 연속 ✅</span>
+        {% else %}
+        <span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ h.buy_streak }}/2일 ⏳</span>
+        {% endif %}
+      </div>
+      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-usd="{{ h.value }}">${{ h.value|comma }}</span></div>
+      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics">
+        <span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span>
+        <span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span>
+        <span>BB%: {{ h.bb_pct|f1 if h.bb_pct else 'N/A' }}%</span>
+      </div>
+      <div class="reason">💡 {{ h.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if bond_signals %}
+  <h3 style="color:#1abc9c; margin:16px 0 12px;">BOND WATCH</h3>
+  <div class="card-grid">
+    {% for h in bond_signals %}
+    <div class="ticker-card bond">
+      <div class="ticker">{{ h.ticker }} <span class="badge badge-BOND">BOND_WATCH</span></div>
+      <div class="name">{{ h.name }}</div>
+      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span></div>
+      <div class="metrics"><span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span><span>30Y 금리: {{ yield_30y }}%</span></div>
+      <div class="reason">💡 {{ h.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if watch_signals %}
+  <h3 style="color:#f39c12; margin:16px 0 12px;">WATCH — 관찰 ({{ watch_signals|length }}종목)</h3>
+  <div class="card-grid">
+    {% for h in watch_signals %}
+    <div class="ticker-card watch">
+      <div class="ticker">{{ h.ticker }} <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="name">{{ h.name }}</div>
+      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics"><span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span><span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span></div>
+      <div class="reason">💡 {{ h.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h2>🔍 Signal Judgment Details</h2>
+  <div style="display:flex; flex-wrap:wrap; gap:10px;">
+    {% for h in all_signals %}
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>{{ h.ticker }} — <span class="badge {{ h.signal|badge_class }}">{{ h.signal }}</span></h4>
+      <ul class="cond-list">
+        {% for status, text in h.conditions %}
+        <li class="cond-{{ status }}">{{ text }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       SIGNAL REFERENCE — 포트폴리오 (Exit + Entry 전체)
+  ═══════════════════════════════════════════ -->
+  <div id="reference">
+  <h2>📖 Signal Reference — Portfolio</h2>
+  <div class="ref-section">
+    <h3>EXIT 시그널</h3>
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-exit">TOP_SIGNAL</span></td>
+          <td>즉시 일부 익절</td>
+          <td>아래 중 <b>1개</b> 충족 (고점 게이트 없음):
+            <ul><li>RSI ≥ 75</li><li>BB 상단 밖 2일 연속 마감</li><li>최근 3거래일 내 +10% 이상 급등</li></ul>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
+          <td>대량 익절 (50%)</td>
+          <td>고점 게이트 (DD > -5%) 통과 후 아래 중 <b>1개</b> 충족:
+            <ul>
+              <li>MA20 이탈 2일 + MACD hist 감소</li>
+              <li>Higher Low 하향 돌파</li>
+              <li>MACD 데스크로스 + hist 3일 감소</li>
+            </ul>
+            MACD bullish / hist 회복 중이면 면제
+          </td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-tp1">TAKE_PROFIT_1</span></td>
+          <td>1차 익절 (30%)</td>
+          <td>고점 게이트 (DD > -5%) 통과 후 아래 중 <b>2개 이상</b> 충족:
+            <ul><li>MACD hist 3일 연속 감소</li><li>RSI 다이버전스</li><li>종가 MA20 1일 이탈</li></ul>
+            MACD bullish / hist 회복 중이면 면제
+          </td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-L1">L1_WARNING</span></td>
+          <td>신규 매수 금지</td>
+          <td>아래 중 <b>1개</b> 충족:
+            <ul><li>MACD hist 양수에서 감소 전환</li><li>RSI ≥ 60</li><li>BB% 60~95</li><li>거래량 다이버전스</li></ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>ENTRY — Growth / ETF / Value / Bond / Metal</h3>
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>20% 분할매수</td><td>Growth: [필수]MACD hist 2일↑ + 선택3/6 [거부]RSI&gt;50<br>ETF: Pick 3/5 [거부]RSI&gt;70<br>Bond: 30Y≥5.0% + RSI≤35</td></tr>
+        <tr><td><span class="badge badge-BUY">2nd_BUY</span></td><td>30% 추가매수</td><td>이중바닥 + RSI&gt;35 + MACD 골든크로스 + 거래량≥1.2x</td></tr>
+        <tr><td><span class="badge badge-BUY">3rd_BUY</span></td><td>50% 완성매수</td><td>MA20 위 2일 + 기울기↑ + MACD&gt;0 + 거래량≥1.3x</td></tr>
+        <tr><td><span class="badge badge-WATCH">WATCH</span></td><td>관찰</td><td>Entry 조건 일부만 충족</td></tr>
+        <tr><td><span class="badge badge-HOLD">HOLD</span></td><td>유지</td><td>Exit/Entry 미해당</td></tr>
+        <tr><td><span class="badge badge-CASH">CASH</span></td><td>현금</td><td>BIL 등 현금성 자산</td></tr>
+      </tbody>
+    </table>
+  </div>
+  </div>
+  <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
+
+  <!-- ═══════════════════════════════════════════
+       S&P 100 SCANNER RESULTS
+  ═══════════════════════════════════════════ -->
+  <div id="scanner" style="padding-top:16px;">
+  {% if sp100_buy_1st or sp100_buy_2nd or sp100_buy_3rd %}
+  <h2>🔍 S&P 100 Market Scanner</h2>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;">Growth v2.2 Entry 규칙 적용 | {{ sp100_scanned|default(0) }}종목 스캔 | {{ sp100_scan_time|default('') }}</p>
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">{{ (sp100_buy_1st|default([]))|length + (sp100_buy_2nd|default([]))|length + (sp100_buy_3rd|default([]))|length }}</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card" style="border-color:#27ae60;"><div class="num" style="color:#27ae60;">{{ (sp100_buy_1st|default([]))|length }}</div><div class="lbl">1st BUY</div></div>
+    <div class="sum-card" style="border-color:#3498db;"><div class="num" style="color:#3498db;">{{ (sp100_buy_2nd|default([]))|length }}</div><div class="lbl">2nd BUY</div></div>
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">{{ (sp100_buy_3rd|default([]))|length }}</div><div class="lbl">3rd BUY</div></div>
+  </div>
+
+  {% if sp100_buy_1st %}
+  <h3 style="color:#27ae60;">1st BUY — 저가 매수 기회 ({{ sp100_buy_1st|length }}종목)</h3>
+  <div class="card-grid">
+    {% for e in sp100_buy_1st %}
+    <div class="ticker-card buy">
+      <div class="ticker">{{ e.ticker }} <span class="badge badge-BUY">1st_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics"><span>RSI: {{ e.rsi|f1 if e.rsi else 'N/A' }}</span><span>ADX: {{ e.adx|f1 if e.adx else 'N/A' }}</span></div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if sp100_buy_2nd %}
+  <h3 style="color:#3498db;">2nd BUY — 반등 확인 진입 ({{ sp100_buy_2nd|length }}종목)</h3>
+  <div class="card-grid">
+    {% for e in sp100_buy_2nd %}
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if sp100_buy_3rd %}
+  <h3 style="color:#8e44ad;">3rd BUY — 상승 초기 진입 ({{ sp100_buy_3rd|length }}종목)</h3>
+  <div class="card-grid">
+    {% for e in sp100_buy_3rd %}
+    <div class="ticker-card" style="border-color:#8e44ad;">
+      <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <h2>🔍 S&P 100 Market Scanner</h2>
+  <p style="font-size:13px;color:#888;text-align:center;padding:20px;">스캔 결과 없음 — 서버에서 업데이트 버튼을 클릭하세요</p>
+  {% endif %}
+  </div>
+
+  <h2>📖 Signal Reference — Growth v2.2 Entry</h2>
+  <div class="ref-section">
+    <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: S&P 100 대형주. 바닥 확인 후 분할매수 전략. 모멘텀 반전 신호에 집중.</p>
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b> 매수</td>
+          <td>
+            <b>[필수 조건]</b> — 반드시 충족해야 함<br>
+            MACD 히스토그램이 2일 연속 증가 중 (하락 모멘텀이 반전되기 시작)<br><br>
+            <b>[선택 조건]</b> — 아래 6개 중 <b>3개 이상</b> 충족<br>
+            <ul>
+              <li><b>RSI ≤ 38</b> — 과매도 영역 (저가 확인)</li>
+              <li><b>ADX ≤ 25</b> — 추세 약화 (바닥권 횡보)</li>
+              <li><b>종가 ≤ BB하단 × 1.02</b> — 볼린저밴드 하단 근접 (통계적 저점)</li>
+              <li><b>가격 &lt; MA20</b> — 20일 이동평균 하회 (단기 하락 추세)</li>
+              <li><b>3일 연속 저점 유지</b> — 더 이상 안 빠짐 (바닥 다짐)</li>
+              <li><b>전일 대비 +2% 이상 반등</b> — 매수세 유입 확인</li>
+            </ul>
+            <b>[거부 조건]</b> — 해당 시 매수 금지<br>
+            <ul>
+              <li>RSI &gt; 50 (이미 충분히 반등, 저가 아님)</li>
+              <li>당일 -5% 이상 급락 (떨어지는 칼날)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b> 추가</td>
+          <td>
+            <b>4개 조건 ALL 충족</b> — 바닥이 확인된 후 추가 진입<br>
+            <ul>
+              <li><b>이중 바닥 확인</b> — 두 저점 차이 ≤ 3% (바닥 다짐 완료)</li>
+              <li><b>RSI &gt; 35 + 3일 연속 상승</b> — 과매도 탈출 + 반등 지속</li>
+              <li><b>MACD 골든크로스</b> — MACD가 Signal선 상향 돌파 (or hist 3일 증가)</li>
+              <li><b>거래량 ≥ 20일 평균 × 1.2</b> — 매수세 동반 확인</li>
+            </ul>
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b> 완성</td>
+          <td>
+            <b>4개 조건 ALL 충족</b> — 상승 추세 확인 후 본격 진입<br>
+            <ul>
+              <li><b>가격 &gt; MA20 (2일 유지)</b> — 단기 추세 전환 확인</li>
+              <li><b>MA20 기울기 상승 전환</b> — 이동평균 방향 전환</li>
+              <li><b>MACD &gt; 0선 돌파</b> — 중기 모멘텀 양전환</li>
+              <li><b>거래량 ≥ 20일 평균 × 1.3</b> — 강한 매수세</li>
+            </ul>
+            <b>[거부]</b> RSI &gt; 75 (과매수 영역, 추격 금지)
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
+
+  <!-- ═══════════════════════════════════════════
+       ETF SCANNER RESULTS
+  ═══════════════════════════════════════════ -->
+  <div id="scanner-etf" style="padding-top:16px;">
+  {% if etf_buy_1st or etf_buy_2nd or etf_buy_3rd %}
+  <h2>📊 ETF Scanner — Sector & Theme</h2>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;">ETF v2.4 Entry 규칙 적용 | {{ etf_scanned|default(0) }}개 ETF 스캔 | {{ etf_scan_time|default('') }}</p>
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">{{ (etf_buy_1st|default([]))|length + (etf_buy_2nd|default([]))|length + (etf_buy_3rd|default([]))|length }}</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card" style="border-color:#27ae60;"><div class="num" style="color:#27ae60;">{{ (etf_buy_1st|default([]))|length }}</div><div class="lbl">1st BUY</div></div>
+    <div class="sum-card" style="border-color:#3498db;"><div class="num" style="color:#3498db;">{{ (etf_buy_2nd|default([]))|length }}</div><div class="lbl">2nd BUY</div></div>
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">{{ (etf_buy_3rd|default([]))|length }}</div><div class="lbl">3rd BUY</div></div>
+  </div>
+
+  {% if etf_buy_1st %}
+  <h3 style="color:#27ae60;">1st BUY — ETF 매수 기회 ({{ etf_buy_1st|length }}개)</h3>
+  <div class="card-grid">
+    {% for e in etf_buy_1st %}
+    <div class="ticker-card buy">
+      <div class="ticker">{{ e.ticker }} <span class="badge badge-BUY">1st_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics"><span>RSI: {{ e.rsi|f1 if e.rsi else 'N/A' }}</span><span>52w DD: {{ e.drawdown_52w|f1 if e.drawdown_52w else 'N/A' }}%</span></div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if etf_buy_2nd %}
+  <h3 style="color:#3498db;">2nd BUY — 반등 확인 ({{ etf_buy_2nd|length }}개)</h3>
+  <div class="card-grid">
+    {% for e in etf_buy_2nd %}
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span></div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if etf_buy_3rd %}
+  <h3 style="color:#8e44ad;">3rd BUY — 상승 초기 ({{ etf_buy_3rd|length }}개)</h3>
+  <div class="card-grid">
+    {% for e in etf_buy_3rd %}
+    <div class="ticker-card" style="border-color:#8e44ad;">
+      <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span></div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <h2>📊 ETF Scanner — Sector & Theme</h2>
+  <p style="font-size:13px;color:#888;text-align:center;padding:20px;">스캔 결과 없음 — 서버에서 업데이트 버튼을 클릭하세요</p>
+  {% endif %}
+  </div>
+
+  <h2>📖 Signal Reference — ETF v2.4 Entry</h2>
+  <div class="ref-section">
+    <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 섹터/테마 ETF. 개별 종목 리스크 없이 섹터 로테이션 기회 포착. Pick N 방식으로 유연한 판정.</p>
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b> 매수</td>
+          <td>
+            <b>5개 조건 중 3개 이상 충족</b> (Pick 3 of 5)<br>
+            <ul>
+              <li><b>RSI ≤ 40</b> — 과매도 영역 (ETF는 개별주보다 완화된 기준)</li>
+              <li><b>가격 &lt; MA20</b> — 20일 이동평균 하회 (단기 약세)</li>
+              <li><b>BB 하단 근접</b> — 볼린저밴드 하단 5% 이내 (통계적 저점)</li>
+              <li><b>하락 모멘텀 둔화</b> — MACD hist 감소폭이 축소 중 (바닥 다짐)</li>
+              <li><b>52주 고점 대비 -5% 이상 조정</b> — 의미있는 조정폭 확인</li>
+            </ul>
+            <b>[거부]</b> RSI &gt; 70 → 전 단계 매수 금지 (과매수)
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b> 추가</td>
+          <td>
+            <b>4개 조건 중 3개 이상 충족</b> (Pick 3 of 4)<br>
+            <ul>
+              <li><b>RSI &gt; 42</b> — 과매도 탈출 확인</li>
+              <li><b>MACD &gt; Signal</b> — 골든크로스 (모멘텀 반전)</li>
+              <li><b>가격 &gt; MA20</b> — 20일 이동평균 회복</li>
+              <li><b>Higher Low 형성</b> — 직전 저점보다 현재 저점이 높음 (추세 전환)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b> 완성</td>
+          <td>
+            <b>4개 조건 중 3개 이상 충족</b> (Pick 3 of 4)<br>
+            <ul>
+              <li><b>가격 &gt; MA20 (2일 유지)</b> — 단기 추세 전환 확인</li>
+              <li><b>MA20 기울기 상승 전환</b> — 이동평균 방향 전환</li>
+              <li><b>RSI &gt; 48</b> — 중립 이상 영역 진입</li>
+              <li><b>MACD &gt; 0선</b> — 중기 모멘텀 양전환</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
+
+  <!-- ═══════════════════════════════════════════
+       KOSPI SCANNER RESULTS
+  ═══════════════════════════════════════════ -->
+  <div id="scanner-kospi" style="padding-top:16px;">
+  {% if kospi_buy_1st or kospi_buy_2nd or kospi_buy_3rd %}
+  <h2>🇰🇷 KOSPI Scanner — 코스피 시총 상위 100</h2>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;">Growth v2.2 Entry 규칙 적용 | {{ kospi_scanned|default(0) }}종목 스캔 | {{ kospi_scan_time|default('') }} | 가격: KRW(₩)</p>
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#c0392b;"><div class="num" style="color:#c0392b;">{{ (kospi_buy_1st|default([]))|length + (kospi_buy_2nd|default([]))|length + (kospi_buy_3rd|default([]))|length }}</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card" style="border-color:#27ae60;"><div class="num" style="color:#27ae60;">{{ (kospi_buy_1st|default([]))|length }}</div><div class="lbl">1st BUY</div></div>
+    <div class="sum-card" style="border-color:#3498db;"><div class="num" style="color:#3498db;">{{ (kospi_buy_2nd|default([]))|length }}</div><div class="lbl">2nd BUY</div></div>
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">{{ (kospi_buy_3rd|default([]))|length }}</div><div class="lbl">3rd BUY</div></div>
+  </div>
+
+  {% if kospi_buy_1st %}
+  <h3 style="color:#27ae60;">1st BUY — 저가 매수 기회 ({{ kospi_buy_1st|length }}종목)</h3>
+  <div class="card-grid">
+    {% for e in kospi_buy_1st %}
+    <div class="ticker-card buy">
+      <div class="ticker">{{ e.ticker }} <span class="badge badge-BUY">1st_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap_fmt %} · {{ e.market_cap_fmt }}{% endif %}</div>
+      <div><span class="price">₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics"><span>RSI: {{ e.rsi|f1 if e.rsi else 'N/A' }}</span><span>ADX: {{ e.adx|f1 if e.adx else 'N/A' }}</span></div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if kospi_buy_2nd %}
+  <h3 style="color:#3498db;">2nd BUY — 반등 확인 진입 ({{ kospi_buy_2nd|length }}종목)</h3>
+  <div class="card-grid">
+    {% for e in kospi_buy_2nd %}
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap_fmt %} · {{ e.market_cap_fmt }}{% endif %}</div>
+      <div><span class="price">₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if kospi_buy_3rd %}
+  <h3 style="color:#8e44ad;">3rd BUY — 상승 초기 진입 ({{ kospi_buy_3rd|length }}종목)</h3>
+  <div class="card-grid">
+    {% for e in kospi_buy_3rd %}
+    <div class="ticker-card" style="border-color:#8e44ad;">
+      <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap_fmt %} · {{ e.market_cap_fmt }}{% endif %}</div>
+      <div><span class="price">₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <h2>🇰🇷 KOSPI Scanner — 코스피 시총 상위 100</h2>
+  <p style="font-size:13px;color:#888;text-align:center;padding:20px;">스캔 결과 없음 — 서버에서 업데이트 버튼을 클릭하세요</p>
+  {% endif %}
+  </div>
+  <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
+
+  <h2>📡 Data Sources</h2>
+  <table class="source-table">
+    <tr><th>구분</th><th>출처</th><th>수집 시간</th></tr>
+    <tr><td>포트폴리오 (보유수량·평균단가)</td><td>{{ portfolio_source }}</td><td>스크린샷 날짜</td></tr>
+    <tr><td>기술지표 (가격·MA·RSI·MACD·BB·ADX)</td><td>yfinance (fetch_market_data.py)</td><td>{{ fetched_at }}</td></tr>
+    <tr><td>VIX / 30Y 국채금리 / USD/KRW</td><td>yfinance (^VIX / ^TYX / KRW=X)</td><td>{{ fetched_at }}</td></tr>
+    <tr><td>배당 (TTM div/주 · 배당수익률)</td><td>yfinance ticker.dividends (최근 12개월)</td><td>{{ fetched_at }}</td></tr>
+  </table>
+
+  <p class="report-footer">
+    ⚠️ 본 리포트는 개인 투자 참고용 기술적 분석입니다. 투자 결정의 책임은 본인에게 있으며, 이 시그널은 투자 권유가 아닙니다.<br>
+    Generated by AI Trading Assistant v3.0 | {{ date }} | Data: yfinance ({{ fetched_at }}) | Portfolio: {{ portfolio_source }}
+  </p>
+
+</div>
+
+<script>
+let isKRW = false;
+function toggleCurrency() {
+  isKRW = !isKRW;
+  const rate = parseFloat(document.body.dataset.usdkrw) || 1;
+  const btn = document.getElementById('currencyToggle');
+  document.querySelectorAll('.money').forEach(el => {
+    const usd = parseFloat(el.dataset.usd);
+    if (isNaN(usd)) return;
+    if (isKRW) {
+      el.textContent = formatKRW(Math.round(usd * rate));
+    } else {
+      if (usd >= 1000) el.textContent = '$' + usd.toLocaleString('en-US', {maximumFractionDigits:0});
+      else el.textContent = '$' + usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+  });
+  btn.textContent = isKRW ? '💲 달러 보기' : '💱 ₩ 원화 보기';
+}
+
+function formatKRW(krw) {
+  const abs = Math.abs(krw);
+  const sign = krw < 0 ? '-' : '';
+  if (abs >= 100000000) return sign + '₩' + (abs/100000000).toFixed(1) + '억';
+  if (abs >= 10000) return sign + '₩' + Math.round(abs/10000).toLocaleString() + '만';
+  return sign + '₩' + abs.toLocaleString();
+}
+
+async function runPipeline() {
+  const btn = document.getElementById('updateBtn');
+  const status = document.getElementById('updateStatus');
+  btn.disabled = true; btn.textContent = '⏳ 실행 중...';
+  status.textContent = '데이터 수집 → 분석 → 리포트 생성';
+  try {
+    const res = await fetch('/api/run-pipeline', {method:'POST'});
+    const data = await res.json();
+    if (data.status === 'ok') {
+      status.textContent = '✅ 완료! 새로고침 중...';
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      status.textContent = '❌ ' + (data.error || 'Unknown error');
+      btn.disabled = false; btn.textContent = '🔄 업데이트';
+    }
+  } catch(e) {
+    status.textContent = '❌ 서버 연결 실패 (Flask 서버가 실행 중인지 확인하세요)';
+    btn.disabled = false; btn.textContent = '🔄 업데이트';
+  }
+}
+</script>
+</body>
+</html>
