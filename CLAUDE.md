@@ -2,16 +2,25 @@
 
 ## 프로젝트 개요
 개인 미국 주식 포트폴리오(18종목, ~$440K)의 일일 기술적 분석 및 시그널 리포트 자동 생성 시스템.
-Flask 로컬 서버에서 리포트를 서빙하고, 업데이트 버튼으로 전체 파이프라인을 실행한다.
+GitHub Pages에서 리포트를 서빙하고, GitHub Actions로 파이프라인을 자동/수동 실행한다.
 
-## 실행 방법
+## 배포 (GitHub Pages + Actions)
+- **리포트 URL**: https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/
+- **자동 실행**: 매일 UTC 21:30 (EST 16:30, KST 06:30) 평일 장마감 후
+- **수동 실행**: GitHub Actions 탭 → Daily Trading Report → Run workflow
+- **워크플로우**: `.github/workflows/daily-report.yml`
+- **배포 스크립트**: `generate_site.py` → `deploy/` 디렉토리 생성 → gh-pages 브랜치 배포
+- **히스토리 영속성**: gh-pages 브랜치에 `history/` 저장, 워크플로우 시작 시 복원
+- **GitHub Secrets 필요**: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+
+## 로컬 개발
 ```bash
 # 의존성 설치
-pip install yfinance pandas numpy flask jinja2
+pip install -r requirements.txt
 
-# 서버 시작 (또는 run_server.bat 더블클릭)
+# Flask 서버 시작 (로컬 개발용)
 python app.py
-# → http://localhost:5000 접속 → 🔄 업데이트 버튼 클릭
+# → http://localhost:5000 접속
 ```
 
 ## 파이프라인 흐름

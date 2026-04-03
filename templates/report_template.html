@@ -119,8 +119,9 @@
     <a href="#scanner" style="padding:6px 14px;background:#27ae60;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🔍 S&amp;P</a>
     <a href="#scanner-etf" style="padding:6px 14px;background:#3498db;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">📊 ETF</a>
     <a href="#scanner-kospi" style="padding:6px 14px;background:#e74c3c;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🇰🇷 KOSPI</a>
-    <button id="updateBtn" onclick="runPipeline()">🔄 업데이트</button>
-    <span id="updateStatus"></span>
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank"
+       style="padding:6px 14px;background:#9b59b6;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🔄 업데이트</a>
+    <a href="archive.html" style="padding:6px 14px;background:#7f8c8d;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">📁 아카이브</a>
   </div>
   <p class="subtitle">
     {{ date_ko }} &nbsp;|&nbsp;
@@ -760,26 +761,7 @@ function formatKRW(krw) {
   return sign + '₩' + abs.toLocaleString();
 }
 
-async function runPipeline() {
-  const btn = document.getElementById('updateBtn');
-  const status = document.getElementById('updateStatus');
-  btn.disabled = true; btn.textContent = '⏳ 실행 중...';
-  status.textContent = '데이터 수집 → 분석 → 리포트 생성';
-  try {
-    const res = await fetch('/api/run-pipeline', {method:'POST'});
-    const data = await res.json();
-    if (data.status === 'ok') {
-      status.textContent = '✅ 완료! 새로고침 중...';
-      setTimeout(() => location.reload(), 1500);
-    } else {
-      status.textContent = '❌ ' + (data.error || 'Unknown error');
-      btn.disabled = false; btn.textContent = '🔄 업데이트';
-    }
-  } catch(e) {
-    status.textContent = '❌ 서버 연결 실패 (Flask 서버가 실행 중인지 확인하세요)';
-    btn.disabled = false; btn.textContent = '🔄 업데이트';
-  }
-}
+
 </script>
 </body>
 </html>
