@@ -19,11 +19,12 @@
     background: #fff; color: #1a1a1a; font-size: 14px;
   }
   .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
-  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
   h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
   h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
   .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
-  .header-controls { float: right; margin-top: -36px; display: flex; gap: 8px; align-items: center; }
+  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .header-controls button { padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 13px; }
   #currencyToggle { background: #f0f0f0; color: #333; }
   #currencyToggle:hover { background: #e0e0e0; }
@@ -60,11 +61,11 @@
   .badge-WATCH { background: #f39c12; color: #fff; } .badge-HOLD { background: #95a5a6; color: #fff; }
   .badge-CASH { background: #3498db; color: #fff; } .badge-BOND { background: #1abc9c; color: #fff; }
   .card-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
-  .ticker-card { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; flex: 1; min-width: 220px; max-width: 340px; border-left: 5px solid #ccc; }
+  .ticker-card { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; width: calc(33.333% - 8px); min-width: 0; box-sizing: border-box; border-left: 5px solid #ccc; }
   .ticker-card.exit { border-color: #e74c3c; } .ticker-card.tp1 { border-color: #e67e22; }
   .ticker-card.buy { border-color: #27ae60; } .ticker-card.watch { border-color: #f39c12; }
   .ticker-card.bond { border-color: #1abc9c; } .ticker-card.hold { border-color: #95a5a6; }
-  .ticker-card .ticker { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+  .ticker-card .ticker { font-size: 18px; font-weight: 800; margin-bottom: 2px; display: flex; align-items: center; flex-wrap: nowrap; gap: 6px; }
   .ticker-card .name { font-size: 11px; color: #888; margin-bottom: 8px; }
   .ticker-card .price { font-size: 20px; font-weight: 700; }
   .ticker-card .chg { font-size: 12px; margin-left: 6px; }
@@ -103,12 +104,13 @@
   .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
   .alert-box { background: #fff0f0; border: 2px solid #e74c3c; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; }
   .alert-box strong { color: #e74c3c; font-size: 15px; }
-  @media (max-width: 600px) { .ticker-card { min-width: 100%; max-width: 100%; } .sum-card { min-width: 80px; } .port-card { min-width: 140px; } .header-controls { float: none; margin: 8px 0; } }
+  @media (max-width: 600px) { .ticker-card { width: 100%; } .sum-card { min-width: 80px; } .port-card { min-width: 140px; } .header-row { flex-direction: column; align-items: flex-start; } .header-controls { margin: 8px 0; } }
 </style>
 </head>
 <body data-usdkrw="{{ usd_krw_raw }}">
 <div class="container">
 
+  <div class="header-row">
   <h1>📊 AI Trading Assistant — Signal Report</h1>
   <div class="header-controls">
     <button id="currencyToggle" onclick="toggleCurrency()">💱 ₩ 원화 보기</button>
@@ -118,6 +120,7 @@
     <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank"
        style="padding:6px 14px;background:#9b59b6;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🔄 업데이트</a>
     <a href="archive.html" style="padding:6px 14px;background:#7f8c8d;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">📁 아카이브</a>
+  </div>
   </div>
   <p class="subtitle">
     {{ date_ko }} &nbsp;|&nbsp;
@@ -399,22 +402,15 @@
             MACD bullish / hist 회복 중이면 면제
           </td>
         </tr>
-        <tr>
-          <td><span class="badge badge-L1">L1_WARNING</span></td>
-          <td>신규 매수 금지</td>
-          <td>아래 중 <b>1개</b> 충족:
-            <ul><li>MACD hist 양수에서 감소 전환</li><li>RSI ≥ 60</li><li>BB% 60~95</li><li>거래량 다이버전스</li></ul>
-          </td>
-        </tr>
       </tbody>
     </table>
     <h3>ENTRY — Growth / ETF / Value / Bond / Metal</h3>
     <table class="ref-table">
       <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
       <tbody>
-        <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>20% 분할매수</td><td>Growth: [필수]MACD hist 2일↑ + 선택3/6 [거부]RSI&gt;50<br>ETF: Pick 3/5 [거부]RSI&gt;70<br>Bond: 30Y≥5.0% + RSI≤35</td></tr>
-        <tr><td><span class="badge badge-BUY">2nd_BUY</span></td><td>30% 추가매수</td><td>이중바닥 + RSI&gt;35 + MACD 골든크로스 + 거래량≥1.2x</td></tr>
-        <tr><td><span class="badge badge-BUY">3rd_BUY</span></td><td>50% 완성매수</td><td>MA20 위 2일 + 기울기↑ + MACD&gt;0 + 거래량≥1.3x</td></tr>
+        <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>20% 분할매수</td><td>Growth: [필수3] RSI≤38 + MA20하회 + MACD hist 2일↑ + [선택2/3] [거부]RSI&gt;55<br>ETF: [필수2] RSI≤35 + DD≤-5% + [선택1/3] [거부]RSI&gt;70<br>Bond: 30Y≥5.0% + RSI≤35</td></tr>
+        <tr><td><span class="badge badge-BUY">2nd_BUY</span></td><td>30% 추가매수</td><td>Growth: ALL(이중바닥≤3% + RSI&gt;35 + MACD 골든크로스 + 거래량≥1.2x)<br>ETF: Pick 3/4(RSI&gt;42 + MACD골든크로스 + MA20위 + Higher Low)</td></tr>
+        <tr><td><span class="badge badge-BUY">3rd_BUY</span></td><td>50% 완성매수</td><td>Growth: ALL(MA20위 + MACD&gt;0&amp;&gt;signal + 거래량≥1.3x + RSI&gt;55) [거부]RSI&gt;75<br>ETF: ALL(MA20위 + RSI&gt;55 + MACD&gt;0&amp;골든크로스)</td></tr>
         <tr><td><span class="badge badge-WATCH">WATCH</span></td><td>관찰</td><td>Entry 조건 일부만 충족</td></tr>
         <tr><td><span class="badge badge-HOLD">HOLD</span></td><td>유지</td><td>Exit/Entry 미해당</td></tr>
         <tr><td><span class="badge badge-CASH">CASH</span></td><td>현금</td><td>BIL 등 현금성 자산</td></tr>
@@ -495,20 +491,21 @@
       <tbody>
         <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b> 매수</td>
           <td>
-            <b>[필수 조건]</b> — 반드시 충족해야 함<br>
-            MACD 히스토그램이 2일 연속 증가 중 (하락 모멘텀이 반전되기 시작)<br><br>
-            <b>[선택 조건]</b> — 아래 6개 중 <b>3개 이상</b> 충족<br>
+            <b>[필수 조건 3개]</b> — 모두 충족해야 함<br>
             <ul>
               <li><b>RSI ≤ 38</b> — 과매도 영역 (저가 확인)</li>
+              <li><b>가격 &lt; MA20</b> — 20일 이동평균 하회 (단기 조정 확인)</li>
+              <li><b>MACD hist 2일 연속 증가</b> — 하락 모멘텀 반전 시작</li>
+            </ul>
+            <b>[선택 조건]</b> — 아래 3개 중 <b>2개 이상</b> 충족<br>
+            <ul>
               <li><b>ADX ≤ 25</b> — 추세 약화 (바닥권 횡보)</li>
-              <li><b>종가 ≤ BB하단 × 1.02</b> — 볼린저밴드 하단 근접 (통계적 저점)</li>
-              <li><b>가격 &lt; MA20</b> — 20일 이동평균 하회 (단기 하락 추세)</li>
-              <li><b>3일 연속 저점 유지</b> — 더 이상 안 빠짐 (바닥 다짐)</li>
+              <li><b>종가 ≤ BB하단 × 1.02</b> — 볼린저밴드 하단 근접</li>
               <li><b>전일 대비 +2% 이상 반등</b> — 매수세 유입 확인</li>
             </ul>
-            <b>[거부 조건]</b> — 해당 시 매수 금지<br>
+            <b>[거부 조건]</b> — 해당 시 1st BUY 금지 (WATCH 전환)<br>
             <ul>
-              <li>RSI &gt; 50 (이미 충분히 반등, 저가 아님)</li>
+              <li>RSI &gt; 55 (이미 충분히 반등)</li>
               <li>당일 -5% 이상 급락 (떨어지는 칼날)</li>
             </ul>
           </td>
@@ -518,26 +515,28 @@
             <b>4개 조건 ALL 충족</b> — 바닥이 확인된 후 추가 진입<br>
             <ul>
               <li><b>이중 바닥 확인</b> — 두 저점 차이 ≤ 3% (바닥 다짐 완료)</li>
-              <li><b>RSI &gt; 35 + 3일 연속 상승</b> — 과매도 탈출 + 반등 지속</li>
-              <li><b>MACD 골든크로스</b> — MACD가 Signal선 상향 돌파 (or hist 3일 증가)</li>
+              <li><b>RSI &gt; 35</b> — 과매도 탈출 확인</li>
+              <li><b>MACD 골든크로스</b> — MACD가 Signal선 상향 돌파 (필수)</li>
               <li><b>거래량 ≥ 20일 평균 × 1.2</b> — 매수세 동반 확인</li>
             </ul>
+            <small>※ RSI 거부 미적용 (추세 확인 단계)</small>
           </td>
         </tr>
         <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b> 완성</td>
           <td>
             <b>4개 조건 ALL 충족</b> — 상승 추세 확인 후 본격 진입<br>
             <ul>
-              <li><b>가격 &gt; MA20 (2일 유지)</b> — 단기 추세 전환 확인</li>
-              <li><b>MA20 기울기 상승 전환</b> — 이동평균 방향 전환</li>
-              <li><b>MACD &gt; 0선 돌파</b> — 중기 모멘텀 양전환</li>
+              <li><b>가격 &gt; MA20</b> — 단기 추세 전환 확인</li>
+              <li><b>MACD &gt; 0 AND MACD &gt; Signal</b> — 중기 모멘텀 양전환 + 골든크로스</li>
               <li><b>거래량 ≥ 20일 평균 × 1.3</b> — 강한 매수세</li>
+              <li><b>RSI &gt; 55</b> — 중립 이상 영역 진입</li>
             </ul>
             <b>[거부]</b> RSI &gt; 75 (과매수 영역, 추격 금지)
           </td>
         </tr>
       </tbody>
     </table>
+    <p style="font-size:11px;color:#999;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다. 첫날은 "확인 대기" 상태로 표시됩니다.</p>
   </div>
   <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
 
@@ -612,13 +611,16 @@
       <tbody>
         <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b> 매수</td>
           <td>
-            <b>5개 조건 중 3개 이상 충족</b> (Pick 3 of 5)<br>
+            <b>[필수 조건 2개]</b> — 모두 충족해야 함<br>
             <ul>
-              <li><b>RSI ≤ 40</b> — 과매도 영역 (ETF는 개별주보다 완화된 기준)</li>
+              <li><b>RSI ≤ 35</b> — 과매도 영역 (ETF 기준)</li>
+              <li><b>52주 고점 대비 ≤ -5%</b> — 의미있는 조정폭 확인</li>
+            </ul>
+            <b>[선택 조건]</b> — 아래 3개 중 <b>1개 이상</b> 충족<br>
+            <ul>
               <li><b>가격 &lt; MA20</b> — 20일 이동평균 하회 (단기 약세)</li>
-              <li><b>BB 하단 근접</b> — 볼린저밴드 하단 5% 이내 (통계적 저점)</li>
-              <li><b>하락 모멘텀 둔화</b> — MACD hist 감소폭이 축소 중 (바닥 다짐)</li>
-              <li><b>52주 고점 대비 -5% 이상 조정</b> — 의미있는 조정폭 확인</li>
+              <li><b>BB 하단 근접</b> — 볼린저밴드 하단 5% 이내</li>
+              <li><b>하락 모멘텀 둔화</b> — MACD hist 감소폭이 축소 중</li>
             </ul>
             <b>[거부]</b> RSI &gt; 70 → 전 단계 매수 금지 (과매수)
           </td>
@@ -630,23 +632,23 @@
               <li><b>RSI &gt; 42</b> — 과매도 탈출 확인</li>
               <li><b>MACD &gt; Signal</b> — 골든크로스 (모멘텀 반전)</li>
               <li><b>가격 &gt; MA20</b> — 20일 이동평균 회복</li>
-              <li><b>Higher Low 형성</b> — 직전 저점보다 현재 저점이 높음 (추세 전환)</li>
+              <li><b>Higher Low 형성</b> — 단기 하락멈춤 + 중기 저점 상승 (AND)</li>
             </ul>
           </td>
         </tr>
         <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b> 완성</td>
           <td>
-            <b>4개 조건 중 3개 이상 충족</b> (Pick 3 of 4)<br>
+            <b>3개 조건 ALL 충족</b><br>
             <ul>
-              <li><b>가격 &gt; MA20 (2일 유지)</b> — 단기 추세 전환 확인</li>
-              <li><b>MA20 기울기 상승 전환</b> — 이동평균 방향 전환</li>
-              <li><b>RSI &gt; 48</b> — 중립 이상 영역 진입</li>
-              <li><b>MACD &gt; 0선</b> — 중기 모멘텀 양전환</li>
+              <li><b>가격 &gt; MA20</b> — 단기 추세 전환 확인</li>
+              <li><b>RSI &gt; 55</b> — 중립 이상 영역 진입</li>
+              <li><b>MACD &gt; 0 AND MACD &gt; Signal</b> — 중기 모멘텀 양전환 + 골든크로스</li>
             </ul>
           </td>
         </tr>
       </tbody>
     </table>
+    <p style="font-size:11px;color:#999;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다. 첫날은 "확인 대기" 상태로 표시됩니다.</p>
   </div>
   <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
 
@@ -711,6 +713,57 @@
   <h2>🇰🇷 KOSPI Scanner — 코스피 시총 상위 100</h2>
   <p style="font-size:13px;color:#888;text-align:center;padding:20px;">스캔 결과 없음 — GitHub Actions에서 워크플로우를 실행하세요</p>
   {% endif %}
+  </div>
+
+  <h2>📖 Signal Reference — KOSPI Growth v2.2 Entry</h2>
+  <div class="ref-section">
+    <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 코스피 시총 상위 100. S&P 100과 동일한 Growth v2.2 Entry 규칙 적용. 가격 KRW 기준.</p>
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b> 매수</td>
+          <td>
+            <b>[필수 조건 3개]</b> — 모두 충족해야 함<br>
+            <ul>
+              <li><b>RSI ≤ 38</b> — 과매도 영역</li>
+              <li><b>가격 &lt; MA20</b> — 20일 이동평균 하회</li>
+              <li><b>MACD hist 2일 연속 증가</b> — 하락 모멘텀 반전 시작</li>
+            </ul>
+            <b>[선택 조건]</b> — 아래 3개 중 <b>2개 이상</b> 충족<br>
+            <ul>
+              <li><b>ADX ≤ 25</b> — 추세 약화 (바닥권 횡보)</li>
+              <li><b>종가 ≤ BB하단 × 1.02</b> — 볼린저밴드 하단 근접</li>
+              <li><b>전일 대비 +2% 이상 반등</b> — 매수세 유입 확인</li>
+            </ul>
+            <b>[거부]</b> RSI &gt; 55 (1st BUY 금지) / 당일 -5% 급락
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b> 추가</td>
+          <td>
+            <b>4개 조건 ALL 충족</b><br>
+            <ul>
+              <li><b>이중 바닥 확인</b> — 두 저점 차이 ≤ 3%</li>
+              <li><b>RSI &gt; 35</b> — 과매도 탈출</li>
+              <li><b>MACD 골든크로스</b> — MACD &gt; Signal (필수)</li>
+              <li><b>거래량 ≥ 20일 평균 × 1.2</b> — 매수세 동반</li>
+            </ul>
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b> 완성</td>
+          <td>
+            <b>4개 조건 ALL 충족</b><br>
+            <ul>
+              <li><b>가격 &gt; MA20</b> — 단기 추세 전환 확인</li>
+              <li><b>MACD &gt; 0 AND MACD &gt; Signal</b> — 중기 모멘텀 양전환 + 골든크로스</li>
+              <li><b>거래량 ≥ 20일 평균 × 1.3</b> — 강한 매수세</li>
+              <li><b>RSI &gt; 55</b> — 중립 이상 영역 진입</li>
+            </ul>
+            <b>[거부]</b> RSI &gt; 75 (과매수 영역, 추격 금지)
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:11px;color:#999;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다. 첫날은 "확인 대기" 상태로 표시됩니다.</p>
   </div>
   <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
 

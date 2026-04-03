@@ -74,51 +74,86 @@ _SCANNER_HISTORY_DIR = "history"
 _MIN_CONSECUTIVE_DAYS = 2
 
 
+_SCANNER_HISTORY_KEEP_DAYS = 30
+
+
 def _load_scanner_history(project_dir: str, scanner_name: str) -> dict:
-    """스캐너 전용 시그널 이력 로드. {ticker: {signal, streak, date}}"""
+    """스캐너 전용 시그널 이력 로드.
+    날짜별 구조: {date_str: {ticker: {signal: ...}, ...}, ...}"""
     path = os.path.join(project_dir, _SCANNER_HISTORY_DIR, f"scanner_{scanner_name}_history.json")
     if not os.path.exists(path):
         return {}
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+        # 구버전(flat) → 신버전(date-keyed) 마이그레이션
+        # 구버전 키는 티커명(e.g. "EFA"), 신버전 키는 날짜(e.g. "2026-04-03")
+        import re
+        date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+        is_new_format = any(date_pattern.match(k) for k in data.keys())
+        if data and not is_new_format:
+            return _migrate_flat_history(data)
+        # 신버전이지만 구버전 잔여 키가 섞여 있으면 정리
+        if data:
+            data = {k: v for k, v in data.items() if date_pattern.match(k)}
+        return data
     except (json.JSONDecodeError, IOError):
         return {}
 
 
+def _migrate_flat_history(old: dict) -> dict:
+    """구버전 {ticker: {signal, streak, date}} → 신버전 {date: {ticker: {signal}}} 변환."""
+    new = {}
+    for ticker, info in old.items():
+        dt = info.get("date", "")
+        if not dt:
+            continue
+        if dt not in new:
+            new[dt] = {}
+        new[dt][ticker] = {"signal": info.get("signal", "")}
+    return new
+
+
 def _save_scanner_history(project_dir: str, scanner_name: str, history: dict):
-    """스캐너 전용 시그널 이력 저장."""
+    """스캐너 전용 시그널 이력 저장 (30일 이전 자동 정리)."""
     dir_path = os.path.join(project_dir, _SCANNER_HISTORY_DIR)
     os.makedirs(dir_path, exist_ok=True)
+    # 30일 이전 데이터 정리
+    from datetime import timedelta
+    cutoff = (date.today() - timedelta(days=_SCANNER_HISTORY_KEEP_DAYS)).strftime("%Y-%m-%d")
+    pruned = {k: v for k, v in history.items() if k >= cutoff}
     path = os.path.join(dir_path, f"scanner_{scanner_name}_history.json")
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
+        json.dump(pruned, f, ensure_ascii=False, indent=2)
 
 
-def _calc_scanner_streak(ticker: str, signal: str, prev_history: dict, today_str: str = "") -> int:
+def _calc_scanner_streak(ticker: str, signal: str, history: dict, today_str: str = "") -> int:
     """스캐너 종목의 BUY 연속일 계산 (오늘 포함).
-    같은 날짜에 재실행하면 streak을 유지 (중복 카운트 방지)."""
+    날짜별 이력을 역순 탐색하여 실제 연속 BUY일만 카운트."""
     if signal not in _BUY_SIGNALS:
         return 0
-    prev = prev_history.get(ticker, {})
-    prev_signal = prev.get("signal", "")
-    prev_streak = prev.get("streak", 0)
-    prev_date = prev.get("date", "")
 
-    if prev_signal in _BUY_SIGNALS:
-        if prev_date == today_str:
-            # 같은 날 재실행 → streak 유지 (증가 안 함)
-            return prev_streak
-        else:
-            # 다른 날 → +1
-            return prev_streak + 1
-    return 1
+    streak = 1  # 오늘 포함
+
+    dates = sorted([k for k in history.keys() if k != today_str], reverse=True)
+    for dt in dates:
+        day_data = history.get(dt, {})
+        ticker_data = day_data.get(ticker, {})
+        prev_signal = ticker_data.get("signal", "")
+
+        if prev_signal not in _BUY_SIGNALS:
+            break
+        streak += 1
+        if streak >= 5:
+            break
+
+    return streak
 
 
-def _apply_streak_to_entries(entries: list, prev_history: dict, today_str: str = "") -> list:
+def _apply_streak_to_entries(entries: list, history: dict, today_str: str = "") -> list:
     """BUY entry 리스트에 streak/confirmed 필드 추가."""
     for e in entries:
-        streak = _calc_scanner_streak(e["ticker"], e["signal"], prev_history, today_str)
+        streak = _calc_scanner_streak(e["ticker"], e["signal"], history, today_str)
         confirmed = streak >= _MIN_CONSECUTIVE_DAYS
         e["buy_streak"] = streak
         e["buy_confirmed"] = confirmed
@@ -129,18 +164,19 @@ def _apply_streak_to_entries(entries: list, prev_history: dict, today_str: str =
     return entries
 
 
-def _update_scanner_history(buy_lists: list, scanner_name: str, project_dir: str, prev_history: dict) -> dict:
-    """오늘 스캔 결과를 history에 반영하여 저장."""
-    new_history = {}
+def _update_scanner_history(buy_lists: list, scanner_name: str, project_dir: str, history: dict, today_str: str = "") -> dict:
+    """오늘 스캔 결과를 날짜별 history에 반영하여 저장."""
+    if not today_str:
+        today_str = date.today().strftime("%Y-%m-%d")
+    today_entry = {}
     for entries in buy_lists:
         for e in entries:
-            new_history[e["ticker"]] = {
+            today_entry[e["ticker"]] = {
                 "signal": e["signal"],
-                "streak": e.get("buy_streak", 1),
-                "date": date.today().strftime("%Y-%m-%d"),
             }
-    _save_scanner_history(project_dir, scanner_name, new_history)
-    return new_history
+    history[today_str] = today_entry
+    _save_scanner_history(project_dir, scanner_name, history)
+    return history
 
 
 def _load_portfolio_tickers(project_dir: str) -> set:
@@ -287,7 +323,7 @@ def scan_sp100(project_dir: str) -> dict:
     prev_hist = _load_scanner_history(project_dir, "sp100")
     for lst in [buy_1st, buy_2nd, buy_3rd]:
         _apply_streak_to_entries(lst, prev_hist, today)
-    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "sp100", project_dir, prev_hist)
+    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "sp100", project_dir, prev_hist, today)
 
     result = {
         "status": "ok",
@@ -442,7 +478,7 @@ def scan_etf(project_dir: str) -> dict:
     prev_hist_etf = _load_scanner_history(project_dir, "etf")
     for lst in [buy_1st, buy_2nd, buy_3rd]:
         _apply_streak_to_entries(lst, prev_hist_etf, today)
-    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "etf", project_dir, prev_hist_etf)
+    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "etf", project_dir, prev_hist_etf, today)
 
     result = {
         "status": "ok",
@@ -709,7 +745,7 @@ def scan_kospi(project_dir: str) -> dict:
     prev_hist_kospi = _load_scanner_history(project_dir, "kospi")
     for lst in [buy_1st, buy_2nd, buy_3rd]:
         _apply_streak_to_entries(lst, prev_hist_kospi, today)
-    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "kospi", project_dir, prev_hist_kospi)
+    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "kospi", project_dir, prev_hist_kospi, today)
 
     result = {
         "status": "ok",
