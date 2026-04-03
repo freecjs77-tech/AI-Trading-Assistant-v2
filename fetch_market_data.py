@@ -251,6 +251,7 @@ def fetch_ticker(symbol: str) -> dict:
         recent_high = float(close.iloc[-20:].max())
         drawdown    = (last_close - recent_high) / recent_high * 100
         high_52w    = float(close.max())  # 전체 기간(~1년) 최고점
+        low_52w     = float(close.min())  # 전체 기간(~1년) 최저점
         drawdown_52w = (last_close - high_52w) / high_52w * 100
 
         # 이중 바닥 패턴 탐지
@@ -306,6 +307,7 @@ def fetch_ticker(symbol: str) -> dict:
             "drawdown_20d_pct":  round(drawdown, 2),
             "drawdown_52w_pct":  round(drawdown_52w, 2),
             "high_52w":          round(high_52w, 2),
+            "low_52w":           round(low_52w, 2),
             "market_cap":        market_cap,
             "data_days":         len(df),
             "fetched_at":        datetime.now().strftime("%Y-%m-%d %H:%M"),

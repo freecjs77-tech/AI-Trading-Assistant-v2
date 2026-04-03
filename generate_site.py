@@ -40,6 +40,14 @@ def prepare_deploy():
     shutil.copy2(latest, os.path.join(DEPLOY_DIR, "index.html"))
     print(f"index.html <- {os.path.basename(latest)}")
 
+    # details/ 복사 (종목 상세 페이지)
+    details_src = os.path.join(REPORTS_DIR, "details")
+    if os.path.exists(details_src):
+        deploy_details = os.path.join(DEPLOY_DIR, "details")
+        shutil.copytree(details_src, deploy_details)
+        n_details = len(os.listdir(deploy_details))
+        print(f"details/ copied ({n_details} pages)")
+
     # history/ 복사 (다음 실행에서 복원용)
     if os.path.exists(HISTORY_DIR):
         deploy_history = os.path.join(DEPLOY_DIR, "history")

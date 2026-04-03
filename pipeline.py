@@ -17,7 +17,7 @@ if sys.platform == "win32":
 from portfolio_data import TICKER_META
 from signal_judge import judge_all
 from history_manager import load_history, save_today, prune_old, save_history, get_previous_signals
-from report_generator import generate_report
+from report_generator import generate_report, generate_detail_pages
 
 
 def _load_market_data(json_path: str) -> dict:
@@ -188,6 +188,25 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
+
+        # Step 5a: Charts + Detail pages
+        print("[Step 5a] Generating charts...")
+        details_dir = os.path.join(reports_dir, "details")
+        charts_dir = os.path.join(details_dir, "charts")
+        from chart_generator import generate_all_charts
+        tickers_list = [p["ticker"] for p in portfolio]
+        chart_results = generate_all_charts(tickers_list, charts_dir)
+        print(f"  OK {len(chart_results)}/{len(tickers_list)} charts generated")
+
+        print("  Generating detail pages...")
+        detail_files = generate_detail_pages(
+            market_data=market_data,
+            portfolio=portfolio,
+            signals=signals,
+            history=history,
+            output_dir=details_dir,
+        )
+        print(f"  OK {len(detail_files)} detail pages -> {details_dir}")
 
         # Step 5b: Telegram notification
         print("[Step 5b] Sending Telegram notification...")

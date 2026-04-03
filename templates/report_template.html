@@ -228,7 +228,7 @@
       {% for h in holdings %}
       <tr>
         <td>{{ loop.index }}</td>
-        <td><b>{{ h.ticker }}</b></td>
+        <td><a href="details/{{ h.ticker }}.html" style="color:#2980b9;text-decoration:underline;text-underline-offset:2px;font-weight:bold;">{{ h.ticker }}</a></td>
         <td><span class="cls-tag {{ h.cls_tag }}">{{ h.cls }}</span></td>
         <td class="tbl-num">{{ h.shares|shares_fmt }}</td>
         <td class="tbl-num money" data-usd="{{ h.avg_cost }}">${{ h.avg_cost|f2 }}</td>
@@ -253,7 +253,7 @@
   <div class="card-grid">
     {% for h in tp2_signals %}
     <div class="ticker-card exit">
-      <div class="ticker">{{ h.ticker }} <span class="badge badge-exit">{{ h.signal }}</span>
+      <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-exit">{{ h.signal }}</span>
         {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
         <span style="font-size:11px;color:#888;margin-left:6px">어제: {{ prev_signal_map[h.ticker] }}</span>
         {% endif %}
@@ -267,6 +267,7 @@
         <span>ADX: {{ h.adx|f1 if h.adx else 'N/A' }}</span>
       </div>
       <div class="reason">💡 {{ h.note }}</div>
+      <a href="details/{{ h.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
     </div>
     {% endfor %}
   </div>
@@ -277,7 +278,7 @@
   <div class="card-grid">
     {% for h in tp1_signals %}
     <div class="ticker-card tp1">
-      <div class="ticker">{{ h.ticker }} <span class="badge badge-tp1">{{ h.signal }}</span></div>
+      <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-tp1">{{ h.signal }}</span></div>
       <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-usd="{{ h.value }}">${{ h.value|comma }}</span></div>
       <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics">
@@ -287,6 +288,7 @@
         <span>ADX: {{ h.adx|f1 if h.adx else 'N/A' }}</span>
       </div>
       <div class="reason">💡 {{ h.note }}</div>
+      <a href="details/{{ h.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
     </div>
     {% endfor %}
   </div>
@@ -301,7 +303,7 @@
   <div class="card-grid">
     {% for h in buy_signals %}
     <div class="ticker-card buy">
-      <div class="ticker">{{ h.ticker }} <span class="badge badge-BUY">{{ h.signal }}</span>
+      <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-BUY">{{ h.signal }}</span>
         {% if h.buy_confirmed %}
         <span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ h.buy_streak }}일 연속 ✅</span>
         {% else %}
@@ -316,6 +318,7 @@
         <span>BB%: {{ h.bb_pct|f1 if h.bb_pct else 'N/A' }}%</span>
       </div>
       <div class="reason">💡 {{ h.note }}</div>
+      <a href="details/{{ h.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
     </div>
     {% endfor %}
   </div>
@@ -326,11 +329,12 @@
   <div class="card-grid">
     {% for h in bond_signals %}
     <div class="ticker-card bond">
-      <div class="ticker">{{ h.ticker }} <span class="badge badge-BOND">BOND_WATCH</span></div>
+      <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-BOND">BOND_WATCH</span></div>
       <div class="name">{{ h.name }}</div>
       <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span></div>
       <div class="metrics"><span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span><span>30Y 금리: {{ yield_30y }}%</span></div>
       <div class="reason">💡 {{ h.note }}</div>
+      <a href="details/{{ h.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
     </div>
     {% endfor %}
   </div>
@@ -341,11 +345,12 @@
   <div class="card-grid">
     {% for h in watch_signals %}
     <div class="ticker-card watch">
-      <div class="ticker">{{ h.ticker }} <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-WATCH">WATCH</span></div>
       <div class="name">{{ h.name }}</div>
       <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics"><span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span><span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span></div>
       <div class="reason">💡 {{ h.note }}</div>
+      <a href="details/{{ h.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
     </div>
     {% endfor %}
   </div>

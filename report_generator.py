@@ -370,3 +370,177 @@ def generate_report(
         f.write(html)
 
     return output_path
+
+
+def _sig_class(signal: str) -> str:
+    """시그널 문자열 → 히스토리 테이블 CSS 클래스"""
+    if "TAKE_PROFIT" in signal or "TOP" in signal:
+        return "sig-exit"
+    if "BUY" in signal:
+        return "sig-buy"
+    if "WATCH" in signal or "BOND" in signal:
+        return "sig-watch"
+    if "CASH" in signal:
+        return "sig-cash"
+    return "sig-hold"
+
+
+def _macd_hist_trend_ko(trend: str | None) -> str:
+    if trend == "increasing":
+        return "상승 중"
+    elif trend == "decreasing":
+        return "하락 중"
+    return "중립"
+
+
+def _build_history_rows(ticker: str, history: dict) -> list[dict]:
+    """히스토리에서 특정 종목의 최근 30일 시계열 추출"""
+    rows = []
+    dates = sorted(
+        [d for d in history.keys() if not d.startswith("_")],
+        reverse=True,
+    )
+    for d in dates[:30]:
+        entry = history[d].get(ticker)
+        if not entry:
+            continue
+        rows.append({
+            "date": d,
+            "signal": entry.get("signal", ""),
+            "sig_class": _sig_class(entry.get("signal", "")),
+            "price": entry.get("price", 0),
+            "rsi": entry.get("rsi"),
+            "macd_hist": entry.get("macd_hist"),
+            "drawdown": entry.get("drawdown"),
+        })
+    return rows
+
+
+def generate_detail_pages(
+    market_data: dict,
+    portfolio: list,
+    signals: dict,
+    history: dict,
+    output_dir: str,
+    template_dir: str | None = None,
+) -> list[str]:
+    """
+    각 포트폴리오 종목별 상세 페이지 HTML 생성.
+    반환: 생성된 파일 경로 목록
+    """
+    if template_dir is None:
+        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+
+    env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
+
+    # 공통 필터 등록 (generate_report와 동일)
+    env.filters["badge_class"] = _badge_class
+    env.filters["card_class"] = _card_class
+    env.filters["comma"] = lambda x: f"{x:,.0f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["comma2"] = lambda x: f"{x:,.2f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["pct1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["pct2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["sign_pct"] = lambda x: f"+{x:.1f}%" if x >= 0 else f"{x:.1f}%"
+    env.filters["mcap"] = lambda v: (
+        f"${v/1e12:.1f}T" if v and v >= 1e12 else
+        f"${v/1e9:.0f}B" if v and v >= 1e9 else
+        f"${v/1e6:.0f}M" if v and v >= 1e6 else
+        f"${v:,.0f}" if v else ""
+    )
+    env.filters["f0"] = lambda x: f"{x:.0f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f3"] = lambda x: f"{x:.3f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f4"] = lambda x: f"{x:.4f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["shares_fmt"] = lambda x: f"{x:.3f}" if x < 100 else f"{x:,.0f}"
+
+    template = env.get_template("detail_template.html")
+
+    data = market_data.get("data", {})
+    meta = market_data.get("_meta", {})
+    date_str = meta.get("date", datetime.now().strftime("%Y-%m-%d"))
+
+    os.makedirs(output_dir, exist_ok=True)
+    generated = []
+
+    for p in portfolio:
+        ticker = p["ticker"]
+        d = data.get(ticker, {})
+        sig = signals.get(ticker, {})
+        price = d.get("price", 0)
+        shares = p.get("shares", 0)
+        avg_cost = p.get("avg_cost", 0)
+        value = shares * price if price else 0
+        pnl_pct = ((price - avg_cost) / avg_cost * 100) if avg_cost > 0 else 0
+
+        # 52주 레인지 계산
+        high_52w = d.get("high_52w")
+        drawdown_52w = d.get("drawdown_52w_pct", 0)
+        low_52w = None
+        range_pct = 50
+        if high_52w and high_52w > 0:
+            # low_52w는 직접 계산 (52주 최저가는 데이터에 없으므로 근사)
+            # drawdown_52w = (price - high_52w) / high_52w * 100 이므로
+            # 52주 범위에서의 위치를 계산
+            low_52w = d.get("low_52w") or high_52w * 0.7  # fallback
+            if high_52w > low_52w:
+                range_pct = max(0, min(100, (price - low_52w) / (high_52w - low_52w) * 100))
+
+        # MACD hist trend 한글화
+        macd_hist_trend = sig.get("macd_hist_trend") or d.get("macd_hist_trend", "")
+
+        history_rows = _build_history_rows(ticker, history)
+
+        context = {
+            "ticker": ticker,
+            "name": get_ticker_name(ticker),
+            "cls": get_ticker_class(ticker),
+            "cls_tag": get_cls_tag(ticker),
+            "signal": sig.get("signal", "HOLD"),
+            "note": sig.get("note", ""),
+            "conditions": sig.get("conditions", []),
+            "buy_streak": sig.get("buy_streak", 0),
+            "buy_confirmed": sig.get("buy_confirmed", False),
+            # 가격
+            "price": price,
+            "change_pct": sig.get("change_pct", d.get("change_pct", 0)),
+            "change_3d_pct": d.get("change_3d_pct", 0),
+            # 포트폴리오
+            "shares": shares,
+            "avg_cost": avg_cost,
+            "value": value,
+            "pnl_pct": pnl_pct,
+            # 기술 지표
+            "rsi": sig.get("rsi") or d.get("rsi14"),
+            "macd_hist": sig.get("macd_hist") or d.get("macd_hist"),
+            "macd": d.get("macd"),
+            "macd_signal": d.get("macd_signal"),
+            "macd_hist_trend_ko": _macd_hist_trend_ko(macd_hist_trend),
+            "adx": sig.get("adx") or d.get("adx"),
+            "bb_pct": sig.get("bb_pct") or d.get("bb_pct"),
+            "volume_ratio": d.get("volume_ratio"),
+            "drawdown": sig.get("drawdown") or d.get("drawdown_20d_pct"),
+            "drawdown_52w": drawdown_52w,
+            "ma20": d.get("ma20"),
+            "ma50": d.get("ma50"),
+            "ma200": d.get("ma200"),
+            "high_52w": high_52w,
+            "low_52w": low_52w,
+            "range_pct": range_pct,
+            "market_cap": d.get("market_cap", 0),
+            # 이력
+            "history_rows": history_rows,
+            # 메타
+            "date": date_str,
+            "date_ko": _date_ko(date_str),
+            # 차트
+            "chart_exists": os.path.exists(os.path.join(output_dir, "charts", f"{ticker}.png")),
+        }
+
+        html = template.render(**context)
+        out_path = os.path.join(output_dir, f"{ticker}.html")
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(html)
+        generated.append(out_path)
+
+    return generated
