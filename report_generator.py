@@ -416,6 +416,18 @@ def _build_history_rows(ticker: str, history: dict) -> list[dict]:
     return rows
 
 
+def _collect_scanner_buy_entries(*scanners) -> list[dict]:
+    """스캐너 결과에서 BUY 엔트리만 수집 (1st/2nd/3rd)"""
+    entries = []
+    for scanner in scanners:
+        if not scanner:
+            continue
+        for key in ("buy_1st", "buy_2nd", "buy_3rd"):
+            for e in scanner.get(key, []):
+                entries.append(e)
+    return entries
+
+
 def generate_detail_pages(
     market_data: dict,
     portfolio: list,
@@ -423,9 +435,12 @@ def generate_detail_pages(
     history: dict,
     output_dir: str,
     template_dir: str | None = None,
+    scanner_sp100: dict | None = None,
+    scanner_etf: dict | None = None,
+    scanner_kospi: dict | None = None,
 ) -> list[str]:
     """
-    각 포트폴리오 종목별 상세 페이지 HTML 생성.
+    포트폴리오 + 스캐너 BUY 종목별 상세 페이지 HTML 생성.
     반환: 생성된 파일 경로 목록
     """
     if template_dir is None:
@@ -539,6 +554,87 @@ def generate_detail_pages(
 
         html = template.render(**context)
         out_path = os.path.join(output_dir, f"{ticker}.html")
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(html)
+        generated.append(out_path)
+
+    # ── 스캐너 BUY 종목 상세 페이지 ──
+    portfolio_tickers = {p["ticker"] for p in portfolio}
+    scanner_entries = _collect_scanner_buy_entries(scanner_sp100, scanner_etf, scanner_kospi)
+    seen = set(portfolio_tickers)
+
+    for e in scanner_entries:
+        ticker = e.get("ticker", "")
+        if not ticker or ticker in seen:
+            continue
+        seen.add(ticker)
+
+        # 스캐너 엔트리에서 직접 데이터 사용 (market_data에 없을 수 있음)
+        d = data.get(ticker, {})
+        price = e.get("price", d.get("price", 0))
+
+        # 52주 레인지
+        high_52w = d.get("high_52w")
+        low_52w = d.get("low_52w")
+        range_pct = 50
+        if high_52w and high_52w > 0:
+            low_52w = low_52w or high_52w * 0.7
+            if high_52w > low_52w:
+                range_pct = max(0, min(100, (price - low_52w) / (high_52w - low_52w) * 100))
+
+        macd_hist_trend = e.get("macd_hist_trend") or d.get("macd_hist_trend", "")
+
+        # 파일명용 ticker (KOSPI 숫자 ticker는 그대로 사용)
+        ticker_for_file = ticker.replace(".KS", "_KS") if ".KS" in ticker else ticker
+
+        context = {
+            "ticker": ticker,
+            "name": e.get("name", ticker),
+            "cls": e.get("cls", get_ticker_class(ticker) or "Scanner"),
+            "cls_tag": get_cls_tag(ticker) or "cls-growth",
+            "signal": e.get("signal", ""),
+            "note": e.get("note", ""),
+            "conditions": e.get("conditions", []),
+            "buy_streak": e.get("buy_streak", 0),
+            "buy_confirmed": e.get("buy_confirmed", False),
+            # 가격
+            "price": price,
+            "change_pct": e.get("change_pct", 0),
+            "change_3d_pct": d.get("change_3d_pct", 0),
+            # 포트폴리오 (스캐너 종목은 미보유)
+            "shares": 0,
+            "avg_cost": 0,
+            "value": 0,
+            "pnl_pct": 0,
+            # 기술 지표
+            "rsi": e.get("rsi"),
+            "macd_hist": e.get("macd_hist"),
+            "macd": d.get("macd"),
+            "macd_signal": d.get("macd_signal"),
+            "macd_hist_trend_ko": _macd_hist_trend_ko(macd_hist_trend),
+            "adx": e.get("adx"),
+            "bb_pct": e.get("bb_pct"),
+            "volume_ratio": e.get("volume_ratio", d.get("volume_ratio")),
+            "drawdown": e.get("drawdown", d.get("drawdown_20d_pct")),
+            "drawdown_52w": e.get("drawdown_52w", d.get("drawdown_52w_pct", 0)),
+            "ma20": d.get("ma20"),
+            "ma50": d.get("ma50"),
+            "ma200": d.get("ma200"),
+            "high_52w": high_52w,
+            "low_52w": low_52w,
+            "range_pct": range_pct,
+            "market_cap": e.get("market_cap", d.get("market_cap", 0)),
+            # 이력 (스캐너 종목은 포트폴리오 히스토리 없음)
+            "history_rows": [],
+            # 메타
+            "date": date_str,
+            "date_ko": _date_ko(date_str),
+            # 차트
+            "chart_exists": os.path.exists(os.path.join(output_dir, "charts", f"{ticker_for_file}.png")),
+        }
+
+        html = template.render(**context)
+        out_path = os.path.join(output_dir, f"{ticker_for_file}.html")
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(html)
         generated.append(out_path)

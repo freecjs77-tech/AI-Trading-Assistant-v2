@@ -194,9 +194,19 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         details_dir = os.path.join(reports_dir, "details")
         charts_dir = os.path.join(details_dir, "charts")
         from chart_generator import generate_all_charts
+        # 포트폴리오 + 스캐너 BUY 종목 차트 생성
         tickers_list = [p["ticker"] for p in portfolio]
-        chart_results = generate_all_charts(tickers_list, charts_dir)
-        print(f"  OK {len(chart_results)}/{len(tickers_list)} charts generated")
+        scanner_buy_tickers = []
+        for sc in (scanner_sp100_result, scanner_etf_result, scanner_kospi_result):
+            if sc:
+                for key in ("buy_1st", "buy_2nd", "buy_3rd"):
+                    for e in sc.get(key, []):
+                        t = e.get("ticker", "")
+                        if t and t not in tickers_list and t not in scanner_buy_tickers:
+                            scanner_buy_tickers.append(t)
+        all_chart_tickers = tickers_list + scanner_buy_tickers
+        chart_results = generate_all_charts(all_chart_tickers, charts_dir)
+        print(f"  OK {len(chart_results)}/{len(all_chart_tickers)} charts generated")
 
         print("  Generating detail pages...")
         detail_files = generate_detail_pages(
@@ -205,6 +215,9 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             signals=signals,
             history=history,
             output_dir=details_dir,
+            scanner_sp100=scanner_sp100_result,
+            scanner_etf=scanner_etf_result,
+            scanner_kospi=scanner_kospi_result,
         )
         print(f"  OK {len(detail_files)} detail pages -> {details_dir}")
 

@@ -39,7 +39,9 @@ def generate_chart(symbol: str, output_path: str, days: int = 120) -> bool:
     반환: 성공 여부
     """
     try:
-        ticker = yf.Ticker(symbol)
+        # KOSPI 종목(숫자 ticker) → .KS 접미사 추가 (yfinance 호환)
+        yf_symbol = f"{symbol}.KS" if symbol.isdigit() else symbol.replace("_KS", ".KS")
+        ticker = yf.Ticker(yf_symbol)
         df = ticker.history(period="1y", interval="1d", auto_adjust=True)
 
         if df is None or df.empty or len(df) < 50:
