@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETF Scanner</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #1a1a1a; font-size: 14px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .header-controls { float: right; margin-top: -36px; display: flex; gap: 8px; align-items: center; }
+  .header-controls button { padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 13px; }
+  .header-controls a { padding: 6px 14px; background: #f0f0f0; color: #333; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; }
+  .header-controls a:hover { background: #e0e0e0; }
+  #scanBtn { background: #3498db; color: #fff; }
+  #scanBtn:hover { background: #2980b9; }
+  #scanBtn:disabled { background: #95a5a6; cursor: not-allowed; }
+  #scanStatus { font-size: 12px; color: #888; }
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .sum-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 110px; text-align: center; border-top: 4px solid #ccc; }
+  .sum-card.buy1 { border-color: #27ae60; } .sum-card.buy2 { border-color: #3498db; } .sum-card.buy3 { border-color: #8e44ad; }
+  .sum-card.watch { border-color: #f39c12; } .sum-card.total { border-color: #8e44ad; }
+  .sum-card .num { font-size: 32px; font-weight: 800; line-height: 1; }
+  .sum-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
+  .sum-card.buy1 .num { color: #27ae60; } .sum-card.buy2 .num { color: #3498db; } .sum-card.buy3 .num { color: #8e44ad; }
+  .sum-card.watch .num { color: #f39c12; } .sum-card.total .num { color: #8e44ad; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .badge-BUY1 { background: #27ae60; color: #fff; } .badge-BUY2 { background: #3498db; color: #fff; }
+  .badge-BUY3 { background: #8e44ad; color: #fff; } .badge-WATCH { background: #f39c12; color: #fff; }
+  .card-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .ticker-card { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; flex: 1; min-width: 220px; max-width: 340px; border-left: 5px solid #ccc; }
+  .ticker-card.buy1 { border-color: #27ae60; } .ticker-card.buy2 { border-color: #3498db; }
+  .ticker-card.buy3 { border-color: #8e44ad; } .ticker-card.watch { border-color: #f39c12; }
+  .ticker-card .ticker { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+  .ticker-card .name { font-size: 11px; color: #888; margin-bottom: 8px; }
+  .ticker-card .price { font-size: 20px; font-weight: 700; }
+  .ticker-card .chg { font-size: 12px; margin-left: 6px; } .ticker-card .chg.up { color: #27ae60; } .ticker-card .chg.dn { color: #e74c3c; }
+  .ticker-card .metrics { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12px; }
+  .ticker-card .reason { font-size: 12px; margin-top: 10px; color: #444; border-top: 1px solid #e0e0e0; padding-top: 8px; }
+  .ref-section { margin-bottom: 16px; }
+  .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+  .ref-table th { background: #f0f0f0; padding: 6px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+  .ref-table td { padding: 6px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+  .ref-table td ul { margin: 2px 0 2px 16px; padding: 0; } .ref-table td ul li { padding: 1px 0; }
+  .ref-table .signal-col { width: 130px; } .ref-table .action-col { width: 80px; }
+  .empty-state { text-align: center; padding: 60px 20px; color: #888; }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+  .info-bar { background: #f0f7ff; border: 1px solid #d0e3f7; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #2c5282; }
+  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
+  @media (max-width: 600px) { .ticker-card { min-width: 100%; max-width: 100%; } .header-controls { float: none; margin: 8px 0; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>📊 ETF Scanner — Sector & Theme</h1>
+  <div class="header-controls">
+    <a href="/">← 리포트</a>
+    <a href="/scanner">주식 스캐너</a>
+    <button id="scanBtn" onclick="runScan()">🔍 스캔 시작</button>
+    <span id="scanStatus"></span>
+  </div>
+  <p class="subtitle">섹터/테마 ETF 20개 스캔 | ETF v2.4 Entry 규칙 적용</p>
+
+  {% if scan_date %}
+  <div class="info-bar">
+    스캔 일시: <b>{{ scan_time }}</b> | 스캔 ETF: <b>{{ scanned }}개</b> | 소요: {{ elapsed_sec }}초 | 시그널 발견: <b>{{ total_signals }}개</b>
+  </div>
+
+  <h2>요약</h2>
+  <div class="summary-grid">
+    <div class="sum-card total"><div class="num">{{ total_signals }}</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card buy1"><div class="num">{{ buy_1st|length }}</div><div class="lbl">1st BUY</div></div>
+    <div class="sum-card buy2"><div class="num">{{ buy_2nd|length }}</div><div class="lbl">2nd BUY</div></div>
+    <div class="sum-card buy3"><div class="num">{{ buy_3rd|length }}</div><div class="lbl">3rd BUY</div></div>
+    <div class="sum-card watch"><div class="num">{{ watch_signals|length }}</div><div class="lbl">WATCH</div></div>
+  </div>
+
+  {% if buy_1st %}
+  <h2>BUY — ETF 매수 기회 ({{ buy_1st|length }}개)</h2>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;">ETF v2.4 Pick 3/5 조건 충족. 분할매수 검토</p>
+  <div class="card-grid">
+    {% for e in buy_1st %}
+    <div class="ticker-card buy1">
+      <div class="ticker">{{ e.ticker }} <span class="badge badge-BUY1">1st_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics">
+        <span>RSI: {{ e.rsi|f1 if e.rsi else 'N/A' }}</span>
+        <span>BB%: {{ e.bb_pct|f1 if e.bb_pct else 'N/A' }}%</span>
+        <span>52w DD: {{ e.drawdown_52w|f1 if e.drawdown_52w else 'N/A' }}%</span>
+        <span>Vol: {{ e.volume_ratio }}x</span>
+      </div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if buy_2nd %}
+  <h2>2nd BUY — 반등 확인 진입 ({{ buy_2nd|length }}개)</h2>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;">RSI>42 + MACD 골든크로스 + MA20 위. 30% 추가매수 검토</p>
+  <div class="card-grid">
+    {% for e in buy_2nd %}
+    <div class="ticker-card buy2">
+      <div class="ticker">{{ e.ticker }} <span class="badge badge-BUY2">2nd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics">
+        <span>RSI: {{ e.rsi|f1 if e.rsi else 'N/A' }}</span>
+        <span>MACD: {{ e.macd_hist_trend }}</span>
+        <span>Vol: {{ e.volume_ratio }}x</span>
+      </div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if buy_3rd %}
+  <h2>3rd BUY — 상승 초기 진입 ({{ buy_3rd|length }}개)</h2>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;">MA20 위 안착 + RSI>48 + MACD>0. 50% 완성매수 검토</p>
+  <div class="card-grid">
+    {% for e in buy_3rd %}
+    <div class="ticker-card buy3">
+      <div class="ticker">{{ e.ticker }} <span class="badge badge-BUY3">3rd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics">
+        <span>RSI: {{ e.rsi|f1 if e.rsi else 'N/A' }}</span>
+        <span>MACD: {{ e.macd_hist_trend }}</span>
+        <span>Vol: {{ e.volume_ratio }}x</span>
+      </div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if watch_signals %}
+  <h2>WATCH — 관찰 대상 ({{ watch_signals|length }}개)</h2>
+  <div class="card-grid">
+    {% for e in watch_signals %}
+    <div class="ticker-card watch">
+      <div class="ticker">{{ e.ticker }} <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="name">{{ e.name }}{% if e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">${{ e.price|f2 }}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics">
+        <span>RSI: {{ e.rsi|f1 if e.rsi else 'N/A' }}</span>
+        <span>Drawdown: {{ e.drawdown|f1 if e.drawdown else 'N/A' }}%</span>
+      </div>
+      <div class="reason">{{ e.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if total_signals == 0 %}
+  <div class="empty-state">
+    <div class="icon">📭</div>
+    <p>Entry 시그널 ETF가 없습니다</p>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">📊</div>
+    <p><b>스캔 시작</b> 버튼을 클릭하여 섹터/테마 ETF를 탐색하세요</p>
+    <p style="font-size:12px;">약 1~2분 소요됩니다 (20개 ETF 수집)</p>
+  </div>
+  {% endif %}
+
+  <h2>📖 Signal Reference — ETF v2.4 Entry</h2>
+  <div class="ref-section">
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-BUY1">1st_BUY</span></td>
+          <td>20% 분할매수</td>
+          <td><b>Pick 3 of 5:</b>
+            <ul>
+              <li>RSI &le; 40</li>
+              <li>가격 &lt; MA20</li>
+              <li>BB 하단 근접</li>
+              <li>하락 모멘텀 둔화 (MACD hist 감소폭 축소)</li>
+              <li>52주 고점 대비 -5% 이상 조정</li>
+            </ul>
+            <b>[거부]</b> RSI &gt; 70 (전 단계 매수 금지)
+          </td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-BUY2">2nd_BUY</span></td>
+          <td>30% 추가매수</td>
+          <td><b>Pick 3 of 4:</b>
+            <ul>
+              <li>RSI &gt; 42</li>
+              <li>MACD &gt; Signal (골든크로스)</li>
+              <li>가격 &gt; MA20</li>
+              <li>Higher Low 형성</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-BUY3">3rd_BUY</span></td>
+          <td>50% 완성매수</td>
+          <td><b>Pick 3 of 4:</b>
+            <ul>
+              <li>가격 &gt; MA20 (2일 유지)</li>
+              <li>MA20 기울기 상승 전환</li>
+              <li>RSI &gt; 48</li>
+              <li>MACD &gt; 0선</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-WATCH">WATCH</span></td>
+          <td>관찰</td>
+          <td>1st BUY 5개 조건 중 2개만 충족 — 추가 확인 필요</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:13px;color:#555;margin:12px 0 8px;">스캔 대상 ETF (20개)</h3>
+    <p style="font-size:12px;color:#888;line-height:1.8;">
+      <b>섹터:</b> XLK(기술) · XLF(금융) · XLE(에너지) · XLV(헬스케어) · XLI(산업) · XLY(소비재) · XLP(필수소비) · XLU(유틸리티) · XLRE(부동산) · XLB(소재) · XLC(통신)<br>
+      <b>테마:</b> SOXX(반도체) · ARKK(혁신) · TAN(태양광) · KWEB(중국인터넷) · IWM(소형주) · EFA(선진국) · EEM(신흥국) · GLD(금) · HYG(하이일드)
+    </p>
+  </div>
+
+  <p class="report-footer">
+    ETF Scanner | ETF v2.4 Entry 규칙 적용 | Data: yfinance<br>
+    ⚠️ 본 스캔 결과는 개인 투자 참고용입니다. 투자 결정의 책임은 본인에게 있습니다.
+  </p>
+
+</div>
+
+<script>
+async function runScan() {
+  const btn = document.getElementById('scanBtn');
+  const status = document.getElementById('scanStatus');
+  btn.disabled = true; btn.textContent = '⏳ 스캔 중...';
+  status.textContent = '20개 ETF 수집 중 (1~2분)';
+  try {
+    const res = await fetch('/api/scan-etf', {method:'POST'});
+    const data = await res.json();
+    if (data.status === 'ok') {
+      status.textContent = '✅ 완료!';
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      status.textContent = '❌ ' + (data.error || 'Error');
+      btn.disabled = false; btn.textContent = '🔍 스캔 시작';
+    }
+  } catch(e) {
+    status.textContent = '❌ 서버 연결 실패';
+    btn.disabled = false; btn.textContent = '🔍 스캔 시작';
+  }
+}
+</script>
+</body>
+</html>
