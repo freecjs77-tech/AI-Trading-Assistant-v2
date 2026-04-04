@@ -17,7 +17,7 @@ if sys.platform == "win32":
 from portfolio_data import TICKER_META
 from signal_judge import judge_all
 from history_manager import load_history, save_today, prune_old, save_history, get_previous_signals
-from report_generator import generate_report, generate_detail_pages
+from report_generator import generate_report, generate_detail_pages, generate_scanner_pages
 
 
 def _load_market_data(json_path: str) -> dict:
@@ -188,6 +188,16 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
+
+        # Scanner pages (별도 HTML)
+        scanner_files = generate_scanner_pages(
+            market_data=market_data,
+            scanner_sp100=scanner_sp100_result,
+            scanner_etf=scanner_etf_result,
+            scanner_kospi=scanner_kospi_result,
+            output_dir=reports_dir,
+        )
+        print(f"  OK {len(scanner_files)} scanner pages generated")
 
         # Step 5a: Charts + Detail pages
         print("[Step 5a] Generating charts...")

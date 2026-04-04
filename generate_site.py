@@ -40,6 +40,13 @@ def prepare_deploy():
     shutil.copy2(latest, os.path.join(DEPLOY_DIR, "index.html"))
     print(f"index.html <- {os.path.basename(latest)}")
 
+    # 스캐너 페이지 복사 (deploy 루트에 배치)
+    scanner_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "scanner_*.html")))
+    for f in scanner_files:
+        shutil.copy2(f, DEPLOY_DIR)
+    if scanner_files:
+        print(f"scanner pages copied ({len(scanner_files)} files)")
+
     # details/ 복사 (종목 상세 페이지)
     details_src = os.path.join(REPORTS_DIR, "details")
     if os.path.exists(details_src):

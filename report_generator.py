@@ -386,27 +386,10 @@ def generate_report(
         # Jinja2 필터
         "badge_class": _badge_class,
         "card_class": _card_class,
-        # S&P 100 Scanner 결과
-        "sp100_buy_1st": (scanner_sp100 or {}).get("buy_1st", []),
-        "sp100_buy_2nd": (scanner_sp100 or {}).get("buy_2nd", []),
-        "sp100_buy_3rd": (scanner_sp100 or {}).get("buy_3rd", []),
-        "sp100_watch": (scanner_sp100 or {}).get("watch_signals", []),
-        "sp100_scanned": (scanner_sp100 or {}).get("scanned", 0),
-        "sp100_scan_time": (scanner_sp100 or {}).get("scan_time", ""),
-        # ETF Scanner 결과
-        "etf_buy_1st": (scanner_etf or {}).get("buy_1st", []),
-        "etf_buy_2nd": (scanner_etf or {}).get("buy_2nd", []),
-        "etf_buy_3rd": (scanner_etf or {}).get("buy_3rd", []),
-        "etf_watch": (scanner_etf or {}).get("watch_signals", []),
-        "etf_scanned": (scanner_etf or {}).get("scanned", 0),
-        "etf_scan_time": (scanner_etf or {}).get("scan_time", ""),
-        # KOSPI Scanner 결과
-        "kospi_buy_1st": (scanner_kospi or {}).get("buy_1st", []),
-        "kospi_buy_2nd": (scanner_kospi or {}).get("buy_2nd", []),
-        "kospi_buy_3rd": (scanner_kospi or {}).get("buy_3rd", []),
-        "kospi_watch": (scanner_kospi or {}).get("watch_signals", []),
-        "kospi_scanned": (scanner_kospi or {}).get("scanned", 0),
-        "kospi_scan_time": (scanner_kospi or {}).get("scan_time", ""),
+        # 스캐너 페이지 네비게이션 링크
+        "nav_sp100": f"scanner_sp100_{date_str}.html",
+        "nav_etf": f"scanner_etf_{date_str}.html",
+        "nav_kospi": f"scanner_kospi_{date_str}.html",
     }
 
     html = template.render(**context)
@@ -416,6 +399,151 @@ def generate_report(
         f.write(html)
 
     return output_path
+
+
+# ── 스캐너 Reference HTML (각 스캐너별 판정 조건 테이블) ──
+
+_REF_SP100 = """
+<h2>📖 Signal Reference — Growth v2.2 Entry</h2>
+<div class="ref-section">
+<p style="font-size:12px;color:#888;margin-bottom:10px;">대상: S&P 100 대형주. 바닥 확인 후 분할매수 전략.</p>
+<table class="ref-table"><thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead><tbody>
+<tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 3개]</b> RSI≤38 + 가격&lt;MA20 + MACD hist 2일↑<br><b>[선택 2/3]</b> ADX≤25 · BB하단근접 · +2%반등<br><b>[거부]</b> RSI&gt;55 / 당일-5%급락</td></tr>
+<tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>4개 ALL</b>: 이중바닥(≤3%) + RSI&gt;35 + MACD골든크로스 + 거래량≥1.2x</td></tr>
+<tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>4개 ALL</b>: 가격&gt;MA20 + MACD&gt;0&amp;Signal + 거래량≥1.3x + RSI&gt;55<br><b>[거부]</b> RSI&gt;75</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#999;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다.</p>
+</div>"""
+
+_REF_ETF = """
+<h2>📖 Signal Reference — ETF v2.4 Entry</h2>
+<div class="ref-section">
+<p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 섹터/테마 ETF. Pick N 방식 유연 판정.</p>
+<table class="ref-table"><thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead><tbody>
+<tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 2개]</b> RSI≤35 + 52주고점대비≤-5%<br><b>[선택 1/3]</b> 가격&lt;MA20 · BB하단근접 · MACD hist감소둔화<br><b>[거부]</b> RSI&gt;70</td></tr>
+<tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>Pick 3/4</b>: RSI&gt;42 + MACD골든크로스 + 가격&gt;MA20 + Higher Low</td></tr>
+<tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>3개 ALL</b>: 가격&gt;MA20 + RSI&gt;55 + MACD&gt;0&amp;Signal</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#999;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다.</p>
+</div>"""
+
+_REF_KOSPI = """
+<h2>📖 Signal Reference — KOSPI Growth v2.2 Entry</h2>
+<div class="ref-section">
+<p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 코스피 시총 상위 100. S&P 100과 동일한 규칙. 가격 KRW 기준.</p>
+<table class="ref-table"><thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead><tbody>
+<tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 3개]</b> RSI≤38 + 가격&lt;MA20 + MACD hist 2일↑<br><b>[선택 2/3]</b> ADX≤25 · BB하단근접 · +2%반등<br><b>[거부]</b> RSI&gt;55 / 당일-5%급락</td></tr>
+<tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>4개 ALL</b>: 이중바닥(≤3%) + RSI&gt;35 + MACD골든크로스 + 거래량≥1.2x</td></tr>
+<tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>4개 ALL</b>: 가격&gt;MA20 + MACD&gt;0&amp;Signal + 거래량≥1.3x + RSI&gt;55<br><b>[거부]</b> RSI&gt;75</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#999;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다.</p>
+</div>"""
+
+
+def generate_scanner_pages(
+    market_data: dict,
+    scanner_sp100: dict | None,
+    scanner_etf: dict | None,
+    scanner_kospi: dict | None,
+    output_dir: str,
+    template_dir: str | None = None,
+) -> list:
+    """스캐너별 독립 HTML 페이지 생성. 반환: 생성된 파일 경로 리스트"""
+    if template_dir is None:
+        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+
+    env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
+    env.filters["f1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f4"] = lambda x: f"{x:.4f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["comma"] = lambda x: f"{x:,.0f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["mcap"] = _mcap
+    env.filters["badge_class"] = _badge_class
+
+    template = env.get_template("scanner_template.html")
+
+    meta = market_data.get("_meta", {})
+    date_str = meta.get("date", datetime.now().strftime("%Y-%m-%d"))
+    fetched_at = meta.get("generated_at", "")
+
+    nav = {
+        "nav_portfolio": f"report_{date_str}.html",
+        "nav_sp100": f"scanner_sp100_{date_str}.html",
+        "nav_etf": f"scanner_etf_{date_str}.html",
+        "nav_kospi": f"scanner_kospi_{date_str}.html",
+    }
+
+    scanners = [
+        {
+            "scanner_id": "sp100",
+            "scanner_title": "S&P 100 Market Scanner",
+            "scanner_icon": "🔍",
+            "scan_desc": "Growth v2.2 Entry 규칙 적용",
+            "accent_color": "#8e44ad",
+            "buy_1st_label": "저가 매수 기회",
+            "is_kospi": False,
+            "data": scanner_sp100,
+            "ref_html": _REF_SP100,
+            "filename": f"scanner_sp100_{date_str}.html",
+        },
+        {
+            "scanner_id": "etf",
+            "scanner_title": "ETF Scanner — Sector & Theme",
+            "scanner_icon": "📊",
+            "scan_desc": "ETF v2.4 Entry 규칙 적용",
+            "accent_color": "#8e44ad",
+            "buy_1st_label": "ETF 매수 기회",
+            "is_kospi": False,
+            "data": scanner_etf,
+            "ref_html": _REF_ETF,
+            "filename": f"scanner_etf_{date_str}.html",
+        },
+        {
+            "scanner_id": "kospi",
+            "scanner_title": "KOSPI Scanner — 코스피 시총 상위 100",
+            "scanner_icon": "🇰🇷",
+            "scan_desc": "Growth v2.2 Entry 규칙 적용 | 가격: KRW(₩)",
+            "accent_color": "#c0392b",
+            "buy_1st_label": "저가 매수 기회",
+            "is_kospi": True,
+            "data": scanner_kospi,
+            "ref_html": _REF_KOSPI,
+            "filename": f"scanner_kospi_{date_str}.html",
+        },
+    ]
+
+    os.makedirs(output_dir, exist_ok=True)
+    generated = []
+
+    for s in scanners:
+        sd = s["data"] or {}
+        context = {
+            **nav,
+            "scanner_id": s["scanner_id"],
+            "scanner_title": s["scanner_title"],
+            "scanner_icon": s["scanner_icon"],
+            "scan_desc": s["scan_desc"],
+            "accent_color": s["accent_color"],
+            "buy_1st_label": s["buy_1st_label"],
+            "is_kospi": s["is_kospi"],
+            "buy_1st": sd.get("buy_1st", []),
+            "buy_2nd": sd.get("buy_2nd", []),
+            "buy_3rd": sd.get("buy_3rd", []),
+            "scanned": sd.get("scanned", 0),
+            "scan_time": sd.get("scan_time", ""),
+            "ref_html": s["ref_html"],
+            "date": date_str,
+            "date_ko": _date_ko(date_str),
+            "fetched_at": fetched_at,
+        }
+
+        html = template.render(**context)
+        out_path = os.path.join(output_dir, s["filename"])
+        with open(out_path, "w", encoding="utf-8") as f:
+            f.write(html)
+        generated.append(out_path)
+
+    return generated
 
 
 def _sig_class(signal: str) -> str:
