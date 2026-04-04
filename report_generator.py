@@ -768,6 +768,7 @@ def generate_detail_pages(
             "signal": e.get("signal", ""),
             "note": e.get("note", ""),
             "conditions": e.get("conditions", []),
+            "judgment_sections": e.get("judgment_sections", []),
             "buy_streak": e.get("buy_streak", 0),
             "buy_confirmed": e.get("buy_confirmed", False),
             # 가격

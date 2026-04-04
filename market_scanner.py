@@ -16,7 +16,10 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-from signal_judge import _check_entry_growth, _check_entry_etf, check_exit_simple, _BUY_SIGNALS
+from signal_judge import (
+    _check_entry_growth, _check_entry_etf, check_exit_simple, _BUY_SIGNALS,
+    _build_entry_sections_growth, _build_entry_sections_etf,
+)
 from portfolio_data import TICKER_META
 
 # ── S&P 100 종목 리스트 (OEX 구성종목, 2026년 기준) ─────
@@ -304,6 +307,7 @@ def scan_sp100(project_dir: str) -> dict:
             "market_cap": market_cap,
             "note": _make_note(conditions),
             "conditions": conditions,
+            "judgment_sections": _build_entry_sections_growth(d),
         }
 
         if signal == "1st_BUY":
@@ -459,6 +463,7 @@ def scan_etf(project_dir: str) -> dict:
             "market_cap": market_cap,
             "note": _make_note(conditions),
             "conditions": conditions,
+            "judgment_sections": _build_entry_sections_etf(d),
         }
 
         if signal == "1st_BUY":
@@ -726,6 +731,7 @@ def scan_kospi(project_dir: str) -> dict:
             "market_cap_fmt": _krw_mcap(market_cap),
             "note": _make_note(conditions),
             "conditions": conditions,
+            "judgment_sections": _build_entry_sections_growth(d),
             "currency": "KRW",
         }
 
