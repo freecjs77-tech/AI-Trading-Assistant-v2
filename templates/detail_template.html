@@ -236,7 +236,7 @@
   {% if chart_exists %}
   <div style="background: var(--panel); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border);">
     <div class="section-title" style="font-size: 13px; font-weight: 700; color: var(--text-dim); margin-bottom: 12px;">Technical Chart &middot; 120 Days</div>
-    <img src="charts/{{ ticker }}.png" alt="{{ ticker }} chart" style="width: 100%; border-radius: 6px;">
+    <img src="charts/{{ ticker_for_file|default(ticker) }}.png" alt="{{ ticker }} chart" style="width: 100%; border-radius: 6px;">
   </div>
   {% endif %}
 

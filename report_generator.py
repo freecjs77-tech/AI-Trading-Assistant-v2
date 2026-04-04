@@ -722,6 +722,7 @@ def generate_detail_pages(
             "date": date_str,
             "date_ko": _date_ko(date_str),
             # 차트
+            "ticker_for_file": ticker,
             "chart_exists": os.path.exists(os.path.join(output_dir, "charts", f"{ticker}.png")),
         }
 
@@ -760,6 +761,8 @@ def generate_detail_pages(
         # 파일명용 ticker (KOSPI 숫자 ticker는 그대로 사용)
         ticker_for_file = ticker.replace(".KS", "_KS") if ".KS" in ticker else ticker
 
+        is_kospi = e.get("currency") == "KRW" or is_kospi_ticker(ticker)
+
         context = {
             "ticker": ticker,
             "name": e.get("name", ticker),
@@ -774,7 +777,7 @@ def generate_detail_pages(
             # 가격
             "price": price,
             "change_pct": e.get("change_pct", 0),
-            "change_3d_pct": d.get("change_3d_pct", 0),
+            "change_3d_pct": e.get("change_3d_pct", d.get("change_3d_pct", 0)),
             # 포트폴리오 (스캐너 종목은 미보유)
             "shares": 0,
             "avg_cost": 0,
@@ -783,27 +786,31 @@ def generate_detail_pages(
             # 기술 지표
             "rsi": e.get("rsi"),
             "macd_hist": e.get("macd_hist"),
-            "macd": d.get("macd"),
-            "macd_signal": d.get("macd_signal"),
+            "macd": e.get("macd", d.get("macd")),
+            "macd_signal": e.get("macd_signal", d.get("macd_signal")),
             "macd_hist_trend_ko": _macd_hist_trend_ko(macd_hist_trend),
             "adx": e.get("adx"),
             "bb_pct": e.get("bb_pct"),
             "volume_ratio": e.get("volume_ratio", d.get("volume_ratio")),
             "drawdown": e.get("drawdown", d.get("drawdown_20d_pct")),
             "drawdown_52w": e.get("drawdown_52w", d.get("drawdown_52w_pct", 0)),
-            "ma20": d.get("ma20"),
-            "ma50": d.get("ma50"),
-            "ma200": d.get("ma200"),
-            "high_52w": high_52w,
-            "low_52w": low_52w,
+            "ma20": e.get("ma20", d.get("ma20")),
+            "ma50": e.get("ma50", d.get("ma50")),
+            "ma200": e.get("ma200", d.get("ma200")),
+            "high_52w": e.get("high_52w", high_52w),
+            "low_52w": e.get("low_52w", low_52w),
             "range_pct": range_pct,
             "market_cap": e.get("market_cap", d.get("market_cap", 0)),
+            # KOSPI/통화
+            "is_kospi": is_kospi,
+            "currency": "KRW" if is_kospi else "USD",
             # 이력 (스캐너 종목은 포트폴리오 히스토리 없음)
             "history_rows": [],
             # 메타
             "date": date_str,
             "date_ko": _date_ko(date_str),
             # 차트
+            "ticker_for_file": ticker_for_file,
             "chart_exists": os.path.exists(os.path.join(output_dir, "charts", f"{ticker_for_file}.png")),
         }
 
