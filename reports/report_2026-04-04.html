@@ -91,6 +91,21 @@
   .cond-list { list-style: none; font-size: 12px; } .cond-list li { padding: 2px 0; }
   .cond-list li::before { margin-right: 6px; }
   .cond-ok::before { content: "✅"; } .cond-no::before { content: "❌"; } .cond-na::before { content: "⬜"; }
+  .judge-ticker { border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px; margin-bottom: 14px; background: #fff; }
+  .judge-ticker-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #eee; }
+  .judge-ticker-header h4 { font-size: 14px; font-weight: 700; margin: 0; }
+  .judge-section { background: #f8f9fa; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; border-left: 3px solid #ddd; }
+  .judge-section.exit-section { border-left-color: #e74c3c; }
+  .judge-section.entry-section { border-left-color: #3498db; }
+  .judge-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; cursor: pointer; }
+  .judge-section-header .section-name { font-size: 12px; font-weight: 700; color: #333; }
+  .judge-section-header .section-count { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .count-full { background: #d4edda; color: #155724; }
+  .count-partial { background: #fff3cd; color: #856404; }
+  .count-none { background: #f0f0f0; color: #999; }
+  .judge-section .gate-tag { display: inline-block; background: #ffe0e0; color: #c0392b; font-size: 10px; font-weight: 600; padding: 1px 8px; border-radius: 8px; margin-bottom: 4px; }
+  .judge-section .cond-list { margin: 0; padding: 0; }
+  .judge-section .cond-list li { padding: 1px 0; font-size: 11px; }
   .ref-section { margin-bottom: 16px; }
   .ref-section h3 { font-size: 13px; font-weight: 700; margin: 12px 0 8px; color: #555; }
   .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
@@ -124,7 +139,7 @@
   </div>
   <p class="subtitle">
     2026년 4월 4일 (토요일) &nbsp;|&nbsp;
-    데이터 수집: 2026-04-04 17:08:48 &nbsp;|&nbsp;
+    데이터 수집: 2026-04-04 21:03:32 &nbsp;|&nbsp;
     기술지표: yfinance &nbsp;|&nbsp;
     포트폴리오: portfolio.md (C:\Users\DIT-969\Downloads\AI Trading Assistant\portfolio.md)
   </p>
@@ -135,7 +150,7 @@
     <strong>🔴 MASTER SWITCH: RED — QQQ MA200 하회, SPY MA200 하회</strong>
     <div class="macro-grid">
       <div class="macro-item">QQQ: <span>$584.98</span> vs MA200 <span>$593.5229</span> → ⬇️ Below</div>
-      <div class="macro-item">SPY: <span>$655.83</span> vs MA200 <span>$659.0385</span> → ⬇️ Below</div>
+      <div class="macro-item">SPY: <span>$655.83</span> vs MA200 <span>$659.0384</span> → ⬇️ Below</div>
       <div class="macro-item">VIX: <span>23.87</span></div>
       <div class="macro-item">30Y 국채: <span>4.89%</span></div>
       <div class="macro-item">USD/KRW: <span>₩1,514.00</span></div>
@@ -1100,25 +1115,227 @@
 
   
 
-  <h2>🔍 Signal Judgment Details</h2>
-  <div style="display:flex; flex-wrap:wrap; gap:10px;">
+  <h2>🔍 판정 근거 상세</h2>
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>110990 디아이티</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>110990 — <span class="badge badge-HOLD">HOLD</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">RSI 40.6 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 12.6%, 전일 12.6%)</li>
+        
+        <li class="cond-no">3일내 -0.4%</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>102110 — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -22.1% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -22.1% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -742.0433 < 0, < signal -322.3142</li>
+        
+        <li class="cond-no">거래량비 0.45x < 1.3</li>
+        
+        <li class="cond-no">RSI 40.6 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 20700.0(2026-02-20) vs 19000.0(2026-03-04) 차이 8.2%</li>
+        
+        <li class="cond-ok">RSI 40.6 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: -742.0433 < signal -322.3142</li>
+        
+        <li class="cond-no">거래량비 0.45x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 40.6 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-no">[필수] MACD hist 2일 증가: mixed</li>
+        
+        <li class="cond-ok">ADX 20.2 ≤ 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 5.0%)</li>
+        
+        <li class="cond-no">전일 대비 +1.4% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>102110 TIGER 200</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 48.6 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 36.0%, 전일 36.0%)</li>
+        
+        <li class="cond-no">3일내 +6.8%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -9.9% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -9.9% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">RSI 48.6 ≤ 55</li>
+        
+        <li class="cond-no">MACD -544.2494 < 0, < signal 225.6937</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 48.6 > 42</li>
+        
+        <li class="cond-no">MACD 골든크로스 미발생</li>
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">3/5 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 48.6 > 35</li>
         
-        <li class="cond-ok">[필수] 52주 고점 대비 -15.2% ≤ -5%</li>
+        <li class="cond-ok">[필수] 52주 대비 -15.2% ≤ -5%</li>
         
         <li class="cond-ok">가격 < MA20</li>
         
@@ -1129,8 +1346,39 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>458730 — <span class="badge badge-exit">TAKE_PROFIT_2</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>458730 TIGER 미국배당다우존스</h4>
+      <span class="badge badge-exit">TAKE_PROFIT_2</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 55.0 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 59.4%, 전일 59.4%)</li>
+        
+        <li class="cond-no">3일내 -1.9%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">MA20 이탈 2일 미충족</li>
@@ -1142,8 +1390,96 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>005930 — <span class="badge badge-exit">TOP_SIGNAL</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">MACD hist 3일 감소 (decreasing_2d)</li>
+        
+        <li class="cond-no">RSI 다이버전스 미충족 (55.0 → 55.0)</li>
+        
+        <li class="cond-no">종가 MA20 상회</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-partial">2/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-ok">RSI 55.0 > 55</li>
+        
+        <li class="cond-no">MACD 120.7336 > 0, < signal 135.9645</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 55.0 > 42</li>
+        
+        <li class="cond-no">MACD 골든크로스 미발생</li>
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">2/5 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 55.0 > 35</li>
+        
+        <li class="cond-no">[필수] 52주 대비 -1.9% > -5%</li>
+        
+        <li class="cond-no">가격 ≥ MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 2.2%</li>
+        
+        <li class="cond-ok">하락 모멘텀 둔화</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>005930 삼성전자</h4>
+      <span class="badge badge-exit">TOP_SIGNAL</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">RSI 51.2 < 75</li>
@@ -1155,8 +1491,198 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>005380 — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -10.7% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -10.7% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD 28.7045 > 0, < signal 1920.9645</li>
+        
+        <li class="cond-no">거래량비 0.73x < 1.3</li>
+        
+        <li class="cond-no">RSI 51.2 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 183500.0(2026-03-13) vs 167200.0(2026-03-31) 차이 8.9%</li>
+        
+        <li class="cond-ok">RSI 51.2 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: 28.7045 < signal 1920.9645</li>
+        
+        <li class="cond-no">거래량비 0.73x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">4/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 51.2 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-ok">ADX 14.5 ≤ 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 11.1%)</li>
+        
+        <li class="cond-ok">전일 대비 +4.4% ≥ +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>005380 현대차</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 45.0 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 20.6%, 전일 20.6%)</li>
+        
+        <li class="cond-no">3일내 +5.7%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -13.6% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -13.6% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 가치주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -11486.6457 < 0, < signal -5208.1424</li>
+        
+        <li class="cond-no">거래량비 0.57x < 1.3</li>
+        
+        <li class="cond-no">RSI 45.0 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 가치주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 485000.0(2026-03-23) vs 445500.0(2026-03-31) 차이 8.1%</li>
+        
+        <li class="cond-ok">RSI 45.0 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: -11486.6457 < signal -5208.1424</li>
+        
+        <li class="cond-no">거래량비 0.57x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 가치주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">3/6 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 45.0 > 38</li>
@@ -1174,23 +1700,221 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>379800 — <span class="badge badge-BUY">2nd_BUY</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>379800 KODEX 미국S&P500</h4>
+      <span class="badge badge-BUY">2nd_BUY</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-ok">RSI 49.8 > 42</li>
+        <li class="cond-no">RSI 49.8 < 75</li>
         
-        <li class="cond-ok">MACD 골든크로스 발생 (-82.3437 vs Signal -84.2086)</li>
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 50.5%, 전일 50.5%)</li>
         
-        <li class="cond-ok">MA20 위에 있거나 근접해요</li>
-        
-        <li class="cond-no">Higher Low 미형성: 중기저점 하락 중 ($21945.00(2026-03-30) ≤ $22260.00(2026-03-23))</li>
+        <li class="cond-no">3일내 +1.1%</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>000660 — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-82.3437) > signal(-84.2086), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">RSI 49.8 ≤ 55</li>
+        
+        <li class="cond-no">MACD -82.3437 < 0, > signal -84.2086</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 49.8 > 42</li>
+        
+        <li class="cond-ok">MACD 골든크로스 발생</li>
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">2/5 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 49.8 > 35</li>
+        
+        <li class="cond-no">[필수] 52주 대비 -3.5% > -5%</li>
+        
+        <li class="cond-no">가격 ≥ MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 1.7%</li>
+        
+        <li class="cond-ok">하락 모멘텀 둔화</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>000660 SK하이닉스</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 47.0 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 28.4%, 전일 28.4%)</li>
+        
+        <li class="cond-no">3일내 +8.6%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -17.1% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -17.1% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -11829.2626 < 0, < signal 6050.8868</li>
+        
+        <li class="cond-no">거래량비 0.64x < 1.3</li>
+        
+        <li class="cond-no">RSI 47.0 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 933000.0(2026-03-23) vs 807000.0(2026-03-31) 차이 13.5%</li>
+        
+        <li class="cond-ok">RSI 47.0 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: -11829.2626 < signal 6050.8868</li>
+        
+        <li class="cond-no">거래량비 0.64x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">3/6 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 47.0 > 38</li>
@@ -1208,22 +1932,224 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>379810 — <span class="badge badge-HOLD">HOLD</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>379810 KODEX 미국나스닥100</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">RSI 49.1 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 43.2%, 전일 43.2%)</li>
+        
+        <li class="cond-no">3일내 +2.0%</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>396500 — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → hist 회복 중 면제</li>
+        
+        <li class="cond-no">Higher Low → hist 회복 중 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD hist 회복 중 (increasing_2d) — 하락 모멘텀 둔화 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">RSI 49.1 ≤ 55</li>
+        
+        <li class="cond-no">MACD -119.7041 < 0, < signal -100.5402</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 49.1 > 42</li>
+        
+        <li class="cond-no">MACD 골든크로스 미발생</li>
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">3/5 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 49.1 > 35</li>
+        
+        <li class="cond-no">[필수] 52주 대비 -4.7% > -5%</li>
+        
+        <li class="cond-ok">가격 < MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 2.3%</li>
+        
+        <li class="cond-ok">하락 모멘텀 둔화</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>396500 TIGER 반도체TOP10</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 48.3 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 28.2%, 전일 28.2%)</li>
+        
+        <li class="cond-no">3일내 +8.3%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -12.4% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -12.4% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">RSI 48.3 ≤ 55</li>
+        
+        <li class="cond-no">MACD -136.5154 < 0, < signal 411.6992</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 48.3 > 42</li>
+        
+        <li class="cond-no">MACD 골든크로스 미발생</li>
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">3/5 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 48.3 > 35</li>
         
-        <li class="cond-ok">[필수] 52주 고점 대비 -14.6% ≤ -5%</li>
+        <li class="cond-ok">[필수] 52주 대비 -14.6% ≤ -5%</li>
         
         <li class="cond-ok">가격 < MA20</li>
         
@@ -1234,8 +2160,22 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>006400 — <span class="badge badge-exit">TOP_SIGNAL</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>006400 삼성SDI</h4>
+      <span class="badge badge-exit">TOP_SIGNAL</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">RSI 60.6 < 75</li>
@@ -1247,37 +2187,439 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>441640 — <span class="badge badge-BUY">2nd_BUY</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(10993.7974) > signal(7222.8766), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-ok">MACD 10993.7974 > 0, > signal 7222.8766</li>
+        
+        <li class="cond-no">거래량비 1.09x < 1.3</li>
+        
+        <li class="cond-ok">RSI 60.6 > 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">이중바닥: 383000.0(2026-03-16) vs 376500.0(2026-03-23) 차이 1.7%</li>
+        
+        <li class="cond-ok">RSI 60.6 > 35</li>
+        
+        <li class="cond-ok">MACD 골든크로스: 10993.7974 > signal 7222.8766</li>
+        
+        <li class="cond-no">거래량비 1.09x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <span class="gate-tag">[거부] RSI 60.6 > 55</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 60.6 > 38</li>
+        
+        <li class="cond-no">[필수] 가격 ≥ MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-ok">ADX 14.4 ≤ 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 18.9%)</li>
+        
+        <li class="cond-no">전일 대비 -1.0% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>441640 KODEX 주주환원고배당주</h4>
+      <span class="badge badge-BUY">2nd_BUY</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 52.4 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 63.2%, 전일 63.2%)</li>
+        
+        <li class="cond-no">3일내 +0.2%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(0.0684) > signal(-2.9009), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-partial">2/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">RSI 52.4 ≤ 55</li>
+        
+        <li class="cond-ok">MACD 0.0684 > 0, > signal -2.9009</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-full">4/4 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-ok">RSI 52.4 > 42</li>
         
-        <li class="cond-ok">MACD 골든크로스 발생 (0.0684 vs Signal -2.9009)</li>
+        <li class="cond-ok">MACD 골든크로스 발생</li>
         
-        <li class="cond-ok">MA20 위에 있거나 근접해요</li>
+        <li class="cond-ok">가격 > MA20</li>
         
-        <li class="cond-ok">Higher Low: 단기 하락멈춤 + 중기저점상승 ($12630.00(2026-03-30) > $12575.00(2026-03-23))</li>
+        <li class="cond-ok">Higher Low 형성</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>373220 — <span class="badge badge-HOLD">HOLD</span></h4>
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">2/5 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">[필수] RSI 52.4 > 35</li>
+        
+        <li class="cond-no">[필수] 52주 대비 -1.9% > -5%</li>
+        
+        <li class="cond-no">가격 ≥ MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 1.6%</li>
+        
+        <li class="cond-ok">하락 모멘텀 둔화</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>232080 — <span class="badge badge-WATCH">WATCH</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>373220 LG에너지솔루션</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 52.8 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 74.0%, 전일 74.0%)</li>
+        
+        <li class="cond-no">3일내 +1.0%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 2일 미충족</li>
+        
+        <li class="cond-no">Higher Low 미형성 (저점2 $356000.00 ≤ 저점1 $366000.00)</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(3553.7102) > signal(139.2215)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">MACD hist 3일 감소 (decreasing_2d)</li>
+        
+        <li class="cond-no">RSI 다이버전스 미충족 (52.8 → 52.8)</li>
+        
+        <li class="cond-no">종가 MA20 상회</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-ok">MACD 3553.7102 > 0, > signal 139.2215</li>
+        
+        <li class="cond-no">거래량비 0.69x < 1.3</li>
+        
+        <li class="cond-no">RSI 52.8 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">이중바닥: 366000.0(2026-03-16) vs 356000.0(2026-03-23) 차이 2.7%</li>
+        
+        <li class="cond-ok">RSI 52.8 > 35</li>
+        
+        <li class="cond-ok">MACD 골든크로스: 3553.7102 > signal 139.2215</li>
+        
+        <li class="cond-no">거래량비 0.69x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">1/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 52.8 > 38</li>
+        
+        <li class="cond-no">[필수] 가격 ≥ MA20</li>
+        
+        <li class="cond-no">[필수] MACD hist 2일 증가: decreasing_2d</li>
+        
+        <li class="cond-ok">ADX 12.0 ≤ 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 13.5%)</li>
+        
+        <li class="cond-no">전일 대비 -1.5% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>232080 TIGER 코스닥150</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 42.6 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 -2.6%, 전일 -2.6%)</li>
+        
+        <li class="cond-no">3일내 -0.5%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -10.5% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -10.5% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">RSI 42.6 ≤ 55</li>
+        
+        <li class="cond-no">MACD -221.5141 < 0, < signal 14.4547</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 42.6 > 42</li>
+        
+        <li class="cond-no">MACD 골든크로스 미발생</li>
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">4/5 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 42.6 > 35</li>
         
-        <li class="cond-ok">[필수] 52주 고점 대비 -14.1% ≤ -5%</li>
+        <li class="cond-ok">[필수] 52주 대비 -14.1% ≤ -5%</li>
         
         <li class="cond-ok">가격 < MA20</li>
         
@@ -1288,13 +2630,110 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>466920 — <span class="badge badge-WATCH">WATCH</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>466920 SOL 조선TOP3플러스</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 46.8 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 37.7%, 전일 37.7%)</li>
+        
+        <li class="cond-no">3일내 +7.8%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -11.4% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -11.4% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">RSI 46.8 ≤ 55</li>
+        
+        <li class="cond-no">MACD -1085.9512 < 0, < signal -871.9489</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 46.8 > 42</li>
+        
+        <li class="cond-no">MACD 골든크로스 미발생</li>
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">3/5 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 46.8 > 35</li>
         
-        <li class="cond-ok">[필수] 52주 고점 대비 -15.8% ≤ -5%</li>
+        <li class="cond-ok">[필수] 52주 대비 -15.8% ≤ -5%</li>
         
         <li class="cond-ok">가격 < MA20</li>
         
@@ -1305,13 +2744,110 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>VOO — <span class="badge badge-WATCH">WATCH</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>VOO Vanguard S&P 500 ETF</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 46.5 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 45.7%, 전일 45.7%)</li>
+        
+        <li class="cond-no">3일내 +3.8%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-7.5499) > signal(-7.8948), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">RSI 46.5 ≤ 55</li>
+        
+        <li class="cond-no">MACD -7.5499 < 0, > signal -7.8948</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 46.5 > 42</li>
+        
+        <li class="cond-ok">MACD 골든크로스 발생</li>
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">3/5 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 46.5 > 35</li>
         
-        <li class="cond-ok">[필수] 52주 고점 대비 -5.4% ≤ -5%</li>
+        <li class="cond-ok">[필수] 52주 대비 -5.4% ≤ -5%</li>
         
         <li class="cond-ok">가격 < MA20</li>
         
@@ -1322,22 +2858,112 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>BIL — <span class="badge badge-CASH">CASH</span></h4>
+  </div>
+  
+  
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>QQQ Invesco QQQ Trust ETF</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-ok">현금성 자산 — 시그널 판정 대상 아님</li>
+        <li class="cond-no">RSI 46.9 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 42.7%, 전일 42.7%)</li>
+        
+        <li class="cond-no">3일내 +4.8%</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>QQQ — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → hist 회복 중 면제</li>
+        
+        <li class="cond-no">Higher Low → hist 회복 중 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD hist 회복 중 (increasing_2d) — 하락 모멘텀 둔화 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">RSI 46.9 ≤ 55</li>
+        
+        <li class="cond-no">MACD -7.9463 < 0, < signal -7.7494</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 46.9 > 42</li>
+        
+        <li class="cond-no">MACD 골든크로스 미발생</li>
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">3/5 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 46.9 > 35</li>
         
-        <li class="cond-ok">[필수] 52주 고점 대비 -7.8% ≤ -5%</li>
+        <li class="cond-ok">[필수] 52주 대비 -7.8% ≤ -5%</li>
         
         <li class="cond-ok">가격 < MA20</li>
         
@@ -1348,77 +2974,881 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>SCHD — <span class="badge badge-HOLD">HOLD</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>SCHD Schwab US Dividend ETF</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">RSI 50.1 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 53.4%, 전일 53.4%)</li>
+        
+        <li class="cond-no">3일내 +0.3%</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>AAPL — <span class="badge badge-HOLD">HOLD</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">MA20 이탈 → hist 회복 중 면제</li>
+        
+        <li class="cond-no">Higher Low → hist 회복 중 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: hist 비감소(increasing_2d)</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>O — <span class="badge badge-HOLD">HOLD</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">MACD hist 회복 중 (increasing_2d) — 하락 모멘텀 둔화 (TP1 면제)</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>JEPI — <span class="badge badge-HOLD">HOLD</span></h4>
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">RSI 50.1 ≤ 55</li>
+        
+        <li class="cond-no">MACD -0.0246 < 0, < signal -0.0133</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>SOXX — <span class="badge badge-BUY">2nd_BUY</span></h4>
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 50.1 > 42</li>
+        
+        <li class="cond-no">MACD 골든크로스 미발생</li>
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">2/5 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 50.1 > 35</li>
+        
+        <li class="cond-no">[필수] 52주 대비 -3.3% > -5%</li>
+        
+        <li class="cond-no">가격 ≥ MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 1.3%</li>
+        
+        <li class="cond-ok">하락 모멘텀 둔화</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>AAPL Apple Inc.</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 50.4 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 65.0%, 전일 65.0%)</li>
+        
+        <li class="cond-no">3일내 +3.8%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-2.3901) > signal(-3.1789), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">MACD -2.3901 < 0, > signal -3.1789</li>
+        
+        <li class="cond-no">거래량비 0.78x < 1.3</li>
+        
+        <li class="cond-no">RSI 50.4 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">이중바닥: 247.99(2026-03-20) vs 246.63(2026-03-30) 차이 0.6%</li>
+        
+        <li class="cond-ok">RSI 50.4 > 35</li>
+        
+        <li class="cond-ok">MACD 골든크로스: -2.3901 > signal -3.1789</li>
+        
+        <li class="cond-no">거래량비 0.78x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 50.4 > 38</li>
+        
+        <li class="cond-no">[필수] 가격 ≥ MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-ok">ADX 20.4 ≤ 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 4.4%)</li>
+        
+        <li class="cond-no">전일 대비 +0.1% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>O Realty Income Corp</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 48.9 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 47.0%, 전일 47.0%)</li>
+        
+        <li class="cond-no">3일내 +2.2%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → hist 회복 중 면제</li>
+        
+        <li class="cond-no">Higher Low → hist 회복 중 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD hist 회복 중 (increasing_2d) — 하락 모멘텀 둔화 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 가치주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -0.6996 < 0, < signal -0.6494</li>
+        
+        <li class="cond-no">거래량비 1.00x < 1.3</li>
+        
+        <li class="cond-no">RSI 48.9 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 가치주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 64.51(2026-03-05) vs 59.79(2026-03-25) 차이 7.3%</li>
+        
+        <li class="cond-ok">RSI 48.9 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: -0.6996 < signal -0.6494</li>
+        
+        <li class="cond-no">거래량비 1.00x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 가치주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 48.9 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-no">ADX 26.8 > 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 6.0%)</li>
+        
+        <li class="cond-no">전일 대비 +0.5% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>JEPI JPMorgan Equity Premium ETF</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 46.6 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 47.0%, 전일 47.0%)</li>
+        
+        <li class="cond-no">3일내 +2.2%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-0.4786) > signal(-0.5039), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">RSI 46.6 ≤ 55</li>
+        
+        <li class="cond-no">MACD -0.4786 < 0, > signal -0.5039</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 46.6 > 42</li>
+        
+        <li class="cond-ok">MACD 골든크로스 발생</li>
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">2/5 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 46.6 > 35</li>
+        
+        <li class="cond-no">[필수] 52주 대비 -4.5% > -5%</li>
+        
+        <li class="cond-ok">가격 < MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 2.8%</li>
+        
+        <li class="cond-no">하락 모멘텀 지속</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>SOXX iShares Semiconductor ETF</h4>
+      <span class="badge badge-BUY">2nd_BUY</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 51.6 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 66.5%, 전일 66.5%)</li>
+        
+        <li class="cond-no">3일내 +9.6%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-3.0488) > signal(-3.2958), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">RSI 51.6 ≤ 55</li>
+        
+        <li class="cond-no">MACD -3.0488 < 0, > signal -3.2958</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-ok">RSI 51.6 > 42</li>
         
-        <li class="cond-ok">MACD 골든크로스 발생 (-3.0488 vs Signal -3.2958)</li>
+        <li class="cond-ok">MACD 골든크로스 발생</li>
         
-        <li class="cond-ok">MA20 위에 있거나 근접해요</li>
+        <li class="cond-ok">가격 > MA20</li>
         
-        <li class="cond-no">Higher Low 미형성: 중기저점 하락 중 ($309.79(2026-03-30) ≤ $332.51(2026-03-20))</li>
+        <li class="cond-no">Higher Low 미형성</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>TSLA — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">1/5 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-no">[거부] 당일 -5.4% (≤-5% 급락)</li>
+        <li class="cond-no">[필수] RSI 51.6 > 35</li>
+        
+        <li class="cond-ok">[필수] 52주 대비 -7.7% ≤ -5%</li>
+        
+        <li class="cond-no">가격 ≥ MA20</li>
+        
+        <li class="cond-no">BB 하단 거리 7.0%</li>
+        
+        <li class="cond-no">하락 모멘텀 지속</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>TLT — <span class="badge badge-HOLD">HOLD</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>TSLA Tesla Inc.</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">RSI 38.9 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 11.1%, 전일 11.1%)</li>
+        
+        <li class="cond-no">3일내 +1.5%</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>NVDA — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -11.6% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -11.6% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <span class="gate-tag">[거부] 당일 급락</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -11.1028 < 0, < signal -10.3147</li>
+        
+        <li class="cond-ok">거래량비 1.31x ≥ 1.3</li>
+        
+        <li class="cond-no">RSI 38.9 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <span class="gate-tag">[거부] 당일 급락</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 367.96(2026-03-20) vs 355.28(2026-03-30) 차이 3.5%</li>
+        
+        <li class="cond-ok">RSI 38.9 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: -11.1028 < signal -10.3147</li>
+        
+        <li class="cond-ok">거래량비 1.31x ≥ 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <span class="gate-tag">[거부] 당일 -5.4% (≤-5% 급락)</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 38.9 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-no">[필수] MACD hist 2일 증가: mixed</li>
+        
+        <li class="cond-no">ADX 27.5 > 25</li>
+        
+        <li class="cond-ok">종가 ≤ BB하단x1.02 (거리 1.9%)</li>
+        
+        <li class="cond-no">전일 대비 -5.4% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>TLT iShares 20+ Year Treasury ETF</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 49.4 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 54.2%, 전일 54.2%)</li>
+        
+        <li class="cond-no">3일내 +0.4%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-0.4336) > signal(-0.4731), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 채권 v2.6 (2개 모두 충족)</span>
+        <span class="section-count count-none">0/2 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">30Y 금리 4.890% < 5.0%</li>
+        
+        <li class="cond-no">RSI 49.4 > 35</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>NVDA NVIDIA Corp.</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 49.1 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 49.0%, 전일 49.0%)</li>
+        
+        <li class="cond-no">3일내 +7.4%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-2.9028) > signal(-2.9263), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -2.9028 < 0, > signal -2.9263</li>
+        
+        <li class="cond-no">거래량비 0.80x < 1.3</li>
+        
+        <li class="cond-no">RSI 49.1 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 172.7(2026-03-20) vs 165.17(2026-03-30) 차이 4.4%</li>
+        
+        <li class="cond-ok">RSI 49.1 > 35</li>
+        
+        <li class="cond-ok">MACD 골든크로스: -2.9028 > signal -2.9263</li>
+        
+        <li class="cond-no">거래량비 0.80x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">3/6 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 49.1 > 38</li>
@@ -1436,8 +3866,107 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>PLTR — <span class="badge badge-WATCH">WATCH</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>PLTR Palantir Technologies</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 49.5 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 36.4%, 전일 36.4%)</li>
+        
+        <li class="cond-no">3일내 +7.9%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -7.7% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -7.7% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -0.6226 < 0, < signal 0.2310</li>
+        
+        <li class="cond-no">거래량비 0.70x < 1.3</li>
+        
+        <li class="cond-no">RSI 49.5 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 150.68(2026-03-20) vs 137.55(2026-03-30) 차이 8.7%</li>
+        
+        <li class="cond-ok">RSI 49.5 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: -0.6226 < signal 0.2310</li>
+        
+        <li class="cond-no">거래량비 0.70x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">3/6 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 49.5 > 38</li>
@@ -1455,13 +3984,110 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>SPY — <span class="badge badge-WATCH">WATCH</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>SPY SPDR S&P 500 ETF</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 46.4 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 45.4%, 전일 45.4%)</li>
+        
+        <li class="cond-no">3일내 +3.8%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-8.1999) > signal(-8.5747), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">RSI 46.4 ≤ 55</li>
+        
+        <li class="cond-no">MACD -8.1999 < 0, > signal -8.5747</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 46.4 > 42</li>
+        
+        <li class="cond-ok">MACD 골든크로스 발생</li>
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">Higher Low 미형성</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">3/5 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">[필수] RSI 46.4 > 35</li>
         
-        <li class="cond-ok">[필수] 52주 고점 대비 -5.4% ≤ -5%</li>
+        <li class="cond-ok">[필수] 52주 대비 -5.4% ≤ -5%</li>
         
         <li class="cond-ok">가격 < MA20</li>
         
@@ -1472,35 +4098,423 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>UNH — <span class="badge badge-HOLD">HOLD</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>UNH UnitedHealth Group</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">RSI 49.2 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 51.9%, 전일 51.9%)</li>
+        
+        <li class="cond-no">3일내 +5.9%</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>MSFT — <span class="badge badge-HOLD">HOLD</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-4.9246) > signal(-5.3754), hist 비감소(increasing_2d)</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>GOOGL — <span class="badge badge-HOLD">HOLD</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>SLV — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 가치주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">MACD -4.9246 < 0, > signal -5.3754</li>
+        
+        <li class="cond-no">거래량비 0.73x < 1.3</li>
+        
+        <li class="cond-no">RSI 49.2 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 가치주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 277.05(2026-03-12) vs 259.02(2026-03-27) 차이 6.5%</li>
+        
+        <li class="cond-ok">RSI 49.2 > 35</li>
+        
+        <li class="cond-ok">MACD 골든크로스: -4.9246 > signal -5.3754</li>
+        
+        <li class="cond-no">거래량비 0.73x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 가치주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">1/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 49.2 > 38</li>
+        
+        <li class="cond-no">[필수] 가격 ≥ MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-no">ADX 29.2 > 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 6.6%)</li>
+        
+        <li class="cond-no">전일 대비 +1.2% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>MSFT Microsoft Corp.</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 39.5 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 32.6%, 전일 32.6%)</li>
+        
+        <li class="cond-no">3일내 +4.0%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -8.8% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -8.8% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -11.4311 < 0, < signal -11.0305</li>
+        
+        <li class="cond-no">거래량비 0.74x < 1.3</li>
+        
+        <li class="cond-no">RSI 39.5 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 384.47(2026-02-23) vs 356.77(2026-03-27) 차이 7.2%</li>
+        
+        <li class="cond-ok">RSI 39.5 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: -11.4311 < signal -11.0305</li>
+        
+        <li class="cond-no">거래량비 0.74x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 39.5 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-no">ADX 32.6 > 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 6.4%)</li>
+        
+        <li class="cond-no">전일 대비 +1.1% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>GOOGL Alphabet Inc. Class A</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 47.7 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 46.0%, 전일 46.0%)</li>
+        
+        <li class="cond-no">3일내 +8.1%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-6.0413) > signal(-6.0934), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -6.0413 < 0, > signal -6.0934</li>
+        
+        <li class="cond-no">거래량비 0.73x < 1.3</li>
+        
+        <li class="cond-no">RSI 47.7 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 302.28(2026-03-13) vs 273.5(2026-03-30) 차이 9.5%</li>
+        
+        <li class="cond-ok">RSI 47.7 > 35</li>
+        
+        <li class="cond-ok">MACD 골든크로스: -6.0413 > signal -6.0934</li>
+        
+        <li class="cond-no">거래량비 0.73x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 47.7 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-no">ADX 28.9 > 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 7.5%)</li>
+        
+        <li class="cond-no">전일 대비 -0.5% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>SLV iShares Silver Trust</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 44.2 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 36.5%, 전일 36.5%)</li>
+        
+        <li class="cond-no">3일내 +3.6%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -17.9% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -17.9% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 귀금속 v2.6 (4개 중 2개 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">RSI 44.2 > 40</li>
@@ -1514,26 +4528,258 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>QLD — <span class="badge badge-HOLD">HOLD</span></h4>
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>QLD ProShares Ultra QQQ</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-no">RSI 45.7 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 40.2%, 전일 40.2%)</li>
+        
+        <li class="cond-no">3일내 +9.5%</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>AMZN — <span class="badge badge-HOLD">HOLD</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-na">고점 게이트 미통과 (DD -7.8% ≤ -5%)</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>SOXL — <span class="badge badge-exit">TOP_SIGNAL</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -7.8% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -1.9034 < 0, < signal -1.8519</li>
+        
+        <li class="cond-no">거래량비 0.90x < 1.3</li>
+        
+        <li class="cond-no">RSI 45.7 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 62.12(2026-03-20) vs 57.16(2026-03-30) 차이 8.0%</li>
+        
+        <li class="cond-ok">RSI 45.7 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: -1.9034 < signal -1.8519</li>
+        
+        <li class="cond-no">거래량비 0.90x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 45.7 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-no">ADX 35.6 > 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 8.6%)</li>
+        
+        <li class="cond-no">전일 대비 +0.2% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>AMZN Amazon.com Inc.</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 49.6 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 52.5%, 전일 52.5%)</li>
+        
+        <li class="cond-no">3일내 +4.4%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-1.9151) > signal(-2.3466), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">MACD -1.9151 < 0, > signal -2.3466</li>
+        
+        <li class="cond-no">거래량비 0.71x < 1.3</li>
+        
+        <li class="cond-no">RSI 49.6 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">이중바닥: 205.37(2026-03-20) vs 199.34(2026-03-27) 차이 2.9%</li>
+        
+        <li class="cond-ok">RSI 49.6 > 35</li>
+        
+        <li class="cond-ok">MACD 골든크로스: -1.9151 > signal -2.3466</li>
+        
+        <li class="cond-no">거래량비 0.71x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 49.6 > 38</li>
+        
+        <li class="cond-no">[필수] 가격 ≥ MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-ok">ADX 15.2 ≤ 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 4.2%)</li>
+        
+        <li class="cond-no">전일 대비 -0.4% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>SOXL Direxion Semiconductor Bull 3X</h4>
+      <span class="badge badge-exit">TOP_SIGNAL</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-no">RSI 49.1 < 75</li>
@@ -1545,56 +4791,668 @@
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>ETHU — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
       <ul class="cond-list">
         
-        <li class="cond-no">[거부] 당일 -7.1% (≤-5% 급락)</li>
+        <li class="cond-na">고점 게이트 미통과 (DD -7.5% ≤ -5%)</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>CRCL — <span class="badge badge-HOLD">HOLD</span></h4>
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
       <ul class="cond-list">
         
-        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        <li class="cond-na">고점 게이트 미통과 (DD -7.5% ≤ -5%)</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>XLE — <span class="badge badge-BUY">2nd_BUY</span></h4>
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">MACD -2.3950 < 0, > signal -2.4513</li>
+        
+        <li class="cond-no">거래량비 1.02x < 1.3</li>
+        
+        <li class="cond-no">RSI 49.1 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">2/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 51.14(2026-03-20) vs 40.62(2026-03-30) 차이 20.6%</li>
+        
+        <li class="cond-ok">RSI 49.1 > 35</li>
+        
+        <li class="cond-ok">MACD 골든크로스: -2.3950 > signal -2.4513</li>
+        
+        <li class="cond-no">거래량비 1.02x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">1/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 49.1 > 38</li>
+        
+        <li class="cond-no">[필수] 가격 ≥ MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-no">ADX 30.1 > 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 20.0%)</li>
+        
+        <li class="cond-no">전일 대비 +0.9% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>ETHU ProShares Ultra Ether ETF</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 44.0 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 33.3%, 전일 33.3%)</li>
+        
+        <li class="cond-no">3일내 +4.0%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -23.2% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -23.2% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <span class="gate-tag">[거부] 당일 급락</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -1.3865 < 0, > signal -1.6780</li>
+        
+        <li class="cond-no">거래량비 0.73x < 1.3</li>
+        
+        <li class="cond-no">RSI 44.0 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
+      <span class="gate-tag">[거부] 당일 급락</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">이중바닥: 20.59(2026-03-06) vs 20.16(2026-03-27) 차이 2.1%</li>
+        
+        <li class="cond-ok">RSI 44.0 > 35</li>
+        
+        <li class="cond-ok">MACD 골든크로스: -1.3865 > signal -1.6780</li>
+        
+        <li class="cond-no">거래량비 0.73x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">2/6 충족</span>
+      </div>
+      
+      <span class="gate-tag">[거부] 당일 -7.1% (≤-5% 급락)</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 44.0 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-no">[필수] MACD hist 2일 증가: mixed</li>
+        
+        <li class="cond-ok">ADX 13.1 ≤ 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 14.8%)</li>
+        
+        <li class="cond-no">전일 대비 -7.1% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>CRCL Circle Internet Group</h4>
+      <span class="badge badge-HOLD">HOLD</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 42.5 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 16.1%, 전일 16.1%)</li>
+        
+        <li class="cond-no">3일내 +0.4%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -32.0% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -32.0% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-none">0/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD 0.4778 > 0, < signal 5.4237</li>
+        
+        <li class="cond-no">거래량비 0.65x < 1.3</li>
+        
+        <li class="cond-no">RSI 42.5 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 61.17(2026-02-23) vs 89.91(2026-03-30) 차이 47.0%</li>
+        
+        <li class="cond-ok">RSI 42.5 > 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: 0.4778 < signal 5.4237</li>
+        
+        <li class="cond-no">거래량비 0.65x < 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">1/6 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 42.5 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-no">[필수] MACD hist 2일 증가: mixed</li>
+        
+        <li class="cond-no">ADX 32.5 > 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 11.9%)</li>
+        
+        <li class="cond-no">전일 대비 -0.5% < +2%</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>XLE Energy Select Sector SPDR</h4>
+      <span class="badge badge-BUY">2nd_BUY</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 56.3 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 54.9%, 전일 54.9%)</li>
+        
+        <li class="cond-no">3일내 -4.4%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -5.3% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -5.3% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-partial">2/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-ok">RSI 56.3 > 55</li>
+        
+        <li class="cond-no">MACD 1.6189 > 0, < signal 1.8217</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-ok">RSI 56.3 > 42</li>
         
-        <li class="cond-no">MACD 골든크로스 아직 미발생 (1.6189 vs Signal 1.8217)</li>
+        <li class="cond-no">MACD 골든크로스 미발생</li>
         
-        <li class="cond-ok">MA20 위에 있거나 근접해요</li>
+        <li class="cond-ok">가격 > MA20</li>
         
-        <li class="cond-ok">Higher Low: 단기 하락멈춤 + 중기저점상승 ($55.24(2026-03-10) > $54.51(2026-02-25))</li>
+        <li class="cond-ok">Higher Low 형성</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>XLF — <span class="badge badge-BUY">2nd_BUY</span></h4>
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">2/5 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 56.3 > 35</li>
+        
+        <li class="cond-ok">[필수] 52주 대비 -5.3% ≤ -5%</li>
+        
+        <li class="cond-no">가격 ≥ MA20</li>
+        
+        <li class="cond-no">BB 하단 거리 8.5%</li>
+        
+        <li class="cond-ok">하락 모멘텀 둔화</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>XLF Financial Select Sector SPDR</h4>
+      <span class="badge badge-BUY">2nd_BUY</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 47.8 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 66.4%, 전일 66.4%)</li>
+        
+        <li class="cond-no">3일내 +2.4%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MA20 이탈 → MACD bullish 면제</li>
+        
+        <li class="cond-no">Higher Low → MACD bullish 면제</li>
+        
+        <li class="cond-no">MACD 데스크로스: MACD(-0.5572) > signal(-0.7376), hist 비감소(increasing_2d)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — ETF v2.4 (3개 ALL 충족)</span>
+        <span class="section-count count-partial">1/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-ok">가격 > MA20</li>
+        
+        <li class="cond-no">RSI 47.8 ≤ 55</li>
+        
+        <li class="cond-no">MACD -0.5572 < 0, > signal -0.7376</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — ETF v2.4 (4개 중 3개 충족)</span>
+        <span class="section-count count-partial">3/4 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-ok">RSI 47.8 > 42</li>
         
-        <li class="cond-ok">MACD 골든크로스 발생 (-0.5572 vs Signal -0.7376)</li>
+        <li class="cond-ok">MACD 골든크로스 발생</li>
         
-        <li class="cond-ok">MA20 위에 있거나 근접해요</li>
+        <li class="cond-ok">가격 > MA20</li>
         
-        <li class="cond-no">Higher Low 미형성: 중기저점 하락 중 ($47.81(2026-03-27) ≤ $48.58(2026-03-12))</li>
+        <li class="cond-no">Higher Low 미형성</li>
         
       </ul>
     </div>
     
-    <div class="judge-block" style="flex:1; min-width:260px;">
-      <h4>NKE — <span class="badge badge-WATCH">WATCH</span></h4>
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — ETF v2.4 ([필수] RSI≤35+DD≤-5% + 선택 1/3)</span>
+        <span class="section-count count-partial">2/5 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 47.8 > 35</li>
+        
+        <li class="cond-ok">[필수] 52주 대비 -11.7% ≤ -5%</li>
+        
+        <li class="cond-no">가격 ≥ MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 3.2%</li>
+        
+        <li class="cond-no">하락 모멘텀 지속</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  
+  
+  
+  <div class="judge-ticker">
+    <div class="judge-ticker-header">
+      <h4>NKE Nike Inc.</h4>
+      <span class="badge badge-WATCH">WATCH</span>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="section-count count-none">0/3 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 20.2 < 75</li>
+        
+        <li class="cond-no">BB 상단 2일 미충족 (오늘 -15.5%, 전일 -15.5%)</li>
+        
+        <li class="cond-no">3일내 -13.8%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_2 — 상승 종료 (고점 게이트 + 1개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -22.5% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section exit-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
+        <span class="section-count count-none">0/1 충족</span>
+      </div>
+      
+      <span class="gate-tag">고점 게이트 미통과</span>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-na">고점 게이트 미통과 (DD -22.5% ≤ -5%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">가격 < MA20</li>
+        
+        <li class="cond-no">MACD -3.2172 < 0, < signal -2.5849</li>
+        
+        <li class="cond-ok">거래량비 2.67x ≥ 1.3</li>
+        
+        <li class="cond-no">RSI 20.2 ≤ 55</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="section-count count-partial">1/4 충족</span>
+      </div>
+      
+      <ul class="cond-list">
+        
+        <li class="cond-no">이중바닥: 62.67(2026-02-23) vs 52.37(2026-03-20) 차이 16.4%</li>
+        
+        <li class="cond-no">RSI 20.2 ≤ 35</li>
+        
+        <li class="cond-no">MACD 골든크로스: -3.2172 < signal -2.5849</li>
+        
+        <li class="cond-ok">거래량비 2.67x ≥ 1.2</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-section entry-section">
+      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
+        <span class="section-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="section-count count-partial">3/6 충족</span>
+      </div>
+      
       <ul class="cond-list">
         
         <li class="cond-ok">[필수] RSI 20.2 ≤ 38</li>
@@ -1613,6 +5471,8 @@
     </div>
     
   </div>
+  
+  
 
   <!-- ═══════════════════════════════════════════
        SIGNAL REFERENCE — 포트폴리오 (Exit + Entry 전체)
@@ -1673,14 +5533,14 @@
   <table class="source-table">
     <tr><th>구분</th><th>출처</th><th>수집 시간</th></tr>
     <tr><td>포트폴리오 (보유수량·평균단가)</td><td>portfolio.md (C:\Users\DIT-969\Downloads\AI Trading Assistant\portfolio.md)</td><td>스크린샷 날짜</td></tr>
-    <tr><td>기술지표 (가격·MA·RSI·MACD·BB·ADX)</td><td>yfinance (fetch_market_data.py)</td><td>2026-04-04 17:08:48</td></tr>
-    <tr><td>VIX / 30Y 국채금리 / USD/KRW</td><td>yfinance (^VIX / ^TYX / KRW=X)</td><td>2026-04-04 17:08:48</td></tr>
-    <tr><td>배당 (TTM div/주 · 배당수익률)</td><td>yfinance ticker.dividends (최근 12개월)</td><td>2026-04-04 17:08:48</td></tr>
+    <tr><td>기술지표 (가격·MA·RSI·MACD·BB·ADX)</td><td>yfinance (fetch_market_data.py)</td><td>2026-04-04 21:03:32</td></tr>
+    <tr><td>VIX / 30Y 국채금리 / USD/KRW</td><td>yfinance (^VIX / ^TYX / KRW=X)</td><td>2026-04-04 21:03:32</td></tr>
+    <tr><td>배당 (TTM div/주 · 배당수익률)</td><td>yfinance ticker.dividends (최근 12개월)</td><td>2026-04-04 21:03:32</td></tr>
   </table>
 
   <p class="report-footer">
     ⚠️ 본 리포트는 개인 투자 참고용 기술적 분석입니다. 투자 결정의 책임은 본인에게 있으며, 이 시그널은 투자 권유가 아닙니다.<br>
-    Generated by AI Trading Assistant v3.0 | 2026-04-04 | Data: yfinance (2026-04-04 17:08:48) | Portfolio: portfolio.md (C:\Users\DIT-969\Downloads\AI Trading Assistant\portfolio.md)
+    Generated by AI Trading Assistant v3.0 | 2026-04-04 | Data: yfinance (2026-04-04 21:03:32) | Portfolio: portfolio.md (C:\Users\DIT-969\Downloads\AI Trading Assistant\portfolio.md)
   </p>
 
 </div>

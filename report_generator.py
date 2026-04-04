@@ -132,6 +132,7 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
             "buy_streak": sig.get("buy_streak", 0),
             "buy_confirmed": sig.get("buy_confirmed", False),
             "is_kospi": is_kospi_ticker(ticker),
+            "judgment_sections": sig.get("judgment_sections", []),
         })
 
     holdings.sort(key=lambda x: -x["value"])

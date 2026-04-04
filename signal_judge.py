@@ -649,13 +649,368 @@ def check_exit_simple(ticker: str, d: dict) -> dict | None:
 
 
 # ═══════════════════════════════════════════════════════
+#  판정 근거 전체 섹션 수집 (모든 Entry/Exit 레벨 평가)
+# ═══════════════════════════════════════════════════════
+
+def _count_ok(conditions: list) -> int:
+    return sum(1 for c in conditions if c[0] == "ok")
+
+
+def _build_exit_sections(d: dict, prev_day: dict | None) -> list:
+    """Exit 판정 섹션들 (TOP → TP2 → TP1) 수집."""
+    sections = []
+    in_profit_zone = _is_profit_zone(d)
+    bullish = _is_macd_bullish(d)
+
+    # TOP_SIGNAL
+    _, top_conds = _check_top_signal(d, prev_day)
+    sections.append({
+        "name": "TOP_SIGNAL — 과열 경보",
+        "rule": "1개 충족 시 발동",
+        "conditions": top_conds,
+        "met": _count_ok(top_conds),
+        "total": len(top_conds),
+        "gate": None,
+    })
+
+    # TAKE_PROFIT_2
+    if in_profit_zone:
+        _, tp2_conds = _check_take_profit_2(d, prev_day)
+        gate = None
+    else:
+        tp2_conds = [("na", f"고점 게이트 미통과 (DD {d.get('drawdown_20d_pct', 0):.1f}% ≤ -5%)")]
+        gate = "고점 게이트 미통과"
+    sections.append({
+        "name": "TAKE_PROFIT_2 — 상승 종료",
+        "rule": "고점 게이트 + 1개 충족",
+        "conditions": tp2_conds,
+        "met": _count_ok(tp2_conds),
+        "total": len(tp2_conds),
+        "gate": gate,
+    })
+
+    # TAKE_PROFIT_1
+    if in_profit_zone:
+        _, tp1_conds = _check_take_profit_1(d, prev_day)
+        gate = None
+    else:
+        tp1_conds = [("na", f"고점 게이트 미통과 (DD {d.get('drawdown_20d_pct', 0):.1f}% ≤ -5%)")]
+        gate = "고점 게이트 미통과"
+    sections.append({
+        "name": "TAKE_PROFIT_1 — 상승 둔화",
+        "rule": "3개 중 2개 충족",
+        "conditions": tp1_conds,
+        "met": _count_ok(tp1_conds),
+        "total": len(tp1_conds),
+        "gate": gate,
+    })
+
+    return sections
+
+
+def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> list:
+    """Growth/Value Entry 전체 섹션 수집 (3rd → 2nd → 1st BUY)."""
+    sections = []
+    rsi = d.get("rsi14")
+    adx = d.get("adx")
+    bb_lower = d.get("bb_lower")
+    price = d.get("price", 0)
+    macd = d.get("macd")
+    macd_signal = d.get("macd_signal")
+    macd_hist_trend = d.get("macd_hist_trend", "")
+    volume_ratio = d.get("volume_ratio")
+    change_pct = d.get("change_pct", 0)
+    price_vs_ma20 = d.get("price_vs_ma20", "")
+
+    # 거부 조건
+    reject_drop = change_pct <= -5.0
+    reject_rsi_flag = rsi is not None and rsi > reject_rsi_threshold
+
+    group_label = "성장주" if reject_rsi_threshold == 55 else "가치주"
+
+    # ── 3rd BUY ──
+    c3 = []
+    above_ma20 = price_vs_ma20 == "above"
+    c3.append(("ok" if above_ma20 else "no", f"가격 {'>' if above_ma20 else '<'} MA20"))
+    macd_above_zero = macd is not None and macd > 0
+    macd_golden_c3 = macd is not None and macd_signal is not None and macd > macd_signal
+    macd_c3_ok = macd_above_zero and macd_golden_c3
+    c3.append(("ok" if macd_c3_ok else "no",
+               f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, "
+               f"{'>' if macd_golden_c3 else '<'} signal {macd_signal:.4f}"
+               if macd is not None and macd_signal is not None else "MACD N/A"))
+    vol_13 = volume_ratio is not None and volume_ratio >= 1.3
+    c3.append(("ok" if vol_13 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_13 else '<'} 1.3" if volume_ratio else "거래량 N/A"))
+    rsi_above_55 = rsi is not None and rsi > 55
+    c3.append(("ok" if rsi_above_55 else "no", f"RSI {rsi:.1f} {'>' if rsi_above_55 else '≤'} 55" if rsi else "RSI N/A"))
+    c3_reject = rsi is not None and rsi > 75
+    sections.append({
+        "name": f"3차 매수 조건 — {group_label} v2.2",
+        "rule": "4개 모두 충족",
+        "conditions": c3,
+        "met": _count_ok(c3),
+        "total": len(c3),
+        "gate": "[거부] RSI > 75" if c3_reject else ("[거부] 당일 급락" if reject_drop else None),
+    })
+
+    # ── 2nd BUY ──
+    c2 = []
+    dbl = d.get("double_bottom", {})
+    dbl_detected = dbl.get("detected", False) if isinstance(dbl, dict) else False
+    dbl_diff = dbl.get("diff_pct", 99) if isinstance(dbl, dict) else 99
+    dbl_valid = dbl_detected and dbl_diff <= 3.0
+    if isinstance(dbl, dict) and dbl.get("low1"):
+        c2.append(("ok" if dbl_valid else "no",
+                   f"이중바닥: {dbl['low1']['price']}({dbl['low1']['date']}) vs "
+                   f"{dbl['low2']['price']}({dbl['low2']['date']}) 차이 {dbl_diff:.1f}%"
+                   f"{'' if dbl_valid else ' (3% 초과 → 무효)' if dbl_detected else ''}"))
+    else:
+        c2.append(("no", "이중 바닥 미감지"))
+    rsi_rising_3d = rsi is not None and rsi > 35
+    c2.append(("ok" if rsi_rising_3d else "no", f"RSI {rsi:.1f} {'>' if rsi_rising_3d else '≤'} 35" if rsi else "RSI N/A"))
+    macd_golden = macd is not None and macd_signal is not None and macd > macd_signal
+    c2.append(("ok" if macd_golden else "no",
+               f"MACD 골든크로스: {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f}"
+               if macd is not None and macd_signal is not None else "MACD N/A"))
+    vol_12 = volume_ratio is not None and volume_ratio >= 1.2
+    c2.append(("ok" if vol_12 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_12 else '<'} 1.2" if volume_ratio else "거래량 N/A"))
+    sections.append({
+        "name": f"2차 매수 조건 — {group_label} v2.2",
+        "rule": "4개 모두 충족",
+        "conditions": c2,
+        "met": _count_ok(c2),
+        "total": len(c2),
+        "gate": "[거부] 당일 급락" if reject_drop else None,
+    })
+
+    # ── 1st BUY ──
+    c1 = []
+    rsi_ok = rsi is not None and rsi <= 38
+    c1.append(("ok" if rsi_ok else "no",
+               f"[필수] RSI {rsi:.1f} {'≤' if rsi_ok else '>'} 38" if rsi else "[필수] RSI N/A"))
+    below_ma20 = price_vs_ma20 == "below"
+    c1.append(("ok" if below_ma20 else "no", f"[필수] 가격 {'<' if below_ma20 else '≥'} MA20"))
+    hist_increasing = "increasing" in macd_hist_trend
+    c1.append(("ok" if hist_increasing else "no", f"[필수] MACD hist 2일 증가: {macd_hist_trend}"))
+    # 선택 조건
+    adx_ok = adx is not None and adx <= 25
+    c1.append(("ok" if adx_ok else "no", f"ADX {adx:.1f} {'≤' if adx_ok else '>'} 25" if adx else "ADX N/A"))
+    bb_near = False
+    if bb_lower and price > 0:
+        bb_threshold = bb_lower * 1.02
+        bb_near = price <= bb_threshold
+        bb_dist = (price - bb_lower) / bb_lower * 100
+        c1.append(("ok" if bb_near else "no", f"종가 {'≤' if bb_near else '>'} BB하단x1.02 (거리 {bb_dist:.1f}%)"))
+    else:
+        c1.append(("na", "BB 하단 N/A"))
+    rebound = change_pct >= 2.0
+    c1.append(("ok" if rebound else "no", f"전일 대비 {change_pct:+.1f}% {'≥' if rebound else '<'} +2%"))
+
+    gate_1st = None
+    if reject_drop:
+        gate_1st = f"[거부] 당일 {change_pct:+.1f}% (≤-5% 급락)"
+    elif reject_rsi_flag:
+        gate_1st = f"[거부] RSI {rsi:.1f} > {reject_rsi_threshold}"
+    sections.append({
+        "name": f"1차 매수 조건 — {group_label} v2.2",
+        "rule": "[필수] MACD히스토2일증가 + 6개 중 3개 이상",
+        "conditions": c1,
+        "met": _count_ok(c1),
+        "total": len(c1),
+        "gate": gate_1st,
+    })
+
+    return sections
+
+
+def _build_entry_sections_etf(d: dict) -> list:
+    """ETF Entry 전체 섹션 수집 (3rd → 2nd → 1st BUY)."""
+    sections = []
+    rsi = d.get("rsi14")
+    price_vs_ma20 = d.get("price_vs_ma20", "")
+    bb_lower = d.get("bb_lower")
+    price = d.get("price", 0)
+    macd = d.get("macd")
+    macd_signal_val = d.get("macd_signal")
+    macd_hist_trend = d.get("macd_hist_trend", "")
+    macd_hist_3d = d.get("macd_hist_3d", [])
+    drawdown_52w = d.get("drawdown_52w_pct", d.get("drawdown_20d_pct", 0))
+
+    reject_rsi = rsi is not None and rsi > 70
+
+    # ── 3rd BUY ──
+    c3 = []
+    above_ma20 = price_vs_ma20 == "above"
+    c3.append(("ok" if above_ma20 else "no", f"가격 {'>' if above_ma20 else '<'} MA20"))
+    rsi_55 = rsi is not None and rsi > 55
+    c3.append(("ok" if rsi_55 else "no", f"RSI {rsi:.1f} {'>' if rsi_55 else '≤'} 55" if rsi else "RSI N/A"))
+    macd_above_zero = macd is not None and macd > 0
+    macd_golden = macd is not None and macd_signal_val is not None and macd > macd_signal_val
+    macd_c3_ok = macd_above_zero and macd_golden
+    c3.append(("ok" if macd_c3_ok else "no",
+               f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, "
+               f"{'>' if macd_golden else '<'} signal {macd_signal_val:.4f}"
+               if macd is not None and macd_signal_val is not None else "MACD N/A"))
+    sections.append({
+        "name": "3차 매수 조건 — ETF v2.4",
+        "rule": "3개 ALL 충족",
+        "conditions": c3,
+        "met": _count_ok(c3),
+        "total": len(c3),
+        "gate": f"[거부] RSI {rsi:.1f} > 70" if reject_rsi else None,
+    })
+
+    # ── 2nd BUY ──
+    c2 = []
+    c2_count = 0
+    rsi_42 = rsi is not None and rsi > 42
+    c2.append(("ok" if rsi_42 else "no", f"RSI {rsi:.1f} {'>' if rsi_42 else '≤'} 42" if rsi else "RSI N/A"))
+    if rsi_42: c2_count += 1
+    macd_golden_2 = macd is not None and macd_signal_val is not None and macd > macd_signal_val
+    c2.append(("ok" if macd_golden_2 else "no",
+               f"MACD 골든크로스 {'발생' if macd_golden_2 else '미발생'}" if macd and macd_signal_val else "MACD N/A"))
+    if macd_golden_2: c2_count += 1
+    above_or_near = price_vs_ma20 == "above"
+    c2.append(("ok" if above_or_near else "no", f"가격 {'>' if above_or_near else '<'} MA20"))
+    if above_or_near: c2_count += 1
+    # Higher Low
+    dbl2 = d.get("double_bottom", {})
+    sig_low_stopped = d.get("sig_low_stopped", False)
+    if isinstance(dbl2, dict) and dbl2.get("low1") and dbl2.get("low2"):
+        low1_p = dbl2["low1"]["price"]
+        low2_p = dbl2["low2"]["price"]
+        mid_term_hl = dbl2.get("higher_low", low2_p > low1_p)
+        higher_low = sig_low_stopped and mid_term_hl
+        c2.append(("ok" if higher_low else "no", f"Higher Low {'형성' if higher_low else '미형성'}"))
+        if higher_low: c2_count += 1
+    else:
+        c2.append(("na", "Higher Low: 데이터 부족"))
+    sections.append({
+        "name": "2차 매수 조건 — ETF v2.4",
+        "rule": "4개 중 3개 충족",
+        "conditions": c2,
+        "met": _count_ok(c2),
+        "total": len(c2),
+        "gate": f"[거부] RSI {rsi:.1f} > 70" if reject_rsi else None,
+    })
+
+    # ── 1st BUY ──
+    c1 = []
+    rsi_ok = rsi is not None and rsi <= 35
+    c1.append(("ok" if rsi_ok else "no", f"[필수] RSI {rsi:.1f} {'≤' if rsi_ok else '>'} 35" if rsi else "RSI N/A"))
+    dd_ok = drawdown_52w <= -5.0
+    c1.append(("ok" if dd_ok else "no", f"[필수] 52주 대비 {drawdown_52w:.1f}% {'≤' if dd_ok else '>'} -5%"))
+    below_ma20 = price_vs_ma20 == "below"
+    c1.append(("ok" if below_ma20 else "no", f"가격 {'<' if below_ma20 else '≥'} MA20"))
+    bb_near = False
+    if bb_lower and price > 0:
+        bb_dist = (price - bb_lower) / bb_lower * 100
+        bb_near = bb_dist <= 5
+        c1.append(("ok" if bb_near else "no", f"BB 하단 거리 {bb_dist:.1f}%"))
+    else:
+        c1.append(("na", "BB 하단 N/A"))
+    momentum_slowing = False
+    if len(macd_hist_3d) >= 2:
+        diffs = [macd_hist_3d[i] - macd_hist_3d[i - 1] for i in range(1, len(macd_hist_3d))]
+        if len(diffs) >= 2 and diffs[-1] > diffs[-2]:
+            momentum_slowing = True
+        elif len(diffs) == 1 and diffs[0] > 0:
+            momentum_slowing = True
+    c1.append(("ok" if momentum_slowing else "no", f"하락 모멘텀 {'둔화' if momentum_slowing else '지속'}"))
+    sections.append({
+        "name": "1차 매수 조건 — ETF v2.4",
+        "rule": "[필수] RSI≤35+DD≤-5% + 선택 1/3",
+        "conditions": c1,
+        "met": _count_ok(c1),
+        "total": len(c1),
+        "gate": f"[거부] RSI {rsi:.1f} > 70" if reject_rsi else None,
+    })
+
+    return sections
+
+
+def _build_entry_sections_bond(d: dict, macro: dict) -> list:
+    """Bond Entry 섹션 수집."""
+    rsi = d.get("rsi14")
+    yield_30y = macro.get("yield_30Y")
+    c = []
+    if yield_30y is not None:
+        y_ok = yield_30y >= 5.0
+        c.append(("ok" if y_ok else "no", f"30Y 금리 {yield_30y:.3f}% {'≥' if y_ok else '<'} 5.0%"))
+    else:
+        c.append(("na", "30Y 금리 데이터 없음"))
+    r_ok = rsi is not None and rsi <= 35
+    c.append(("ok" if r_ok else "no", f"RSI {rsi:.1f} {'≤' if r_ok else '>'} 35" if rsi else "RSI N/A"))
+    return [{
+        "name": "1차 매수 조건 — 채권 v2.6",
+        "rule": "2개 모두 충족",
+        "conditions": c,
+        "met": _count_ok(c),
+        "total": len(c),
+        "gate": None,
+    }]
+
+
+def _build_entry_sections_metal(d: dict, macro: dict) -> list:
+    """Metal Entry 섹션 수집."""
+    rsi = d.get("rsi14")
+    price_vs_ma20 = d.get("price_vs_ma20", "")
+    vix = macro.get("VIX", 0)
+    bb_lower = d.get("bb_lower")
+    price = d.get("price", 0)
+    c = []
+    rsi_ok = rsi is not None and rsi <= 40
+    c.append(("ok" if rsi_ok else "no", f"RSI {rsi:.1f} {'≤' if rsi_ok else '>'} 40" if rsi else "RSI N/A"))
+    below_ma20 = price_vs_ma20 == "below"
+    c.append(("ok" if below_ma20 else "no", f"가격 {'<' if below_ma20 else '≥'} MA20"))
+    vix_ok = vix > 25
+    c.append(("ok" if vix_ok else "no", f"VIX {vix:.1f} {'>' if vix_ok else '≤'} 25"))
+    if bb_lower and price > 0:
+        bb_dist = (price - bb_lower) / bb_lower * 100
+        bb_near = bb_dist <= 5
+        c.append(("ok" if bb_near else "no", f"BB 하단 거리 {bb_dist:.1f}%"))
+    else:
+        c.append(("na", "BB 하단 N/A"))
+    return [{
+        "name": "1차 매수 조건 — 귀금속 v2.6",
+        "rule": "4개 중 2개 충족",
+        "conditions": c,
+        "met": _count_ok(c),
+        "total": len(c),
+        "gate": None,
+    }]
+
+
+def build_judgment_sections(ticker: str, d: dict, macro: dict, prev_day: dict | None) -> list:
+    """종목의 모든 판정 섹션 (Exit + Entry) 수집. 리포트 판정 근거 표시용."""
+    group = get_strategy_group(ticker)
+    if group == "cash":
+        return []
+
+    sections = _build_exit_sections(d, prev_day)
+
+    if group == "growth":
+        sections.extend(_build_entry_sections_growth(d))
+    elif group == "value":
+        sections.extend(_build_entry_sections_growth(d, reject_rsi_threshold=70))
+    elif group == "etf":
+        sections.extend(_build_entry_sections_etf(d))
+    elif group == "bond":
+        sections.extend(_build_entry_sections_bond(d, macro))
+    elif group == "metal":
+        sections.extend(_build_entry_sections_metal(d, macro))
+
+    return sections
+
+
+# ═══════════════════════════════════════════════════════
 #  메인 판정 함수
 # ═══════════════════════════════════════════════════════
 
 def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None) -> dict:
     """
     단일 종목 시그널 판정.
-    반환: {signal, note, conditions: [(ok/no/na, text), ...]}
+    반환: {signal, note, conditions, judgment_sections}
     """
     group = get_strategy_group(ticker)
 
@@ -665,22 +1020,29 @@ def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None) -> di
             "signal": "CASH",
             "note": "현금성 자산",
             "conditions": [("ok", "현금성 자산 — 시그널 판정 대상 아님")],
+            "judgment_sections": [],
         }
+
+    # 판정 근거 전체 섹션 수집 (모든 Exit/Entry 레벨 독립 평가)
+    all_sections = build_judgment_sections(ticker, d, macro, prev_day)
 
     # ── Exit(익절) 체크 (TOP → TP2 → TP1)  [v5.2: 익절 전용 재설계] ──
     top_hit, top_conds = _check_top_signal(d, prev_day)
     if top_hit:
-        return {"signal": "TOP_SIGNAL", "note": _make_note(top_conds), "conditions": top_conds}
+        return {"signal": "TOP_SIGNAL", "note": _make_note(top_conds), "conditions": top_conds,
+                "judgment_sections": all_sections}
 
     # 고점 영역 게이트: DD > -5% 일 때만 TP 시그널 허용
     if _is_profit_zone(d):
         tp2_hit, tp2_conds = _check_take_profit_2(d, prev_day)
         if tp2_hit:
-            return {"signal": "TAKE_PROFIT_2", "note": _make_note(tp2_conds), "conditions": tp2_conds}
+            return {"signal": "TAKE_PROFIT_2", "note": _make_note(tp2_conds), "conditions": tp2_conds,
+                    "judgment_sections": all_sections}
 
         tp1_hit, tp1_conds = _check_take_profit_1(d, prev_day)
         if tp1_hit:
-            return {"signal": "TAKE_PROFIT_1", "note": _make_note(tp1_conds), "conditions": tp1_conds}
+            return {"signal": "TAKE_PROFIT_1", "note": _make_note(tp1_conds), "conditions": tp1_conds,
+                    "judgment_sections": all_sections}
 
     # ── Entry 체크 (카테고리별) ──
     if group == "growth":
@@ -697,13 +1059,15 @@ def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None) -> di
         signal, conds = None, []
 
     if signal:
-        return {"signal": signal, "note": _make_note(conds), "conditions": conds}
+        return {"signal": signal, "note": _make_note(conds), "conditions": conds,
+                "judgment_sections": all_sections}
 
     # ── 해당 없으면 HOLD ──
     return {
         "signal": "HOLD",
         "note": "Exit/Entry 조건 미충족",
         "conditions": [("na", "Exit/Entry 조건 미충족 — 보유 유지")],
+        "judgment_sections": all_sections,
     }
 
 
