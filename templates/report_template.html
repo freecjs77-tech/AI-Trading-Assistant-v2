@@ -113,7 +113,7 @@
   <div class="header-row">
   <h1>📊 AI Trading Assistant — Signal Report</h1>
   <div class="header-controls">
-    <button id="currencyToggle" onclick="toggleCurrency()">💱 ₩ 원화 보기</button>
+    <button id="currencyToggle" onclick="toggleCurrency()">💲 달러 보기</button>
     <a href="#scanner" style="padding:6px 14px;background:#27ae60;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🔍 S&amp;P</a>
     <a href="#scanner-etf" style="padding:6px 14px;background:#3498db;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">📊 ETF</a>
     <a href="#scanner-kospi" style="padding:6px 14px;background:#e74c3c;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🇰🇷 KOSPI</a>
@@ -161,12 +161,12 @@
   <div class="port-summary-grid">
     <div class="port-card green">
       <div class="pc-label">Total Value</div>
-      <div class="pc-value money" data-usd="{{ total_value }}">${{ total_value|comma }}</div>
-      <div class="pc-sub {{ 'pos' if total_pnl >= 0 else 'neg' }}">{{ '+' if total_pnl >= 0 else '' }}${{ total_pnl|comma }} ({{ total_pnl_pct|sign_pct }})</div>
+      <div class="pc-value money" data-usd="{{ total_value }}" data-krw="{{ total_value_krw }}">${{ total_value|comma }}</div>
+      <div class="pc-sub {{ 'pos' if total_pnl >= 0 else 'neg' }}"><span class="money" data-usd="{{ total_pnl }}" data-krw="{{ total_pnl_krw }}" data-signed="1">{{ '+' if total_pnl >= 0 else '' }}${{ total_pnl|comma }}</span> ({{ total_pnl_pct|sign_pct }})</div>
     </div>
     <div class="port-card gray">
       <div class="pc-label">Cost Basis</div>
-      <div class="pc-value money" data-usd="{{ cost_basis }}">${{ cost_basis|comma }}</div>
+      <div class="pc-value money" data-usd="{{ cost_basis }}" data-krw="{{ cost_basis_krw }}">${{ cost_basis|comma }}</div>
       <div class="pc-sub">투자 원금</div>
     </div>
     <div class="port-card blue">
@@ -176,7 +176,7 @@
     </div>
     <div class="port-card blue">
       <div class="pc-label">Cash (BIL)</div>
-      <div class="pc-value money" data-usd="{{ cash_value }}">${{ cash_value|comma }}</div>
+      <div class="pc-value money" data-usd="{{ cash_value }}" data-krw="{{ cash_value_krw }}">${{ cash_value|comma }}</div>
       <div class="pc-sub">{{ cash_pct|pct1 }}% of portfolio</div>
     </div>
   </div>
@@ -200,12 +200,12 @@
   <div class="port-summary-grid">
     <div class="port-card green">
       <div class="pc-label">예상 연 배당금</div>
-      <div class="pc-value money" data-usd="{{ div_annual }}">${{ div_annual|comma }}</div>
+      <div class="pc-value money" data-usd="{{ div_annual }}" data-krw="{{ div_annual_krw }}">${{ div_annual|comma }}</div>
       <div class="pc-sub">TTM 배당 기준 (yfinance)</div>
     </div>
     <div class="port-card green">
       <div class="pc-label">월 평균 배당</div>
-      <div class="pc-value money" data-usd="{{ div_monthly }}">${{ div_monthly|comma }}</div>
+      <div class="pc-value money" data-usd="{{ div_monthly }}" data-krw="{{ div_monthly_krw }}">${{ div_monthly|comma }}</div>
       <div class="pc-sub">{{ div_top }}</div>
     </div>
     <div class="port-card green">
@@ -219,7 +219,7 @@
   <table class="holdings-tbl">
     <thead>
       <tr>
-        <th>#</th><th>Ticker</th><th>Class</th>
+        <th>#</th><th>Ticker</th><th>종목명</th>
         <th class="tbl-num">보유주수</th><th class="tbl-num">평균단가</th><th class="tbl-num">현재가</th>
         <th class="tbl-num">평가금액</th><th class="tbl-num">비중</th><th class="tbl-num">P&amp;L%</th><th>Signal</th>
       </tr>
@@ -229,18 +229,18 @@
       <tr>
         <td>{{ loop.index }}</td>
         <td><a href="details/{{ h.ticker }}.html" style="color:#2980b9;text-decoration:underline;text-underline-offset:2px;font-weight:bold;">{{ h.ticker }}</a></td>
-        <td><span class="cls-tag {{ h.cls_tag }}">{{ h.cls }}</span></td>
+        <td>{{ h.name }}</td>
         <td class="tbl-num">{{ h.shares|shares_fmt }}</td>
         {% if h.is_kospi %}
-        <td class="tbl-num money" data-krw="{{ h.avg_cost }}">₩{{ h.avg_cost|comma }}</td>
-        <td class="tbl-num money" data-krw="{{ h.price }}">₩{{ h.price|comma }}</td>
-        <td class="tbl-num money" data-krw="{{ h.value }}">₩{{ h.value|comma }}</td>
+        <td class="tbl-num">₩{{ h.avg_cost|comma }}</td>
+        <td class="tbl-num">₩{{ h.price|comma }}</td>
+        <td class="tbl-num">₩{{ h.value|comma }}</td>
         {% else %}
-        <td class="tbl-num money" data-usd="{{ h.avg_cost }}">${{ h.avg_cost|f2 }}</td>
-        <td class="tbl-num money" data-usd="{{ h.price }}">${{ h.price|f2 }}</td>
-        <td class="tbl-num money" data-usd="{{ h.value }}">${{ h.value|comma }}</td>
+        <td class="tbl-num">${{ h.avg_cost|f2 }}</td>
+        <td class="tbl-num">${{ h.price|f2 }}</td>
+        <td class="tbl-num">${{ h.value|comma }}</td>
         {% endif %}
-        <td class="tbl-num">{{ (h.value / total_value * 100)|f1 }}%</td>
+        <td class="tbl-num">{{ h.weight|f1 }}%</td>
         <td class="tbl-num {{ 'pnl-pos' if h.pnl_pct >= 0 else 'pnl-neg' }}">{{ h.pnl_pct|sign_pct }}</td>
         <td>
           <span class="badge {{ h.signal|badge_class }}">{{ h.signal }}</span>
@@ -264,8 +264,8 @@
         <span style="font-size:11px;color:#888;margin-left:6px">어제: {{ prev_signal_map[h.ticker] }}</span>
         {% endif %}
       </div>
-      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.value }}">{{ "₩" if h.is_kospi else "$" }}{{ h.value|comma }}</span></div>
-      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | {{ "₩" if h.is_kospi else "$" }}{{ h.value|comma }}</div>
+      <div><span class="price">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics">
         <span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span>
         <span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span>
@@ -285,8 +285,8 @@
     {% for h in tp1_signals %}
     <div class="ticker-card tp1">
       <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-tp1">{{ h.signal }}</span></div>
-      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.value }}">{{ "₩" if h.is_kospi else "$" }}{{ h.value|comma }}</span></div>
-      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | {{ "₩" if h.is_kospi else "$" }}{{ h.value|comma }}</div>
+      <div><span class="price">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics">
         <span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span>
         <span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span>
@@ -316,8 +316,8 @@
         <span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ h.buy_streak }}/2일 ⏳</span>
         {% endif %}
       </div>
-      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.value }}">{{ "₩" if h.is_kospi else "$" }}{{ h.value|comma }}</span></div>
-      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | {{ "₩" if h.is_kospi else "$" }}{{ h.value|comma }}</div>
+      <div><span class="price">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics">
         <span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span>
         <span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span>
@@ -337,7 +337,7 @@
     <div class="ticker-card bond">
       <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-BOND">BOND_WATCH</span></div>
       <div class="name">{{ h.name }}</div>
-      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span></div>
+      <div><span class="price">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span></div>
       <div class="metrics"><span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span><span>30Y 금리: {{ yield_30y }}%</span></div>
       <div class="reason">💡 {{ h.note }}</div>
       <a href="details/{{ h.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
@@ -346,6 +346,7 @@
   </div>
   {% endif %}
 
+  {# WATCH 카드 숨김 처리 (2026-04-04)
   {% if watch_signals %}
   <h3 style="color:#f39c12; margin:16px 0 12px;">WATCH — 관찰 ({{ watch_signals|length }}종목)</h3>
   <div class="card-grid">
@@ -353,7 +354,7 @@
     <div class="ticker-card watch">
       <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-WATCH">WATCH</span></div>
       <div class="name">{{ h.name }}</div>
-      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div><span class="price">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics"><span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span><span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span></div>
       <div class="reason">💡 {{ h.note }}</div>
       <a href="details/{{ h.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
@@ -361,6 +362,7 @@
     {% endfor %}
   </div>
   {% endif %}
+  #}
 
   <h2>🔍 Signal Judgment Details</h2>
   <div style="display:flex; flex-wrap:wrap; gap:10px;">
@@ -804,25 +806,44 @@
 </div>
 
 <script>
-let isKRW = false;
+let isKRW = true;
 function toggleCurrency() {
   isKRW = !isKRW;
   const rate = parseFloat(document.body.dataset.usdkrw) || 1;
   const btn = document.getElementById('currencyToggle');
   document.querySelectorAll('.money').forEach(el => {
-    // KOSPI 종목 (이미 KRW): data-krw 사용
     const krw = parseFloat(el.dataset.krw);
-    if (!isNaN(krw)) {
+    const usd = parseFloat(el.dataset.usd);
+    const hasKrw = !isNaN(krw);
+    const hasUsd = !isNaN(usd);
+
+    // 통합 값 (Portfolio Overview: data-usd + data-krw 모두 있음)
+    if (hasKrw && hasUsd) {
+      const sign = el.dataset.signed === '1' && usd > 0 ? '+' : '';
       if (isKRW) {
-        el.textContent = formatKRW(Math.round(krw));
+        el.textContent = sign + formatKRW(Math.round(krw));
+      } else {
+        if (Math.abs(usd) >= 1000) el.textContent = sign + '$' + usd.toLocaleString('en-US', {maximumFractionDigits:0});
+        else el.textContent = sign + '$' + usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+      }
+      return;
+    }
+    // KOSPI 종목 (이미 KRW): data-krw만 있음
+    if (hasKrw) {
+      if (isKRW) {
+        // data-fmt="full"이면 원단위까지 표시 (평균단가/현재가용)
+        if (el.dataset.fmt === 'full') {
+          el.textContent = '₩' + Math.round(krw).toLocaleString('ko-KR');
+        } else {
+          el.textContent = formatKRW(Math.round(krw));
+        }
       } else {
         el.textContent = '₩' + krw.toLocaleString('ko-KR', {maximumFractionDigits:0});
       }
       return;
     }
-    // US 종목 (USD): data-usd 사용
-    const usd = parseFloat(el.dataset.usd);
-    if (isNaN(usd)) return;
+    // US 종목 (USD): data-usd만 있음
+    if (!hasUsd) return;
     if (isKRW) {
       el.textContent = formatKRW(Math.round(usd * rate));
     } else {
@@ -841,6 +862,11 @@ function formatKRW(krw) {
   return sign + '₩' + abs.toLocaleString();
 }
 
+// 페이지 로드 시 원화 모드로 초기 변환
+document.addEventListener('DOMContentLoaded', function() {
+  isKRW = false;  // toggleCurrency가 flip하므로 false로 시작
+  toggleCurrency();
+});
 
 </script>
 </body>

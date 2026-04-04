@@ -185,6 +185,20 @@ def _card_class(signal: str) -> str:
     return "hold"
 
 
+def _mcap(v, currency="USD"):
+    """시가총액 포맷팅 (USD/KRW 지원)"""
+    if not v: return ""
+    v = float(v)
+    if currency == "KRW":
+        if v >= 1e12: return f"\u20a9{v/1e12:.0f}\uc870"
+        if v >= 1e8: return f"\u20a9{v/1e8:.0f}\uc5b5"
+        return f"\u20a9{v:,.0f}"
+    if v >= 1e12: return f"${v/1e12:.1f}T"
+    if v >= 1e9: return f"${v/1e9:.0f}B"
+    if v >= 1e6: return f"${v/1e6:.0f}M"
+    return f"${v:,.0f}"
+
+
 def _div_top_contributors(dividends: dict) -> str:
     """배당 top 3 기여자 문자열"""
     per_ticker = dividends.get("per_ticker", {})
@@ -225,17 +239,6 @@ def generate_report(
     env.filters["pct1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
     env.filters["pct2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
     env.filters["sign_pct"] = lambda x: f"+{x:.1f}%" if x >= 0 else f"{x:.1f}%"
-    def _mcap(v, currency="USD"):
-        if not v: return ""
-        v = float(v)
-        if currency == "KRW":
-            if v >= 1e12: return f"\u20a9{v/1e12:.0f}\uc870"
-            if v >= 1e8: return f"\u20a9{v/1e8:.0f}\uc5b5"
-            return f"\u20a9{v:,.0f}"
-        if v >= 1e12: return f"${v/1e12:.1f}T"
-        if v >= 1e9: return f"${v/1e9:.0f}B"
-        if v >= 1e6: return f"${v/1e6:.0f}M"
-        return f"${v:,.0f}"
     env.filters["mcap"] = _mcap
     env.filters["f3"] = lambda x: f"{x:.3f}" if isinstance(x, (int, float)) else str(x)
     env.filters["f2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
@@ -251,24 +254,54 @@ def generate_report(
     date_str = meta.get("date", datetime.now().strftime("%Y-%m-%d"))
 
     holdings = _build_holdings(portfolio, market_data, signals)
-    total_value = sum(h["value"] for h in holdings)
-    cost_basis = sum(h["shares"] * h["avg_cost"] for h in holdings)
+
+    # VIX/금리/환율 (포트폴리오 계산에 필요하므로 먼저 로드)
+    vix = macro.get("VIX")
+    yield_30y = macro.get("yield_30Y")
+    usd_krw = macro.get("USD_KRW", 0)
+
+    # USD/KRW 분리 계산 (KOSPI 종목은 KRW, 나머지는 USD)
+    us_holdings = [h for h in holdings if not h["is_kospi"]]
+    kospi_holdings = [h for h in holdings if h["is_kospi"]]
+    rate = usd_krw if usd_krw else 1
+
+    us_value = sum(h["value"] for h in us_holdings)
+    kospi_value = sum(h["value"] for h in kospi_holdings)
+    us_cost = sum(h["shares"] * h["avg_cost"] for h in us_holdings)
+    kospi_cost = sum(h["shares"] * h["avg_cost"] for h in kospi_holdings)
+
+    # USD 기준 통합 (KOSPI KRW → USD 변환)
+    total_value = us_value + (kospi_value / rate if rate > 1 else kospi_value)
+    cost_basis = us_cost + (kospi_cost / rate if rate > 1 else kospi_cost)
     total_pnl = total_value - cost_basis
     total_pnl_pct = (total_pnl / cost_basis * 100) if cost_basis > 0 else 0
+
+    # KRW 기준 통합 (US USD → KRW 변환)
+    total_value_krw = us_value * rate + kospi_value
+    cost_basis_krw = us_cost * rate + kospi_cost
+    total_pnl_krw = total_value_krw - cost_basis_krw
+
+    # 비중 계산 (KRW 통합 기준으로 통일)
+    if total_value_krw > 0:
+        for h in holdings:
+            if h["is_kospi"]:
+                h["weight"] = h["value"] / total_value_krw * 100
+            else:
+                h["weight"] = (h["value"] * rate) / total_value_krw * 100
+    else:
+        for h in holdings:
+            h["weight"] = 0
 
     # BIL (현금) 정보
     bil = next((h for h in holdings if h["ticker"] == "BIL"), None)
     cash_value = bil["value"] if bil else 0
+    cash_value_krw = cash_value * rate
     cash_pct = (cash_value / total_value * 100) if total_value > 0 else 0
 
     # 카테고리 수
     categories = set(h["cls"] for h in holdings)
 
-    # VIX/금리 노트
-    vix = macro.get("VIX")
-    yield_30y = macro.get("yield_30Y")
-    usd_krw = macro.get("USD_KRW", 0)
-    krw_equiv = total_value * usd_krw if usd_krw else 0
+    krw_equiv = total_value_krw
 
     # 시그널 분류
     counts = _signal_counts(signals)
@@ -278,11 +311,13 @@ def generate_report(
     bond_signals = [h for h in holdings if h["signal"] == "BOND_WATCH"]
     watch_signals = [h for h in holdings if h["signal"] == "WATCH"]
 
-    # 배당 정보
+    # 배당 정보 (USD 기준, KRW 변환 포함)
     div_annual = dividends.get("total_annual", 0)
     div_monthly = dividends.get("monthly_avg", 0)
     div_yield = dividends.get("portfolio_yield", 0)
     div_top = _div_top_contributors(dividends)
+    div_annual_krw = div_annual * rate
+    div_monthly_krw = div_monthly * rate
 
     # 이전 시그널 맵 (어제 대비 변동 표시용)
     prev_signal_map = {}
@@ -317,18 +352,24 @@ def generate_report(
         "n_buy": counts["BUY"],
         "n_watch": counts["WATCH"],
         "n_hold": counts["HOLD"],
-        # 포트폴리오 요약
+        # 포트폴리오 요약 (USD + KRW)
         "total_value": total_value,
+        "total_value_krw": total_value_krw,
         "cost_basis": cost_basis,
+        "cost_basis_krw": cost_basis_krw,
         "total_pnl": total_pnl,
+        "total_pnl_krw": total_pnl_krw,
         "total_pnl_pct": total_pnl_pct,
         "n_holdings": len(holdings),
         "n_categories": len(categories),
         "cash_value": cash_value,
+        "cash_value_krw": cash_value_krw,
         "cash_pct": cash_pct,
         # 배당
         "div_annual": div_annual,
+        "div_annual_krw": div_annual_krw,
         "div_monthly": div_monthly,
+        "div_monthly_krw": div_monthly_krw,
         "div_yield": div_yield,
         "div_top": div_top,
         # 데이터
@@ -461,12 +502,7 @@ def generate_detail_pages(
     env.filters["pct1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
     env.filters["pct2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
     env.filters["sign_pct"] = lambda x: f"+{x:.1f}%" if x >= 0 else f"{x:.1f}%"
-    env.filters["mcap"] = lambda v: (
-        f"${v/1e12:.1f}T" if v and v >= 1e12 else
-        f"${v/1e9:.0f}B" if v and v >= 1e9 else
-        f"${v/1e6:.0f}M" if v and v >= 1e6 else
-        f"${v:,.0f}" if v else ""
-    )
+    env.filters["mcap"] = _mcap
     env.filters["f0"] = lambda x: f"{x:.0f}" if isinstance(x, (int, float)) else str(x)
     env.filters["f1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
     env.filters["f2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
@@ -548,6 +584,8 @@ def generate_detail_pages(
             "low_52w": low_52w,
             "range_pct": range_pct,
             "market_cap": d.get("market_cap", 0),
+            "is_kospi": is_kospi_ticker(ticker),
+            "currency": "KRW" if is_kospi_ticker(ticker) else "USD",
             # 이력
             "history_rows": history_rows,
             # 메타

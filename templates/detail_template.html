@@ -132,10 +132,10 @@
           <span class="ticker-name">{{ name }}</span>
           <span class="badge badge-class">{{ cls }}</span>
         </h1>
-        <div class="ticker-meta">{{ market_cap|mcap }} &middot; {{ date_ko }} &middot; Data: yfinance</div>
+        <div class="ticker-meta">{{ market_cap|mcap(currency) }} &middot; {{ date_ko }} &middot; Data: yfinance</div>
       </div>
       <div class="price-block">
-        <div class="price">${{ price|f2 }}</div>
+        <div class="price">{% if is_kospi %}₩{{ price|comma }}{% else %}${{ price|f2 }}{% endif %}</div>
         <div class="change {{ 'up' if change_pct >= 0 else 'dn' }}">{{ '&#9650;' if change_pct >= 0 else '&#9660;' }} {{ change_pct|sign_pct }}</div>
       </div>
     </div>
@@ -153,8 +153,8 @@
     {% if shares %}
     <div class="portfolio-info">
       <span class="item">&#48372;&#50976;: {{ shares|shares_fmt }}&#51452;</span>
-      <span class="item">&#54217;&#44512;&#45800;&#44032;: ${{ avg_cost|f2 }}</span>
-      <span class="item">&#54217;&#44032;&#44552;&#50529;: ${{ value|comma }}</span>
+      <span class="item">&#54217;&#44512;&#45800;&#44032;: {% if is_kospi %}₩{{ avg_cost|comma }}{% else %}${{ avg_cost|f2 }}{% endif %}</span>
+      <span class="item">&#54217;&#44032;&#44552;&#50529;: {% if is_kospi %}₩{{ value|comma }}{% else %}${{ value|comma }}{% endif %}</span>
       <span class="item {{ 'pnl-pos' if pnl_pct >= 0 else 'pnl-neg' }}">P&amp;L: {{ pnl_pct|sign_pct }}</span>
     </div>
     {% endif %}
@@ -164,9 +164,9 @@
   {% if high_52w and low_52w %}
   <div class="range-section">
     <div class="range-labels">
-      <span>52&#51452; &#51200;&#51216; ${{ low_52w|f2 }}</span>
+      <span>52&#51452; &#51200;&#51216; {% if is_kospi %}₩{{ low_52w|comma }}{% else %}${{ low_52w|f2 }}{% endif %}</span>
       <span class="current">&#54788;&#51116; &#50948;&#52824; {{ range_pct|f0 }}%</span>
-      <span>52&#51452; &#44256;&#51216; ${{ high_52w|f2 }}</span>
+      <span>52&#51452; &#44256;&#51216; {% if is_kospi %}₩{{ high_52w|comma }}{% else %}${{ high_52w|f2 }}{% endif %}</span>
     </div>
     <div class="range-bar">
       <div class="range-fill" style="width: {{ range_pct|f0 }}%;"></div>
@@ -209,12 +209,12 @@
     </div>
     <div class="metric-card">
       <div class="label">MA20</div>
-      <div class="value {{ 'v-green' if ma20 and price > ma20 else 'v-red' if ma20 else 'v-text' }}">${{ ma20|f2 if ma20 else 'N/A' }}</div>
+      <div class="value {{ 'v-green' if ma20 and price > ma20 else 'v-red' if ma20 else 'v-text' }}">{% if is_kospi %}₩{{ ma20|comma if ma20 else 'N/A' }}{% else %}${{ ma20|f2 if ma20 else 'N/A' }}{% endif %}</div>
       <div class="desc">{{ '&#9650; &#44032;&#44201; &#49345;&#54924;' if ma20 and price > ma20 else '&#9660; &#44032;&#44201; &#54616;&#54924;' if ma20 else '' }}</div>
     </div>
     <div class="metric-card">
       <div class="label">MA200</div>
-      <div class="value {{ 'v-green' if ma200 and price > ma200 else 'v-red' if ma200 else 'v-text' }}">${{ ma200|f2 if ma200 else 'N/A' }}</div>
+      <div class="value {{ 'v-green' if ma200 and price > ma200 else 'v-red' if ma200 else 'v-text' }}">{% if is_kospi %}₩{{ ma200|comma if ma200 else 'N/A' }}{% else %}${{ ma200|f2 if ma200 else 'N/A' }}{% endif %}</div>
       <div class="desc">{{ '&#9650; &#44032;&#44201; &#49345;&#54924;' if ma200 and price > ma200 else '&#9660; &#44032;&#44201; &#54616;&#54924;' if ma200 else '' }}</div>
     </div>
   </div>
@@ -263,7 +263,7 @@
         <tr>
           <td>{{ row.date }}</td>
           <td class="{{ row.sig_class }}">{{ row.signal }}</td>
-          <td>${{ row.price|f2 }}</td>
+          <td>{% if is_kospi %}₩{{ row.price|comma }}{% else %}${{ row.price|f2 }}{% endif %}</td>
           <td>{{ row.rsi|f1 if row.rsi else '-' }}</td>
           <td>{{ row.macd_hist|f4 if row.macd_hist else '-' }}</td>
           <td>{{ row.drawdown|f1 if row.drawdown else '-' }}{% if row.drawdown %}%{% endif %}</td>

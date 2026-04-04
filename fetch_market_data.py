@@ -521,7 +521,9 @@ def main():
 
     # ── 포트폴리오 배당 집계 (_dividends) ──────────────────
     # portfolio.md 소스이고 보유주수 데이터가 있을 때만 계산
+    # KOSPI 배당금(KRW)은 USD로 변환하여 합산
     dividends_summary = {}
+    krw_rate = macro_data.get("USD_KRW", 0) or 1
     if portfolio_shares:
         total_annual = 0.0
         total_port_value = 0.0
@@ -533,6 +535,11 @@ def main():
                 cur_price  = d.get("price", 0.0) or 0.0
                 annual_inc = round(div_ttm * sh, 2)
                 port_val   = round(cur_price * sh, 2)
+                # KOSPI 종목(6자리 숫자): KRW → USD 변환
+                is_kospi = sym.isdigit() and len(sym) == 6
+                if is_kospi and krw_rate > 1:
+                    annual_inc = round(annual_inc / krw_rate, 2)
+                    port_val   = round(port_val / krw_rate, 2)
                 per_ticker[sym] = {
                     "shares":       sh,
                     "div_per_sh":   div_ttm,
