@@ -130,6 +130,15 @@ def _save_scanner_history(project_dir: str, scanner_name: str, history: dict):
         json.dump(pruned, f, ensure_ascii=False, indent=2)
 
 
+def _had_prior_buy(ticker: str, history: dict, today_str: str = "") -> bool:
+    """전일(가장 최근 이력)이 BUY였는지 확인. 거래량 면제 재판정용."""
+    dates = sorted([k for k in history.keys() if k != today_str], reverse=True)
+    if not dates:
+        return False
+    prev_data = history.get(dates[0], {}).get(ticker, {})
+    return prev_data.get("signal", "") in _BUY_SIGNALS
+
+
 def _calc_scanner_streak(ticker: str, signal: str, history: dict, today_str: str = "") -> int:
     """스캐너 종목의 BUY 연속일 계산 (오늘 포함).
     날짜별 이력을 역순 탐색하여 실제 연속 BUY일만 카운트."""
@@ -275,6 +284,9 @@ def scan_sp100(project_dir: str) -> dict:
     buy_3rd = []
     watch_signals = []
 
+    # [v5.3] 거래량 면제 재판정용 history 로드
+    history = _load_scanner_history(project_dir, "sp100")
+
     for ticker in available_tickers:
         d = data.get(ticker)
         if not d or "error" in d:
@@ -285,6 +297,12 @@ def scan_sp100(project_dir: str) -> dict:
             continue
 
         signal, conditions = _check_entry_growth(d)
+
+        # [v5.3] 전일 BUY였는데 오늘 BUY 미발동 → 거래량 면제 재판정
+        if signal not in _BUY_SIGNALS and _had_prior_buy(ticker, history, today):
+            retry_sig, retry_conds = _check_entry_growth(d, skip_volume=True)
+            if retry_sig in _BUY_SIGNALS:
+                signal, conditions = retry_sig, retry_conds
 
         if not signal:
             continue
@@ -332,10 +350,9 @@ def scan_sp100(project_dir: str) -> dict:
         lst.sort(key=lambda x: -(x.get("market_cap") or 0))
 
     # v5.1b: BUY 연속일 계산
-    prev_hist = _load_scanner_history(project_dir, "sp100")
     for lst in [buy_1st, buy_2nd, buy_3rd]:
-        _apply_streak_to_entries(lst, prev_hist, today)
-    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "sp100", project_dir, prev_hist, today)
+        _apply_streak_to_entries(lst, history, today)
+    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "sp100", project_dir, history, today)
 
     result = {
         "status": "ok",
@@ -712,6 +729,9 @@ def scan_kospi(project_dir: str) -> dict:
     buy_3rd = []
     watch_signals = []
 
+    # [v5.3] 거래량 면제 재판정용 history 로드
+    kospi_history = _load_scanner_history(project_dir, "kospi")
+
     for ticker in available_tickers:
         d = data.get(ticker)
         if not d or "error" in d:
@@ -721,13 +741,21 @@ def scan_kospi(project_dir: str) -> dict:
         if check_exit_simple(ticker, d):
             continue
 
+        # 티커 표시명: .KS 제거 (history 조회에도 사용)
+        display_ticker = ticker.replace(".KS", "")
+
         signal, conditions = _check_entry_growth(d)
+
+        # [v5.3] 전일 BUY였는데 오늘 BUY 미발동 → 거래량 면제 재판정
+        if signal not in _BUY_SIGNALS and _had_prior_buy(display_ticker, kospi_history, today):
+            retry_sig, retry_conds = _check_entry_growth(d, skip_volume=True)
+            if retry_sig in _BUY_SIGNALS:
+                signal, conditions = retry_sig, retry_conds
+
         if not signal:
             continue
 
         market_cap = d.get("market_cap", 0) or 0
-        # 티커 표시명: .KS 제거
-        display_ticker = ticker.replace(".KS", "")
         entry = {
             "ticker": display_ticker,
             "ticker_full": ticker,
@@ -772,10 +800,9 @@ def scan_kospi(project_dir: str) -> dict:
         lst.sort(key=lambda x: -(x.get("market_cap") or 0))
 
     # v5.1b: BUY 연속일 계산
-    prev_hist_kospi = _load_scanner_history(project_dir, "kospi")
     for lst in [buy_1st, buy_2nd, buy_3rd]:
-        _apply_streak_to_entries(lst, prev_hist_kospi, today)
-    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "kospi", project_dir, prev_hist_kospi, today)
+        _apply_streak_to_entries(lst, kospi_history, today)
+    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "kospi", project_dir, kospi_history, today)
 
     result = {
         "status": "ok",
