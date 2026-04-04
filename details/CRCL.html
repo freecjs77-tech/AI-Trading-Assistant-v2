@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRCL — Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060D18;
+    --panel: #0A1525;
+    --panel2: #0D1B2C;
+    --accent: #3B82F6;
+    --text: #E2E8F0;
+    --text-dim: #B8C5D3;
+    --sub: #8B9CB5;
+    --border: #1A3050;
+    --green: #34D399;
+    --green-bg: #052E16;
+    --red: #F87171;
+    --red-bg: #2A0A0A;
+    --orange: #FBBF24;
+    --orange-bg: #292524;
+    --cyan: #22D3EE;
+    --purple: #A78BFA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+  .container { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  /* Back nav */
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); text-decoration: none; font-size: 13px; margin-bottom: 16px; }
+  .back-link:hover { text-decoration: underline; }
+
+  /* Header */
+  .detail-header { background: var(--panel); border-radius: 12px; padding: 24px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .ticker-info h1 { font-size: 28px; font-weight: 800; margin-bottom: 2px; }
+  .ticker-info h1 .ticker-symbol { color: var(--text); }
+  .ticker-info h1 .ticker-name { color: var(--text-dim); font-size: 16px; font-weight: 600; margin-left: 10px; }
+  .ticker-meta { font-size: 12px; color: var(--sub); margin-top: 4px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .badge-class { background: rgba(59,130,246,0.25); color: #60A5FA; margin-left: 8px; }
+  .badge-signal { padding: 4px 14px; font-size: 13px; border-radius: 14px; }
+  .badge-BUY { background: var(--green); color: #000; }
+  .badge-WATCH { background: var(--orange); color: #000; }
+  .badge-HOLD { background: #6B7D95; color: #fff; }
+  .badge-exit { background: var(--red); color: #fff; }
+  .badge-tp1 { background: #E67E22; color: #fff; }
+  .badge-BOND { background: #1ABC9C; color: #fff; }
+  .badge-CASH { background: #5A6B80; color: #fff; }
+  .badge-streak { background: var(--orange); color: #000; font-size: 11px; margin-left: 6px; }
+  .badge-streak.confirmed { background: var(--green); }
+  .price-block { text-align: right; }
+  .price-block .price { font-size: 32px; font-weight: 800; }
+  .price-block .change { font-size: 15px; font-weight: 600; margin-top: 2px; }
+  .change.up { color: var(--green); }
+  .change.dn { color: var(--red); }
+
+  /* Portfolio info */
+  .portfolio-info { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; color: var(--text-dim); }
+  .portfolio-info .item { background: var(--panel2); padding: 4px 12px; border-radius: 8px; }
+  .portfolio-info .pnl-pos { color: var(--green); font-weight: 700; }
+  .portfolio-info .pnl-neg { color: var(--red); font-weight: 700; }
+
+  /* 52w Range Bar */
+  .range-section { background: var(--panel); border-radius: 10px; padding: 16px 24px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .range-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--sub); margin-bottom: 8px; }
+  .range-labels .current { color: var(--accent); font-weight: 700; }
+  .range-bar { position: relative; height: 8px; background: #1E293B; border-radius: 4px; }
+  .range-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--red), var(--orange), var(--green)); }
+  .range-marker { position: absolute; top: -4px; width: 16px; height: 16px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translateX(-50%); }
+
+  /* Metric Cards */
+  .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .metric-card { background: var(--panel); border-radius: 10px; padding: 14px 16px; border: 1px solid var(--border); }
+  .metric-card .label { font-size: 11px; color: var(--sub); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .metric-card .value { font-size: 20px; font-weight: 700; }
+  .metric-card .desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .v-green { color: var(--green); }
+  .v-red { color: var(--red); }
+  .v-orange { color: var(--orange); }
+  .v-cyan { color: var(--cyan); }
+  .v-text { color: var(--text); }
+
+  /* Signal Judgment */
+  .signal-section { background: var(--panel); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .section-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .condition-list { list-style: none; padding: 0; }
+  .condition-list li { padding: 8px 0; border-bottom: 1px solid rgba(26,48,80,0.5); display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
+  .condition-list li:last-child { border-bottom: none; }
+  .cond-icon { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .cond-ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+  .cond-no { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .cond-na { background: rgba(100,116,139,0.15); color: var(--text-dim); border: 1px solid rgba(139,156,181,0.4); }
+
+  /* Signal History */
+  .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .history-table th { text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--sub); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
+  .history-table td { padding: 7px 10px; border-bottom: 1px solid rgba(26,48,80,0.4); }
+  .history-table tr:nth-child(even) td { background: rgba(13,27,44,0.3); }
+  .history-table .sig-buy { color: var(--green); font-weight: 700; }
+  .history-table .sig-watch { color: var(--orange); font-weight: 600; }
+  .history-table .sig-hold { color: var(--text-dim); }
+  .history-table .sig-exit { color: var(--red); font-weight: 700; }
+  .history-table .sig-tp1 { color: #E67E22; font-weight: 700; }
+  .history-table .sig-cash { color: #94A3B8; }
+
+  /* Footer */
+  .detail-footer { text-align: center; color: var(--sub); font-size: 11px; padding: 20px 0; border-top: 1px solid var(--border); margin-top: 20px; }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .header-top { flex-direction: column; }
+    .price-block { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Back Navigation -->
+  <a href="../index.html" class="back-link">&#8592; Signal Report</a>
+
+  <!-- Header -->
+  <div class="detail-header">
+    <div class="header-top">
+      <div class="ticker-info">
+        <h1>
+          <span class="ticker-symbol">CRCL</span>
+          <span class="ticker-name">Circle Internet Group</span>
+          <span class="badge badge-class">Speculative</span>
+        </h1>
+        <div class="ticker-meta">$24B &middot; 2026년 4월 4일 (토요일) &middot; Data: yfinance</div>
+      </div>
+      <div class="price-block">
+        <div class="price">$90.26</div>
+        <div class="change dn">&#9660; -0.5%</div>
+      </div>
+    </div>
+    <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <span class="badge badge-signal badge-HOLD">HOLD</span>
+      
+      <span style="font-size: 12px; color: var(--text-dim);">Exit/Entry 조건 미충족</span>
+    </div>
+    
+    <div class="portfolio-info">
+      <span class="item">&#48372;&#50976;: 1.000&#51452;</span>
+      <span class="item">&#54217;&#44512;&#45800;&#44032;: $123.44</span>
+      <span class="item">&#54217;&#44032;&#44552;&#50529;: $90</span>
+      <span class="item pnl-neg">P&amp;L: -26.9%</span>
+    </div>
+    
+  </div>
+
+  <!-- 52-Week Range -->
+  
+  <div class="range-section">
+    <div class="range-labels">
+      <span>52&#51452; &#51200;&#51216; $50.23</span>
+      <span class="current">&#54788;&#51116; &#50948;&#52824; 19%</span>
+      <span>52&#51452; &#44256;&#51216; $263.45</span>
+    </div>
+    <div class="range-bar">
+      <div class="range-fill" style="width: 19%;"></div>
+      <div class="range-marker" style="left: 19%;"></div>
+    </div>
+  </div>
+  
+
+  <!-- Metric Cards -->
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="label">RSI (14)</div>
+      <div class="value v-text">42.5</div>
+      <div class="desc">&#51473;&#47549;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">MACD Hist</div>
+      <div class="value v-red">-4.9459</div>
+      <div class="desc">중립</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">ADX</div>
+      <div class="value v-text">32.5</div>
+      <div class="desc">&#44053;&#54620; &#52628;&#49464;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">BB%</div>
+      <div class="value v-text">16.1%</div>
+      <div class="desc">&#48180;&#46300; &#51473;&#44036;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">&#44144;&#47000;&#47049; &#48708;&#50984;</div>
+      <div class="value v-cyan">0.65x</div>
+      <div class="desc">20&#51068; &#54217;&#44512; &#45824;&#48708;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Drawdown 20D</div>
+      <div class="value v-red">-32.0%</div>
+      <div class="desc">&#52572;&#44540; 20&#51068; &#44256;&#51216; &#45824;&#48708;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">MA20</div>
+      <div class="value v-red">$110.47</div>
+      <div class="desc">&#9660; &#44032;&#44201; &#54616;&#54924;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">MA200</div>
+      <div class="value v-red">$119.71</div>
+      <div class="desc">&#9660; &#44032;&#44201; &#54616;&#54924;</div>
+    </div>
+  </div>
+
+  <!-- Technical Chart -->
+  
+  <div style="background: var(--panel); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border);">
+    <div class="section-title" style="font-size: 13px; font-weight: 700; color: var(--text-dim); margin-bottom: 12px;">Technical Chart &middot; 120 Days</div>
+    <img src="charts/CRCL.png" alt="CRCL chart" style="width: 100%; border-radius: 6px;">
+  </div>
+  
+
+  <!-- Signal Judgment Detail -->
+  <div class="signal-section">
+    <div class="section-title">&#128269; &#49884;&#44536;&#45328; &#54032;&#51221; &#49345;&#49464;</div>
+    <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+      <span class="badge badge-signal badge-HOLD" style="font-size: 14px;">HOLD</span>
+      <span style="font-size: 13px; color: var(--text-dim);">Exit/Entry 조건 미충족</span>
+    </div>
+    <ul class="condition-list">
+      
+      <li>
+        
+        <span class="cond-icon cond-na">&mdash;</span>
+        
+        Exit/Entry 조건 미충족 — 보유 유지
+      </li>
+      
+    </ul>
+  </div>
+
+  <!-- Signal History -->
+  
+
+  <!-- Footer -->
+  <div class="detail-footer">
+    AI Trading Assistant v3.0 &middot; 2026-04-04 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
+  </div>
+
+</div>
+</body>
+</html>
