@@ -40,7 +40,7 @@ python app.py
 ├── portfolio_data.py         # 종목 메타데이터, 한글→Ticker 변환맵
 ├── fetch_market_data.py      # yfinance 데이터 수집기
 ├── screenshot_ocr.py         # 스크린샷 OCR (현재 미사용, 수동 portfolio.md 운영)
-├── strategy.md               # 시그널 판정 규칙 문서 v5.2
+├── strategy.md               # 시그널 판정 규칙 문서 v5.3
 ├── portfolio.md              # 보유 종목 현황 (수동 유지)
 ├── templates/report_template.html  # Jinja2 리포트 템플릿
 ├── reports/                  # 생성된 HTML 리포트
@@ -48,7 +48,9 @@ python app.py
 └── history/signals_history.json    # 시그널 이력
 ```
 
-## 시그널 판정 규칙 (strategy.md v5.2 주요 변경사항)
+## 시그널 판정 규칙 (strategy.md v5.3 주요 변경사항)
+- TOP_SIGNAL: 1개 충족 → **3개 중 2개 충족** (과민 반응 해소)
+- BUY 2일차 확인: **거래량 조건 면제** (추세 지속성 집중)
 - Exit을 익절 전용으로 재설계: L3→TAKE_PROFIT_2, L2→TAKE_PROFIT_1
 - 고점 영역 게이트 추가 (DD > -5% 일 때만 TP 발동, 하락장에서는 HOLD)
 - Drawdown 손절 조건 완전 삭제, MACD<0 조건 삭제 (조기 감지)

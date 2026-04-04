@@ -47,7 +47,7 @@ def _is_macd_bullish(d: dict) -> bool:
 # ═══════════════════════════════════════════════════════
 
 def _check_top_signal(d: dict, prev_day: dict | None = None) -> tuple[bool, list]:
-    """TOP_SIGNAL — 과열 경보. 1개라도 충족 시 발동."""
+    """TOP_SIGNAL — 과열 경보. 3개 중 2개 충족 시 발동."""
     conditions = []
     rsi = d.get("rsi14")
     bb_pct = d.get("bb_pct")
@@ -74,7 +74,7 @@ def _check_top_signal(d: dict, prev_day: dict | None = None) -> tuple[bool, list
     else:
         conditions.append(("no", f"3일내 {change_3d:+.1f}%" if change_3d else "3일 변동 N/A"))
 
-    triggered = any(c[0] == "ok" for c in conditions)
+    triggered = sum(1 for c in conditions if c[0] == "ok") >= 2
     return triggered, conditions
 
 
@@ -194,9 +194,10 @@ def _check_take_profit_1(d: dict, prev_day: dict | None) -> tuple[bool, list]:
 #  ENTRY 판정 — Growth v2.3 (v5.1 개선)
 # ═══════════════════════════════════════════════════════
 
-def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55) -> tuple[str | None, list]:
+def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: bool = False) -> tuple[str | None, list]:
     """Growth 종목 Entry 판정. 3rd → 2nd → 1st → WATCH 순.
-    reject_rsi_threshold: 거부 RSI 임계값 (Growth=55, Value=70)"""
+    reject_rsi_threshold: 거부 RSI 임계값 (Growth=55, Value=70)
+    skip_volume: True이면 거래량 조건 면제 (BUY 2일차 확인용)"""
     rsi = d.get("rsi14")
     adx = d.get("adx")
     bb_pct = d.get("bb_pct")
@@ -231,7 +232,10 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55) -> tuple[str 
                f"{'>' if macd_golden_c3 else '<'} signal {macd_signal:.4f}"
                if macd is not None and macd_signal is not None else "MACD N/A"))
     vol_13 = volume_ratio is not None and volume_ratio >= 1.3
-    c3.append(("ok" if vol_13 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_13 else '<'} 1.3" if volume_ratio else "거래량 N/A"))
+    if skip_volume:
+        c3.append(("ok", f"거래량비 {volume_ratio:.2f}x (2일차 면제)" if volume_ratio else "거래량 (2일차 면제)"))
+    else:
+        c3.append(("ok" if vol_13 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_13 else '<'} 1.3" if volume_ratio else "거래량 N/A"))
     rsi_above_55 = rsi is not None and rsi > 55
     c3.append(("ok" if rsi_above_55 else "no", f"RSI {rsi:.1f} {'>' if rsi_above_55 else '≤'} 55" if rsi else "RSI N/A"))
     # 3rd BUY 추가 거부: RSI > 75
@@ -265,7 +269,10 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55) -> tuple[str 
                if macd is not None and macd_signal is not None else "MACD N/A"))
     # ④ 거래량 ≥ 1.2배
     vol_12 = volume_ratio is not None and volume_ratio >= 1.2
-    c2.append(("ok" if vol_12 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_12 else '<'} 1.2" if volume_ratio else "거래량 N/A"))
+    if skip_volume:
+        c2.append(("ok", f"거래량비 {volume_ratio:.2f}x (2일차 면제)" if volume_ratio else "거래량 (2일차 면제)"))
+    else:
+        c2.append(("ok" if vol_12 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_12 else '<'} 1.2" if volume_ratio else "거래량 N/A"))
 
     if all(c[0] == "ok" for c in c2):
         return "2nd_BUY", c2
@@ -477,9 +484,9 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
 #  ENTRY 판정 — Value v2.4 (독립 구현, 거부 RSI>70)  [v5.1]
 # ═══════════════════════════════════════════════════════
 
-def _check_entry_value(d: dict) -> tuple[str | None, list]:
+def _check_entry_value(d: dict, skip_volume: bool = False) -> tuple[str | None, list]:
     """Value 종목 Entry 판정. Growth와 동일 구조, 거부 RSI>70."""
-    return _check_entry_growth(d, reject_rsi_threshold=70)
+    return _check_entry_growth(d, reject_rsi_threshold=70, skip_volume=skip_volume)
 
 
 # ═══════════════════════════════════════════════════════
@@ -666,7 +673,7 @@ def _build_exit_sections(d: dict, prev_day: dict | None) -> list:
     _, top_conds = _check_top_signal(d, prev_day)
     sections.append({
         "name": "TOP_SIGNAL — 과열 경보",
-        "rule": "1개 충족 시 발동",
+        "rule": "3개 중 2개 충족 시 발동",
         "conditions": top_conds,
         "met": _count_ok(top_conds),
         "total": len(top_conds),
@@ -1007,9 +1014,10 @@ def build_judgment_sections(ticker: str, d: dict, macro: dict, prev_day: dict | 
 #  메인 판정 함수
 # ═══════════════════════════════════════════════════════
 
-def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None) -> dict:
+def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None, skip_volume: bool = False) -> dict:
     """
     단일 종목 시그널 판정.
+    skip_volume: True이면 거래량 조건 면제 (BUY 2일차 확인용)
     반환: {signal, note, conditions, judgment_sections}
     """
     group = get_strategy_group(ticker)
@@ -1046,11 +1054,11 @@ def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None) -> di
 
     # ── Entry 체크 (카테고리별) ──
     if group == "growth":
-        signal, conds = _check_entry_growth(d)
+        signal, conds = _check_entry_growth(d, skip_volume=skip_volume)
     elif group == "etf":
         signal, conds = _check_entry_etf(d)
     elif group == "value":
-        signal, conds = _check_entry_value(d)
+        signal, conds = _check_entry_value(d, skip_volume=skip_volume)
     elif group == "bond":
         signal, conds = _check_entry_bond(d, macro)
     elif group == "metal":
@@ -1136,7 +1144,16 @@ def judge_all(market_data: dict, history: dict) -> dict[str, dict]:
             continue
 
         prev_day = _get_prev_day_data(ticker, history)
+
+        # [v5.2] 전일 BUY였으면 2일차 거래량 면제 재판정 대상
+        has_prior_streak = prev_day is not None and prev_day.get("signal", "") in _BUY_SIGNALS
         result = judge_ticker(ticker, d, macro, prev_day)
+
+        # 전일 BUY였는데 오늘 BUY 미발동 → 거래량 면제로 재판정
+        if has_prior_streak and result["signal"] not in _BUY_SIGNALS:
+            retry = judge_ticker(ticker, d, macro, prev_day, skip_volume=True)
+            if retry["signal"] in _BUY_SIGNALS:
+                result = retry
 
         # [v5.1b] BUY 연속일 확인
         signal = result["signal"]
