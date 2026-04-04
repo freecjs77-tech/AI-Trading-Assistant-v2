@@ -230,6 +230,10 @@
   <!-- Signal Judgment Detail -->
   <div class="signal-section">
     <div class="section-title">&#128269; &#49884;&#44536;&#45328; &#54032;&#51221; &#49345;&#49464;</div>
+    <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+      <span class="badge badge-signal {{ signal|badge_class }}" style="font-size: 14px;">{{ signal }}</span>
+      <span style="font-size: 13px; color: var(--text-dim);">{{ note }}</span>
+    </div>
     <ul class="condition-list">
       {% for status, text in conditions %}
       <li>
