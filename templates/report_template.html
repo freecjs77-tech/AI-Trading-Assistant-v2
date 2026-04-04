@@ -91,23 +91,6 @@
   .cond-list { list-style: none; font-size: 12px; } .cond-list li { padding: 2px 0; }
   .cond-list li::before { margin-right: 6px; }
   .cond-ok::before { content: "✅"; } .cond-no::before { content: "❌"; } .cond-na::before { content: "⬜"; }
-  .judge-ticker { border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px; margin-bottom: 14px; background: #fff; }
-  .judge-ticker-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #eee; }
-  .judge-ticker-header h4 { font-size: 14px; font-weight: 700; margin: 0; }
-  .judge-section { background: #f8f9fa; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; border-left: 3px solid #ddd; }
-  .judge-section.exit-section { border-left-color: #e74c3c; }
-  .judge-section.entry-section { border-left-color: #3498db; }
-  .judge-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; cursor: pointer; }
-  .judge-section-header .section-name { font-size: 12px; font-weight: 700; color: #333; }
-  .judge-section-header .section-count { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
-  .count-full { background: #d4edda; color: #155724; }
-  .count-partial { background: #fff3cd; color: #856404; }
-  .count-none { background: #f0f0f0; color: #999; }
-  .judge-section .gate-tag { display: inline-block; background: #ffe0e0; color: #c0392b; font-size: 10px; font-weight: 600; padding: 1px 8px; border-radius: 8px; margin-bottom: 4px; }
-  .judge-section .cond-list { margin: 0; padding: 0; transition: max-height 0.2s; overflow: hidden; }
-  .judge-section .cond-list.collapsed { max-height: 0; }
-  .judge-section .cond-list li { padding: 1px 0; font-size: 11px; }
-  .judge-section-header::after { content: "▾"; font-size: 10px; color: #999; margin-left: 6px; }
   .ref-section { margin-bottom: 16px; }
   .ref-section h3 { font-size: 13px; font-weight: 700; margin: 12px 0 8px; color: #555; }
   .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
@@ -381,33 +364,7 @@
   {% endif %}
   #}
 
-  <h2>🔍 판정 근거 상세</h2>
-  {% for h in all_signals %}
-  {% if h.judgment_sections %}
-  <div class="judge-ticker">
-    <div class="judge-ticker-header">
-      <h4>{{ h.ticker }} {{ h.name }}</h4>
-      <span class="badge {{ h.signal|badge_class }}">{{ h.signal }}</span>
-    </div>
-    {% for sec in h.judgment_sections %}
-    <div class="judge-section {{ 'exit-section' if 'PROFIT' in sec.name or 'TOP' in sec.name or 'EXIT' in sec.name else 'entry-section' }}">
-      <div class="judge-section-header" onclick="this.parentElement.querySelector('.cond-list').classList.toggle('collapsed')">
-        <span class="section-name">{{ sec.name }} ({{ sec.rule }})</span>
-        <span class="section-count {% if sec.met == sec.total %}count-full{% elif sec.met > 0 %}count-partial{% else %}count-none{% endif %}">{{ sec.met }}/{{ sec.total }} 충족</span>
-      </div>
-      {% if sec.gate %}
-      <span class="gate-tag">{{ sec.gate }}</span>
-      {% endif %}
-      <ul class="cond-list">
-        {% for status, text in sec.conditions %}
-        <li class="cond-{{ status }}">{{ text }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-  {% endfor %}
+  {# 판정 근거 상세는 각 종목 상세 페이지(details/TICKER.html)에서 표시 #}
 
   <!-- ═══════════════════════════════════════════
        SIGNAL REFERENCE — 포트폴리오 (Exit + Entry 전체)

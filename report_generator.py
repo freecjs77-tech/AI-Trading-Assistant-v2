@@ -684,6 +684,7 @@ def generate_detail_pages(
             "signal": sig.get("signal", "HOLD"),
             "note": sig.get("note", ""),
             "conditions": sig.get("conditions", []),
+            "judgment_sections": sig.get("judgment_sections", []),
             "buy_streak": sig.get("buy_streak", 0),
             "buy_confirmed": sig.get("buy_confirmed", False),
             # 가격

@@ -93,6 +93,19 @@
   .cond-ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
   .cond-no { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
   .cond-na { background: rgba(100,116,139,0.15); color: var(--text-dim); border: 1px solid rgba(139,156,181,0.4); }
+  /* Grouped judgment sections */
+  .judge-group { background: var(--panel2); border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; border-left: 3px solid var(--border); }
+  .judge-group.exit-group { border-left-color: var(--red); }
+  .judge-group.entry-group { border-left-color: var(--accent); }
+  .judge-group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .judge-group-header .group-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .judge-group-header .group-count { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px; }
+  .cnt-full { background: rgba(52,211,153,0.2); color: var(--green); }
+  .cnt-partial { background: rgba(251,191,36,0.2); color: var(--orange); }
+  .cnt-none { background: rgba(100,116,139,0.15); color: var(--sub); }
+  .judge-group .gate-tag { display: inline-block; background: rgba(248,113,113,0.15); color: var(--red); font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 8px; margin-bottom: 6px; }
+  .judge-group .condition-list { margin: 0; }
+  .judge-group .condition-list li { padding: 5px 0; font-size: 12px; }
 
   /* Signal History */
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -229,11 +242,38 @@
 
   <!-- Signal Judgment Detail -->
   <div class="signal-section">
-    <div class="section-title">&#128269; &#49884;&#44536;&#45328; &#54032;&#51221; &#49345;&#49464;</div>
+    <div class="section-title">&#128269; &#54032;&#51221; &#44540;&#44144; &#49345;&#49464;</div>
     <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
       <span class="badge badge-signal {{ signal|badge_class }}" style="font-size: 14px;">{{ signal }}</span>
       <span style="font-size: 13px; color: var(--text-dim);">{{ note }}</span>
     </div>
+    {% if judgment_sections %}
+    {% for sec in judgment_sections %}
+    <div class="judge-group {{ 'exit-group' if 'PROFIT' in sec.name or 'TOP' in sec.name else 'entry-group' }}">
+      <div class="judge-group-header">
+        <span class="group-name">{{ sec.name }} ({{ sec.rule }})</span>
+        <span class="group-count {% if sec.met == sec.total %}cnt-full{% elif sec.met > 0 %}cnt-partial{% else %}cnt-none{% endif %}">{{ sec.met }}/{{ sec.total }} 충족</span>
+      </div>
+      {% if sec.gate %}
+      <span class="gate-tag">{{ sec.gate }}</span>
+      {% endif %}
+      <ul class="condition-list">
+        {% for status, text in sec.conditions %}
+        <li>
+          {% if status == "ok" %}
+          <span class="cond-icon cond-ok">&#10003;</span>
+          {% elif status == "no" %}
+          <span class="cond-icon cond-no">&#10007;</span>
+          {% else %}
+          <span class="cond-icon cond-na">&mdash;</span>
+          {% endif %}
+          {{ text }}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+    {% else %}
     <ul class="condition-list">
       {% for status, text in conditions %}
       <li>
@@ -248,6 +288,7 @@
       </li>
       {% endfor %}
     </ul>
+    {% endif %}
   </div>
 
   <!-- Signal History -->
