@@ -467,7 +467,7 @@ def generate_scanner_pages(
     fetched_at = meta.get("generated_at", "")
 
     nav = {
-        "nav_portfolio": f"report_{date_str}.html",
+        "nav_portfolio": "index.html",
         "nav_sp100": f"scanner_sp100_{date_str}.html",
         "nav_etf": f"scanner_etf_{date_str}.html",
         "nav_kospi": f"scanner_kospi_{date_str}.html",
