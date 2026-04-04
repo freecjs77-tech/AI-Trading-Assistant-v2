@@ -231,9 +231,15 @@
         <td><a href="details/{{ h.ticker }}.html" style="color:#2980b9;text-decoration:underline;text-underline-offset:2px;font-weight:bold;">{{ h.ticker }}</a></td>
         <td><span class="cls-tag {{ h.cls_tag }}">{{ h.cls }}</span></td>
         <td class="tbl-num">{{ h.shares|shares_fmt }}</td>
+        {% if h.is_kospi %}
+        <td class="tbl-num money" data-krw="{{ h.avg_cost }}">₩{{ h.avg_cost|comma }}</td>
+        <td class="tbl-num money" data-krw="{{ h.price }}">₩{{ h.price|comma }}</td>
+        <td class="tbl-num money" data-krw="{{ h.value }}">₩{{ h.value|comma }}</td>
+        {% else %}
         <td class="tbl-num money" data-usd="{{ h.avg_cost }}">${{ h.avg_cost|f2 }}</td>
         <td class="tbl-num money" data-usd="{{ h.price }}">${{ h.price|f2 }}</td>
         <td class="tbl-num money" data-usd="{{ h.value }}">${{ h.value|comma }}</td>
+        {% endif %}
         <td class="tbl-num">{{ (h.value / total_value * 100)|f1 }}%</td>
         <td class="tbl-num {{ 'pnl-pos' if h.pnl_pct >= 0 else 'pnl-neg' }}">{{ h.pnl_pct|sign_pct }}</td>
         <td>
@@ -258,8 +264,8 @@
         <span style="font-size:11px;color:#888;margin-left:6px">어제: {{ prev_signal_map[h.ticker] }}</span>
         {% endif %}
       </div>
-      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-usd="{{ h.value }}">${{ h.value|comma }}</span></div>
-      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.value }}">{{ "₩" if h.is_kospi else "$" }}{{ h.value|comma }}</span></div>
+      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics">
         <span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span>
         <span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span>
@@ -279,8 +285,8 @@
     {% for h in tp1_signals %}
     <div class="ticker-card tp1">
       <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-tp1">{{ h.signal }}</span></div>
-      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-usd="{{ h.value }}">${{ h.value|comma }}</span></div>
-      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.value }}">{{ "₩" if h.is_kospi else "$" }}{{ h.value|comma }}</span></div>
+      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics">
         <span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span>
         <span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span>
@@ -310,8 +316,8 @@
         <span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ h.buy_streak }}/2일 ⏳</span>
         {% endif %}
       </div>
-      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-usd="{{ h.value }}">${{ h.value|comma }}</span></div>
-      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div class="name">{{ h.name }} | 보유: {{ h.shares|f3 }}주 | <span class="money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.value }}">{{ "₩" if h.is_kospi else "$" }}{{ h.value|comma }}</span></div>
+      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics">
         <span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span>
         <span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span>
@@ -331,7 +337,7 @@
     <div class="ticker-card bond">
       <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-BOND">BOND_WATCH</span></div>
       <div class="name">{{ h.name }}</div>
-      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span></div>
+      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span></div>
       <div class="metrics"><span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span><span>30Y 금리: {{ yield_30y }}%</span></div>
       <div class="reason">💡 {{ h.note }}</div>
       <a href="details/{{ h.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
@@ -347,7 +353,7 @@
     <div class="ticker-card watch">
       <div class="ticker"><a href="details/{{ h.ticker }}.html" style="color:inherit;text-decoration:none;">{{ h.ticker }}</a><span class="badge badge-WATCH">WATCH</span></div>
       <div class="name">{{ h.name }}</div>
-      <div><span class="price money" data-usd="{{ h.price }}">${{ h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
+      <div><span class="price money" data-{{ "krw" if h.is_kospi else "usd" }}="{{ h.price }}">{{ "₩" if h.is_kospi else "$" }}{{ h.price|comma if h.is_kospi else h.price|f2 }}</span><span class="chg {{ 'up' if h.change_pct >= 0 else 'dn' }}">{{ '▲' if h.change_pct >= 0 else '▼' }} {{ (h.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics"><span>RSI: {{ h.rsi|f1 if h.rsi else 'N/A' }}</span><span>Drawdown: {{ h.drawdown|f1 if h.drawdown else 'N/A' }}%</span></div>
       <div class="reason">💡 {{ h.note }}</div>
       <a href="details/{{ h.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
@@ -804,6 +810,17 @@ function toggleCurrency() {
   const rate = parseFloat(document.body.dataset.usdkrw) || 1;
   const btn = document.getElementById('currencyToggle');
   document.querySelectorAll('.money').forEach(el => {
+    // KOSPI 종목 (이미 KRW): data-krw 사용
+    const krw = parseFloat(el.dataset.krw);
+    if (!isNaN(krw)) {
+      if (isKRW) {
+        el.textContent = formatKRW(Math.round(krw));
+      } else {
+        el.textContent = '₩' + krw.toLocaleString('ko-KR', {maximumFractionDigits:0});
+      }
+      return;
+    }
+    // US 종목 (USD): data-usd 사용
     const usd = parseFloat(el.dataset.usd);
     if (isNaN(usd)) return;
     if (isKRW) {

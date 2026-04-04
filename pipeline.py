@@ -29,10 +29,10 @@ def _load_market_data(json_path: str) -> dict:
 def _parse_portfolio_for_report(portfolio_path: str) -> list[dict]:
     import re
     holdings = []
-    row_pat = re.compile(r"^\|\s*([A-Z]{1,6})\s*\|")
+    row_pat = re.compile(r"^\|\s*([A-Z0-9]{1,10})\s*\|")
     shares_pat = re.compile(r"([\d,]+\.?\d*)\s*\uc8fc")
-    value_pat = re.compile(r"\$([\d,]+\.?\d+)")
-    pnl_pat = re.compile(r"([+-])\$([\d,]+\.?\d+)")
+    value_pat = re.compile(r"[\$\u20a9]([\d,]+\.?\d+)")
+    pnl_pat = re.compile(r"([+-])[\$\u20a9]([\d,]+\.?\d+)")
 
     try:
         with open(portfolio_path, "r", encoding="utf-8") as f:

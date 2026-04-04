@@ -336,7 +336,7 @@ def parse_portfolio_md(path: str) -> tuple[list[str], dict[str, float]]:
     shares = {}
     header_pat = re.compile(r"^\|\s*Ticker\s*\|", re.IGNORECASE)
     # 예: | VOO | Vanguard S&P 500 ETF | 175.157486주 | ...
-    row_pat    = re.compile(r"^\|\s*([A-Z]{1,6})\s*\|")
+    row_pat    = re.compile(r"^\|\s*([A-Z0-9]{1,10})\s*\|")
     shares_pat = re.compile(r"([\d,]+\.?\d*)주")   # "175.157486주" 또는 "1,000주"
 
     try:
@@ -471,11 +471,15 @@ def main():
     success, fail = 0, 0
 
     for i, sym in enumerate(tickers, 1):
-        if not args.quiet:
-            print(f"  [{i:2d}/{len(tickers)}] {sym:<6} ... ", end="", flush=True)
+        # KOSPI 종목 (숫자만): yfinance에 .KS 접미사 필요
+        yf_sym = f"{sym}.KS" if sym.isdigit() else sym
+        display_sym = sym  # 결과 키는 원래 심볼 유지
 
-        data = fetch_ticker(sym)
-        results[sym] = data
+        if not args.quiet:
+            print(f"  [{i:2d}/{len(tickers)}] {display_sym:<6} ... ", end="", flush=True)
+
+        data = fetch_ticker(yf_sym)
+        results[display_sym] = data
 
         if "error" in data:
             fail += 1

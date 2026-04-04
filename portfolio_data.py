@@ -23,6 +23,31 @@ TICKER_META = {
     "GOOGL": {"name": "Alphabet Inc. Class A",           "cls": "Growth", "cls_tag": "cls-growth"},
     "AMZN":  {"name": "Amazon.com Inc.",                 "cls": "Growth", "cls_tag": "cls-growth"},
     "SLV":   {"name": "iShares Silver Trust",            "cls": "Metal",  "cls_tag": "cls-metal"},
+    # Speculative
+    "QLD":   {"name": "ProShares Ultra QQQ",             "cls": "Speculative", "cls_tag": "cls-growth"},
+    "SOXL":  {"name": "Direxion Semiconductor Bull 3X",  "cls": "Speculative", "cls_tag": "cls-growth"},
+    "ETHU":  {"name": "ProShares Ultra Ether ETF",       "cls": "Speculative", "cls_tag": "cls-growth"},
+    "CRCL":  {"name": "Circle Internet Group",           "cls": "Speculative", "cls_tag": "cls-growth"},
+    "XLE":   {"name": "Energy Select Sector SPDR",       "cls": "ETF",    "cls_tag": "cls-etf"},
+    "XLF":   {"name": "Financial Select Sector SPDR",    "cls": "ETF",    "cls_tag": "cls-etf"},
+    "NKE":   {"name": "Nike Inc.",                       "cls": "Growth", "cls_tag": "cls-growth"},
+    "BTDR":  {"name": "Bitdeer Technologies",            "cls": "Speculative", "cls_tag": "cls-growth"},
+    # KOSPI 개별주식
+    "110990": {"name": "디아이티",              "cls": "Growth", "cls_tag": "cls-growth"},
+    "005930": {"name": "삼성전자",              "cls": "Growth", "cls_tag": "cls-growth"},
+    "005380": {"name": "현대차",                "cls": "Value",  "cls_tag": "cls-value"},
+    "000660": {"name": "SK하이닉스",            "cls": "Growth", "cls_tag": "cls-growth"},
+    "006400": {"name": "삼성SDI",               "cls": "Growth", "cls_tag": "cls-growth"},
+    "373220": {"name": "LG에너지솔루션",        "cls": "Growth", "cls_tag": "cls-growth"},
+    # KOSPI ETF
+    "102110": {"name": "TIGER 200",             "cls": "ETF",    "cls_tag": "cls-etf"},
+    "458730": {"name": "TIGER 미국배당다우존스", "cls": "ETF",    "cls_tag": "cls-etf"},
+    "379800": {"name": "KODEX 미국S&P500",      "cls": "ETF",    "cls_tag": "cls-etf"},
+    "379810": {"name": "KODEX 미국나스닥100",    "cls": "ETF",    "cls_tag": "cls-etf"},
+    "396500": {"name": "TIGER 반도체TOP10",     "cls": "ETF",    "cls_tag": "cls-etf"},
+    "441640": {"name": "KODEX 주주환원고배당주", "cls": "ETF",    "cls_tag": "cls-etf"},
+    "232080": {"name": "TIGER 코스닥150",       "cls": "ETF",    "cls_tag": "cls-etf"},
+    "466920": {"name": "SOL 조선TOP3플러스",    "cls": "ETF",    "cls_tag": "cls-etf"},
 }
 
 # ── 한국어 종목명 → Ticker 변환맵 (스크린샷 OCR용) ──────
@@ -58,17 +83,42 @@ KR_TO_TICKER = {
     # Bond / Metal
     "iShares 20+ Year 국채 ETF": "TLT",
     "iShares 은 ETF": "SLV",
+    # Speculative
+    "ProShares QQQ 2배 ETF": "QLD",
+    "Direxion 미국 반도체 3X ETF": "SOXL",
+    "이더리움 2X ETF": "ETHU",
+    "써클 인터넷 그룹": "CRCL",
+    "SPDR 에너지 ETF": "XLE",
+    "SPDR 금융 ETF": "XLF",
+    "나이키": "NKE",
+    "비트마인 이머전 테크놀로지스": "BTDR",
 }
 
 # ── 종목 카테고리 분류 (시그널 판정 전략 그룹) ───────────
 STRATEGY_GROUP = {
-    "growth": ["NVDA", "TSLA", "PLTR", "AAPL", "MSFT", "GOOGL", "AMZN"],
-    "etf":    ["VOO", "QQQ", "SCHD", "SOXX", "JEPI", "SPY"],
-    "value":  ["O", "UNH"],
+    "growth": ["NVDA", "TSLA", "PLTR", "AAPL", "MSFT", "GOOGL", "AMZN", "NKE",
+               "QLD", "SOXL", "ETHU", "CRCL", "BTDR",
+               "110990", "005930", "000660", "006400", "373220"],
+    "etf":    ["VOO", "QQQ", "SCHD", "SOXX", "JEPI", "SPY", "XLE", "XLF",
+               "102110", "458730", "379800", "379810", "396500", "441640", "232080", "466920"],
+    "value":  ["O", "UNH", "005380"],
     "bond":   ["TLT"],
     "metal":  ["SLV"],
     "cash":   ["BIL"],
 }
+
+def is_kospi_ticker(ticker: str) -> bool:
+    """KOSPI 종목 여부 판별 (숫자 6자리)"""
+    return ticker.isdigit() and len(ticker) == 6
+
+
+# ── KOSPI 종목 추가 가이드 ──────────────────────────────
+# 국내 종목을 portfolio.md에 추가할 때:
+# 1. TICKER_META에 {"name": "...", "cls": "Growth", "cls_tag": "cls-growth"} 등록
+# 2. STRATEGY_GROUP의 적절한 카테고리에 티커 추가
+# 3. portfolio.md 하단 Ticker 목록에도 추가
+# 예: "005930": {"name": "Samsung Electronics", "cls": "Growth", "cls_tag": "cls-growth"}
+
 
 def get_strategy_group(ticker: str) -> str:
     """종목의 전략 그룹 반환"""

@@ -12,7 +12,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from portfolio_data import (
     TICKER_META, get_ticker_name, get_ticker_class, get_cls_tag,
-    get_strategy_group, STRATEGY_GROUP,
+    get_strategy_group, STRATEGY_GROUP, is_kospi_ticker,
 )
 
 
@@ -131,6 +131,7 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
             "macd_hist_3d": sig.get("macd_hist_3d", []),
             "buy_streak": sig.get("buy_streak", 0),
             "buy_confirmed": sig.get("buy_confirmed", False),
+            "is_kospi": is_kospi_ticker(ticker),
         })
 
     holdings.sort(key=lambda x: -x["value"])
@@ -224,9 +225,13 @@ def generate_report(
     env.filters["pct1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
     env.filters["pct2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
     env.filters["sign_pct"] = lambda x: f"+{x:.1f}%" if x >= 0 else f"{x:.1f}%"
-    def _mcap(v):
+    def _mcap(v, currency="USD"):
         if not v: return ""
         v = float(v)
+        if currency == "KRW":
+            if v >= 1e12: return f"\u20a9{v/1e12:.0f}\uc870"
+            if v >= 1e8: return f"\u20a9{v/1e8:.0f}\uc5b5"
+            return f"\u20a9{v:,.0f}"
         if v >= 1e12: return f"${v/1e12:.1f}T"
         if v >= 1e9: return f"${v/1e9:.0f}B"
         if v >= 1e6: return f"${v/1e6:.0f}M"
