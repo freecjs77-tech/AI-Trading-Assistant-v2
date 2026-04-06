@@ -32,7 +32,9 @@ import json
 import re
 import os
 import argparse
-from datetime import datetime, date
+from datetime import datetime, date, timezone, timedelta
+
+KST = timezone(timedelta(hours=9))
 
 # ── 의존성 확인 ──────────────────────────────────────
 try:
@@ -196,7 +198,7 @@ def fetch_macro() -> dict:
 
     # Master switch 판정 (참고용)
     # QQQ, SPY 는 개별 종목 수집 결과에서 가져오므로 여기선 스킵
-    macro["fetched_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+    macro["fetched_at"] = datetime.now(KST).strftime("%Y-%m-%d %H:%M")
     return macro
 
 
@@ -310,7 +312,7 @@ def fetch_ticker(symbol: str) -> dict:
             "low_52w":           round(low_52w, 2),
             "market_cap":        market_cap,
             "data_days":         len(df),
-            "fetched_at":        datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "fetched_at":        datetime.now(KST).strftime("%Y-%m-%d %H:%M"),
             # 하락 멈춤: 오늘 종가 >= 최근 3일 최저 종가 (저점 갱신 없음)
             "sig_low_stopped":   bool(len(close) >= 4 and float(close.iloc[-1]) >= min(float(p) for p in close.iloc[-4:-1])),
             # 이중 바닥 패턴
@@ -563,7 +565,7 @@ def main():
     payload = {
         "_meta": {
             "date": today,
-            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "generated_at": datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
             "source": "yfinance",
             "ticker_source": source,
             "tickers": tickers,
