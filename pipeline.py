@@ -251,6 +251,17 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         save_history(history, history_path)
         print("  OK signals_history.json updated")
 
+        # Step 7: Smoke test
+        print("[Step 7] Running smoke test...")
+        from smoke_test import run_smoke_test
+        smoke_result = run_smoke_test(project_dir, today)
+        if smoke_result["critical"] > 0:
+            print(f"  FAIL {smoke_result['critical']} critical issues found!")
+        elif smoke_result["errors"] > 0:
+            print(f"  WARN {smoke_result['errors']} errors found")
+        else:
+            print("  OK all checks passed")
+
         print(f"\n=== Pipeline complete! Report: {report_path} ===")
 
         return {
@@ -258,6 +269,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             "report_path": report_path,
             "signals_summary": sig_counts,
             "date": today,
+            "smoke_test": smoke_result,
         }
 
     except Exception as e:

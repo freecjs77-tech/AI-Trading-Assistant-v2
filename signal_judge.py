@@ -54,25 +54,31 @@ def _check_top_signal(d: dict, prev_day: dict | None = None) -> tuple[bool, list
     change_3d = _calc_3d_change(d)
 
     if rsi is not None and rsi >= 75:
-        conditions.append(("ok", f"RSI {rsi:.1f} ≥ 75"))
+        conditions.append(("ok", "RSI ≥ 75", f"RSI {rsi:.1f} — 과열 구간이에요"))
+    elif rsi is not None:
+        conditions.append(("no", "RSI ≥ 75", f"RSI {rsi:.1f} — 아직 75 미만이에요"))
     else:
-        conditions.append(("no", f"RSI {rsi:.1f} < 75" if rsi else "RSI N/A"))
+        conditions.append(("no", "RSI ≥ 75", "RSI 데이터가 없어요"))
 
     # BB 상단 2일 연속 마감 (bb_pct > 100 = 상단 초과)
     bb_above_today = bb_pct is not None and bb_pct > 100
     if prev_day and prev_day.get("bb_pct") is not None:
         bb_above_yesterday = prev_day["bb_pct"] > 100
         if bb_above_today and bb_above_yesterday:
-            conditions.append(("ok", f"BB 상단 2일 연속 (오늘 {bb_pct:.1f}%, 전일 {prev_day['bb_pct']:.1f}%)"))
+            conditions.append(("ok", "BB 상단 2일 연속", f"오늘 {bb_pct:.1f}%, 전일 {prev_day['bb_pct']:.1f}% — 연속 돌파했어요"))
         else:
-            conditions.append(("no", f"BB 상단 2일 미충족 (오늘 {bb_pct:.1f}%, 전일 {prev_day['bb_pct']:.1f}%)"))
+            conditions.append(("no", "BB 상단 2일 연속", f"오늘 {bb_pct:.1f}%, 전일 {prev_day['bb_pct']:.1f}% — 2일 연속이 아니에요"))
+    elif bb_pct is not None:
+        conditions.append(("no", "BB 상단 2일 연속", f"오늘 {bb_pct:.1f}% — 전일 이력이 없어요"))
     else:
-        conditions.append(("no", f"BB 상단: 전일 이력 없음 (오늘 {bb_pct:.1f}%)" if bb_pct is not None else "BB N/A"))
+        conditions.append(("no", "BB 상단 2일 연속", "BB 데이터가 없어요"))
 
     if change_3d is not None and change_3d >= 10:
-        conditions.append(("ok", f"3일내 +{change_3d:.1f}% ≥ 10%"))
+        conditions.append(("ok", "3일 누적 ≥ +10%", f"3일 변동 {change_3d:+.1f}% — 급등했어요"))
+    elif change_3d is not None:
+        conditions.append(("no", "3일 누적 ≥ +10%", f"3일 변동 {change_3d:+.1f}% — 10% 미만이에요"))
     else:
-        conditions.append(("no", f"3일내 {change_3d:+.1f}%" if change_3d else "3일 변동 N/A"))
+        conditions.append(("no", "3일 누적 ≥ +10%", "3일 변동 데이터가 없어요"))
 
     triggered = sum(1 for c in conditions if c[0] == "ok") >= 2
     return triggered, conditions
@@ -92,18 +98,23 @@ def _check_take_profit_2(d: dict, prev_day: dict | None) -> tuple[bool, list]:
     macd_decreasing = "decreasing" in macd_hist_trend
 
     if bullish or hist_recovering:
-        conditions.append(("no", f"MA20 이탈 → {'MACD bullish' if bullish else 'hist 회복 중'} 면제"))
+        conditions.append(("no", "MA20 이탈 2일 + MACD hist 감소",
+                           f"{'MACD 골든크로스' if bullish else 'hist 회복 중'} — 면제돼요"))
     elif ma20_below_2d and macd_decreasing:
-        conditions.append(("ok", f"MA20 이탈 2일 + MACD hist 감소"))
+        conditions.append(("ok", "MA20 이탈 2일 + MACD hist 감소",
+                           "MA20 아래 2일 연속 + hist 감소 — 하락 전환이에요"))
     else:
         if not ma20_below_2d:
-            conditions.append(("no", "MA20 이탈 2일 미충족"))
+            conditions.append(("no", "MA20 이탈 2일 + MACD hist 감소",
+                               "MA20 이탈 2일 연속이 아니에요"))
         else:
-            conditions.append(("no", "MA20 이탈 2일이지만 MACD hist 비감소"))
+            conditions.append(("no", "MA20 이탈 2일 + MACD hist 감소",
+                               "MA20 이탈 2일이지만 MACD hist가 감소하지 않아요"))
 
     # ② Higher Low 하향 돌파  [bullish/hist회복 시 면제]
     if bullish or hist_recovering:
-        conditions.append(("no", f"Higher Low → {'MACD bullish' if bullish else 'hist 회복 중'} 면제"))
+        conditions.append(("no", "Higher Low 하향 돌파",
+                           f"{'MACD 골든크로스' if bullish else 'hist 회복 중'} — 면제돼요"))
     else:
         price = d.get("price", 0)
         dbl = d.get("double_bottom", {})
@@ -113,34 +124,34 @@ def _check_take_profit_2(d: dict, prev_day: dict | None) -> tuple[bool, list]:
             was_higher_low = low2_p > low1_p
             price_broke = price < low2_p
             if was_higher_low and price_broke:
-                conditions.append(("ok",
-                    f"Higher Low 붕괴: 현재가 ${price:.2f} < "
-                    f"저점2 ${low2_p:.2f}({dbl['low2']['date']}) "
-                    f"(저점1 ${low1_p:.2f})"))
+                conditions.append(("ok", "Higher Low 하향 돌파",
+                    f"현재가 ${price:.2f} < 저점2 ${low2_p:.2f}({dbl['low2']['date']}) — 지지선이 무너졌어요"))
             elif was_higher_low:
-                conditions.append(("no",
-                    f"Higher Low 유지: ${price:.2f} > 저점2 ${low2_p:.2f}"))
+                conditions.append(("no", "Higher Low 하향 돌파",
+                    f"현재가 ${price:.2f} > 저점2 ${low2_p:.2f} — 지지선 위에 있어요"))
             else:
-                conditions.append(("no",
-                    f"Higher Low 미형성 (저점2 ${low2_p:.2f} ≤ 저점1 ${low1_p:.2f})"))
+                conditions.append(("no", "Higher Low 하향 돌파",
+                    f"저점2 ${low2_p:.2f} ≤ 저점1 ${low1_p:.2f} — Higher Low가 아니에요"))
         else:
-            conditions.append(("na", "Higher Low: 저점 데이터 부족"))
+            conditions.append(("na", "Higher Low 하향 돌파", "저점 데이터가 부족해요"))
 
     # ③ MACD 데스크로스 + hist 3일 감소  [v5.2: MACD < 0 조건 삭제 → 조기 감지]
     if macd is not None and macd_signal is not None:
         macd_below_signal = macd < macd_signal
         hist_3d_decreasing = "decreasing" in macd_hist_trend
         if macd_below_signal and hist_3d_decreasing:
-            conditions.append(("ok", f"MACD 데스크로스 ({macd:.4f} < signal {macd_signal:.4f}) + hist 감소"))
+            conditions.append(("ok", "MACD 데스크로스 + hist 3일 감소",
+                               f"MACD {macd:.4f} < signal {macd_signal:.4f} + hist 감소 — 하락 전환이에요"))
         else:
             reason_parts = []
             if not macd_below_signal:
-                reason_parts.append(f"MACD({macd:.4f}) > signal({macd_signal:.4f})")
+                reason_parts.append(f"MACD {macd:.4f} > signal {macd_signal:.4f}")
             if not hist_3d_decreasing:
-                reason_parts.append(f"hist 비감소({macd_hist_trend})")
-            conditions.append(("no", f"MACD 데스크로스: {', '.join(reason_parts)}"))
+                reason_parts.append(f"hist 추세 '{macd_hist_trend}'")
+            conditions.append(("no", "MACD 데스크로스 + hist 3일 감소",
+                               f"{', '.join(reason_parts)} — 조건 미충족이에요"))
     else:
-        conditions.append(("na", "MACD 데이터 없음"))
+        conditions.append(("na", "MACD 데스크로스 + hist 3일 감소", "MACD 데이터가 없어요"))
 
     triggered = any(c[0] == "ok" for c in conditions)
     return triggered, conditions
@@ -151,9 +162,9 @@ def _check_take_profit_1(d: dict, prev_day: dict | None) -> tuple[bool, list]:
     macd_hist_trend_l2 = d.get("macd_hist_trend", "")
     hist_recovering_l2 = "increasing" in macd_hist_trend_l2
     if _is_macd_bullish(d):
-        return False, [("no", "MACD 골든크로스 + hist 증가 — 모멘텀 회복 중 (TP1 면제)")]
+        return False, [("no", "MACD 상승 가드", "MACD 골든크로스 + hist 증가 — 모멘텀 회복 중이라 TP1 면제돼요")]
     if hist_recovering_l2:
-        return False, [("no", f"MACD hist 회복 중 ({macd_hist_trend_l2}) — 하락 모멘텀 둔화 (TP1 면제)")]
+        return False, [("no", "MACD 상승 가드", f"MACD hist 회복 중 ({macd_hist_trend_l2}) — 하락 둔화라 TP1 면제돼요")]
 
     conditions = []
     count = 0
@@ -163,28 +174,30 @@ def _check_take_profit_1(d: dict, prev_day: dict | None) -> tuple[bool, list]:
 
     # ① MACD 히스토그램 3일 연속 감소
     if "decreasing" in macd_hist_trend:
-        conditions.append(("ok", f"MACD hist 3일 감소 ({macd_hist_trend})"))
+        conditions.append(("ok", "MACD hist 3일 감소", f"추세 '{macd_hist_trend}' — 모멘텀이 약해지고 있어요"))
         count += 1
     else:
-        conditions.append(("no", f"MACD hist 추세: {macd_hist_trend}"))
+        conditions.append(("no", "MACD hist 3일 감소", f"추세 '{macd_hist_trend}' — 아직 3일 연속 감소가 아니에요"))
 
     # ② RSI 다이버전스: 전일 RSI > 금일 RSI, 둘 다 ≥50 (고점 영역 하락)  [v5.1 신규]
     if prev_day and rsi is not None:
         prev_rsi = prev_day.get("rsi")
         if prev_rsi is not None and prev_rsi > rsi and prev_rsi >= 50 and rsi >= 50:
-            conditions.append(("ok", f"RSI 다이버전스: {prev_rsi:.1f} → {rsi:.1f} (고점 하락)"))
+            conditions.append(("ok", "RSI 다이버전스", f"전일 {prev_rsi:.1f} → 오늘 {rsi:.1f} — 고점에서 하락 중이에요"))
             count += 1
+        elif prev_rsi is not None:
+            conditions.append(("no", "RSI 다이버전스", f"전일 {prev_rsi:.1f} → 오늘 {rsi:.1f} — 다이버전스 조건 미충족이에요"))
         else:
-            conditions.append(("no", f"RSI 다이버전스 미충족 ({prev_rsi:.1f} → {rsi:.1f})" if prev_rsi else "전일 RSI N/A"))
+            conditions.append(("no", "RSI 다이버전스", "전일 RSI 데이터가 없어요"))
     else:
-        conditions.append(("na", "RSI 다이버전스 (전일 이력 없음)"))
+        conditions.append(("na", "RSI 다이버전스", "전일 이력이 없어요"))
 
     # ③ 종가 MA20 1일 이탈
     if price_vs_ma20 == "below":
-        conditions.append(("ok", "종가 MA20 하회"))
+        conditions.append(("ok", "종가 < MA20", "MA20 아래로 내려왔어요"))
         count += 1
     else:
-        conditions.append(("no", "종가 MA20 상회"))
+        conditions.append(("no", "종가 < MA20", "아직 MA20 위에 있어요"))
 
     triggered = count >= 2
     return triggered, conditions
@@ -217,30 +230,44 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     # [v5.1b] 당일 급락 거부 — 전 단계 적용
     reject_drop = change_pct <= -5.0
     if reject_drop:
-        conditions.append(("no", f"[거부] 당일 {change_pct:+.1f}% (≤-5% 급락)"))
+        conditions.append(("no", "[거부] 당일 급락", f"당일 {change_pct:+.1f}% — 5% 이상 급락이라 매수 금지예요"))
         return _growth_watch_fallback(d, conditions)
 
     # ── 3rd BUY (50%) — ALL 충족 (RSI 거부 미적용 — 추세 확정 단계) ──
     c3 = []
     above_ma20_2d = price_vs_ma20 == "above"
-    c3.append(("ok" if above_ma20_2d else "no", f"가격 {'>' if above_ma20_2d else '<'} MA20"))
+    c3.append(("ok" if above_ma20_2d else "no",
+               "가격 > MA20",
+               f"MA20 {'위에 있어요' if above_ma20_2d else '아래에 있어요'}"))
     macd_above_zero = macd is not None and macd > 0
     macd_golden_c3 = macd is not None and macd_signal is not None and macd > macd_signal
     macd_c3_ok = macd_above_zero and macd_golden_c3
-    c3.append(("ok" if macd_c3_ok else "no",
-               f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, "
-               f"{'>' if macd_golden_c3 else '<'} signal {macd_signal:.4f}"
-               if macd is not None and macd_signal is not None else "MACD N/A"))
+    if macd is not None and macd_signal is not None:
+        c3.append(("ok" if macd_c3_ok else "no",
+                   "MACD > 0 + 골든크로스",
+                   f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden_c3 else '<'} signal {macd_signal:.4f}"))
+    else:
+        c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
     vol_13 = volume_ratio is not None and volume_ratio >= 1.3
     if skip_volume:
-        c3.append(("ok", f"거래량비 {volume_ratio:.2f}x (2일차 면제)" if volume_ratio else "거래량 (2일차 면제)"))
+        c3.append(("ok", "거래량비 ≥ 1.3x",
+                   f"거래량비 {volume_ratio:.2f}x — BUY 2일차 면제예요" if volume_ratio else "거래량 데이터 없음 — BUY 2일차 면제예요"))
+    elif volume_ratio is not None:
+        c3.append(("ok" if vol_13 else "no",
+                   "거래량비 ≥ 1.3x",
+                   f"거래량비 {volume_ratio:.2f}x — {'평소보다 많아요' if vol_13 else '아직 부족해요'}"))
     else:
-        c3.append(("ok" if vol_13 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_13 else '<'} 1.3" if volume_ratio else "거래량 N/A"))
+        c3.append(("no", "거래량비 ≥ 1.3x", "거래량 데이터가 없어요"))
     rsi_above_55 = rsi is not None and rsi > 55
-    c3.append(("ok" if rsi_above_55 else "no", f"RSI {rsi:.1f} {'>' if rsi_above_55 else '≤'} 55" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c3.append(("ok" if rsi_above_55 else "no",
+                   "RSI > 55",
+                   f"RSI {rsi:.1f} — {'추세 확인이에요' if rsi_above_55 else '아직 55 이하예요'}"))
+    else:
+        c3.append(("no", "RSI > 55", "RSI 데이터가 없어요"))
     # 3rd BUY 추가 거부: RSI > 75
     if rsi is not None and rsi > 75:
-        c3.append(("no", f"[거부] RSI {rsi:.1f} > 75"))
+        c3.append(("no", "[거부] RSI > 75", f"RSI {rsi:.1f} — 과열 구간이라 3차 매수 금지예요"))
 
     if all(c[0] == "ok" for c in c3) and not (rsi and rsi > 75):
         return "3rd_BUY", c3
@@ -254,25 +281,39 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     dbl_valid = dbl_detected and dbl_diff <= 3.0
     if isinstance(dbl, dict) and dbl.get("low1"):
         c2.append(("ok" if dbl_valid else "no",
-                   f"이중바닥: {dbl['low1']['price']}({dbl['low1']['date']}) vs "
+                   "이중바닥 (차이 ≤ 3%)",
+                   f"{dbl['low1']['price']}({dbl['low1']['date']}) vs "
                    f"{dbl['low2']['price']}({dbl['low2']['date']}) 차이 {dbl_diff:.1f}%"
-                   f"{'' if dbl_valid else ' (3% 초과 → 무효)' if dbl_detected else ''}"))
+                   f"{' — 이중바닥 확인이에요' if dbl_valid else ' — 3% 초과라 무효예요' if dbl_detected else ' — 이중바닥이 아니에요'}"))
     else:
-        c2.append(("no", "이중 바닥 미감지 (최근 60일 로컬 최저점 2개 미만)"))
+        c2.append(("no", "이중바닥 (차이 ≤ 3%)", "최근 60일 로컬 최저점 2개 미만이에요"))
     # ② RSI > 35
     rsi_rising_3d = rsi is not None and rsi > 35
-    c2.append(("ok" if rsi_rising_3d else "no", f"RSI {rsi:.1f} {'>' if rsi_rising_3d else '≤'} 35" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c2.append(("ok" if rsi_rising_3d else "no",
+                   "RSI > 35",
+                   f"RSI {rsi:.1f} — {'과매도를 벗어났어요' if rsi_rising_3d else '아직 과매도 구간이에요'}"))
+    else:
+        c2.append(("no", "RSI > 35", "RSI 데이터가 없어요"))
     # ③ MACD 골든크로스 필수 (hist 증가만으로는 불충분)
     macd_golden = macd is not None and macd_signal is not None and macd > macd_signal
-    c2.append(("ok" if macd_golden else "no",
-               f"MACD 골든크로스: {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f}"
-               if macd is not None and macd_signal is not None else "MACD N/A"))
+    if macd is not None and macd_signal is not None:
+        c2.append(("ok" if macd_golden else "no",
+                   "MACD 골든크로스",
+                   f"MACD {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f} — {'골든크로스 발생이에요' if macd_golden else '아직 데스크로스예요'}"))
+    else:
+        c2.append(("no", "MACD 골든크로스", "MACD 데이터가 없어요"))
     # ④ 거래량 ≥ 1.2배
     vol_12 = volume_ratio is not None and volume_ratio >= 1.2
     if skip_volume:
-        c2.append(("ok", f"거래량비 {volume_ratio:.2f}x (2일차 면제)" if volume_ratio else "거래량 (2일차 면제)"))
+        c2.append(("ok", "거래량비 ≥ 1.2x",
+                   f"거래량비 {volume_ratio:.2f}x — BUY 2일차 면제예요" if volume_ratio else "거래량 데이터 없음 — BUY 2일차 면제예요"))
+    elif volume_ratio is not None:
+        c2.append(("ok" if vol_12 else "no",
+                   "거래량비 ≥ 1.2x",
+                   f"거래량비 {volume_ratio:.2f}x — {'충분해요' if vol_12 else '아직 부족해요'}"))
     else:
-        c2.append(("ok" if vol_12 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_12 else '<'} 1.2" if volume_ratio else "거래량 N/A"))
+        c2.append(("no", "거래량비 ≥ 1.2x", "거래량 데이터가 없어요"))
 
     if all(c[0] == "ok" for c in c2):
         return "2nd_BUY", c2
@@ -280,24 +321,31 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     # [v5.1b] RSI 거부 — 1st BUY에만 적용 (2nd/3rd는 추세 확인 단계라 면제)
     reject_rsi = rsi is not None and rsi > reject_rsi_threshold
     if reject_rsi:
-        conditions.append(("no", f"[거부] RSI {rsi:.1f} > {reject_rsi_threshold} (1st BUY 금지)"))
+        conditions.append(("no", f"[거부] RSI > {reject_rsi_threshold}",
+                           f"RSI {rsi:.1f} — 과열이라 1st BUY 금지예요"))
         return _growth_watch_fallback(d, conditions)
 
     # ── 1st BUY (20%) — 필수 3개 + 선택 2/3  [v5.1b: 과매도 확인 강화] ──
     # [필수①] RSI ≤ 38 (과매도 확인)
     rsi_ok = rsi is not None and rsi <= 38
-    conditions.append(("ok" if rsi_ok else "no",
-                       f"[필수] RSI {rsi:.1f} {'≤' if rsi_ok else '>'} 38" if rsi else "[필수] RSI N/A"))
+    if rsi is not None:
+        conditions.append(("ok" if rsi_ok else "no",
+                           "[필수] RSI ≤ 38",
+                           f"RSI {rsi:.1f} — {'과매도 구간이에요' if rsi_ok else '아직 38 이하가 아니에요'}"))
+    else:
+        conditions.append(("no", "[필수] RSI ≤ 38", "RSI 데이터가 없어요"))
 
     # [필수②] 가격 < MA20 (조정 확인)
     below_ma20 = price_vs_ma20 == "below"
     conditions.append(("ok" if below_ma20 else "no",
-                       f"[필수] 가격 {'<' if below_ma20 else '≥'} MA20"))
+                       "[필수] 가격 < MA20",
+                       f"MA20 {'아래에 있어요 — 조정 확인이에요' if below_ma20 else '위에 있어요 — 아직 조정이 아니에요'}"))
 
     # [필수③] MACD hist 2일 연속 증가 (반전 시작)
     hist_increasing = "increasing" in macd_hist_trend
     conditions.append(("ok" if hist_increasing else "no",
-                       f"[필수] MACD hist 2일 증가: {macd_hist_trend}"))
+                       "[필수] MACD hist 2일 증가",
+                       f"추세 '{macd_hist_trend}' — {'반전 시작이에요' if hist_increasing else '아직 증가세가 아니에요'}"))
 
     mandatory_ok = rsi_ok and below_ma20 and hist_increasing
 
@@ -306,7 +354,12 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     opt_conds = []
 
     adx_ok = adx is not None and adx <= 25
-    opt_conds.append(("ok" if adx_ok else "no", f"ADX {adx:.1f} {'≤' if adx_ok else '>'} 25" if adx else "ADX N/A"))
+    if adx is not None:
+        opt_conds.append(("ok" if adx_ok else "no",
+                          "ADX ≤ 25",
+                          f"ADX {adx:.1f} — {'횡보/약추세 구간이에요' if adx_ok else '추세가 강해요'}"))
+    else:
+        opt_conds.append(("no", "ADX ≤ 25", "ADX 데이터가 없어요"))
     if adx_ok: opt_count += 1
 
     bb_near = False
@@ -314,13 +367,17 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
         bb_threshold = bb_lower * 1.02
         bb_near = price <= bb_threshold
         bb_dist = (price - bb_lower) / bb_lower * 100
-        opt_conds.append(("ok" if bb_near else "no", f"종가 {'≤' if bb_near else '>'} BB하단x1.02 (거리 {bb_dist:.1f}%)"))
+        opt_conds.append(("ok" if bb_near else "no",
+                          "종가 ≤ BB하단x1.02",
+                          f"BB 하단 거리 {bb_dist:.1f}% — {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
     else:
-        opt_conds.append(("na", "BB 하단 N/A"))
+        opt_conds.append(("na", "종가 ≤ BB하단x1.02", "BB 하단 데이터가 없어요"))
     if bb_near: opt_count += 1
 
     rebound = change_pct >= 2.0
-    opt_conds.append(("ok" if rebound else "no", f"전일 대비 {change_pct:+.1f}% {'≥' if rebound else '<'} +2%"))
+    opt_conds.append(("ok" if rebound else "no",
+                      "전일 대비 ≥ +2%",
+                      f"변동 {change_pct:+.1f}% — {'반등 확인이에요' if rebound else '아직 반등이 약해요'}"))
     if rebound: opt_count += 1
 
     conditions.extend(opt_conds)
@@ -369,24 +426,33 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
     # [거부] RSI > 70 (전 단계 공통)
     reject = rsi is not None and rsi > 70
     if reject:
-        conditions.append(("no", f"[거부] RSI {rsi:.1f} > 70 (전 단계 매수 금지)"))
+        conditions.append(("no", "[거부] RSI > 70", f"RSI {rsi:.1f} — 과열이라 전 단계 매수 금지예요"))
         return None, conditions
 
     # ── 1st BUY 조건 평가  [v5.1b: 필수 2개 + 선택 1/3 → 확실한 조정에서만 진입] ──
     # [필수①] RSI ≤ 35 (과매도 확인)
     rsi_ok = rsi is not None and rsi <= 35
-    conditions.append(("ok" if rsi_ok else "no", f"[필수] RSI {rsi:.1f} {'≤' if rsi_ok else '>'} 35" if rsi else "RSI N/A"))
+    if rsi is not None:
+        conditions.append(("ok" if rsi_ok else "no",
+                           "[필수] RSI ≤ 35",
+                           f"RSI {rsi:.1f} — {'과매도 구간이에요' if rsi_ok else '아직 35 이하가 아니에요'}"))
+    else:
+        conditions.append(("no", "[필수] RSI ≤ 35", "RSI 데이터가 없어요"))
 
     # [필수②] 52주 고점 대비 -5% 이상 조정
     dd_ok = drawdown_52w <= -5.0
-    conditions.append(("ok" if dd_ok else "no", f"[필수] 52주 고점 대비 {drawdown_52w:.1f}% {'≤' if dd_ok else '>'} -5%"))
+    conditions.append(("ok" if dd_ok else "no",
+                       "[필수] 52주 고점 대비 ≤ -5%",
+                       f"52주 대비 {drawdown_52w:.1f}% — {'충분히 조정됐어요' if dd_ok else '아직 조정이 부족해요'}"))
 
     # [선택] 3개 중 1개 이상
     opt_count = 0
 
     # 가격 < MA20
     below_ma20 = price_vs_ma20 == "below"
-    conditions.append(("ok" if below_ma20 else "no", f"가격 {'<' if below_ma20 else '≥'} MA20"))
+    conditions.append(("ok" if below_ma20 else "no",
+                       "가격 < MA20",
+                       f"MA20 {'아래에 있어요' if below_ma20 else '위에 있어요'}"))
     if below_ma20: opt_count += 1
 
     # BB 하단 근접
@@ -394,9 +460,11 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
     if bb_lower and price > 0:
         bb_dist = (price - bb_lower) / bb_lower * 100
         bb_near = bb_dist <= 5
-        conditions.append(("ok" if bb_near else "no", f"BB 하단 거리 {bb_dist:.1f}%"))
+        conditions.append(("ok" if bb_near else "no",
+                           "BB 하단 ≤ 5%",
+                           f"BB 하단 거리 {bb_dist:.1f}% — {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
     else:
-        conditions.append(("na", "BB 하단 N/A"))
+        conditions.append(("na", "BB 하단 ≤ 5%", "BB 하단 데이터가 없어요"))
     if bb_near: opt_count += 1
 
     # 하락 모멘텀 둔화 (MACD hist 감소폭 축소)
@@ -408,7 +476,8 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
         elif len(diffs) == 1 and diffs[0] > 0:
             momentum_slowing = True
     conditions.append(("ok" if momentum_slowing else "no",
-                       f"하락 모멘텀 {'둔화' if momentum_slowing else '지속'}"))
+                       "하락 모멘텀 둔화",
+                       f"MACD hist {'감소폭이 줄고 있어요' if momentum_slowing else '여전히 감소 중이에요'}"))
     if momentum_slowing: opt_count += 1
 
     # ── 3rd BUY (50%) — ALL 충족  [v5.1b: RSI>55, MACD 골든크로스+0선 돌파] ──
@@ -416,17 +485,26 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
     macd_signal_val = d.get("macd_signal")
     c3 = []
     above_ma20 = price_vs_ma20 == "above"
-    c3.append(("ok" if above_ma20 else "no", f"가격 {'>' if above_ma20 else '<'} MA20"))
+    c3.append(("ok" if above_ma20 else "no",
+               "가격 > MA20",
+               f"MA20 {'위에 있어요' if above_ma20 else '아래에 있어요'}"))
     if above_ma20: pass
     rsi_55 = rsi is not None and rsi > 55
-    c3.append(("ok" if rsi_55 else "no", f"RSI {rsi:.1f} {'>' if rsi_55 else '≤'} 55" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c3.append(("ok" if rsi_55 else "no",
+                   "RSI > 55",
+                   f"RSI {rsi:.1f} — {'추세 확인이에요' if rsi_55 else '아직 55 이하예요'}"))
+    else:
+        c3.append(("no", "RSI > 55", "RSI 데이터가 없어요"))
     macd_above_zero = macd is not None and macd > 0
     macd_golden_etf = macd is not None and macd_signal_val is not None and macd > macd_signal_val
     macd_c3_ok = macd_above_zero and macd_golden_etf
-    c3.append(("ok" if macd_c3_ok else "no",
-               f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, "
-               f"{'>' if macd_golden_etf else '<'} signal {macd_signal_val:.4f}"
-               if macd is not None and macd_signal_val is not None else "MACD N/A"))
+    if macd is not None and macd_signal_val is not None:
+        c3.append(("ok" if macd_c3_ok else "no",
+                   "MACD > 0 + 골든크로스",
+                   f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden_etf else '<'} signal {macd_signal_val:.4f}"))
+    else:
+        c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
     if all(c[0] == "ok" for c in c3):
         return "3rd_BUY", c3
 
@@ -435,13 +513,25 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
     c2_count = 0
     c2 = []
     rsi_42 = rsi is not None and rsi > 42
-    c2.append(("ok" if rsi_42 else "no", f"RSI {rsi:.1f} {'>' if rsi_42 else '≤'} 42" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c2.append(("ok" if rsi_42 else "no",
+                   "RSI > 42",
+                   f"RSI {rsi:.1f} — {'과매도 탈출이에요' if rsi_42 else '아직 42 이하예요'}"))
+    else:
+        c2.append(("no", "RSI > 42", "RSI 데이터가 없어요"))
     if rsi_42: c2_count += 1
     macd_golden = macd is not None and macd_signal_val is not None and macd > macd_signal_val
-    c2.append(("ok" if macd_golden else "no", f"MACD 골든크로스 {'발생' if macd_golden else '아직 미발생'} ({macd:.4f} vs Signal {macd_signal_val:.4f})" if macd and macd_signal_val else "MACD N/A"))
+    if macd is not None and macd_signal_val is not None:
+        c2.append(("ok" if macd_golden else "no",
+                   "MACD 골든크로스",
+                   f"MACD {macd:.4f} vs signal {macd_signal_val:.4f} — {'골든크로스 발생이에요' if macd_golden else '아직 미발생이에요'}"))
+    else:
+        c2.append(("no", "MACD 골든크로스", "MACD 데이터가 없어요"))
     if macd_golden: c2_count += 1
     above_or_near_ma20 = price_vs_ma20 == "above"
-    c2.append(("ok" if above_or_near_ma20 else "no", f"MA20 {'위에 있거나 근접해요' if above_or_near_ma20 else '아래 (이탈 중)'}"))
+    c2.append(("ok" if above_or_near_ma20 else "no",
+               "가격 > MA20",
+               f"MA20 {'위에 있어요' if above_or_near_ma20 else '아래에 있어요 (이탈 중)'}"))
     if above_or_near_ma20: c2_count += 1
     # Higher Low — 단기(sig_low_stopped) AND 중기(low2 > low1) 이중 확인
     dbl2 = d.get("double_bottom", {})
@@ -454,20 +544,20 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
         mid_term_hl = dbl2.get("higher_low", low2_p > low1_p)   # 중기: 주요 저점 상승
         higher_low = sig_low_stopped and mid_term_hl             # AND 조합
         if higher_low:
-            hl_note = (f"Higher Low: 단기 하락멈춤 + 중기저점상승 "
-                       f"(${low2_p:.2f}({low2_d}) > ${low1_p:.2f}({low1_d}))")
+            hl_desc = (f"단기 하락멈춤 + 중기저점상승 "
+                       f"(${low2_p:.2f}({low2_d}) > ${low1_p:.2f}({low1_d})) — 바닥 확인이에요")
         elif not sig_low_stopped and not mid_term_hl:
-            hl_note = (f"Higher Low 미형성: 단기 저점갱신 중 + 중기저점하락 "
-                       f"(${low2_p:.2f}({low2_d}) ≤ ${low1_p:.2f}({low1_d}))")
+            hl_desc = (f"단기 저점갱신 + 중기저점하락 "
+                       f"(${low2_p:.2f}({low2_d}) ≤ ${low1_p:.2f}({low1_d})) — 아직 하락 중이에요")
         elif not sig_low_stopped:
-            hl_note = f"Higher Low 미형성: 단기 저점갱신 중 (오늘 최근3일 최저 미충족)"
+            hl_desc = "단기 저점갱신 중 — 최근 3일 최저 미충족이에요"
         else:
-            hl_note = (f"Higher Low 미형성: 중기저점 하락 중 "
-                       f"(${low2_p:.2f}({low2_d}) ≤ ${low1_p:.2f}({low1_d}))")
-        c2.append(("ok" if higher_low else "no", hl_note))
+            hl_desc = (f"중기저점 하락 중 "
+                       f"(${low2_p:.2f}({low2_d}) ≤ ${low1_p:.2f}({low1_d})) — 저점이 낮아지고 있어요")
+        c2.append(("ok" if higher_low else "no", "Higher Low 형성", hl_desc))
         if higher_low: c2_count += 1
     else:
-        c2.append(("na", "Higher Low: 저점 데이터 부족 (60일 미만)"))
+        c2.append(("na", "Higher Low 형성", "저점 데이터가 부족해요 (60일 미만)"))
     if c2_count >= 3:
         return "2nd_BUY", c2
 
@@ -502,21 +592,28 @@ def _check_entry_bond(d: dict, macro: dict) -> tuple[str | None, list]:
     conditions = []
 
     if yield_30y is None:
-        conditions.append(("na", "30Y 금리 데이터 없음"))
+        conditions.append(("na", "30Y 금리 ≥ 5.0%", "30Y 금리 데이터가 없어요"))
         return None, conditions
 
     # 1st BUY: 30Y ≥ 5.0% AND RSI ≤ 35
     y_ok = yield_30y >= 5.0
     r_ok = rsi is not None and rsi <= 35
-    conditions.append(("ok" if y_ok else "no", f"30Y 금리 {yield_30y:.3f}% {'≥' if y_ok else '<'} 5.0%"))
-    conditions.append(("ok" if r_ok else "no", f"RSI {rsi:.1f} {'≤' if r_ok else '>'} 35" if rsi else "RSI N/A"))
+    conditions.append(("ok" if y_ok else "no",
+                       "30Y 금리 ≥ 5.0%",
+                       f"30Y 금리 {yield_30y:.3f}% — {'매수 구간이에요' if y_ok else '아직 5.0% 미만이에요'}"))
+    if rsi is not None:
+        conditions.append(("ok" if r_ok else "no",
+                           "RSI ≤ 35",
+                           f"RSI {rsi:.1f} — {'과매도 구간이에요' if r_ok else '아직 35 이하가 아니에요'}"))
+    else:
+        conditions.append(("no", "RSI ≤ 35", "RSI 데이터가 없어요"))
 
     if y_ok and r_ok:
         return "1st_BUY", conditions
 
     # BOND_WATCH: 30Y 4.9~5.0%
     if 4.9 <= yield_30y < 5.0:
-        conditions.append(("ok", f"30Y {yield_30y:.3f}% — 트리거 직전 (4.9~5.0%)"))
+        conditions.append(("ok", "30Y 트리거 직전", f"30Y {yield_30y:.3f}% — 4.9~5.0% 구간이라 주시해요"))
         return "BOND_WATCH", conditions
 
     return None, conditions
@@ -538,18 +635,27 @@ def _check_entry_metal(d: dict, macro: dict) -> tuple[str | None, list]:
     count = 0
 
     rsi_ok = rsi is not None and rsi <= 40
-    conditions.append(("ok" if rsi_ok else "no", f"RSI {rsi:.1f} {'≤' if rsi_ok else '>'} 40" if rsi else "RSI N/A"))
+    if rsi is not None:
+        conditions.append(("ok" if rsi_ok else "no",
+                           "RSI ≤ 40",
+                           f"RSI {rsi:.1f} — {'과매도 근접이에요' if rsi_ok else '아직 40 이하가 아니에요'}"))
+    else:
+        conditions.append(("no", "RSI ≤ 40", "RSI 데이터가 없어요"))
     if rsi_ok:
         count += 1
 
     below_ma20 = price_vs_ma20 == "below"
-    conditions.append(("ok" if below_ma20 else "no", f"가격 {'<' if below_ma20 else '≥'} MA20"))
+    conditions.append(("ok" if below_ma20 else "no",
+                       "가격 < MA20",
+                       f"MA20 {'아래에 있어요' if below_ma20 else '위에 있어요'}"))
     if below_ma20:
         count += 1
 
     # VIX > 25 (변경③: 지정학 리스크 → VIX 대체)
     vix_ok = vix > 25
-    conditions.append(("ok" if vix_ok else "no", f"VIX {vix:.1f} {'>' if vix_ok else '≤'} 25"))
+    conditions.append(("ok" if vix_ok else "no",
+                       "VIX > 25",
+                       f"VIX {vix:.1f} — {'공포 구간이에요' if vix_ok else '아직 안정적이에요'}"))
     if vix_ok:
         count += 1
 
@@ -558,15 +664,17 @@ def _check_entry_metal(d: dict, macro: dict) -> tuple[str | None, list]:
     if bb_lower and price > 0:
         bb_dist = (price - bb_lower) / bb_lower * 100
         bb_near = bb_dist <= 5
-        conditions.append(("ok" if bb_near else "no", f"BB 하단 거리 {bb_dist:.1f}%"))
+        conditions.append(("ok" if bb_near else "no",
+                           "BB 하단 ≤ 5%",
+                           f"BB 하단 거리 {bb_dist:.1f}% — {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
     else:
-        conditions.append(("na", "BB 하단 N/A"))
+        conditions.append(("na", "BB 하단 ≤ 5%", "BB 하단 데이터가 없어요"))
     if bb_near:
         count += 1
 
     # RSI > 80 → TOP_SIGNAL 강제 (별도 처리)
     if rsi is not None and rsi > 80:
-        conditions.append(("no", f"[주의] RSI {rsi:.1f} > 80 — TOP_SIGNAL 영역"))
+        conditions.append(("no", "[주의] RSI > 80", f"RSI {rsi:.1f} — TOP_SIGNAL 영역이에요"))
 
     if count >= 2:
         return "1st_BUY", conditions
@@ -634,7 +742,8 @@ def check_exit_simple(ticker: str, d: dict) -> dict | None:
     if not bullish and not hist_recovering:
         if macd is not None and macd_signal_val is not None:
             if macd < macd_signal_val and "decreasing" in macd_hist_trend:
-                tp2_conditions.append(("ok", f"MACD 데스크로스 ({macd:.4f}) + hist 감소"))
+                tp2_conditions.append(("ok", "MACD 데스크로스 + hist 감소",
+                                       f"MACD {macd:.4f} < signal + hist 감소 — 하락 전환이에요"))
                 tp2_hit = True
     if tp2_hit:
         return {"signal": "TAKE_PROFIT_2", "note": _make_note(tp2_conditions), "conditions": tp2_conditions}
@@ -644,10 +753,11 @@ def check_exit_simple(ticker: str, d: dict) -> dict | None:
         tp1_count = 0
         tp1_conditions = []
         if "decreasing" in macd_hist_trend:
-            tp1_conditions.append(("ok", f"MACD hist 감소 ({macd_hist_trend})"))
+            tp1_conditions.append(("ok", "MACD hist 감소",
+                                   f"추세 '{macd_hist_trend}' — 모멘텀이 약해지고 있어요"))
             tp1_count += 1
         if d.get("price_vs_ma20") == "below":
-            tp1_conditions.append(("ok", "종가 MA20 하회"))
+            tp1_conditions.append(("ok", "종가 < MA20", "MA20 아래로 내려왔어요"))
             tp1_count += 1
         if tp1_count >= 2:
             return {"signal": "TAKE_PROFIT_1", "note": _make_note(tp1_conditions), "conditions": tp1_conditions}
@@ -685,7 +795,7 @@ def _build_exit_sections(d: dict, prev_day: dict | None) -> list:
         _, tp2_conds = _check_take_profit_2(d, prev_day)
         gate = None
     else:
-        tp2_conds = [("na", f"고점 게이트 미통과 (DD {d.get('drawdown_20d_pct', 0):.1f}% ≤ -5%)")]
+        tp2_conds = [("na", "고점 게이트", f"DD {d.get('drawdown_20d_pct', 0):.1f}% ≤ -5% — 이미 많이 하락해서 익절 대상이 아니에요")]
         gate = "고점 게이트 미통과"
     sections.append({
         "name": "TAKE_PROFIT_2 — 상승 종료",
@@ -701,7 +811,7 @@ def _build_exit_sections(d: dict, prev_day: dict | None) -> list:
         _, tp1_conds = _check_take_profit_1(d, prev_day)
         gate = None
     else:
-        tp1_conds = [("na", f"고점 게이트 미통과 (DD {d.get('drawdown_20d_pct', 0):.1f}% ≤ -5%)")]
+        tp1_conds = [("na", "고점 게이트", f"DD {d.get('drawdown_20d_pct', 0):.1f}% ≤ -5% — 이미 많이 하락해서 익절 대상이 아니에요")]
         gate = "고점 게이트 미통과"
     sections.append({
         "name": "TAKE_PROFIT_1 — 상승 둔화",
@@ -738,21 +848,35 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
     # ── 3rd BUY ──
     c3 = []
     above_ma20 = price_vs_ma20 == "above"
-    c3.append(("ok" if above_ma20 else "no", f"가격 {'>' if above_ma20 else '<'} MA20"))
+    c3.append(("ok" if above_ma20 else "no",
+               "가격 > MA20",
+               f"MA20 {'위에 있어요' if above_ma20 else '아래에 있어요'}"))
     macd_above_zero = macd is not None and macd > 0
     macd_golden_c3 = macd is not None and macd_signal is not None and macd > macd_signal
     macd_c3_ok = macd_above_zero and macd_golden_c3
-    c3.append(("ok" if macd_c3_ok else "no",
-               f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, "
-               f"{'>' if macd_golden_c3 else '<'} signal {macd_signal:.4f}"
-               if macd is not None and macd_signal is not None else "MACD N/A"))
+    if macd is not None and macd_signal is not None:
+        c3.append(("ok" if macd_c3_ok else "no",
+                   "MACD > 0 + 골든크로스",
+                   f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden_c3 else '<'} signal {macd_signal:.4f}"))
+    else:
+        c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
     vol_13 = volume_ratio is not None and volume_ratio >= 1.3
-    c3.append(("ok" if vol_13 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_13 else '<'} 1.3" if volume_ratio else "거래량 N/A"))
+    if volume_ratio is not None:
+        c3.append(("ok" if vol_13 else "no",
+                   "거래량비 >= 1.3x",
+                   f"거래량비 {volume_ratio:.2f}x - {'평소보다 많아요' if vol_13 else '아직 부족해요'}"))
+    else:
+        c3.append(("no", "거래량비 >= 1.3x", "거래량 데이터가 없어요"))
     rsi_above_55 = rsi is not None and rsi > 55
-    c3.append(("ok" if rsi_above_55 else "no", f"RSI {rsi:.1f} {'>' if rsi_above_55 else '≤'} 55" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c3.append(("ok" if rsi_above_55 else "no",
+                   "RSI > 55",
+                   f"RSI {rsi:.1f} - {'추세 확인이에요' if rsi_above_55 else '아직 55 이하예요'}"))
+    else:
+        c3.append(("no", "RSI > 55", "RSI 데이터가 없어요"))
     c3_reject = rsi is not None and rsi > 75
     sections.append({
-        "name": f"3차 매수 조건 — {group_label} v2.2",
+        "name": f"3차 매수 조건 - {group_label} v2.2",
         "rule": "4개 모두 충족",
         "conditions": c3,
         "met": _count_ok(c3),
@@ -768,21 +892,35 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
     dbl_valid = dbl_detected and dbl_diff <= 3.0
     if isinstance(dbl, dict) and dbl.get("low1"):
         c2.append(("ok" if dbl_valid else "no",
-                   f"이중바닥: {dbl['low1']['price']}({dbl['low1']['date']}) vs "
+                   "이중바닥 (차이 <= 3%)",
+                   f"{dbl['low1']['price']}({dbl['low1']['date']}) vs "
                    f"{dbl['low2']['price']}({dbl['low2']['date']}) 차이 {dbl_diff:.1f}%"
-                   f"{'' if dbl_valid else ' (3% 초과 → 무효)' if dbl_detected else ''}"))
+                   f"{' - 이중바닥 확인이에요' if dbl_valid else ' - 3% 초과라 무효예요' if dbl_detected else ' - 이중바닥이 아니에요'}"))
     else:
-        c2.append(("no", "이중 바닥 미감지"))
+        c2.append(("no", "이중바닥 (차이 <= 3%)", "이중 바닥 미감지예요"))
     rsi_rising_3d = rsi is not None and rsi > 35
-    c2.append(("ok" if rsi_rising_3d else "no", f"RSI {rsi:.1f} {'>' if rsi_rising_3d else '≤'} 35" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c2.append(("ok" if rsi_rising_3d else "no",
+                   "RSI > 35",
+                   f"RSI {rsi:.1f} - {'과매도를 벗어났어요' if rsi_rising_3d else '아직 과매도 구간이에요'}"))
+    else:
+        c2.append(("no", "RSI > 35", "RSI 데이터가 없어요"))
     macd_golden = macd is not None and macd_signal is not None and macd > macd_signal
-    c2.append(("ok" if macd_golden else "no",
-               f"MACD 골든크로스: {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f}"
-               if macd is not None and macd_signal is not None else "MACD N/A"))
+    if macd is not None and macd_signal is not None:
+        c2.append(("ok" if macd_golden else "no",
+                   "MACD 골든크로스",
+                   f"MACD {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f} - {'골든크로스 발생이에요' if macd_golden else '아직 데스크로스예요'}"))
+    else:
+        c2.append(("no", "MACD 골든크로스", "MACD 데이터가 없어요"))
     vol_12 = volume_ratio is not None and volume_ratio >= 1.2
-    c2.append(("ok" if vol_12 else "no", f"거래량비 {volume_ratio:.2f}x {'≥' if vol_12 else '<'} 1.2" if volume_ratio else "거래량 N/A"))
+    if volume_ratio is not None:
+        c2.append(("ok" if vol_12 else "no",
+                   "거래량비 >= 1.2x",
+                   f"거래량비 {volume_ratio:.2f}x - {'충분해요' if vol_12 else '아직 부족해요'}"))
+    else:
+        c2.append(("no", "거래량비 >= 1.2x", "거래량 데이터가 없어요"))
     sections.append({
-        "name": f"2차 매수 조건 — {group_label} v2.2",
+        "name": f"2차 매수 조건 - {group_label} v2.2",
         "rule": "4개 모두 충족",
         "conditions": c2,
         "met": _count_ok(c2),
@@ -793,25 +931,42 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
     # ── 1st BUY ──
     c1 = []
     rsi_ok = rsi is not None and rsi <= 38
-    c1.append(("ok" if rsi_ok else "no",
-               f"[필수] RSI {rsi:.1f} {'≤' if rsi_ok else '>'} 38" if rsi else "[필수] RSI N/A"))
+    if rsi is not None:
+        c1.append(("ok" if rsi_ok else "no",
+                   "[필수] RSI <= 38",
+                   f"RSI {rsi:.1f} - {'과매도 구간이에요' if rsi_ok else '아직 38 이하가 아니에요'}"))
+    else:
+        c1.append(("no", "[필수] RSI <= 38", "RSI 데이터가 없어요"))
     below_ma20 = price_vs_ma20 == "below"
-    c1.append(("ok" if below_ma20 else "no", f"[필수] 가격 {'<' if below_ma20 else '≥'} MA20"))
+    c1.append(("ok" if below_ma20 else "no",
+               "[필수] 가격 < MA20",
+               f"MA20 {'아래에 있어요 - 조정 확인이에요' if below_ma20 else '위에 있어요 - 아직 조정이 아니에요'}"))
     hist_increasing = "increasing" in macd_hist_trend
-    c1.append(("ok" if hist_increasing else "no", f"[필수] MACD hist 2일 증가: {macd_hist_trend}"))
+    c1.append(("ok" if hist_increasing else "no",
+               "[필수] MACD hist 2일 증가",
+               f"추세 '{macd_hist_trend}' - {'반전 시작이에요' if hist_increasing else '아직 증가세가 아니에요'}"))
     # 선택 조건
     adx_ok = adx is not None and adx <= 25
-    c1.append(("ok" if adx_ok else "no", f"ADX {adx:.1f} {'≤' if adx_ok else '>'} 25" if adx else "ADX N/A"))
+    if adx is not None:
+        c1.append(("ok" if adx_ok else "no",
+                   "ADX <= 25",
+                   f"ADX {adx:.1f} - {'횡보/약추세 구간이에요' if adx_ok else '추세가 강해요'}"))
+    else:
+        c1.append(("no", "ADX <= 25", "ADX 데이터가 없어요"))
     bb_near = False
     if bb_lower and price > 0:
         bb_threshold = bb_lower * 1.02
         bb_near = price <= bb_threshold
         bb_dist = (price - bb_lower) / bb_lower * 100
-        c1.append(("ok" if bb_near else "no", f"종가 {'≤' if bb_near else '>'} BB하단x1.02 (거리 {bb_dist:.1f}%)"))
+        c1.append(("ok" if bb_near else "no",
+                   "종가 <= BB하단x1.02",
+                   f"BB 하단 거리 {bb_dist:.1f}% - {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
     else:
-        c1.append(("na", "BB 하단 N/A"))
+        c1.append(("na", "종가 <= BB하단x1.02", "BB 하단 데이터가 없어요"))
     rebound = change_pct >= 2.0
-    c1.append(("ok" if rebound else "no", f"전일 대비 {change_pct:+.1f}% {'≥' if rebound else '<'} +2%"))
+    c1.append(("ok" if rebound else "no",
+               "전일 대비 >= +2%",
+               f"변동 {change_pct:+.1f}% - {'반등 확인이에요' if rebound else '아직 반등이 약해요'}"))
 
     gate_1st = None
     if reject_drop:
@@ -848,18 +1003,27 @@ def _build_entry_sections_etf(d: dict) -> list:
     # ── 3rd BUY ──
     c3 = []
     above_ma20 = price_vs_ma20 == "above"
-    c3.append(("ok" if above_ma20 else "no", f"가격 {'>' if above_ma20 else '<'} MA20"))
+    c3.append(("ok" if above_ma20 else "no",
+               "가격 > MA20",
+               f"MA20 {'위에 있어요' if above_ma20 else '아래에 있어요'}"))
     rsi_55 = rsi is not None and rsi > 55
-    c3.append(("ok" if rsi_55 else "no", f"RSI {rsi:.1f} {'>' if rsi_55 else '≤'} 55" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c3.append(("ok" if rsi_55 else "no",
+                   "RSI > 55",
+                   f"RSI {rsi:.1f} - {'추세 확인이에요' if rsi_55 else '아직 55 이하예요'}"))
+    else:
+        c3.append(("no", "RSI > 55", "RSI 데이터가 없어요"))
     macd_above_zero = macd is not None and macd > 0
     macd_golden = macd is not None and macd_signal_val is not None and macd > macd_signal_val
     macd_c3_ok = macd_above_zero and macd_golden
-    c3.append(("ok" if macd_c3_ok else "no",
-               f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, "
-               f"{'>' if macd_golden else '<'} signal {macd_signal_val:.4f}"
-               if macd is not None and macd_signal_val is not None else "MACD N/A"))
+    if macd is not None and macd_signal_val is not None:
+        c3.append(("ok" if macd_c3_ok else "no",
+                   "MACD > 0 + 골든크로스",
+                   f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden else '<'} signal {macd_signal_val:.4f}"))
+    else:
+        c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
     sections.append({
-        "name": "3차 매수 조건 — ETF v2.4",
+        "name": "3차 매수 조건 - ETF v2.4",
         "rule": "3개 ALL 충족",
         "conditions": c3,
         "met": _count_ok(c3),
@@ -871,14 +1035,25 @@ def _build_entry_sections_etf(d: dict) -> list:
     c2 = []
     c2_count = 0
     rsi_42 = rsi is not None and rsi > 42
-    c2.append(("ok" if rsi_42 else "no", f"RSI {rsi:.1f} {'>' if rsi_42 else '≤'} 42" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c2.append(("ok" if rsi_42 else "no",
+                   "RSI > 42",
+                   f"RSI {rsi:.1f} - {'과매도 탈출이에요' if rsi_42 else '아직 42 이하예요'}"))
+    else:
+        c2.append(("no", "RSI > 42", "RSI 데이터가 없어요"))
     if rsi_42: c2_count += 1
     macd_golden_2 = macd is not None and macd_signal_val is not None and macd > macd_signal_val
-    c2.append(("ok" if macd_golden_2 else "no",
-               f"MACD 골든크로스 {'발생' if macd_golden_2 else '미발생'}" if macd and macd_signal_val else "MACD N/A"))
+    if macd is not None and macd_signal_val is not None:
+        c2.append(("ok" if macd_golden_2 else "no",
+                   "MACD 골든크로스",
+                   f"MACD {macd:.4f} vs signal {macd_signal_val:.4f} - {'골든크로스 발생이에요' if macd_golden_2 else '아직 미발생이에요'}"))
+    else:
+        c2.append(("no", "MACD 골든크로스", "MACD 데이터가 없어요"))
     if macd_golden_2: c2_count += 1
     above_or_near = price_vs_ma20 == "above"
-    c2.append(("ok" if above_or_near else "no", f"가격 {'>' if above_or_near else '<'} MA20"))
+    c2.append(("ok" if above_or_near else "no",
+               "가격 > MA20",
+               f"MA20 {'위에 있어요' if above_or_near else '아래에 있어요'}"))
     if above_or_near: c2_count += 1
     # Higher Low
     dbl2 = d.get("double_bottom", {})
@@ -888,12 +1063,14 @@ def _build_entry_sections_etf(d: dict) -> list:
         low2_p = dbl2["low2"]["price"]
         mid_term_hl = dbl2.get("higher_low", low2_p > low1_p)
         higher_low = sig_low_stopped and mid_term_hl
-        c2.append(("ok" if higher_low else "no", f"Higher Low {'형성' if higher_low else '미형성'}"))
+        c2.append(("ok" if higher_low else "no",
+                   "Higher Low 형성",
+                   f"Higher Low {'확인 - 바닥 형성이에요' if higher_low else '미형성 - 아직 저점이 올라오지 않았어요'}"))
         if higher_low: c2_count += 1
     else:
-        c2.append(("na", "Higher Low: 데이터 부족"))
+        c2.append(("na", "Higher Low 형성", "저점 데이터가 부족해요"))
     sections.append({
-        "name": "2차 매수 조건 — ETF v2.4",
+        "name": "2차 매수 조건 - ETF v2.4",
         "rule": "4개 중 3개 충족",
         "conditions": c2,
         "met": _count_ok(c2),
@@ -904,18 +1081,29 @@ def _build_entry_sections_etf(d: dict) -> list:
     # ── 1st BUY ──
     c1 = []
     rsi_ok = rsi is not None and rsi <= 35
-    c1.append(("ok" if rsi_ok else "no", f"[필수] RSI {rsi:.1f} {'≤' if rsi_ok else '>'} 35" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c1.append(("ok" if rsi_ok else "no",
+                   "[필수] RSI <= 35",
+                   f"RSI {rsi:.1f} - {'과매도 구간이에요' if rsi_ok else '아직 35 이하가 아니에요'}"))
+    else:
+        c1.append(("no", "[필수] RSI <= 35", "RSI 데이터가 없어요"))
     dd_ok = drawdown_52w <= -5.0
-    c1.append(("ok" if dd_ok else "no", f"[필수] 52주 대비 {drawdown_52w:.1f}% {'≤' if dd_ok else '>'} -5%"))
+    c1.append(("ok" if dd_ok else "no",
+               "[필수] 52주 고점 대비 <= -5%",
+               f"52주 대비 {drawdown_52w:.1f}% - {'충분히 조정됐어요' if dd_ok else '아직 조정이 부족해요'}"))
     below_ma20 = price_vs_ma20 == "below"
-    c1.append(("ok" if below_ma20 else "no", f"가격 {'<' if below_ma20 else '≥'} MA20"))
+    c1.append(("ok" if below_ma20 else "no",
+               "가격 < MA20",
+               f"MA20 {'아래에 있어요' if below_ma20 else '위에 있어요'}"))
     bb_near = False
     if bb_lower and price > 0:
         bb_dist = (price - bb_lower) / bb_lower * 100
         bb_near = bb_dist <= 5
-        c1.append(("ok" if bb_near else "no", f"BB 하단 거리 {bb_dist:.1f}%"))
+        c1.append(("ok" if bb_near else "no",
+                   "BB 하단 <= 5%",
+                   f"BB 하단 거리 {bb_dist:.1f}% - {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
     else:
-        c1.append(("na", "BB 하단 N/A"))
+        c1.append(("na", "BB 하단 <= 5%", "BB 하단 데이터가 없어요"))
     momentum_slowing = False
     if len(macd_hist_3d) >= 2:
         diffs = [macd_hist_3d[i] - macd_hist_3d[i - 1] for i in range(1, len(macd_hist_3d))]
@@ -923,10 +1111,12 @@ def _build_entry_sections_etf(d: dict) -> list:
             momentum_slowing = True
         elif len(diffs) == 1 and diffs[0] > 0:
             momentum_slowing = True
-    c1.append(("ok" if momentum_slowing else "no", f"하락 모멘텀 {'둔화' if momentum_slowing else '지속'}"))
+    c1.append(("ok" if momentum_slowing else "no",
+               "하락 모멘텀 둔화",
+               f"MACD hist {'감소폭이 줄고 있어요' if momentum_slowing else '여전히 감소 중이에요'}"))
     sections.append({
-        "name": "1차 매수 조건 — ETF v2.4",
-        "rule": "[필수] RSI≤35+DD≤-5% + 선택 1/3",
+        "name": "1차 매수 조건 - ETF v2.4",
+        "rule": "[필수] RSI<=35+DD<=-5% + 선택 1/3",
         "conditions": c1,
         "met": _count_ok(c1),
         "total": len(c1),
@@ -943,13 +1133,20 @@ def _build_entry_sections_bond(d: dict, macro: dict) -> list:
     c = []
     if yield_30y is not None:
         y_ok = yield_30y >= 5.0
-        c.append(("ok" if y_ok else "no", f"30Y 금리 {yield_30y:.3f}% {'≥' if y_ok else '<'} 5.0%"))
+        c.append(("ok" if y_ok else "no",
+                  "30Y 금리 >= 5.0%",
+                  f"30Y 금리 {yield_30y:.3f}% - {'매수 구간이에요' if y_ok else '아직 5.0% 미만이에요'}"))
     else:
-        c.append(("na", "30Y 금리 데이터 없음"))
+        c.append(("na", "30Y 금리 >= 5.0%", "30Y 금리 데이터가 없어요"))
     r_ok = rsi is not None and rsi <= 35
-    c.append(("ok" if r_ok else "no", f"RSI {rsi:.1f} {'≤' if r_ok else '>'} 35" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c.append(("ok" if r_ok else "no",
+                  "RSI <= 35",
+                  f"RSI {rsi:.1f} - {'과매도 구간이에요' if r_ok else '아직 35 이하가 아니에요'}"))
+    else:
+        c.append(("no", "RSI <= 35", "RSI 데이터가 없어요"))
     return [{
-        "name": "1차 매수 조건 — 채권 v2.6",
+        "name": "1차 매수 조건 - 채권 v2.6",
         "rule": "2개 모두 충족",
         "conditions": c,
         "met": _count_ok(c),
@@ -967,19 +1164,30 @@ def _build_entry_sections_metal(d: dict, macro: dict) -> list:
     price = d.get("price", 0)
     c = []
     rsi_ok = rsi is not None and rsi <= 40
-    c.append(("ok" if rsi_ok else "no", f"RSI {rsi:.1f} {'≤' if rsi_ok else '>'} 40" if rsi else "RSI N/A"))
+    if rsi is not None:
+        c.append(("ok" if rsi_ok else "no",
+                  "RSI <= 40",
+                  f"RSI {rsi:.1f} - {'과매도 근접이에요' if rsi_ok else '아직 40 이하가 아니에요'}"))
+    else:
+        c.append(("no", "RSI <= 40", "RSI 데이터가 없어요"))
     below_ma20 = price_vs_ma20 == "below"
-    c.append(("ok" if below_ma20 else "no", f"가격 {'<' if below_ma20 else '≥'} MA20"))
+    c.append(("ok" if below_ma20 else "no",
+              "가격 < MA20",
+              f"MA20 {'아래에 있어요' if below_ma20 else '위에 있어요'}"))
     vix_ok = vix > 25
-    c.append(("ok" if vix_ok else "no", f"VIX {vix:.1f} {'>' if vix_ok else '≤'} 25"))
+    c.append(("ok" if vix_ok else "no",
+              "VIX > 25",
+              f"VIX {vix:.1f} - {'공포 구간이에요' if vix_ok else '아직 안정적이에요'}"))
     if bb_lower and price > 0:
         bb_dist = (price - bb_lower) / bb_lower * 100
         bb_near = bb_dist <= 5
-        c.append(("ok" if bb_near else "no", f"BB 하단 거리 {bb_dist:.1f}%"))
+        c.append(("ok" if bb_near else "no",
+                  "BB 하단 <= 5%",
+                  f"BB 하단 거리 {bb_dist:.1f}% - {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
     else:
-        c.append(("na", "BB 하단 N/A"))
+        c.append(("na", "BB 하단 <= 5%", "BB 하단 데이터가 없어요"))
     return [{
-        "name": "1차 매수 조건 — 귀금속 v2.6",
+        "name": "1차 매수 조건 - 귀금속 v2.6",
         "rule": "4개 중 2개 충족",
         "conditions": c,
         "met": _count_ok(c),
@@ -1027,7 +1235,7 @@ def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None, skip_
         return {
             "signal": "CASH",
             "note": "현금성 자산",
-            "conditions": [("ok", "현금성 자산 — 시그널 판정 대상 아님")],
+            "conditions": [("ok", "현금성 자산", "시그널 판정 대상이 아니에요")],
             "judgment_sections": [],
         }
 
@@ -1074,7 +1282,7 @@ def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None, skip_
     return {
         "signal": "HOLD",
         "note": "Exit/Entry 조건 미충족",
-        "conditions": [("na", "Exit/Entry 조건 미충족 — 보유 유지")],
+        "conditions": [("na", "조건 미충족", "Exit/Entry 조건 미충족 - 보유 유지예요")],
         "judgment_sections": all_sections,
     }
 
@@ -1139,7 +1347,7 @@ def judge_all(market_data: dict, history: dict) -> dict[str, dict]:
             results[ticker] = {
                 "signal": "ERROR",
                 "note": d["error"],
-                "conditions": [("no", d["error"])],
+                "conditions": [("no", "오류", d["error"])],
             }
             continue
 

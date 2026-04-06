@@ -108,8 +108,9 @@ STRATEGY_GROUP = {
 }
 
 def is_kospi_ticker(ticker: str) -> bool:
-    """KOSPI 종목 여부 판별 (숫자 6자리)"""
-    return ticker.isdigit() and len(ticker) == 6
+    """KOSPI 종목 여부 판별 (숫자 6자리 또는 .KS 접미사)"""
+    base = ticker.replace(".KS", "")
+    return base.isdigit() and len(base) == 6
 
 
 # ── KOSPI 종목 추가 가이드 ──────────────────────────────
