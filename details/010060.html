@@ -93,19 +93,6 @@
   .cond-ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
   .cond-no { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
   .cond-na { background: rgba(100,116,139,0.15); color: var(--text-dim); border: 1px solid rgba(139,156,181,0.4); }
-  /* Grouped judgment sections */
-  .judge-group { background: var(--panel2); border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; border-left: 3px solid var(--border); }
-  .judge-group.exit-group { border-left-color: var(--red); }
-  .judge-group.entry-group { border-left-color: var(--accent); }
-  .judge-group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .judge-group-header .group-name { font-size: 13px; font-weight: 700; color: var(--text); }
-  .judge-group-header .group-count { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px; }
-  .cnt-full { background: rgba(52,211,153,0.2); color: var(--green); }
-  .cnt-partial { background: rgba(251,191,36,0.2); color: var(--orange); }
-  .cnt-none { background: rgba(100,116,139,0.15); color: var(--sub); }
-  .judge-group .gate-tag { display: inline-block; background: rgba(248,113,113,0.15); color: var(--red); font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 8px; margin-bottom: 6px; }
-  .judge-group .condition-list { margin: 0; }
-  .judge-group .condition-list li { padding: 5px 0; font-size: 12px; }
 
   /* Signal History */
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -145,81 +132,69 @@
           <span class="ticker-name">OCI홀딩스</span>
           <span class="badge badge-class">Unknown</span>
         </h1>
-        <div class="ticker-meta">₩4조 &middot; 2026년 4월 6일 (월요일) &middot; Data: yfinance</div>
+        <div class="ticker-meta">$3.8T &middot; 2026년 4월 3일 (금요일) &middot; Data: yfinance</div>
       </div>
       <div class="price-block">
-        <div class="price">₩223,500</div>
-        <div class="change dn">&#9660; -2.6%</div>
+        <div class="price">$205000.00</div>
+        <div class="change up">&#9650; +5.7%</div>
       </div>
     </div>
     <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
       <span class="badge badge-signal badge-BUY">3rd_BUY</span>
       
         
-        <span class="badge badge-streak confirmed">3&#51068; &#50672;&#49549; BUY &#10003;</span>
+        <span class="badge badge-streak">&#54869;&#51064; &#45824;&#44592; 1/2&#51068;</span>
         
       
-      <span style="font-size: 12px; color: var(--text-dim);">[확정 3일 연속] 가격 > MA20 + MACD 16956.0731 > 0, > signal 13814.4101 + 거래량비 0.28x (2일차 면제)</span>
+      <span style="font-size: 12px; color: var(--text-dim);">[확인 대기 1/2일] 가격 > MA20 + MACD 13198.8932 > 0, > signal 12367.7232 + 거래량비 1.53x ≥ 1.3</span>
     </div>
     
   </div>
 
   <!-- 52-Week Range -->
   
-  <div class="range-section">
-    <div class="range-labels">
-      <span>52&#51452; &#51200;&#51216; ₩58,491</span>
-      <span class="current">&#54788;&#51116; &#50948;&#52824; 50%</span>
-      <span>52&#51452; &#44256;&#51216; ₩229,500</span>
-    </div>
-    <div class="range-bar">
-      <div class="range-fill" style="width: 50%;"></div>
-      <div class="range-marker" style="left: 50%;"></div>
-    </div>
-  </div>
-  
 
   <!-- Metric Cards -->
   <div class="metric-grid">
     <div class="metric-card">
       <div class="label">RSI (14)</div>
-      <div class="value v-orange">68.9</div>
+      <div class="value v-orange">65.8</div>
       <div class="desc">&#51473;&#47549;</div>
     </div>
     <div class="metric-card">
       <div class="label">MACD Hist</div>
-      <div class="value v-green">3141.6629</div>
+      <div class="value v-green">831.1700</div>
       <div class="desc">중립</div>
     </div>
     <div class="metric-card">
       <div class="label">ADX</div>
-      <div class="value v-text">37.2</div>
+      <div class="value v-text">35.6</div>
       <div class="desc">&#44053;&#54620; &#52628;&#49464;</div>
     </div>
     <div class="metric-card">
       <div class="label">BB%</div>
-      <div class="value v-text">93.1%</div>
+      <div class="value v-text">85.8%</div>
       <div class="desc">&#48180;&#46300; &#51473;&#44036;</div>
     </div>
     <div class="metric-card">
       <div class="label">&#44144;&#47000;&#47049; &#48708;&#50984;</div>
-      <div class="value v-cyan">0.28x</div>
+      <div class="value v-cyan">1.53x</div>
       <div class="desc">20&#51068; &#54217;&#44512; &#45824;&#48708;</div>
     </div>
     <div class="metric-card">
       <div class="label">Drawdown 20D</div>
-      <div class="value v-text">-2.6%</div>
+      <div class="value v-text">N/A</div>
       <div class="desc">&#52572;&#44540; 20&#51068; &#44256;&#51216; &#45824;&#48708;</div>
     </div>
     <div class="metric-card">
       <div class="label">MA20</div>
-      <div class="value v-green">₩184,145</div>
-      <div class="desc">&#9650; &#44032;&#44201; &#49345;&#54924;</div>
+      <div class="value v-text">$N/A</div>
+      <div class="desc"></div>
     </div>
     <div class="metric-card">
       <div class="label">MA200</div>
-      <div class="value v-green">₩111,990</div>
-      <div class="desc">&#9650; &#44032;&#44201; &#49345;&#54924;</div>
+      <div class="value v-text">$N/A</div>
+      <div class="desc"></div>
     </div>
   </div>
 
@@ -233,147 +208,38 @@
 
   <!-- Signal Judgment Detail -->
   <div class="signal-section">
-    <div class="section-title">&#128269; &#54032;&#51221; &#44540;&#44144; &#49345;&#49464;</div>
-    <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
-      <span class="badge badge-signal badge-BUY" style="font-size: 14px;">3rd_BUY</span>
-      <span style="font-size: 13px; color: var(--text-dim);">[확정 3일 연속] 가격 > MA20 + MACD 16956.0731 > 0, > signal 13814.4101 + 거래량비 0.28x (2일차 면제)</span>
-    </div>
-    
-    
-    <div class="judge-group entry-group">
-      <div class="judge-group-header">
-        <span class="group-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
-        <span class="group-count cnt-partial">3/4 충족</span>
-      </div>
+    <div class="section-title">&#128269; &#49884;&#44536;&#45328; &#54032;&#51221; &#49345;&#49464;</div>
+    <ul class="condition-list">
       
-      <ul class="condition-list">
+      <li>
         
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          가격 > MA20
-        </li>
+        <span class="cond-icon cond-ok">&#10003;</span>
         
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          MACD 16956.0731 > 0, > signal 13814.4101
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          거래량비 0.28x < 1.3
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          RSI 68.9 > 55
-        </li>
-        
-      </ul>
-    </div>
-    
-    <div class="judge-group entry-group">
-      <div class="judge-group-header">
-        <span class="group-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
-        <span class="group-count cnt-partial">2/4 충족</span>
-      </div>
+        가격 > MA20
+      </li>
       
-      <ul class="condition-list">
+      <li>
         
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          이중바닥: 120600.0(2026-03-04) vs 177600.0(2026-03-24) 차이 47.3%
-        </li>
+        <span class="cond-icon cond-ok">&#10003;</span>
         
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          RSI 68.9 > 35
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          MACD 골든크로스: 16956.0731 > signal 13814.4101
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          거래량비 0.28x < 1.2
-        </li>
-        
-      </ul>
-    </div>
-    
-    <div class="judge-group entry-group">
-      <div class="judge-group-header">
-        <span class="group-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
-        <span class="group-count cnt-partial">1/6 충족</span>
-      </div>
+        MACD 13198.8932 > 0, > signal 12367.7232
+      </li>
       
-      <span class="gate-tag">[거부] RSI 68.9 > 55</span>
+      <li>
+        
+        <span class="cond-icon cond-ok">&#10003;</span>
+        
+        거래량비 1.53x ≥ 1.3
+      </li>
       
-      <ul class="condition-list">
+      <li>
         
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          [필수] RSI 68.9 > 38
-        </li>
+        <span class="cond-icon cond-ok">&#10003;</span>
         
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          [필수] 가격 ≥ MA20
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          [필수] MACD hist 2일 증가: increasing_2d
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          ADX 37.2 > 25
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          종가 > BB하단x1.02 (거리 61.3%)
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          전일 대비 -2.6% < +2%
-        </li>
-        
-      </ul>
-    </div>
-    
-    
+        RSI 65.8 > 55
+      </li>
+      
+    </ul>
   </div>
 
   <!-- Signal History -->
@@ -381,7 +247,7 @@
 
   <!-- Footer -->
   <div class="detail-footer">
-    AI Trading Assistant v3.0 &middot; 2026-04-06 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
+    AI Trading Assistant v3.0 &middot; 2026-04-03 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
   </div>
 
 </div>

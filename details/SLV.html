@@ -106,6 +106,17 @@
   .judge-group .gate-tag { display: inline-block; background: rgba(248,113,113,0.15); color: var(--red); font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 8px; margin-bottom: 6px; }
   .judge-group .condition-list { margin: 0; }
   .judge-group .condition-list li { padding: 5px 0; font-size: 12px; }
+  /* Card-style condition items (3-tuple) */
+  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: rgba(13,27,44,0.4); border-radius: 8px; border: 1px solid rgba(26,48,80,0.5); }
+  .cond-card:last-child { margin-bottom: 0; }
+  .cond-card .cond-icon { margin-top: 2px; }
+  .cond-card-body { flex: 1; min-width: 0; }
+  .cond-card-title { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.4; }
+  .cond-card-desc { font-size: 12px; color: var(--sub); line-height: 1.4; margin-top: 2px; }
+  .cond-card.cond-card-ok .cond-card-title { color: var(--green); }
+  .cond-card.cond-card-no .cond-card-title { color: var(--text); }
+  .cond-card.cond-card-na .cond-card-title { color: var(--text-dim); }
+  .cond-card.cond-card-na .cond-card-desc { color: var(--text-dim); }
 
   /* Signal History */
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -249,30 +260,48 @@
         <span class="group-count cnt-none">0/3 충족</span>
       </div>
       
-      <ul class="condition-list">
+      <div class="condition-card-list">
         
-        <li>
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          RSI 44.2 < 75
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">RSI ≥ 75</div>
+            <div class="cond-card-desc">RSI 44.2 — 아직 75 미만이에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          BB 상단 2일 미충족 (오늘 36.5%, 전일 36.5%)
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">BB 상단 2일 연속</div>
+            <div class="cond-card-desc">오늘 36.5%, 전일 36.5% — 2일 연속이 아니에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          3일내 +3.6%
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">3일 누적 ≥ +10%</div>
+            <div class="cond-card-desc">3일 변동 +3.6% — 10% 미만이에요</div>
+          </div>
+        </div>
         
-      </ul>
+        
+      </div>
     </div>
     
     <div class="judge-group exit-group">
@@ -283,16 +312,22 @@
       
       <span class="gate-tag">고점 게이트 미통과</span>
       
-      <ul class="condition-list">
+      <div class="condition-card-list">
         
-        <li>
+        
+        
+        <div class="cond-card cond-card-na">
           
           <span class="cond-icon cond-na">&mdash;</span>
           
-          고점 게이트 미통과 (DD -17.9% ≤ -5%)
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">고점 게이트</div>
+            <div class="cond-card-desc">DD -17.9% ≤ -5% — 이미 많이 하락해서 익절 대상이 아니에요</div>
+          </div>
+        </div>
         
-      </ul>
+        
+      </div>
     </div>
     
     <div class="judge-group exit-group">
@@ -303,55 +338,85 @@
       
       <span class="gate-tag">고점 게이트 미통과</span>
       
-      <ul class="condition-list">
+      <div class="condition-card-list">
         
-        <li>
+        
+        
+        <div class="cond-card cond-card-na">
           
           <span class="cond-icon cond-na">&mdash;</span>
           
-          고점 게이트 미통과 (DD -17.9% ≤ -5%)
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">고점 게이트</div>
+            <div class="cond-card-desc">DD -17.9% ≤ -5% — 이미 많이 하락해서 익절 대상이 아니에요</div>
+          </div>
+        </div>
         
-      </ul>
+        
+      </div>
     </div>
     
     <div class="judge-group entry-group">
       <div class="judge-group-header">
-        <span class="group-name">1차 매수 조건 — 귀금속 v2.6 (4개 중 2개 충족)</span>
+        <span class="group-name">1차 매수 조건 - 귀금속 v2.6 (4개 중 2개 충족)</span>
         <span class="group-count cnt-partial">1/4 충족</span>
       </div>
       
-      <ul class="condition-list">
+      <div class="condition-card-list">
         
-        <li>
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          RSI 44.2 > 40
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">RSI <= 40</div>
+            <div class="cond-card-desc">RSI 44.2 - 아직 40 이하가 아니에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-ok">
           
           <span class="cond-icon cond-ok">&#10003;</span>
           
-          가격 < MA20
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">가격 < MA20</div>
+            <div class="cond-card-desc">MA20 아래에 있어요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          VIX 23.9 ≤ 25
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">VIX > 25</div>
+            <div class="cond-card-desc">VIX 23.9 - 아직 안정적이에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          BB 하단 거리 16.0%
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">BB 하단 <= 5%</div>
+            <div class="cond-card-desc">BB 하단 거리 16.0% - 아직 멀어요</div>
+          </div>
+        </div>
         
-      </ul>
+        
+      </div>
     </div>
     
     

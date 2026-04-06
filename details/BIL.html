@@ -106,6 +106,17 @@
   .judge-group .gate-tag { display: inline-block; background: rgba(248,113,113,0.15); color: var(--red); font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 8px; margin-bottom: 6px; }
   .judge-group .condition-list { margin: 0; }
   .judge-group .condition-list li { padding: 5px 0; font-size: 12px; }
+  /* Card-style condition items (3-tuple) */
+  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: rgba(13,27,44,0.4); border-radius: 8px; border: 1px solid rgba(26,48,80,0.5); }
+  .cond-card:last-child { margin-bottom: 0; }
+  .cond-card .cond-icon { margin-top: 2px; }
+  .cond-card-body { flex: 1; min-width: 0; }
+  .cond-card-title { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.4; }
+  .cond-card-desc { font-size: 12px; color: var(--sub); line-height: 1.4; margin-top: 2px; }
+  .cond-card.cond-card-ok .cond-card-title { color: var(--green); }
+  .cond-card.cond-card-no .cond-card-title { color: var(--text); }
+  .cond-card.cond-card-na .cond-card-title { color: var(--text-dim); }
+  .cond-card.cond-card-na .cond-card-desc { color: var(--text-dim); }
 
   /* Signal History */
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -248,7 +259,12 @@
         
         <span class="cond-icon cond-ok">&#10003;</span>
         
-        현금성 자산 — 시그널 판정 대상 아님
+        
+        <div class="cond-card-body">
+          <div class="cond-card-title">현금성 자산</div>
+          <div class="cond-card-desc">시그널 판정 대상이 아니에요</div>
+        </div>
+        
       </li>
       
     </ul>
