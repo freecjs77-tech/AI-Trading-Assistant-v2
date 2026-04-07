@@ -223,6 +223,15 @@ def _calc_hypothetical_return(ticker: str, current_price: float, history: dict, 
 
 def _apply_streak_to_entries(entries: list, history: dict, today_str: str = "") -> list:
     """BUY entry 리스트에 streak/confirmed + 가상 수익률 필드 추가."""
+    # 현재 엔트리의 price로 과거 히스토리 백필 (price 없는 항목 보완)
+    price_map = {e["ticker"]: e.get("price") for e in entries if e.get("price")}
+    for dt, day_data in history.items():
+        if dt == today_str:
+            continue
+        for ticker, info in day_data.items():
+            if info.get("price") is None and ticker in price_map:
+                info["price"] = price_map[ticker]
+
     for e in entries:
         streak = _calc_scanner_streak(e["ticker"], e["signal"], history, today_str)
         confirmed = streak >= _MIN_CONSECUTIVE_DAYS
