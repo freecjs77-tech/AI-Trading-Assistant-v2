@@ -203,20 +203,23 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         print("[Step 5a] Generating charts...")
         details_dir = os.path.join(reports_dir, "details")
         charts_dir = os.path.join(details_dir, "charts")
-        from chart_generator import generate_all_charts
-        # 포트폴리오 + 스캐너 BUY 종목 차트 생성
-        tickers_list = [p["ticker"] for p in portfolio]
-        scanner_buy_tickers = []
-        for sc in (scanner_sp100_result, scanner_etf_result, scanner_kospi_result):
-            if sc:
-                for key in ("buy_1st", "buy_2nd", "buy_3rd"):
-                    for e in sc.get(key, []):
-                        t = e.get("ticker", "")
-                        if t and t not in tickers_list and t not in scanner_buy_tickers:
-                            scanner_buy_tickers.append(t)
-        all_chart_tickers = tickers_list + scanner_buy_tickers
-        chart_results = generate_all_charts(all_chart_tickers, charts_dir)
-        print(f"  OK {len(chart_results)}/{len(all_chart_tickers)} charts generated")
+        try:
+            from chart_generator import generate_all_charts
+            # 포트폴리오 + 스캐너 BUY 종목 차트 생성
+            tickers_list = [p["ticker"] for p in portfolio]
+            scanner_buy_tickers = []
+            for sc in (scanner_sp100_result, scanner_etf_result, scanner_kospi_result):
+                if sc:
+                    for key in ("buy_1st", "buy_2nd", "buy_3rd"):
+                        for e in sc.get(key, []):
+                            t = e.get("ticker", "")
+                            if t and t not in tickers_list and t not in scanner_buy_tickers:
+                                scanner_buy_tickers.append(t)
+            all_chart_tickers = tickers_list + scanner_buy_tickers
+            chart_results = generate_all_charts(all_chart_tickers, charts_dir)
+            print(f"  OK {len(chart_results)}/{len(all_chart_tickers)} charts generated")
+        except Exception as e:
+            print(f"  WARN Charts skipped: {e} (pipeline continues)")
 
         print("  Generating detail pages...")
         # 스캐너 히스토리 로드 (상세 페이지 이력 표시용)
