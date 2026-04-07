@@ -106,6 +106,17 @@
   .judge-group .gate-tag { display: inline-block; background: rgba(248,113,113,0.15); color: var(--red); font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 8px; margin-bottom: 6px; }
   .judge-group .condition-list { margin: 0; }
   .judge-group .condition-list li { padding: 5px 0; font-size: 12px; }
+  /* Card-style condition items (3-tuple) */
+  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: rgba(13,27,44,0.4); border-radius: 8px; border: 1px solid rgba(26,48,80,0.5); }
+  .cond-card:last-child { margin-bottom: 0; }
+  .cond-card .cond-icon { margin-top: 2px; }
+  .cond-card-body { flex: 1; min-width: 0; }
+  .cond-card-title { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.4; }
+  .cond-card-desc { font-size: 12px; color: var(--sub); line-height: 1.4; margin-top: 2px; }
+  .cond-card.cond-card-ok .cond-card-title { color: var(--green); }
+  .cond-card.cond-card-no .cond-card-title { color: var(--text); }
+  .cond-card.cond-card-na .cond-card-title { color: var(--text-dim); }
+  .cond-card.cond-card-na .cond-card-desc { color: var(--text-dim); }
 
   /* Signal History */
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -145,11 +156,11 @@
           <span class="ticker-name">LG에너지솔루션</span>
           <span class="badge badge-class">Growth</span>
         </h1>
-        <div class="ticker-meta">₩93조 &middot; 2026년 4월 4일 (토요일) &middot; Data: yfinance</div>
+        <div class="ticker-meta">₩96조 &middot; 2026년 4월 7일 (화요일) &middot; Data: yfinance</div>
       </div>
       <div class="price-block">
-        <div class="price">₩398,500</div>
-        <div class="change dn">&#9660; -1.5%</div>
+        <div class="price">₩408,500</div>
+        <div class="change dn">&#9660; -1.0%</div>
       </div>
     </div>
     <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -161,8 +172,8 @@
     <div class="portfolio-info">
       <span class="item">&#48372;&#50976;: 10.000&#51452;</span>
       <span class="item">&#54217;&#44512;&#45800;&#44032;: ₩503,650</span>
-      <span class="item">&#54217;&#44032;&#44552;&#50529;: ₩3,985,000</span>
-      <span class="item pnl-neg">P&amp;L: -20.9%</span>
+      <span class="item">&#54217;&#44032;&#44552;&#50529;: ₩4,085,000</span>
+      <span class="item pnl-neg">P&amp;L: -18.9%</span>
     </div>
     
   </div>
@@ -172,12 +183,12 @@
   <div class="range-section">
     <div class="range-labels">
       <span>52&#51452; &#51200;&#51216; ₩268,000</span>
-      <span class="current">&#54788;&#51116; &#50948;&#52824; 53%</span>
+      <span class="current">&#54788;&#51116; &#50948;&#52824; 57%</span>
       <span>52&#51452; &#44256;&#51216; ₩514,000</span>
     </div>
     <div class="range-bar">
-      <div class="range-fill" style="width: 53%;"></div>
-      <div class="range-marker" style="left: 53%;"></div>
+      <div class="range-fill" style="width: 57%;"></div>
+      <div class="range-marker" style="left: 57%;"></div>
     </div>
   </div>
   
@@ -186,42 +197,42 @@
   <div class="metric-grid">
     <div class="metric-card">
       <div class="label">RSI (14)</div>
-      <div class="value v-text">52.8</div>
+      <div class="value v-text">55.3</div>
       <div class="desc">&#51473;&#47549;</div>
     </div>
     <div class="metric-card">
       <div class="label">MACD Hist</div>
-      <div class="value v-green">3414.4887</div>
+      <div class="value v-green">3439.9661</div>
       <div class="desc">중립</div>
     </div>
     <div class="metric-card">
       <div class="label">ADX</div>
-      <div class="value v-text">12.0</div>
+      <div class="value v-text">12.6</div>
       <div class="desc">&#52628;&#49464; &#50557;&#54868;</div>
     </div>
     <div class="metric-card">
       <div class="label">BB%</div>
-      <div class="value v-text">74.0%</div>
+      <div class="value v-text">81.4%</div>
       <div class="desc">&#48180;&#46300; &#51473;&#44036;</div>
     </div>
     <div class="metric-card">
       <div class="label">&#44144;&#47000;&#47049; &#48708;&#50984;</div>
-      <div class="value v-cyan">0.69x</div>
+      <div class="value v-cyan">0.85x</div>
       <div class="desc">20&#51068; &#54217;&#44512; &#45824;&#48708;</div>
     </div>
     <div class="metric-card">
       <div class="label">Drawdown 20D</div>
-      <div class="value v-text">-2.8%</div>
+      <div class="value v-text">-1.0%</div>
       <div class="desc">&#52572;&#44540; 20&#51068; &#44256;&#51216; &#45824;&#48708;</div>
     </div>
     <div class="metric-card">
       <div class="label">MA20</div>
-      <div class="value v-green">₩383,075</div>
+      <div class="value v-green">₩387,800</div>
       <div class="desc">&#9650; &#44032;&#44201; &#49345;&#54924;</div>
     </div>
     <div class="metric-card">
       <div class="label">MA200</div>
-      <div class="value v-green">₩383,740</div>
+      <div class="value v-green">₩384,940</div>
       <div class="desc">&#9650; &#44032;&#44201; &#49345;&#54924;</div>
     </div>
   </div>
@@ -245,34 +256,52 @@
     
     <div class="judge-group exit-group">
       <div class="judge-group-header">
-        <span class="group-name">TOP_SIGNAL — 과열 경보 (1개 충족 시 발동)</span>
+        <span class="group-name">TOP_SIGNAL — 과열 경보 (3개 중 2개 충족 시 발동)</span>
         <span class="group-count cnt-none">0/3 충족</span>
       </div>
       
-      <ul class="condition-list">
+      <div class="condition-card-list">
         
-        <li>
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          RSI 52.8 < 75
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">RSI ≥ 75</div>
+            <div class="cond-card-desc">RSI 55.3 — 아직 75 미만이에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          BB 상단 2일 미충족 (오늘 74.0%, 전일 74.0%)
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">BB 상단 2일 연속</div>
+            <div class="cond-card-desc">오늘 81.4%, 전일 74.0% — 2일 연속이 아니에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          3일내 +1.0%
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">3일 누적 ≥ +10%</div>
+            <div class="cond-card-desc">3일 변동 +1.0% — 10% 미만이에요</div>
+          </div>
+        </div>
         
-      </ul>
+        
+      </div>
     </div>
     
     <div class="judge-group exit-group">
@@ -281,140 +310,224 @@
         <span class="group-count cnt-none">0/3 충족</span>
       </div>
       
-      <ul class="condition-list">
+      <div class="condition-card-list">
         
-        <li>
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          MA20 이탈 2일 미충족
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">MA20 이탈 2일 + MACD hist 감소</div>
+            <div class="cond-card-desc">MA20 이탈 2일 연속이 아니에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          Higher Low 미형성 (저점2 $356000.00 ≤ 저점1 $366000.00)
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">Higher Low 하향 돌파</div>
+            <div class="cond-card-desc">저점2 $356000.00 ≤ 저점1 $366000.00 — Higher Low가 아니에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          MACD 데스크로스: MACD(3553.7102) > signal(139.2215)
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">MACD 데스크로스 + hist 3일 감소</div>
+            <div class="cond-card-desc">MACD 5367.3510 > signal 1927.3849, hist 추세 'mixed' — 조건 미충족이에요</div>
+          </div>
+        </div>
         
-      </ul>
+        
+      </div>
     </div>
     
     <div class="judge-group exit-group">
       <div class="judge-group-header">
         <span class="group-name">TAKE_PROFIT_1 — 상승 둔화 (3개 중 2개 충족)</span>
-        <span class="group-count cnt-partial">1/3 충족</span>
+        <span class="group-count cnt-none">0/3 충족</span>
       </div>
       
-      <ul class="condition-list">
+      <div class="condition-card-list">
         
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          MACD hist 3일 감소 (decreasing_2d)
-        </li>
         
-        <li>
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          RSI 다이버전스 미충족 (52.8 → 52.8)
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">MACD hist 3일 감소</div>
+            <div class="cond-card-desc">추세 'mixed' — 아직 3일 연속 감소가 아니에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          종가 MA20 상회
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">RSI 다이버전스</div>
+            <div class="cond-card-desc">전일 52.8 → 오늘 55.3 — 다이버전스 조건 미충족이에요</div>
+          </div>
+        </div>
         
-      </ul>
+        
+        
+        
+        <div class="cond-card cond-card-no">
+          
+          <span class="cond-icon cond-no">&#10007;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">종가 < MA20</div>
+            <div class="cond-card-desc">아직 MA20 위에 있어요</div>
+          </div>
+        </div>
+        
+        
+      </div>
     </div>
     
     <div class="judge-group entry-group">
       <div class="judge-group-header">
-        <span class="group-name">3차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
-        <span class="group-count cnt-partial">2/4 충족</span>
-      </div>
-      
-      <ul class="condition-list">
-        
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          가격 > MA20
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          MACD 3553.7102 > 0, > signal 139.2215
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          거래량비 0.69x < 1.3
-        </li>
-        
-        <li>
-          
-          <span class="cond-icon cond-no">&#10007;</span>
-          
-          RSI 52.8 ≤ 55
-        </li>
-        
-      </ul>
-    </div>
-    
-    <div class="judge-group entry-group">
-      <div class="judge-group-header">
-        <span class="group-name">2차 매수 조건 — 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="group-name">3차 매수 조건 - 성장주 v2.2 (4개 모두 충족)</span>
         <span class="group-count cnt-partial">3/4 충족</span>
       </div>
       
-      <ul class="condition-list">
+      <div class="condition-card-list">
         
-        <li>
+        
+        
+        <div class="cond-card cond-card-ok">
           
           <span class="cond-icon cond-ok">&#10003;</span>
           
-          이중바닥: 366000.0(2026-03-16) vs 356000.0(2026-03-23) 차이 2.7%
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">가격 > MA20</div>
+            <div class="cond-card-desc">MA20 위에 있어요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-ok">
           
           <span class="cond-icon cond-ok">&#10003;</span>
           
-          RSI 52.8 > 35
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">MACD > 0 + 골든크로스</div>
+            <div class="cond-card-desc">MACD 5367.3510 > 0, > signal 1927.3849</div>
+          </div>
+        </div>
         
-        <li>
-          
-          <span class="cond-icon cond-ok">&#10003;</span>
-          
-          MACD 골든크로스: 3553.7102 > signal 139.2215
-        </li>
         
-        <li>
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          거래량비 0.69x < 1.2
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">거래량비 >= 1.3x</div>
+            <div class="cond-card-desc">거래량비 0.85x - 아직 부족해요</div>
+          </div>
+        </div>
         
-      </ul>
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">RSI > 55</div>
+            <div class="cond-card-desc">RSI 55.3 - 추세 확인이에요</div>
+          </div>
+        </div>
+        
+        
+      </div>
+    </div>
+    
+    <div class="judge-group entry-group">
+      <div class="judge-group-header">
+        <span class="group-name">2차 매수 조건 - 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="group-count cnt-partial">3/4 충족</span>
+      </div>
+      
+      <div class="condition-card-list">
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">이중바닥 (차이 <= 3%)</div>
+            <div class="cond-card-desc">366000.0(2026-03-16) vs 356000.0(2026-03-23) 차이 2.7% - 이중바닥 확인이에요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">RSI > 35</div>
+            <div class="cond-card-desc">RSI 55.3 - 과매도를 벗어났어요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">MACD 골든크로스</div>
+            <div class="cond-card-desc">MACD 5367.3510 > signal 1927.3849 - 골든크로스 발생이에요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-no">
+          
+          <span class="cond-icon cond-no">&#10007;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">거래량비 >= 1.2x</div>
+            <div class="cond-card-desc">거래량비 0.85x - 아직 부족해요</div>
+          </div>
+        </div>
+        
+        
+      </div>
     </div>
     
     <div class="judge-group entry-group">
@@ -423,51 +536,89 @@
         <span class="group-count cnt-partial">1/6 충족</span>
       </div>
       
-      <ul class="condition-list">
+      <span class="gate-tag">[거부] RSI 55.3 > 55</span>
+      
+      <div class="condition-card-list">
         
-        <li>
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          [필수] RSI 52.8 > 38
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">[필수] RSI <= 38</div>
+            <div class="cond-card-desc">RSI 55.3 - 아직 38 이하가 아니에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          [필수] 가격 ≥ MA20
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">[필수] 가격 < MA20</div>
+            <div class="cond-card-desc">MA20 위에 있어요 - 아직 조정이 아니에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          [필수] MACD hist 2일 증가: decreasing_2d
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">[필수] MACD hist 2일 증가</div>
+            <div class="cond-card-desc">추세 'mixed' - 아직 증가세가 아니에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-ok">
           
           <span class="cond-icon cond-ok">&#10003;</span>
           
-          ADX 12.0 ≤ 25
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">ADX <= 25</div>
+            <div class="cond-card-desc">ADX 12.6 - 횡보/약추세 구간이에요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          종가 > BB하단x1.02 (거리 13.5%)
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">종가 <= BB하단x1.02</div>
+            <div class="cond-card-desc">BB 하단 거리 15.1% - 아직 멀어요</div>
+          </div>
+        </div>
         
-        <li>
+        
+        
+        
+        <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
-          전일 대비 -1.5% < +2%
-        </li>
+          <div class="cond-card-body">
+            <div class="cond-card-title">전일 대비 >= +2%</div>
+            <div class="cond-card-desc">변동 -1.0% - 아직 반등이 약해요</div>
+          </div>
+        </div>
         
-      </ul>
+        
+      </div>
     </div>
     
     
@@ -499,7 +650,7 @@
 
   <!-- Footer -->
   <div class="detail-footer">
-    AI Trading Assistant v3.0 &middot; 2026-04-04 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
+    AI Trading Assistant v3.0 &middot; 2026-04-07 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
   </div>
 
 </div>
