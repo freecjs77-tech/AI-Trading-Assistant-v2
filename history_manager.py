@@ -6,9 +6,14 @@ signals_history.json의 로드/저장/가지치기(30일) 관리.
 변경④: price_vs_ma20, ma20 필드 추가 저장.
 """
 
+from __future__ import annotations
+
 import json
 import os
 from datetime import datetime, timedelta
+
+import pandas as pd
+import yfinance as yf
 
 
 def load_history(path: str) -> dict:
@@ -85,6 +90,88 @@ def prune_old(history: dict, keep_days: int = 30) -> dict:
     for k in keys_to_remove:
         del history[k]
     return history
+
+
+def backfill_prices(history: dict, today_str: str = ""):
+    """과거 날짜의 price를 yfinance 실제 종가로 교정.
+
+    장중 실행 시 현재가가 저장되므로, 오늘이 아닌 모든 과거 항목의
+    가격을 실제 종가로 덮어쓴다.
+    """
+    targets: dict[str, list[str]] = {}  # {ticker: [date1, date2, ...]}
+    for dt, day_data in history.items():
+        if dt == today_str or dt.startswith("_"):
+            continue
+        for ticker, info in day_data.items():
+            if ticker.startswith("_"):
+                continue
+            if info.get("price") is not None:
+                targets.setdefault(ticker, []).append(dt)
+
+    if not targets:
+        return
+
+    all_dates = sorted(set(d for dates in targets.values() for d in dates))
+    start = (datetime.strptime(all_dates[0], "%Y-%m-%d") - timedelta(days=10)).strftime("%Y-%m-%d")
+    end = (datetime.strptime(all_dates[-1], "%Y-%m-%d") + timedelta(days=5)).strftime("%Y-%m-%d")
+
+    tickers_list = list(targets.keys())
+    # KOSPI 종목은 .KS 접미사 필요
+    yf_map: dict[str, str] = {}
+    for t in tickers_list:
+        if t.isdigit() and len(t) == 6:
+            yf_map[t] = f"{t}.KS"
+        else:
+            yf_map[t] = t
+
+    yf_tickers = list(yf_map.values())
+    print(f"  [Portfolio Backfill] {len(yf_tickers)}개 종목 종가 조회 ({all_dates[0]}~{all_dates[-1]})")
+    try:
+        df = yf.download(yf_tickers, start=start, end=end,
+                         auto_adjust=True, progress=False)
+        if df is None or df.empty:
+            print("  [Portfolio Backfill] yfinance 데이터 없음")
+            return
+    except Exception as ex:
+        print(f"  [Portfolio Backfill] yfinance 오류: {ex}")
+        return
+
+    filled = 0
+    num_tickers = len(yf_tickers)
+    for ticker, dates in targets.items():
+        yf_ticker = yf_map[ticker]
+        for dt in dates:
+            try:
+                ts = pd.Timestamp(dt)
+                if num_tickers == 1:
+                    if ts in df.index:
+                        close = float(df.loc[ts, "Close"])
+                    else:
+                        prior = df[:ts]["Close"].dropna()
+                        close = float(prior.iloc[-1]) if not prior.empty else None
+                else:
+                    if ts in df.index:
+                        val = df.loc[ts, ("Close", yf_ticker)]
+                        close = float(val) if pd.notna(val) else None
+                    else:
+                        prior = df[:ts][("Close", yf_ticker)].dropna()
+                        close = float(prior.iloc[-1]) if not prior.empty else None
+
+                if close is not None:
+                    # KRW 종목은 정수로 반올림
+                    if ticker.isdigit() and len(ticker) == 6:
+                        close = round(close)
+                    else:
+                        close = round(close, 2)
+                    old_price = history[dt][ticker].get("price")
+                    if old_price != close:
+                        history[dt][ticker]["price"] = close
+                        filled += 1
+            except Exception:
+                continue
+
+    if filled:
+        print(f"  [Portfolio Backfill] {filled}건 종가 교정 완료")
 
 
 def get_previous_signals(history: dict, date_str: str) -> dict:

@@ -194,14 +194,18 @@ def _extract_close(df, ticker: str, date_str: str, num_tickers: int):
 
 
 def _backfill_missing_prices(history: dict, today_str: str = ""):
-    """히스토리에서 price가 None인 항목을 yfinance 실제 종가로 백필."""
+    """히스토리에서 과거 날짜의 price를 yfinance 실제 종가로 교정.
+
+    장중 실행 시 현재가가 저장되므로, 오늘이 아닌 모든 과거 항목의
+    가격을 실제 종가로 덮어쓴다.
+    """
     missing = {}  # {ticker: [date1, date2, ...]}
     for dt, day_data in history.items():
         if dt == today_str:
             continue
         for ticker, info in day_data.items():
-            if info.get("price") is None:
-                missing.setdefault(ticker, []).append(dt)
+            # 과거 날짜는 모두 yfinance 종가로 교정 (장중가 → 종가)
+            missing.setdefault(ticker, []).append(dt)
 
     if not missing:
         return
@@ -212,9 +216,18 @@ def _backfill_missing_prices(history: dict, today_str: str = ""):
     end_date = (datetime.strptime(all_dates[-1], "%Y-%m-%d") + timedelta(days=5)).strftime("%Y-%m-%d")
 
     tickers_list = list(missing.keys())
-    print(f"  [Backfill] yfinance로 {len(tickers_list)}개 티커 실제 종가 조회 ({start_date}~{all_dates[-1]})")
+    # KOSPI 종목은 .KS 접미사 필요
+    yf_map = {}
+    for t in tickers_list:
+        if t.isdigit() and len(t) == 6:
+            yf_map[t] = f"{t}.KS"
+        else:
+            yf_map[t] = t
+    yf_tickers = list(yf_map.values())
+
+    print(f"  [Backfill] yfinance로 {len(yf_tickers)}개 티커 실제 종가 조회 ({start_date}~{all_dates[-1]})")
     try:
-        df = yf.download(tickers_list, start=start_date, end=end_date,
+        df = yf.download(yf_tickers, start=start_date, end=end_date,
                          auto_adjust=True, progress=False)
         if df is None or df.empty:
             print("  [Backfill] yfinance 데이터 없음, 스킵")
@@ -225,10 +238,16 @@ def _backfill_missing_prices(history: dict, today_str: str = ""):
 
     filled = 0
     for ticker, dates in missing.items():
+        yf_ticker = yf_map[ticker]
         for dt in dates:
-            close_price = _extract_close(df, ticker, dt, len(tickers_list))
+            close_price = _extract_close(df, yf_ticker, dt, len(yf_tickers))
             if close_price is not None:
-                history[dt][ticker]["price"] = round(close_price, 2)
+                # KRW 종목은 정수로 반올림
+                if ticker.isdigit() and len(ticker) == 6:
+                    close_price = round(close_price)
+                else:
+                    close_price = round(close_price, 2)
+                history[dt][ticker]["price"] = close_price
                 filled += 1
 
     print(f"  [Backfill] {filled}/{sum(len(v) for v in missing.values())}건 실제 종가 백필 완료")

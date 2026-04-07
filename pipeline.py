@@ -16,7 +16,7 @@ if sys.platform == "win32":
 
 from portfolio_data import TICKER_META
 from signal_judge import judge_all
-from history_manager import load_history, save_today, prune_old, save_history, get_previous_signals
+from history_manager import load_history, save_today, prune_old, save_history, get_previous_signals, backfill_prices
 from report_generator import generate_report, generate_detail_pages, generate_scanner_pages
 
 
@@ -259,6 +259,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         print("[Step 6] Updating history...")
         meta = market_data.get("_meta", {})
         history = save_today(history, today, signals, market_data, meta.get("ticker_source", "portfolio.md"))
+        backfill_prices(history, today)
         history = prune_old(history)
         save_history(history, history_path)
         print("  OK signals_history.json updated")
