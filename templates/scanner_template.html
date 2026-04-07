@@ -45,10 +45,37 @@
   .ref-table .signal-col { width: 130px; white-space: nowrap; }
   .ref-table .action-col { width: 80px; }
   .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
+  .hypo-box { background: #f0f4f8; border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: 11px; border-left: 3px solid #3498db; }
+  .hypo-box .hypo-title { font-weight: 700; font-size: 11px; color: #555; margin-bottom: 4px; }
+  .hypo-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+  .hypo-row .hypo-label { color: #666; }
+  .hypo-row .hypo-val { font-weight: 700; }
+  .hypo-row .hypo-val.up { color: #27ae60; }
+  .hypo-row .hypo-val.dn { color: #e74c3c; }
   @media (max-width: 600px) { .ticker-card { width: 100%; } .sum-card { min-width: 80px; } .header-row { flex-direction: column; align-items: flex-start; } .header-controls { margin: 8px 0; } }
 </style>
 </head>
 <body>
+{% macro hypo_return_box(e, is_kospi) %}
+{% if e.hypo_return is defined and e.hypo_return and (e.hypo_return.day1_return is not none or e.hypo_return.day2_return is not none) %}
+<div class="hypo-box">
+  <div class="hypo-title">📊 매수 시뮬레이션</div>
+  {% if e.hypo_return.day1_return is not none %}
+  <div class="hypo-row">
+    <span class="hypo-label">1일차 매수 ({% if is_kospi %}₩{{ "{:,.0f}".format(e.hypo_return.day1_price) }}{% else %}${{ "{:.2f}".format(e.hypo_return.day1_price) }}{% endif %}, {{ e.hypo_return.day1_date[5:] }})</span>
+    <span class="hypo-val {{ 'up' if e.hypo_return.day1_return >= 0 else 'dn' }}">{{ '+' if e.hypo_return.day1_return >= 0 else '' }}{{ "{:.2f}".format(e.hypo_return.day1_return) }}%</span>
+  </div>
+  {% endif %}
+  {% if e.hypo_return.day2_return is not none %}
+  <div class="hypo-row">
+    <span class="hypo-label">확정 매수 ({% if is_kospi %}₩{{ "{:,.0f}".format(e.hypo_return.day2_price) }}{% else %}${{ "{:.2f}".format(e.hypo_return.day2_price) }}{% endif %}, {{ e.hypo_return.day2_date[5:] }})</span>
+    <span class="hypo-val {{ 'up' if e.hypo_return.day2_return >= 0 else 'dn' }}">{{ '+' if e.hypo_return.day2_return >= 0 else '' }}{{ "{:.2f}".format(e.hypo_return.day2_return) }}%</span>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
 <div class="container">
 
   <div class="header-row">
@@ -81,6 +108,7 @@
       <div class="name">{{ e.name }}{% if e.market_cap_fmt %} · {{ e.market_cap_fmt }}{% elif e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
       <div><span class="price">{% if is_kospi %}₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}{% else %}${{ e.price|f2 }}{% endif %}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
       <div class="metrics"><span>RSI: {{ e.rsi|f1 if e.rsi else 'N/A' }}</span>{% if e.adx is defined %}<span>ADX: {{ e.adx|f1 if e.adx else 'N/A' }}</span>{% endif %}{% if e.drawdown_52w is defined %}<span>52w DD: {{ e.drawdown_52w|f1 if e.drawdown_52w else 'N/A' }}%</span>{% endif %}</div>
+      {{ hypo_return_box(e, is_kospi) }}
       <div class="reason">{{ e.note }}</div>
       <a href="details/{{ e.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
     </div>
@@ -96,6 +124,7 @@
       <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
       <div class="name">{{ e.name }}{% if e.market_cap_fmt %} · {{ e.market_cap_fmt }}{% elif e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
       <div><span class="price">{% if is_kospi %}₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}{% else %}${{ e.price|f2 }}{% endif %}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      {{ hypo_return_box(e, is_kospi) }}
       <div class="reason">{{ e.note }}</div>
       <a href="details/{{ e.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
     </div>
@@ -111,6 +140,7 @@
       <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span>{% if e.buy_confirmed %}<span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
       <div class="name">{{ e.name }}{% if e.market_cap_fmt %} · {{ e.market_cap_fmt }}{% elif e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
       <div><span class="price">{% if is_kospi %}₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}{% else %}${{ e.price|f2 }}{% endif %}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      {{ hypo_return_box(e, is_kospi) }}
       <div class="reason">{{ e.note }}</div>
       <a href="details/{{ e.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#3498db;text-decoration:none;border:1px solid #3498db;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
     </div>

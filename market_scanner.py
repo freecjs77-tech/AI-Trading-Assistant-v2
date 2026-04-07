@@ -162,8 +162,65 @@ def _calc_scanner_streak(ticker: str, signal: str, history: dict, today_str: str
     return streak
 
 
+def _calc_hypothetical_return(ticker: str, current_price: float, history: dict, today_str: str = "") -> dict:
+    """BUY 연속 구간에서 1일차/2일차(확정) 매수 가상 수익률 계산.
+
+    히스토리를 역순 탐색하여 현재 연속 BUY 구간의 시작일과 2일째를 찾고,
+    해당 날짜의 가격 대비 현재 수익률을 계산한다.
+
+    Returns:
+        dict with keys: day1_price, day1_date, day1_return,
+                        day2_price, day2_date, day2_return
+        가격 데이터 없으면 해당 값은 None.
+    """
+    result = {
+        "day1_price": None, "day1_date": None, "day1_return": None,
+        "day2_price": None, "day2_date": None, "day2_return": None,
+    }
+    if not current_price or current_price <= 0:
+        return result
+
+    # 과거 날짜를 역순으로 정렬하여 연속 BUY 구간 추출
+    dates = sorted([k for k in history.keys() if k != today_str], reverse=True)
+    buy_dates = []  # 연속 BUY 날짜들 (최신→과거 순)
+    for dt in dates:
+        day_data = history.get(dt, {})
+        ticker_data = day_data.get(ticker, {})
+        if ticker_data.get("signal", "") in _BUY_SIGNALS:
+            buy_dates.append((dt, ticker_data))
+        else:
+            break
+        if len(buy_dates) >= 10:
+            break
+
+    if not buy_dates:
+        return result
+
+    # buy_dates는 최신→과거 순이므로 뒤집어서 과거→최신 순으로
+    buy_dates.reverse()
+
+    # 1일차 = 연속 구간 첫 번째 날
+    day1_dt, day1_data = buy_dates[0]
+    day1_price = day1_data.get("price")
+    if day1_price and day1_price > 0:
+        result["day1_price"] = day1_price
+        result["day1_date"] = day1_dt
+        result["day1_return"] = round((current_price - day1_price) / day1_price * 100, 2)
+
+    # 2일차 = 연속 구간 두 번째 날 (확정 매수 시점)
+    if len(buy_dates) >= 2:
+        day2_dt, day2_data = buy_dates[1]
+        day2_price = day2_data.get("price")
+        if day2_price and day2_price > 0:
+            result["day2_price"] = day2_price
+            result["day2_date"] = day2_dt
+            result["day2_return"] = round((current_price - day2_price) / day2_price * 100, 2)
+
+    return result
+
+
 def _apply_streak_to_entries(entries: list, history: dict, today_str: str = "") -> list:
-    """BUY entry 리스트에 streak/confirmed 필드 추가."""
+    """BUY entry 리스트에 streak/confirmed + 가상 수익률 필드 추가."""
     for e in entries:
         streak = _calc_scanner_streak(e["ticker"], e["signal"], history, today_str)
         confirmed = streak >= _MIN_CONSECUTIVE_DAYS
@@ -173,6 +230,12 @@ def _apply_streak_to_entries(entries: list, history: dict, today_str: str = "") 
             e["note"] = f"[확정 {streak}일 연속] {e['note']}"
         else:
             e["note"] = f"[확인 대기 {streak}/{_MIN_CONSECUTIVE_DAYS}일] {e['note']}"
+
+        # 가상 수익률 계산
+        hypo = _calc_hypothetical_return(
+            e["ticker"], e.get("price", 0), history, today_str
+        )
+        e["hypo_return"] = hypo
     return entries
 
 
