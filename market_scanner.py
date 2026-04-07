@@ -10,7 +10,9 @@ import os
 import sys
 import json
 import subprocess
-from datetime import date, datetime
+from datetime import date, datetime, timezone, timedelta
+
+_KST = timezone(timedelta(hours=9))
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -424,7 +426,7 @@ def scan_sp100(project_dir: str) -> dict:
     result = {
         "status": "ok",
         "scan_date": today,
-        "scan_time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "scan_time": datetime.now(_KST).strftime("%Y-%m-%d %H:%M"),
         "scanned": len(scan_tickers),
         "elapsed_sec": round(elapsed, 1),
         "buy_1st": buy_1st,
@@ -588,7 +590,7 @@ def scan_etf(project_dir: str) -> dict:
     result = {
         "status": "ok",
         "scan_date": today,
-        "scan_time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "scan_time": datetime.now(_KST).strftime("%Y-%m-%d %H:%M"),
         "scanned": len(scan_tickers),
         "elapsed_sec": round(elapsed, 1),
         "buy_1st": buy_1st,
@@ -874,7 +876,7 @@ def scan_kospi(project_dir: str) -> dict:
     result = {
         "status": "ok",
         "scan_date": today,
-        "scan_time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "scan_time": datetime.now(_KST).strftime("%Y-%m-%d %H:%M"),
         "scanned": len(scan_tickers),
         "elapsed_sec": round(elapsed, 1),
         "buy_1st": buy_1st,
