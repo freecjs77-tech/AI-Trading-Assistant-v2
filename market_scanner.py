@@ -185,6 +185,10 @@ def _update_scanner_history(buy_lists: list, scanner_name: str, project_dir: str
         for e in entries:
             today_entry[e["ticker"]] = {
                 "signal": e["signal"],
+                "price": e.get("price"),
+                "rsi": e.get("rsi"),
+                "macd_hist": e.get("macd_hist"),
+                "drawdown": e.get("drawdown"),
             }
     history[today_str] = today_entry
     _save_scanner_history(project_dir, scanner_name, history)

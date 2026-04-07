@@ -153,6 +153,64 @@ def check_scanner_pages(reports_dir: str, today: str) -> list:
     return errors
 
 
+def check_scanner_detail_history(details_dir: str, project_dir: str, today: str = None) -> list:
+    """스캐너 상세 페이지 시그널 이력 존재 검사"""
+    errors = []
+    history_dir = os.path.join(project_dir, "history")
+
+    # 스캐너 히스토리에서 이력이 있는 티커 수집
+    scanner_tickers_with_history = set()
+    for scanner_name in ["sp100", "etf", "kospi"]:
+        hist_path = os.path.join(history_dir, f"scanner_{scanner_name}_history.json")
+        if not os.path.exists(hist_path):
+            continue
+        try:
+            with open(hist_path, "r", encoding="utf-8") as f:
+                hist = json.load(f)
+            for date_key, tickers in hist.items():
+                for ticker in tickers:
+                    scanner_tickers_with_history.add(ticker)
+        except (json.JSONDecodeError, IOError):
+            continue
+
+    if not scanner_tickers_with_history:
+        return errors  # 스캐너 히스토리 자체가 없으면 스킵
+
+    # 포트폴리오 종목 (스캐너 전용 상세 페이지만 검사)
+    portfolio_tickers = set()
+    portfolio_path = os.path.join(project_dir, "portfolio.md")
+    if os.path.exists(portfolio_path):
+        with open(portfolio_path, "r", encoding="utf-8") as f:
+            for line in f:
+                m = re.match(r"^\|\s*([A-Z]{1,6})\s*\|", line)
+                if m and m.group(1) not in ("Ticker",):
+                    portfolio_tickers.add(m.group(1).strip())
+
+    # 스캐너 전용 상세 페이지에서 이력 테이블 존재 확인
+    checked = 0
+    missing_history = []
+    for ticker in scanner_tickers_with_history:
+        if ticker in portfolio_tickers:
+            continue  # 포트폴리오 종목은 이미 별도 검사
+        ticker_file = ticker.replace(".KS", "_KS") if ".KS" in ticker else ticker
+        page_path = os.path.join(details_dir, f"{ticker_file}.html")
+        if not os.path.exists(page_path):
+            continue
+        html = _load_html(page_path)
+        checked += 1
+        # history-row 클래스 또는 이력 테이블 존재 확인
+        if "history-row" not in html and "시그널 이력" not in html and "<td>" not in html:
+            missing_history.append(ticker)
+
+    if missing_history:
+        errors.append(
+            f"[WARN] 스캐너 상세 페이지 이력 미표시: {', '.join(missing_history[:5])}"
+            + (f" 외 {len(missing_history)-5}건" if len(missing_history) > 5 else "")
+        )
+
+    return errors
+
+
 def check_market_data(screenshots_dir: str, today: str) -> list:
     """마켓 데이터 JSON 기본 검사"""
     errors = []
@@ -214,6 +272,7 @@ def run_smoke_test(project_dir: str = None, today: str = None) -> dict:
         ("Detail Pages", check_detail_pages(details_dir, kospi_tickers, today)),
         ("Signal Distribution", check_signal_distribution(reports_dir, today)),
         ("Scanner Pages", check_scanner_pages(reports_dir, today)),
+        ("Scanner Detail History", check_scanner_detail_history(details_dir, project_dir, today)),
     ]
 
     results = {}

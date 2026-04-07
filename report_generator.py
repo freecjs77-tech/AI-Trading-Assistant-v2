@@ -613,6 +613,9 @@ def generate_detail_pages(
     scanner_sp100: dict | None = None,
     scanner_etf: dict | None = None,
     scanner_kospi: dict | None = None,
+    scanner_sp100_history: dict | None = None,
+    scanner_etf_history: dict | None = None,
+    scanner_kospi_history: dict | None = None,
 ) -> list[str]:
     """
     포트폴리오 + 스캐너 BUY 종목별 상세 페이지 HTML 생성.
@@ -737,6 +740,19 @@ def generate_detail_pages(
     scanner_entries = _collect_scanner_buy_entries(scanner_sp100, scanner_etf, scanner_kospi)
     seen = set(portfolio_tickers)
 
+    # 스캐너별 티커 셋 구성 (히스토리 소스 결정용)
+    def _scanner_tickers(sc):
+        tickers = set()
+        if sc:
+            for key in ("buy_1st", "buy_2nd", "buy_3rd"):
+                for entry in sc.get(key, []):
+                    tickers.add(entry.get("ticker", ""))
+        return tickers
+
+    sp100_tickers = _scanner_tickers(scanner_sp100)
+    etf_tickers = _scanner_tickers(scanner_etf)
+    kospi_tickers = _scanner_tickers(scanner_kospi)
+
     for e in scanner_entries:
         ticker = e.get("ticker", "")
         if not ticker or ticker in seen:
@@ -804,8 +820,14 @@ def generate_detail_pages(
             # KOSPI/통화
             "is_kospi": is_kospi,
             "currency": "KRW" if is_kospi else "USD",
-            # 이력 (스캐너 종목은 포트폴리오 히스토리 없음)
-            "history_rows": [],
+            # 이력 (스캐너 종목별 히스토리 소스 선택)
+            "history_rows": _build_history_rows(
+                ticker,
+                scanner_sp100_history if ticker in sp100_tickers
+                else scanner_etf_history if ticker in etf_tickers
+                else scanner_kospi_history if ticker in kospi_tickers
+                else {}
+            ) if (scanner_sp100_history or scanner_etf_history or scanner_kospi_history) else [],
             # 메타
             "date": date_str,
             "date_ko": _date_ko(date_str),

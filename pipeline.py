@@ -219,6 +219,12 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         print(f"  OK {len(chart_results)}/{len(all_chart_tickers)} charts generated")
 
         print("  Generating detail pages...")
+        # 스캐너 히스토리 로드 (상세 페이지 이력 표시용)
+        from market_scanner import _load_scanner_history
+        _sc_sp100_hist = _load_scanner_history(project_dir, "sp100")
+        _sc_etf_hist = _load_scanner_history(project_dir, "etf")
+        _sc_kospi_hist = _load_scanner_history(project_dir, "kospi")
+
         detail_files = generate_detail_pages(
             market_data=market_data,
             portfolio=portfolio,
@@ -228,6 +234,9 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_sp100=scanner_sp100_result,
             scanner_etf=scanner_etf_result,
             scanner_kospi=scanner_kospi_result,
+            scanner_sp100_history=_sc_sp100_hist,
+            scanner_etf_history=_sc_etf_hist,
+            scanner_kospi_history=_sc_kospi_hist,
         )
         print(f"  OK {len(detail_files)} detail pages -> {details_dir}")
 
