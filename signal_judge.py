@@ -11,6 +11,7 @@ v5.2 변경사항:
   - MACD 데스크로스: MACD < 0 조건 삭제 (조기 감지)
   - 고점 게이트: DD > -5% 일 때만 익절 시그널 허용
 """
+from __future__ import annotations
 
 from portfolio_data import (
     STRATEGY_GROUP, get_strategy_group,

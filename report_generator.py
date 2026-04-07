@@ -4,6 +4,7 @@ AI Trading Assistant v3.0
 
 templates/report_template.html에 데이터를 주입하여 리포트 생성.
 """
+from __future__ import annotations
 
 import os
 from datetime import datetime

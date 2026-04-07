@@ -2,6 +2,7 @@
 portfolio_data.py — 종목 메타데이터 + 한글→Ticker 변환맵
 AI Trading Assistant v3.0
 """
+from __future__ import annotations
 
 # ── 종목별 고정 메타데이터 ──────────────────────────────
 TICKER_META = {
