@@ -131,6 +131,7 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
             "macd_hist_3d": sig.get("macd_hist_3d", []),
             "buy_streak": sig.get("buy_streak", 0),
             "buy_confirmed": sig.get("buy_confirmed", False),
+            "hypo_return": sig.get("hypo_return"),
             "is_kospi": is_kospi_ticker(ticker),
             "judgment_sections": sig.get("judgment_sections", []),
         })

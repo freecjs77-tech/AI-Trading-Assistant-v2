@@ -1330,6 +1330,51 @@ def _count_buy_streak(ticker: str, current_signal: str, history: dict, today_str
     return streak
 
 
+def _calc_hypo_return(ticker: str, current_price: float, history: dict, today_str: str = "") -> dict:
+    """포트폴리오 BUY 연속 구간에서 1일차/2일차 매수 가상 수익률 계산."""
+    result = {
+        "day1_price": None, "day1_date": None, "day1_return": None,
+        "day2_price": None, "day2_date": None, "day2_return": None,
+    }
+    if not current_price or current_price <= 0:
+        return result
+
+    dates = sorted([k for k in history.keys()
+                    if not k.startswith("_") and k != today_str], reverse=True)
+    buy_dates = []
+    for dt in dates:
+        day_data = history.get(dt, {})
+        ticker_data = day_data.get(ticker, {})
+        if ticker_data.get("signal", "") in _BUY_SIGNALS:
+            buy_dates.append((dt, ticker_data))
+        else:
+            break
+        if len(buy_dates) >= 10:
+            break
+
+    if not buy_dates:
+        return result
+
+    buy_dates.reverse()
+
+    day1_dt, day1_data = buy_dates[0]
+    day1_price = day1_data.get("price")
+    if day1_price and day1_price > 0:
+        result["day1_price"] = day1_price
+        result["day1_date"] = day1_dt
+        result["day1_return"] = round((current_price - day1_price) / day1_price * 100, 2)
+
+    if len(buy_dates) >= 2:
+        day2_dt, day2_data = buy_dates[1]
+        day2_price = day2_data.get("price")
+        if day2_price and day2_price > 0:
+            result["day2_price"] = day2_price
+            result["day2_date"] = day2_dt
+            result["day2_return"] = round((current_price - day2_price) / day2_price * 100, 2)
+
+    return result
+
+
 def judge_all(market_data: dict, history: dict) -> dict[str, dict]:
     """
     전 종목 시그널 판정.
@@ -1376,6 +1421,10 @@ def judge_all(market_data: dict, history: dict) -> dict[str, dict]:
                 result["note"] = f"[확인 대기 {streak}/{_MIN_CONSECUTIVE_DAYS}일] {result['note']}"
             else:
                 result["note"] = f"[확정 {streak}일 연속] {result['note']}"
+
+            # 가상 수익률 계산
+            hypo = _calc_hypo_return(ticker, d.get("price", 0), history, today_str)
+            result["hypo_return"] = hypo
         else:
             result["buy_streak"] = 0
             result["buy_confirmed"] = False

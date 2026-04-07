@@ -1,5 +1,19 @@
 # 진행 상태
 
+## 완료: 포트폴리오 BUY 카드 매수 시뮬레이션 추가 (2026-04-07)
+
+### 수정 파일 3개
+1. **signal_judge.py** — `_calc_hypo_return()` 함수 추가, `judge_all()` BUY 블록에서 호출
+2. **report_generator.py** — `_build_holdings()`에 `hypo_return` 필드 전달
+3. **templates/report_template.html** — BUY 카드에 매수 시뮬레이션 박스 UI + CSS 추가
+
+### 비고
+- 순환 참조 방지를 위해 `market_scanner.py`의 함수를 import하지 않고 `signal_judge.py`에 독립 구현
+- `signals_history.json`은 모든 price 정상 (111건 OK, 0건 NULL)
+- 스캐너 히스토리 가격 백필도 완료 (ETF 16건, KOSPI 10건)
+
+---
+
 ## 완료: 스캐너 백필 - yfinance 실제 종가 조회 (2026-04-07)
 
 ### 문제
