@@ -12,6 +12,9 @@ import json
 import subprocess
 from datetime import date, datetime, timezone, timedelta
 
+import yfinance as yf
+import pandas as pd
+
 _KST = timezone(timedelta(hours=9))
 
 if sys.platform == "win32":
@@ -164,6 +167,73 @@ def _calc_scanner_streak(ticker: str, signal: str, history: dict, today_str: str
     return streak
 
 
+def _extract_close(df, ticker: str, date_str: str, num_tickers: int):
+    """yfinance DataFrame에서 특정 티커/날짜의 종가 추출."""
+    try:
+        dt = pd.Timestamp(date_str)
+        if num_tickers == 1:
+            if dt in df.index:
+                return float(df.loc[dt, "Close"])
+        else:
+            if dt in df.index:
+                val = df.loc[dt, ("Close", ticker)]
+                if pd.notna(val):
+                    return float(val)
+        # 정확한 날짜 없으면 (주말/휴일) 이전 거래일 종가 사용
+        prior = df[:dt]
+        if not prior.empty:
+            if num_tickers == 1:
+                return float(prior["Close"].iloc[-1])
+            else:
+                val = prior[("Close", ticker)].dropna()
+                if not val.empty:
+                    return float(val.iloc[-1])
+    except Exception:
+        pass
+    return None
+
+
+def _backfill_missing_prices(history: dict, today_str: str = ""):
+    """히스토리에서 price가 None인 항목을 yfinance 실제 종가로 백필."""
+    missing = {}  # {ticker: [date1, date2, ...]}
+    for dt, day_data in history.items():
+        if dt == today_str:
+            continue
+        for ticker, info in day_data.items():
+            if info.get("price") is None:
+                missing.setdefault(ticker, []).append(dt)
+
+    if not missing:
+        return
+
+    all_dates = sorted(set(d for dates in missing.values() for d in dates))
+    # 주말/공휴일 대비 시작일을 10일 앞으로 (이전 거래일 확보)
+    start_date = (datetime.strptime(all_dates[0], "%Y-%m-%d") - timedelta(days=10)).strftime("%Y-%m-%d")
+    end_date = (datetime.strptime(all_dates[-1], "%Y-%m-%d") + timedelta(days=5)).strftime("%Y-%m-%d")
+
+    tickers_list = list(missing.keys())
+    print(f"  [Backfill] yfinance로 {len(tickers_list)}개 티커 실제 종가 조회 ({start_date}~{all_dates[-1]})")
+    try:
+        df = yf.download(tickers_list, start=start_date, end=end_date,
+                         auto_adjust=True, progress=False)
+        if df is None or df.empty:
+            print("  [Backfill] yfinance 데이터 없음, 스킵")
+            return
+    except Exception as ex:
+        print(f"  [Backfill] yfinance 오류: {ex}")
+        return
+
+    filled = 0
+    for ticker, dates in missing.items():
+        for dt in dates:
+            close_price = _extract_close(df, ticker, dt, len(tickers_list))
+            if close_price is not None:
+                history[dt][ticker]["price"] = round(close_price, 2)
+                filled += 1
+
+    print(f"  [Backfill] {filled}/{sum(len(v) for v in missing.values())}건 실제 종가 백필 완료")
+
+
 def _calc_hypothetical_return(ticker: str, current_price: float, history: dict, today_str: str = "") -> dict:
     """BUY 연속 구간에서 1일차/2일차(확정) 매수 가상 수익률 계산.
 
@@ -223,14 +293,8 @@ def _calc_hypothetical_return(ticker: str, current_price: float, history: dict, 
 
 def _apply_streak_to_entries(entries: list, history: dict, today_str: str = "") -> list:
     """BUY entry 리스트에 streak/confirmed + 가상 수익률 필드 추가."""
-    # 현재 엔트리의 price로 과거 히스토리 백필 (price 없는 항목 보완)
-    price_map = {e["ticker"]: e.get("price") for e in entries if e.get("price")}
-    for dt, day_data in history.items():
-        if dt == today_str:
-            continue
-        for ticker, info in day_data.items():
-            if info.get("price") is None and ticker in price_map:
-                info["price"] = price_map[ticker]
+    # yfinance에서 실제 종가로 과거 히스토리 백필
+    _backfill_missing_prices(history, today_str)
 
     for e in entries:
         streak = _calc_scanner_streak(e["ticker"], e["signal"], history, today_str)
@@ -255,8 +319,6 @@ def _update_scanner_history(buy_lists: list, scanner_name: str, project_dir: str
     if not today_str:
         today_str = date.today().strftime("%Y-%m-%d")
 
-    # 오늘의 ticker→price 매핑 (백필용)
-    today_prices = {}
     today_entry = {}
     for entries in buy_lists:
         for e in entries:
@@ -267,19 +329,11 @@ def _update_scanner_history(buy_lists: list, scanner_name: str, project_dir: str
                 "macd_hist": e.get("macd_hist"),
                 "drawdown": e.get("drawdown"),
             }
-            if e.get("price"):
-                today_prices[e["ticker"]] = e["price"]
-
-    # 과거 히스토리에 price가 없는 항목에 현재 가격으로 백필
-    # (가격 변동이 있지만, 수익률 계산의 기준점으로 활용)
-    for dt, day_data in history.items():
-        if dt == today_str:
-            continue
-        for ticker, info in day_data.items():
-            if info.get("price") is None and ticker in today_prices:
-                info["price"] = today_prices[ticker]
 
     history[today_str] = today_entry
+
+    # yfinance에서 실제 종가로 과거 히스토리 백필 후 저장
+    _backfill_missing_prices(history, today_str)
     _save_scanner_history(project_dir, scanner_name, history)
     return history
 
