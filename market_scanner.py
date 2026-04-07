@@ -245,6 +245,9 @@ def _update_scanner_history(buy_lists: list, scanner_name: str, project_dir: str
     """오늘 스캔 결과를 날짜별 history에 반영하여 저장."""
     if not today_str:
         today_str = date.today().strftime("%Y-%m-%d")
+
+    # 오늘의 ticker→price 매핑 (백필용)
+    today_prices = {}
     today_entry = {}
     for entries in buy_lists:
         for e in entries:
@@ -255,6 +258,18 @@ def _update_scanner_history(buy_lists: list, scanner_name: str, project_dir: str
                 "macd_hist": e.get("macd_hist"),
                 "drawdown": e.get("drawdown"),
             }
+            if e.get("price"):
+                today_prices[e["ticker"]] = e["price"]
+
+    # 과거 히스토리에 price가 없는 항목에 현재 가격으로 백필
+    # (가격 변동이 있지만, 수익률 계산의 기준점으로 활용)
+    for dt, day_data in history.items():
+        if dt == today_str:
+            continue
+        for ticker, info in day_data.items():
+            if info.get("price") is None and ticker in today_prices:
+                info["price"] = today_prices[ticker]
+
     history[today_str] = today_entry
     _save_scanner_history(project_dir, scanner_name, history)
     return history
