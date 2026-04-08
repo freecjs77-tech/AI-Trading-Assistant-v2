@@ -60,7 +60,7 @@ python app.py
 - L2 RSI 다이버전스 구현 (전일 RSI 비교), 이중천장 조건 삭제 → 3개 중 2개
 - Growth 거부 RSI>55 (기존 50), 2nd/3rd BUY ALL 유지, 거래량 1.3x/1.2x 유지
 - Value Entry 독립화 (거부 RSI>70)
-- ETF 1st BUY 강화: 필수(RSI≤35 + DD≤-5%) + 선택 1/3
+- **1st BUY 통합 (v5.3b)**: Growth/ETF 동일 — 필수 4개 ALL(RSI≤45 + 가격<MA20 + MACD hist 2일증가 + DD_52w≤-15%), 선택 면제
 - 스캐너(SP100/ETF)에 Exit 판정 추가 → 포트폴리오와 판정 일관성 확보
 - fetch_market_data: change_3d_pct 3일 누적 변동률 추가
 - history: bb_pct 필드 추가 저장

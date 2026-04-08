@@ -326,15 +326,15 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
                            f"RSI {rsi:.1f} — 과열이라 1st BUY 금지예요"))
         return _growth_watch_fallback(d, conditions)
 
-    # ── 1st BUY (20%) — 필수 3개 + 선택 2/3  [v5.1b: 과매도 확인 강화] ──
-    # [필수①] RSI ≤ 38 (과매도 확인)
-    rsi_ok = rsi is not None and rsi <= 38
+    # ── 1st BUY (20%) — 필수 4개 ALL, 선택 면제  [v5.3b] ──
+    # [필수①] RSI ≤ 45 (조정 확인)
+    rsi_ok = rsi is not None and rsi <= 45
     if rsi is not None:
         conditions.append(("ok" if rsi_ok else "no",
-                           "[필수] RSI ≤ 38",
-                           f"RSI {rsi:.1f} — {'과매도 구간이에요' if rsi_ok else '아직 38 이하가 아니에요'}"))
+                           "[필수] RSI ≤ 45",
+                           f"RSI {rsi:.1f} — {'조정 구간이에요' if rsi_ok else '아직 45 이하가 아니에요'}"))
     else:
-        conditions.append(("no", "[필수] RSI ≤ 38", "RSI 데이터가 없어요"))
+        conditions.append(("no", "[필수] RSI ≤ 45", "RSI 데이터가 없어요"))
 
     # [필수②] 가격 < MA20 (조정 확인)
     below_ma20 = price_vs_ma20 == "below"
@@ -348,49 +348,21 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
                        "[필수] MACD hist 2일 증가",
                        f"추세 '{macd_hist_trend}' — {'반전 시작이에요' if hist_increasing else '아직 증가세가 아니에요'}"))
 
-    mandatory_ok = rsi_ok and below_ma20 and hist_increasing
+    # [필수④] 52주 고점 대비 ≤ -15% (의미 있는 조정)
+    drawdown_52w = d.get("drawdown_52w_pct", 0)
+    dd_ok = drawdown_52w <= -15.0
+    conditions.append(("ok" if dd_ok else "no",
+                       "[필수] 52주 고점 대비 ≤ -15%",
+                       f"52주 대비 {drawdown_52w:.1f}% — {'충분히 조정됐어요' if dd_ok else '아직 조정이 부족해요'}"))
 
-    # [선택] 3개 중 2개 이상
-    opt_count = 0
-    opt_conds = []
+    mandatory_ok = rsi_ok and below_ma20 and hist_increasing and dd_ok
 
-    adx_ok = adx is not None and adx <= 25
-    if adx is not None:
-        opt_conds.append(("ok" if adx_ok else "no",
-                          "ADX ≤ 25",
-                          f"ADX {adx:.1f} — {'횡보/약추세 구간이에요' if adx_ok else '추세가 강해요'}"))
-    else:
-        opt_conds.append(("no", "ADX ≤ 25", "ADX 데이터가 없어요"))
-    if adx_ok: opt_count += 1
-
-    bb_near = False
-    if bb_lower and price > 0:
-        bb_threshold = bb_lower * 1.02
-        bb_near = price <= bb_threshold
-        bb_dist = (price - bb_lower) / bb_lower * 100
-        opt_conds.append(("ok" if bb_near else "no",
-                          "종가 ≤ BB하단x1.02",
-                          f"BB 하단 거리 {bb_dist:.1f}% — {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
-    else:
-        opt_conds.append(("na", "종가 ≤ BB하단x1.02", "BB 하단 데이터가 없어요"))
-    if bb_near: opt_count += 1
-
-    rebound = change_pct >= 2.0
-    opt_conds.append(("ok" if rebound else "no",
-                      "전일 대비 ≥ +2%",
-                      f"변동 {change_pct:+.1f}% — {'반등 확인이에요' if rebound else '아직 반등이 약해요'}"))
-    if rebound: opt_count += 1
-
-    conditions.extend(opt_conds)
-
-    if mandatory_ok and opt_count >= 2:
+    if mandatory_ok:
         return "1st_BUY", conditions
 
-    # WATCH: 필수 2개 이상 + 선택 1개 이상
-    mandatory_count = sum([rsi_ok, below_ma20, hist_increasing])
-    if mandatory_count >= 2 and opt_count >= 1:
-        return "WATCH", conditions
-    if mandatory_count >= 1 and opt_count >= 2:
+    # WATCH: 필수 3개 이상 충족
+    mandatory_count = sum([rsi_ok, below_ma20, hist_increasing, dd_ok])
+    if mandatory_count >= 3:
         return "WATCH", conditions
 
     return None, conditions
@@ -430,56 +402,33 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
         conditions.append(("no", "[거부] RSI > 70", f"RSI {rsi:.1f} — 과열이라 전 단계 매수 금지예요"))
         return None, conditions
 
-    # ── 1st BUY 조건 평가  [v5.1b: 필수 2개 + 선택 1/3 → 확실한 조정에서만 진입] ──
-    # [필수①] RSI ≤ 35 (과매도 확인)
-    rsi_ok = rsi is not None and rsi <= 35
+    # ── 1st BUY 조건 평가  [v5.3b: 필수 4개 ALL, 선택 면제 — Growth와 동일] ──
+    # [필수①] RSI ≤ 45 (조정 확인)
+    rsi_ok = rsi is not None and rsi <= 45
     if rsi is not None:
         conditions.append(("ok" if rsi_ok else "no",
-                           "[필수] RSI ≤ 35",
-                           f"RSI {rsi:.1f} — {'과매도 구간이에요' if rsi_ok else '아직 35 이하가 아니에요'}"))
+                           "[필수] RSI ≤ 45",
+                           f"RSI {rsi:.1f} — {'조정 구간이에요' if rsi_ok else '아직 45 이하가 아니에요'}"))
     else:
-        conditions.append(("no", "[필수] RSI ≤ 35", "RSI 데이터가 없어요"))
+        conditions.append(("no", "[필수] RSI ≤ 45", "RSI 데이터가 없어요"))
 
-    # [필수②] 52주 고점 대비 -5% 이상 조정
-    dd_ok = drawdown_52w <= -5.0
-    conditions.append(("ok" if dd_ok else "no",
-                       "[필수] 52주 고점 대비 ≤ -5%",
-                       f"52주 대비 {drawdown_52w:.1f}% — {'충분히 조정됐어요' if dd_ok else '아직 조정이 부족해요'}"))
-
-    # [선택] 3개 중 1개 이상
-    opt_count = 0
-
-    # 가격 < MA20
+    # [필수②] 가격 < MA20 (조정 확인)
     below_ma20 = price_vs_ma20 == "below"
     conditions.append(("ok" if below_ma20 else "no",
-                       "가격 < MA20",
-                       f"MA20 {'아래에 있어요' if below_ma20 else '위에 있어요'}"))
-    if below_ma20: opt_count += 1
+                       "[필수] 가격 < MA20",
+                       f"MA20 {'아래에 있어요 — 조정 확인이에요' if below_ma20 else '위에 있어요 — 아직 조정이 아니에요'}"))
 
-    # BB 하단 근접
-    bb_near = False
-    if bb_lower and price > 0:
-        bb_dist = (price - bb_lower) / bb_lower * 100
-        bb_near = bb_dist <= 5
-        conditions.append(("ok" if bb_near else "no",
-                           "BB 하단 ≤ 5%",
-                           f"BB 하단 거리 {bb_dist:.1f}% — {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
-    else:
-        conditions.append(("na", "BB 하단 ≤ 5%", "BB 하단 데이터가 없어요"))
-    if bb_near: opt_count += 1
+    # [필수③] MACD hist 2일 연속 증가 (반전 시작)
+    hist_increasing = "increasing" in macd_hist_trend
+    conditions.append(("ok" if hist_increasing else "no",
+                       "[필수] MACD hist 2일 증가",
+                       f"추세 '{macd_hist_trend}' — {'반전 시작이에요' if hist_increasing else '아직 증가세가 아니에요'}"))
 
-    # 하락 모멘텀 둔화 (MACD hist 감소폭 축소)
-    momentum_slowing = False
-    if len(macd_hist_3d) >= 2:
-        diffs = [macd_hist_3d[i] - macd_hist_3d[i - 1] for i in range(1, len(macd_hist_3d))]
-        if len(diffs) >= 2 and diffs[-1] > diffs[-2]:
-            momentum_slowing = True
-        elif len(diffs) == 1 and diffs[0] > 0:
-            momentum_slowing = True
-    conditions.append(("ok" if momentum_slowing else "no",
-                       "하락 모멘텀 둔화",
-                       f"MACD hist {'감소폭이 줄고 있어요' if momentum_slowing else '여전히 감소 중이에요'}"))
-    if momentum_slowing: opt_count += 1
+    # [필수④] 52주 고점 대비 ≤ -15% (의미 있는 조정)
+    dd_ok = drawdown_52w <= -15.0
+    conditions.append(("ok" if dd_ok else "no",
+                       "[필수] 52주 고점 대비 ≤ -15%",
+                       f"52주 대비 {drawdown_52w:.1f}% — {'충분히 조정됐어요' if dd_ok else '아직 조정이 부족해요'}"))
 
     # ── 3rd BUY (50%) — ALL 충족  [v5.1b: RSI>55, MACD 골든크로스+0선 돌파] ──
     macd = d.get("macd")
@@ -562,11 +511,13 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
     if c2_count >= 3:
         return "2nd_BUY", c2
 
-    # ── 1st BUY (20%) — 필수 2개(RSI≤35 + DD≤-5%) + 선택 1/3  [v5.1b 강화] ──
-    if rsi_ok and dd_ok and opt_count >= 1:
+    # ── 1st BUY (20%) — 필수 4개 ALL, 선택 면제  [v5.3b] ──
+    mandatory_ok = rsi_ok and below_ma20 and hist_increasing and dd_ok
+    if mandatory_ok:
         return "1st_BUY", conditions
-    # WATCH: 필수 1개 + 선택 1개 이상
-    if (rsi_ok or dd_ok) and opt_count >= 1:
+    # WATCH: 필수 3개 이상 충족
+    mandatory_count = sum([rsi_ok, below_ma20, hist_increasing, dd_ok])
+    if mandatory_count >= 3:
         return "WATCH", conditions
     return None, conditions
 
@@ -929,15 +880,15 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
         "gate": "[거부] 당일 급락" if reject_drop else None,
     })
 
-    # ── 1st BUY ──
+    # ── 1st BUY ──  [v5.3b: 필수 4개 ALL, 선택 면제]
     c1 = []
-    rsi_ok = rsi is not None and rsi <= 38
+    rsi_ok = rsi is not None and rsi <= 45
     if rsi is not None:
         c1.append(("ok" if rsi_ok else "no",
-                   "[필수] RSI <= 38",
-                   f"RSI {rsi:.1f} - {'과매도 구간이에요' if rsi_ok else '아직 38 이하가 아니에요'}"))
+                   "[필수] RSI <= 45",
+                   f"RSI {rsi:.1f} - {'조정 구간이에요' if rsi_ok else '아직 45 이하가 아니에요'}"))
     else:
-        c1.append(("no", "[필수] RSI <= 38", "RSI 데이터가 없어요"))
+        c1.append(("no", "[필수] RSI <= 45", "RSI 데이터가 없어요"))
     below_ma20 = price_vs_ma20 == "below"
     c1.append(("ok" if below_ma20 else "no",
                "[필수] 가격 < MA20",
@@ -946,28 +897,11 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
     c1.append(("ok" if hist_increasing else "no",
                "[필수] MACD hist 2일 증가",
                f"추세 '{macd_hist_trend}' - {'반전 시작이에요' if hist_increasing else '아직 증가세가 아니에요'}"))
-    # 선택 조건
-    adx_ok = adx is not None and adx <= 25
-    if adx is not None:
-        c1.append(("ok" if adx_ok else "no",
-                   "ADX <= 25",
-                   f"ADX {adx:.1f} - {'횡보/약추세 구간이에요' if adx_ok else '추세가 강해요'}"))
-    else:
-        c1.append(("no", "ADX <= 25", "ADX 데이터가 없어요"))
-    bb_near = False
-    if bb_lower and price > 0:
-        bb_threshold = bb_lower * 1.02
-        bb_near = price <= bb_threshold
-        bb_dist = (price - bb_lower) / bb_lower * 100
-        c1.append(("ok" if bb_near else "no",
-                   "종가 <= BB하단x1.02",
-                   f"BB 하단 거리 {bb_dist:.1f}% - {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
-    else:
-        c1.append(("na", "종가 <= BB하단x1.02", "BB 하단 데이터가 없어요"))
-    rebound = change_pct >= 2.0
-    c1.append(("ok" if rebound else "no",
-               "전일 대비 >= +2%",
-               f"변동 {change_pct:+.1f}% - {'반등 확인이에요' if rebound else '아직 반등이 약해요'}"))
+    drawdown_52w_val = d.get("drawdown_52w_pct", 0)
+    dd_1st_ok = drawdown_52w_val <= -15.0
+    c1.append(("ok" if dd_1st_ok else "no",
+               "[필수] 52주 고점 대비 <= -15%",
+               f"52주 대비 {drawdown_52w_val:.1f}% - {'충분히 조정됐어요' if dd_1st_ok else '아직 조정이 부족해요'}"))
 
     gate_1st = None
     if reject_drop:
@@ -975,8 +909,8 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
     elif reject_rsi_flag:
         gate_1st = f"[거부] RSI {rsi:.1f} > {reject_rsi_threshold}"
     sections.append({
-        "name": f"1차 매수 조건 — {group_label} v2.2",
-        "rule": "[필수] MACD히스토2일증가 + 6개 중 3개 이상",
+        "name": f"1차 매수 조건 — {group_label} v5.3b",
+        "rule": "[필수] RSI<=45 + 가격<MA20 + MACD hist 2일증가 + DD_52w<=-15%",
         "conditions": c1,
         "met": _count_ok(c1),
         "total": len(c1),
@@ -1079,45 +1013,30 @@ def _build_entry_sections_etf(d: dict) -> list:
         "gate": f"[거부] RSI {rsi:.1f} > 70" if reject_rsi else None,
     })
 
-    # ── 1st BUY ──
+    # ── 1st BUY ──  [v5.3b: 필수 4개 ALL, 선택 면제 — Growth와 동일]
     c1 = []
-    rsi_ok = rsi is not None and rsi <= 35
+    rsi_ok = rsi is not None and rsi <= 45
     if rsi is not None:
         c1.append(("ok" if rsi_ok else "no",
-                   "[필수] RSI <= 35",
-                   f"RSI {rsi:.1f} - {'과매도 구간이에요' if rsi_ok else '아직 35 이하가 아니에요'}"))
+                   "[필수] RSI <= 45",
+                   f"RSI {rsi:.1f} - {'조정 구간이에요' if rsi_ok else '아직 45 이하가 아니에요'}"))
     else:
-        c1.append(("no", "[필수] RSI <= 35", "RSI 데이터가 없어요"))
-    dd_ok = drawdown_52w <= -5.0
-    c1.append(("ok" if dd_ok else "no",
-               "[필수] 52주 고점 대비 <= -5%",
-               f"52주 대비 {drawdown_52w:.1f}% - {'충분히 조정됐어요' if dd_ok else '아직 조정이 부족해요'}"))
+        c1.append(("no", "[필수] RSI <= 45", "RSI 데이터가 없어요"))
     below_ma20 = price_vs_ma20 == "below"
     c1.append(("ok" if below_ma20 else "no",
-               "가격 < MA20",
-               f"MA20 {'아래에 있어요' if below_ma20 else '위에 있어요'}"))
-    bb_near = False
-    if bb_lower and price > 0:
-        bb_dist = (price - bb_lower) / bb_lower * 100
-        bb_near = bb_dist <= 5
-        c1.append(("ok" if bb_near else "no",
-                   "BB 하단 <= 5%",
-                   f"BB 하단 거리 {bb_dist:.1f}% - {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
-    else:
-        c1.append(("na", "BB 하단 <= 5%", "BB 하단 데이터가 없어요"))
-    momentum_slowing = False
-    if len(macd_hist_3d) >= 2:
-        diffs = [macd_hist_3d[i] - macd_hist_3d[i - 1] for i in range(1, len(macd_hist_3d))]
-        if len(diffs) >= 2 and diffs[-1] > diffs[-2]:
-            momentum_slowing = True
-        elif len(diffs) == 1 and diffs[0] > 0:
-            momentum_slowing = True
-    c1.append(("ok" if momentum_slowing else "no",
-               "하락 모멘텀 둔화",
-               f"MACD hist {'감소폭이 줄고 있어요' if momentum_slowing else '여전히 감소 중이에요'}"))
+               "[필수] 가격 < MA20",
+               f"MA20 {'아래에 있어요 - 조정 확인이에요' if below_ma20 else '위에 있어요 - 아직 조정이 아니에요'}"))
+    hist_increasing = "increasing" in macd_hist_trend
+    c1.append(("ok" if hist_increasing else "no",
+               "[필수] MACD hist 2일 증가",
+               f"추세 '{macd_hist_trend}' - {'반전 시작이에요' if hist_increasing else '아직 증가세가 아니에요'}"))
+    dd_1st_ok = drawdown_52w <= -15.0
+    c1.append(("ok" if dd_1st_ok else "no",
+               "[필수] 52주 고점 대비 <= -15%",
+               f"52주 대비 {drawdown_52w:.1f}% - {'충분히 조정됐어요' if dd_1st_ok else '아직 조정이 부족해요'}"))
     sections.append({
-        "name": "1차 매수 조건 - ETF v2.4",
-        "rule": "[필수] RSI<=35+DD<=-5% + 선택 1/3",
+        "name": "1차 매수 조건 - ETF v5.3b",
+        "rule": "[필수] RSI<=45 + 가격<MA20 + MACD hist 2일증가 + DD_52w<=-15%",
         "conditions": c1,
         "met": _count_ok(c1),
         "total": len(c1),
