@@ -189,6 +189,8 @@ def fetch_macro() -> dict:
             ticker = yf.Ticker(symbol)
             df = ticker.history(period="5d", interval="1d", auto_adjust=True)
             if df is not None and not df.empty:
+                df = df[df["Close"].notna()]
+            if df is not None and not df.empty:
                 val = float(df["Close"].iloc[-1])
                 macro[key] = round(val, 4)
             else:
@@ -232,6 +234,10 @@ def fetch_ticker(symbol: str) -> dict:
 
         if df is None or df.empty:
             return {"error": "데이터 없음 (상장폐지 또는 심볼 오류)"}
+
+        # 장 시작 전 auto_adjust가 NaN 행을 생성하는 문제 방지
+        df = df[df["Close"].notna()]
+
         if len(df) < 26:
             return {"error": f"데이터 부족 ({len(df)}일, 최소 26일 필요)"}
 
