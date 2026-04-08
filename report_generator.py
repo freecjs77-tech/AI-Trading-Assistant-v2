@@ -98,6 +98,7 @@ def _vix_note(vix: float | None) -> str:
 def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
     """Holdings 테이블 데이터 구성"""
     data = market_data.get("data", {})
+    div_per_ticker = market_data.get("_dividends", {}).get("per_ticker", {})
     holdings = []
 
     for p in portfolio:
@@ -109,6 +110,7 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
         value = shares * price if price else 0
         pnl_pct = ((price - avg_cost) / avg_cost * 100) if avg_cost > 0 else 0
         sig = signals.get(ticker, {})
+        div_info = div_per_ticker.get(ticker, {})
 
         holdings.append({
             "ticker": ticker,
@@ -135,6 +137,8 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
             "hypo_return": sig.get("hypo_return"),
             "is_kospi": is_kospi_ticker(ticker),
             "judgment_sections": sig.get("judgment_sections", []),
+            "div_annual": div_info.get("annual_income", 0),
+            "div_yield": div_info.get("div_yield", 0),
         })
 
     holdings.sort(key=lambda x: -x["value"])

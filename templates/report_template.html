@@ -228,7 +228,7 @@
       <tr>
         <th>#</th><th>Ticker</th><th>종목명</th>
         <th class="tbl-num">보유주수</th><th class="tbl-num">평균단가</th><th class="tbl-num">현재가</th>
-        <th class="tbl-num">평가금액</th><th class="tbl-num">비중</th><th class="tbl-num">P&amp;L%</th><th>Signal</th>
+        <th class="tbl-num">평가금액</th><th class="tbl-num">비중</th><th class="tbl-num">P&amp;L%</th><th class="tbl-num">연배당금</th><th>Signal</th>
       </tr>
     </thead>
     <tbody>
@@ -249,6 +249,7 @@
         {% endif %}
         <td class="tbl-num">{{ h.weight|f1 }}%</td>
         <td class="tbl-num {{ 'pnl-pos' if h.pnl_pct >= 0 else 'pnl-neg' }}">{{ h.pnl_pct|sign_pct }}</td>
+        <td class="tbl-num">${{ h.div_annual|comma }}</td>
         <td>
           <span class="badge {{ h.signal|badge_class }}">{{ h.signal }}</span>
           {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
