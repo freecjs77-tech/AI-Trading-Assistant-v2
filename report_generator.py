@@ -99,6 +99,7 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
     """Holdings 테이블 데이터 구성"""
     data = market_data.get("data", {})
     div_per_ticker = market_data.get("_dividends", {}).get("per_ticker", {})
+    usd_krw = market_data.get("_macro", {}).get("USD_KRW", 1) or 1
     holdings = []
 
     for p in portfolio:
@@ -138,6 +139,7 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
             "is_kospi": is_kospi_ticker(ticker),
             "judgment_sections": sig.get("judgment_sections", []),
             "div_annual": div_info.get("annual_income", 0),
+            "div_annual_krw": round(div_info.get("annual_income", 0) * usd_krw) if is_kospi_ticker(ticker) else 0,
             "div_yield": div_info.get("div_yield", 0),
         })
 

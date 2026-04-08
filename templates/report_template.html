@@ -249,7 +249,11 @@
         {% endif %}
         <td class="tbl-num">{{ h.weight|f1 }}%</td>
         <td class="tbl-num {{ 'pnl-pos' if h.pnl_pct >= 0 else 'pnl-neg' }}">{{ h.pnl_pct|sign_pct }}</td>
+        {% if h.is_kospi %}
+        <td class="tbl-num">₩{{ h.div_annual_krw|comma }}</td>
+        {% else %}
         <td class="tbl-num">${{ h.div_annual|comma }}</td>
+        {% endif %}
         <td>
           <span class="badge {{ h.signal|badge_class }}">{{ h.signal }}</span>
           {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
@@ -514,7 +518,7 @@ function toggleCurrency() {
 function formatKRW(krw) {
   const abs = Math.abs(krw);
   const sign = krw < 0 ? '-' : '';
-  if (abs >= 100000000) return sign + '₩' + (abs/100000000).toFixed(1) + '억';
+  if (abs >= 100000000) return sign + '₩' + (abs/100000000).toFixed(2) + '억';
   if (abs >= 10000) return sign + '₩' + Math.round(abs/10000).toLocaleString() + '만';
   return sign + '₩' + abs.toLocaleString();
 }
