@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asset Trend Dashboard — 2026-04-09</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fff; color: #1a1a1a; font-size: 14px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
+  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .header-controls a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: #fff; }
+  .nav-active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
+
+  .chart-box { background: #f8f9fa; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .chart-box canvas { max-height: 320px; }
+
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .sum-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 140px; text-align: center; border-top: 4px solid #ccc; }
+  .sum-card .num { font-size: 26px; font-weight: 800; line-height: 1; }
+  .sum-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
+  .sum-card .sub { font-size: 11px; color: #999; margin-top: 2px; }
+
+  .pie-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+  .pie-col { flex: 1; min-width: 300px; background: #f8f9fa; border-radius: 10px; padding: 20px; }
+  .pie-col h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .pie-col canvas { max-height: 280px; }
+
+  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
+  .no-data { color: #888; font-size: 13px; padding: 40px; text-align: center; }
+
+  @media (max-width: 600px) {
+    .sum-card { min-width: 80px; }
+    .pie-col { min-width: 100%; }
+    .header-row { flex-direction: column; align-items: flex-start; }
+    .header-controls { margin: 8px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header-row">
+    <h1>📈 Asset Trend Dashboard</h1>
+    <div class="header-controls">
+      <a href="index.html" style="background:#2c3e50;">📊 포트폴리오</a>
+      <a href="scanner_sp100_2026-04-09.html" style="background:#27ae60;">🔍 S&P 100</a>
+      <a href="scanner_etf_2026-04-09.html" style="background:#3498db;">📊 ETF</a>
+      <a href="scanner_kospi_2026-04-09.html" style="background:#e74c3c;">🇰🇷 KOSPI</a>
+      <a href="backtest_2026-04-09.html" style="background:#8e44ad;">📈 백테스트</a>
+      <a href="trend_2026-04-09.html" style="background:#e67e22;" class="nav-active">📈 트렌드</a>
+      <a href="archive.html" style="background:#7f8c8d;">📁 아카이브</a>
+    </div>
+  </div>
+  <p class="subtitle">2026년 4월 9일 (목요일) &nbsp;|&nbsp; 1일 추이 &nbsp;|&nbsp; 데이터: 일별 스냅샷</p>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#27ae60;">
+      <div class="num" style="color:#27ae60;">₩20.28억</div>
+      <div class="lbl">총 자산</div>
+      <div class="sub" style="color:#27ae60;">+₩12.05억 (+146.3%)</div>
+    </div>
+    <div class="sum-card" style="border-color:#3498db;">
+      <div class="num" style="color:#3498db;">₩8.24억</div>
+      <div class="lbl">투자 원금</div>
+    </div>
+    <div class="sum-card" style="border-color:#e67e22;">
+      <div class="num" style="color:#e67e22;">₩4,222만</div>
+      <div class="lbl">예상 연 배당</div>
+      <div class="sub">수익률 2.08%</div>
+    </div>
+    <div class="sum-card" style="border-color:#95a5a6;">
+      <div class="num">₩1.22억</div>
+      <div class="lbl">현금 (BIL)</div>
+      <div class="sub">6.0%</div>
+    </div>
+  </div>
+
+  
+  <div class="no-data">데이터가 2일 이상 축적되면 추이 차트가 표시됩니다. (현재 1일)</div>
+  
+
+  <!-- 3. Pie Charts -->
+  <h2>🥧 포트폴리오 비중</h2>
+  <div class="pie-row">
+    <div class="pie-col">
+      <h3>카테고리별</h3>
+      <canvas id="categoryPie"></canvas>
+    </div>
+    <div class="pie-col">
+      <h3>종목별 (상위 10)</h3>
+      <canvas id="tickerPie"></canvas>
+    </div>
+  </div>
+
+  
+
+  <div class="report-footer">
+    데이터 소스: 일별 파이프라인 실행 스냅샷 | 차트: Chart.js 4.x | 총 자산 = USD 종목 x 환율 + KRW 종목
+  </div>
+
+</div>
+
+<script>
+const trend = [{"date": "2026-04-09", "total_eok": 20.28, "cost_eok": 8.24, "pnl_eok": 12.05, "pnl_pct": 146.3, "vix": 25.78, "yield_30y": 4.921, "usd_krw": 1481.37}];
+const dates = trend.map(d => d.date.slice(5));
+const totalAsset = trend.map(d => d.total_eok);
+const costBasis = trend.map(d => d.cost_eok);
+const pnlAmount = trend.map(d => d.pnl_eok);
+const pnlPct = trend.map(d => d.pnl_pct);
+const vixData = trend.map(d => d.vix);
+const yieldData = trend.map(d => d.yield_30y);
+const fxData = trend.map(d => d.usd_krw);
+
+
+
+// 3a. Category Pie
+const catData = [{"name": "Growth", "value": 68.5}, {"name": "ETF", "value": 22.5}, {"name": "CASH", "value": 6.0}, {"name": "Value", "value": 2.2}, {"name": "Bond", "value": 0.6}, {"name": "Metal", "value": 0.1}, {"name": "Speculative", "value": 0.1}];
+new Chart(document.getElementById('categoryPie'), {
+  type: 'doughnut',
+  data: {
+    labels: catData.map(d => d.name),
+    datasets: [{
+      data: catData.map(d => d.value),
+      backgroundColor: ['#27ae60', '#3498db', '#e67e22', '#e74c3c', '#95a5a6', '#f1c40f', '#9b59b6', '#1abc9c'],
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'right' },
+      tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed.toFixed(1) + '%'; } } }
+    }
+  }
+});
+
+// 3b. Ticker Pie
+const tickerData = [{"name": "디아이티", "value": 62.7}, {"name": "VOO", "value": 7.9}, {"name": "BIL", "value": 6.0}, {"name": "QQQ", "value": 5.9}, {"name": "SCHD", "value": 3.4}, {"name": "AAPL", "value": 1.5}, {"name": "O", "value": 1.3}, {"name": "JEPI", "value": 1.1}, {"name": "TIGER 200", "value": 0.9}, {"name": "SOXX", "value": 0.8}, {"name": "기타", "value": 8.4}];
+new Chart(document.getElementById('tickerPie'), {
+  type: 'doughnut',
+  data: {
+    labels: tickerData.map(d => d.name),
+    datasets: [{
+      data: tickerData.map(d => d.value),
+      backgroundColor: [
+        '#27ae60', '#3498db', '#e74c3c', '#95a5a6', '#2ecc71',
+        '#e67e22', '#9b59b6', '#1abc9c', '#34495e', '#c0392b', '#bdc3c7'
+      ],
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'right' },
+      tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed.toFixed(1) + '%'; } } }
+    }
+  }
+});
+</script>
+</body>
+</html>
