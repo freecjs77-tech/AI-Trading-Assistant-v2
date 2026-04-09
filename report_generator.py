@@ -416,11 +416,11 @@ def generate_report(
 # ── 스캐너 Reference HTML (각 스캐너별 판정 조건 테이블) ──
 
 _REF_SP100 = """
-<h2>📖 Signal Reference — Growth v2.2 Entry</h2>
+<h2>📖 Signal Reference — Growth v5.3b Entry</h2>
 <div class="ref-section">
 <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: S&P 100 대형주. 바닥 확인 후 분할매수 전략.</p>
 <table class="ref-table"><thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead><tbody>
-<tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 3개]</b> RSI≤38 + 가격&lt;MA20 + MACD hist 2일↑<br><b>[선택 2/3]</b> ADX≤25 · BB하단근접 · +2%반등<br><b>[거부]</b> RSI&gt;55 / 당일-5%급락</td></tr>
+<tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 4개 ALL]</b> RSI≤45 + 가격&lt;MA20 + MACD hist 2일↑ + DD_52w≤-15%<br><b>[거부]</b> RSI&gt;55 / 당일-5%급락</td></tr>
 <tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>4개 ALL</b>: 이중바닥(≤3%) + RSI&gt;35 + MACD골든크로스 + 거래량≥1.2x</td></tr>
 <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>4개 ALL</b>: 가격&gt;MA20 + MACD&gt;0&amp;Signal + 거래량≥1.3x + RSI&gt;55<br><b>[거부]</b> RSI&gt;75</td></tr>
 </tbody></table>
@@ -428,11 +428,11 @@ _REF_SP100 = """
 </div>"""
 
 _REF_ETF = """
-<h2>📖 Signal Reference — ETF v2.4 Entry</h2>
+<h2>📖 Signal Reference — ETF v5.3b Entry</h2>
 <div class="ref-section">
-<p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 섹터/테마 ETF. Pick N 방식 유연 판정.</p>
+<p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 섹터/테마 ETF. v5.3b 통합 규칙 적용.</p>
 <table class="ref-table"><thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead><tbody>
-<tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 2개]</b> RSI≤35 + 52주고점대비≤-5%<br><b>[선택 1/3]</b> 가격&lt;MA20 · BB하단근접 · MACD hist감소둔화<br><b>[거부]</b> RSI&gt;70</td></tr>
+<tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 4개 ALL]</b> RSI≤45 + 가격&lt;MA20 + MACD hist 2일↑ + DD_52w≤-15%<br><b>[거부]</b> RSI&gt;70</td></tr>
 <tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>Pick 3/4</b>: RSI&gt;42 + MACD골든크로스 + 가격&gt;MA20 + Higher Low</td></tr>
 <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>3개 ALL</b>: 가격&gt;MA20 + RSI&gt;55 + MACD&gt;0&amp;Signal</td></tr>
 </tbody></table>
@@ -440,11 +440,11 @@ _REF_ETF = """
 </div>"""
 
 _REF_KOSPI = """
-<h2>📖 Signal Reference — KOSPI Growth v2.2 Entry</h2>
+<h2>📖 Signal Reference — KOSPI Growth v5.3b Entry</h2>
 <div class="ref-section">
 <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 코스피 시총 상위 100. S&P 100과 동일한 규칙. 가격 KRW 기준.</p>
 <table class="ref-table"><thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead><tbody>
-<tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 3개]</b> RSI≤38 + 가격&lt;MA20 + MACD hist 2일↑<br><b>[선택 2/3]</b> ADX≤25 · BB하단근접 · +2%반등<br><b>[거부]</b> RSI&gt;55 / 당일-5%급락</td></tr>
+<tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 4개 ALL]</b> RSI≤45 + 가격&lt;MA20 + MACD hist 2일↑ + DD_52w≤-15%<br><b>[거부]</b> RSI&gt;55 / 당일-5%급락</td></tr>
 <tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>4개 ALL</b>: 이중바닥(≤3%) + RSI&gt;35 + MACD골든크로스 + 거래량≥1.2x</td></tr>
 <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>4개 ALL</b>: 가격&gt;MA20 + MACD&gt;0&amp;Signal + 거래량≥1.3x + RSI&gt;55<br><b>[거부]</b> RSI&gt;75</td></tr>
 </tbody></table>
