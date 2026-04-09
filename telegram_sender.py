@@ -20,7 +20,7 @@ BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8627861470:AAHkv4tuLdJfmx-BqKf
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "8615904260")
 API_BASE = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
-REPORT_URL = "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/"
+REPORT_URL = "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/index.html"
 
 
 def _master_icon(ms: str) -> str:
@@ -31,6 +31,7 @@ def _build_message(signals: dict, market_data: dict, portfolio: list) -> str:
     """텔레그램 전송용 간결 요약 텍스트 생성"""
     today = date.today().strftime("%Y-%m-%d")
     macro = market_data.get("_macro", {})
+    data = market_data.get("data", {})
 
     ms = macro.get("master_switch", "UNKNOWN")
     vix = macro.get("VIX", 0)
@@ -57,21 +58,24 @@ def _build_message(signals: dict, market_data: dict, portfolio: list) -> str:
         elif s == "CASH":
             cash_count += 1
 
-    # 포트폴리오 원화 환산 (억 단위)
-    # KOSPI 종목(6자리 숫자)은 이미 KRW, 나머지는 USD → KRW 변환
+    # 포트폴리오 원화 환산 (market_data 최신 시세 기준 — 리포트와 동일)
     krw_rate = usd_krw if usd_krw else 1300
     total_krw = 0
     total_cost_krw = 0
     for h in portfolio:
         t = h.get("ticker", "")
-        val = h.get("value", 0)
-        pnl = h.get("pnl", 0)
-        if t.isdigit() and len(t) == 6:
+        shares = h.get("shares", 0)
+        avg_cost = h.get("avg_cost", 0)
+        price = data.get(t, {}).get("price", 0) or 0
+        val = shares * price
+        cost = shares * avg_cost
+        is_kospi = t.isdigit() and len(t) == 6
+        if is_kospi:
             total_krw += val
-            total_cost_krw += val - pnl
+            total_cost_krw += cost
         else:
             total_krw += val * krw_rate
-            total_cost_krw += (val - pnl) * krw_rate
+            total_cost_krw += cost * krw_rate
     pnl_pct = ((total_krw - total_cost_krw) / total_cost_krw * 100) if total_cost_krw > 0 else 0
     pnl_sign = "+" if pnl_pct >= 0 else ""
     total_krw_eok = total_krw / 100_000_000
