@@ -64,23 +64,23 @@
   <!-- Summary Cards -->
   <div class="summary-grid">
     <div class="sum-card" style="border-color:#27ae60;">
-      <div class="num" style="color:#27ae60;">₩20.36억</div>
+      <div class="num" style="color:#27ae60;">₩20.03억</div>
       <div class="lbl">총 자산</div>
-      <div class="sub" style="color:#27ae60;">+₩12.14억 (+147.5%)</div>
+      <div class="sub" style="color:#27ae60;">+₩11.81억 (+143.7%)</div>
     </div>
     <div class="sum-card" style="border-color:#3498db;">
-      <div class="num" style="color:#3498db;">₩8.23억</div>
+      <div class="num" style="color:#3498db;">₩8.22억</div>
       <div class="lbl">투자 원금</div>
     </div>
     <div class="sum-card" style="border-color:#e67e22;">
-      <div class="num" style="color:#e67e22;">₩4,219만</div>
+      <div class="num" style="color:#e67e22;">₩4,218만</div>
       <div class="lbl">예상 연 배당</div>
-      <div class="sub">수익률 2.07%</div>
+      <div class="sub">수익률 2.11%</div>
     </div>
     <div class="sum-card" style="border-color:#95a5a6;">
       <div class="num">₩1.22억</div>
       <div class="lbl">현금 (BIL)</div>
-      <div class="sub">6.0%</div>
+      <div class="sub">6.1%</div>
     </div>
   </div>
 
@@ -132,7 +132,7 @@
 </div>
 
 <script>
-const trend = [{"date": "2026-04-09", "total_eok": 20.36, "cost_eok": 8.23, "pnl_eok": 12.14, "pnl_pct": 147.5, "div_annual_man": 4219, "div_yield": 2.07, "vix": 21.07, "yield_30y": 4.907, "usd_krw": 1479.04}];
+const trend = [{"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4218, "div_yield": 2.11, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}];
 const dates = trend.map(d => d.date.slice(5));
 const totalAsset = trend.map(d => d.total_eok);
 const costBasis = trend.map(d => d.cost_eok);
@@ -294,7 +294,7 @@ new Chart(document.getElementById('macroChart'), {
 
 
 // 3a. Category Pie
-const catData = [{"name": "Growth", "value": 68.1}, {"name": "ETF", "value": 22.8}, {"name": "CASH", "value": 6.0}, {"name": "Value", "value": 2.2}, {"name": "Bond", "value": 0.6}, {"name": "Metal", "value": 0.1}, {"name": "Speculative", "value": 0.1}];
+const catData = [{"name": "Growth", "value": 67.5}, {"name": "ETF", "value": 23.3}, {"name": "CASH", "value": 6.1}, {"name": "Value", "value": 2.2}, {"name": "Bond", "value": 0.6}, {"name": "Speculative", "value": 0.2}, {"name": "Metal", "value": 0.1}];
 new Chart(document.getElementById('categoryPie'), {
   type: 'doughnut',
   data: {
@@ -314,7 +314,7 @@ new Chart(document.getElementById('categoryPie'), {
 });
 
 // 3b. Ticker Pie
-const tickerData = [{"name": "디아이티", "value": 62.5, "amount_man": 127264}, {"name": "VOO", "value": 8.0, "amount_man": 16290}, {"name": "BIL", "value": 6.0, "amount_man": 12217}, {"name": "QQQ", "value": 6.0, "amount_man": 12217}, {"name": "SCHD", "value": 3.4, "amount_man": 6923}, {"name": "AAPL", "value": 1.5, "amount_man": 3054}, {"name": "O", "value": 1.3, "amount_man": 2647}, {"name": "JEPI", "value": 1.1, "amount_man": 2240}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1833}, {"name": "SOXX", "value": 0.8, "amount_man": 1629}, {"name": "기타", "value": 8.2, "amount_man": 16697}];
+const tickerData = [{"name": "디아이티", "value": 61.7, "amount_man": 123613}, {"name": "VOO", "value": 8.2, "amount_man": 16428}, {"name": "QQQ", "value": 6.2, "amount_man": 12421}, {"name": "BIL", "value": 6.1, "amount_man": 12221}, {"name": "SCHD", "value": 3.5, "amount_man": 7012}, {"name": "AAPL", "value": 1.5, "amount_man": 3005}, {"name": "O", "value": 1.3, "amount_man": 2604}, {"name": "JEPI", "value": 1.1, "amount_man": 2204}, {"name": "SOXX", "value": 0.9, "amount_man": 1803}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1803}, {"name": "기타", "value": 8.6, "amount_man": 17230}];
 new Chart(document.getElementById('tickerPie'), {
   type: 'doughnut',
   data: {
