@@ -174,6 +174,16 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         portfolio = _parse_portfolio_for_report(portfolio_path)
         prev_signals = get_previous_signals(history, today)
 
+        # 이전 실행의 백테스트 분석 결과 로드 (있으면)
+        analysis_path = os.path.join(project_dir, "history", "backtest_analysis.json")
+        prev_backtest = {}
+        if os.path.exists(analysis_path):
+            try:
+                with open(analysis_path, "r", encoding="utf-8") as f:
+                    prev_backtest = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                pass
+
         report_path = os.path.join(reports_dir, f"report_{today}.html")
         generate_report(
             market_data=market_data,
@@ -185,6 +195,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_sp100=scanner_sp100_result,
             scanner_etf=scanner_etf_result,
             scanner_kospi=scanner_kospi_result,
+            backtest_analysis=prev_backtest,
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -263,6 +274,19 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         history = prune_old(history)
         save_history(history, history_path)
         print("  OK signals_history.json updated")
+
+        # Step 6b: Backtest evaluation
+        print("[Step 6b] Backtest evaluation...")
+        outcomes_path = os.path.join(project_dir, "history", "outcomes.json")
+        analysis_path = os.path.join(project_dir, "history", "backtest_analysis.json")
+        backtest_analysis = {}
+        try:
+            from backtest_evaluator import evaluate_outcomes, analyze_accuracy
+            outcomes = evaluate_outcomes(history, outcomes_path)
+            backtest_analysis = analyze_accuracy(outcomes, analysis_path)
+            print(f"  OK backtest: {backtest_analysis.get('total_records', 0)} records, status={backtest_analysis.get('data_status', 'unknown')}")
+        except Exception as e:
+            print(f"  WARN backtest evaluation failed: {e} (pipeline continues)")
 
         # Step 7: Smoke test
         print("[Step 7] Running smoke test...")

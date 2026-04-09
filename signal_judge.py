@@ -13,10 +13,41 @@ v5.2 변경사항:
 """
 from __future__ import annotations
 
+import json
+import os
+
 from portfolio_data import (
     STRATEGY_GROUP, get_strategy_group,
     get_ticker_name, get_ticker_class,
 )
+
+
+# ═══════════════════════════════════════════════════════
+#  파라미터 로드 (strategy_params.json)
+# ═══════════════════════════════════════════════════════
+
+_PARAMS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "strategy_params.json")
+
+def _load_params() -> dict:
+    """strategy_params.json 로드. 파일 없으면 빈 dict 반환 (하드코딩 폴백)."""
+    try:
+        with open(_PARAMS_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+PARAMS = _load_params()
+
+def _p(path: str, default):
+    """PARAMS에서 dot-separated 경로로 값 조회. 예: _p("top_signal.rsi", 75)"""
+    keys = path.split(".")
+    obj = PARAMS
+    for k in keys:
+        if isinstance(obj, dict) and k in obj:
+            obj = obj[k]
+        else:
+            return default
+    return obj
 
 
 # ═══════════════════════════════════════════════════════
@@ -27,7 +58,7 @@ def _is_profit_zone(d: dict) -> bool:
     """고점 영역 게이트: 최근 고점 대비 -5% 이내일 때만 익절 시그널 허용.
     이미 많이 하락한 상태에서는 Exit 발동하지 않음 → HOLD로 버팀."""
     dd = d.get("drawdown_20d_pct", 0)
-    return dd > -5.0
+    return dd > _p("profit_zone_gate.dd_threshold", -5.0)
 
 
 # ═══════════════════════════════════════════════════════
@@ -53,18 +84,20 @@ def _check_top_signal(d: dict, prev_day: dict | None = None) -> tuple[bool, list
     rsi = d.get("rsi14")
     bb_pct = d.get("bb_pct")
     change_3d = _calc_3d_change(d)
+    _top_rsi = _p("top_signal.rsi", 75)
 
-    if rsi is not None and rsi >= 75:
-        conditions.append(("ok", "RSI ≥ 75", f"RSI {rsi:.1f} — 과열 구간이에요"))
+    if rsi is not None and rsi >= _top_rsi:
+        conditions.append(("ok", f"RSI >= {_top_rsi}", f"RSI {rsi:.1f} — 과열 구간이에요"))
     elif rsi is not None:
-        conditions.append(("no", "RSI ≥ 75", f"RSI {rsi:.1f} — 아직 75 미만이에요"))
+        conditions.append(("no", f"RSI >= {_top_rsi}", f"RSI {rsi:.1f} — 아직 {_top_rsi} 미만이에요"))
     else:
-        conditions.append(("no", "RSI ≥ 75", "RSI 데이터가 없어요"))
+        conditions.append(("no", f"RSI >= {_top_rsi}", "RSI 데이터가 없어요"))
 
-    # BB 상단 2일 연속 마감 (bb_pct > 100 = 상단 초과)
-    bb_above_today = bb_pct is not None and bb_pct > 100
+    # BB 상단 2일 연속 마감 (bb_pct > 상단 = 상단 초과)
+    _top_bb = _p("top_signal.bb_upper", 100)
+    bb_above_today = bb_pct is not None and bb_pct > _top_bb
     if prev_day and prev_day.get("bb_pct") is not None:
-        bb_above_yesterday = prev_day["bb_pct"] > 100
+        bb_above_yesterday = prev_day["bb_pct"] > _top_bb
         if bb_above_today and bb_above_yesterday:
             conditions.append(("ok", "BB 상단 2일 연속", f"오늘 {bb_pct:.1f}%, 전일 {prev_day['bb_pct']:.1f}% — 연속 돌파했어요"))
         else:
@@ -74,14 +107,16 @@ def _check_top_signal(d: dict, prev_day: dict | None = None) -> tuple[bool, list
     else:
         conditions.append(("no", "BB 상단 2일 연속", "BB 데이터가 없어요"))
 
-    if change_3d is not None and change_3d >= 10:
-        conditions.append(("ok", "3일 누적 ≥ +10%", f"3일 변동 {change_3d:+.1f}% — 급등했어요"))
+    _top_chg = _p("top_signal.change_3d_pct", 10)
+    if change_3d is not None and change_3d >= _top_chg:
+        conditions.append(("ok", f"3일 누적 >= +{_top_chg}%", f"3일 변동 {change_3d:+.1f}% — 급등했어요"))
     elif change_3d is not None:
-        conditions.append(("no", "3일 누적 ≥ +10%", f"3일 변동 {change_3d:+.1f}% — 10% 미만이에요"))
+        conditions.append(("no", f"3일 누적 >= +{_top_chg}%", f"3일 변동 {change_3d:+.1f}% — {_top_chg}% 미만이에요"))
     else:
-        conditions.append(("no", "3일 누적 ≥ +10%", "3일 변동 데이터가 없어요"))
+        conditions.append(("no", f"3일 누적 >= +{_top_chg}%", "3일 변동 데이터가 없어요"))
 
-    triggered = sum(1 for c in conditions if c[0] == "ok") >= 2
+    _top_min = _p("top_signal.min_count", 2)
+    triggered = sum(1 for c in conditions if c[0] == "ok") >= _top_min
     return triggered, conditions
 
 
@@ -180,10 +215,11 @@ def _check_take_profit_1(d: dict, prev_day: dict | None) -> tuple[bool, list]:
     else:
         conditions.append(("no", "MACD hist 3일 감소", f"추세 '{macd_hist_trend}' — 아직 3일 연속 감소가 아니에요"))
 
-    # ② RSI 다이버전스: 전일 RSI > 금일 RSI, 둘 다 ≥50 (고점 영역 하락)  [v5.1 신규]
+    # ② RSI 다이버전스: 전일 RSI > 금일 RSI, 둘 다 ≥floor (고점 영역 하락)  [v5.1 신규]
+    _tp1_rsi_floor = _p("take_profit_1.rsi_divergence_floor", 50)
     if prev_day and rsi is not None:
         prev_rsi = prev_day.get("rsi")
-        if prev_rsi is not None and prev_rsi > rsi and prev_rsi >= 50 and rsi >= 50:
+        if prev_rsi is not None and prev_rsi > rsi and prev_rsi >= _tp1_rsi_floor and rsi >= _tp1_rsi_floor:
             conditions.append(("ok", "RSI 다이버전스", f"전일 {prev_rsi:.1f} → 오늘 {rsi:.1f} — 고점에서 하락 중이에요"))
             count += 1
         elif prev_rsi is not None:
@@ -200,7 +236,7 @@ def _check_take_profit_1(d: dict, prev_day: dict | None) -> tuple[bool, list]:
     else:
         conditions.append(("no", "종가 < MA20", "아직 MA20 위에 있어요"))
 
-    triggered = count >= 2
+    triggered = count >= _p("take_profit_1.min_count", 2)
     return triggered, conditions
 
 
@@ -229,7 +265,8 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     conditions = []
 
     # [v5.1b] 당일 급락 거부 — 전 단계 적용
-    reject_drop = change_pct <= -5.0
+    _g = PARAMS.get("entry_growth", {})
+    reject_drop = change_pct <= _p("entry_growth.reject_drop_pct", -5.0)
     if reject_drop:
         conditions.append(("no", "[거부] 당일 급락", f"당일 {change_pct:+.1f}% — 5% 이상 급락이라 매수 금지예요"))
         return _growth_watch_fallback(d, conditions)
@@ -249,28 +286,31 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
                    f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden_c3 else '<'} signal {macd_signal:.4f}"))
     else:
         c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
-    vol_13 = volume_ratio is not None and volume_ratio >= 1.3
+    _g3_vol = _p("entry_growth.3rd_buy.volume_ratio", 1.3)
+    vol_13 = volume_ratio is not None and volume_ratio >= _g3_vol
     if skip_volume:
-        c3.append(("ok", "거래량비 ≥ 1.3x",
+        c3.append(("ok", f"거래량비 >= {_g3_vol}x",
                    f"거래량비 {volume_ratio:.2f}x — BUY 2일차 면제예요" if volume_ratio else "거래량 데이터 없음 — BUY 2일차 면제예요"))
     elif volume_ratio is not None:
         c3.append(("ok" if vol_13 else "no",
-                   "거래량비 ≥ 1.3x",
+                   f"거래량비 >= {_g3_vol}x",
                    f"거래량비 {volume_ratio:.2f}x — {'평소보다 많아요' if vol_13 else '아직 부족해요'}"))
     else:
-        c3.append(("no", "거래량비 ≥ 1.3x", "거래량 데이터가 없어요"))
-    rsi_above_55 = rsi is not None and rsi > 55
+        c3.append(("no", f"거래량비 >= {_g3_vol}x", "거래량 데이터가 없어요"))
+    _g3_rsi = _p("entry_growth.3rd_buy.rsi_min", 55)
+    rsi_above_55 = rsi is not None and rsi > _g3_rsi
     if rsi is not None:
         c3.append(("ok" if rsi_above_55 else "no",
-                   "RSI > 55",
-                   f"RSI {rsi:.1f} — {'추세 확인이에요' if rsi_above_55 else '아직 55 이하예요'}"))
+                   f"RSI > {_g3_rsi}",
+                   f"RSI {rsi:.1f} — {'추세 확인이에요' if rsi_above_55 else f'아직 {_g3_rsi} 이하예요'}"))
     else:
-        c3.append(("no", "RSI > 55", "RSI 데이터가 없어요"))
-    # 3rd BUY 추가 거부: RSI > 75
-    if rsi is not None and rsi > 75:
-        c3.append(("no", "[거부] RSI > 75", f"RSI {rsi:.1f} — 과열 구간이라 3차 매수 금지예요"))
+        c3.append(("no", f"RSI > {_g3_rsi}", "RSI 데이터가 없어요"))
+    # 3rd BUY 추가 거부: RSI > reject
+    _g3_reject = _p("entry_growth.3rd_buy.rsi_reject", 75)
+    if rsi is not None and rsi > _g3_reject:
+        c3.append(("no", f"[거부] RSI > {_g3_reject}", f"RSI {rsi:.1f} — 과열 구간이라 3차 매수 금지예요"))
 
-    if all(c[0] == "ok" for c in c3) and not (rsi and rsi > 75):
+    if all(c[0] == "ok" for c in c3) and not (rsi and rsi > _g3_reject):
         return "3rd_BUY", c3
 
     # ── 2nd BUY (30%) — ALL 충족  [v5.1b: 이중바닥 diff≥3%, MACD 골든크로스 필수] ──
@@ -279,23 +319,25 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     dbl = d.get("double_bottom", {})
     dbl_detected = dbl.get("detected", False) if isinstance(dbl, dict) else False
     dbl_diff = dbl.get("diff_pct", 99) if isinstance(dbl, dict) else 99
-    dbl_valid = dbl_detected and dbl_diff <= 3.0
+    _g2_dbl_diff = _p("entry_growth.2nd_buy.double_bottom_diff", 3.0)
+    dbl_valid = dbl_detected and dbl_diff <= _g2_dbl_diff
     if isinstance(dbl, dict) and dbl.get("low1"):
         c2.append(("ok" if dbl_valid else "no",
-                   "이중바닥 (차이 ≤ 3%)",
+                   f"이중바닥 (차이 <= {_g2_dbl_diff}%)",
                    f"{dbl['low1']['price']}({dbl['low1']['date']}) vs "
                    f"{dbl['low2']['price']}({dbl['low2']['date']}) 차이 {dbl_diff:.1f}%"
-                   f"{' — 이중바닥 확인이에요' if dbl_valid else ' — 3% 초과라 무효예요' if dbl_detected else ' — 이중바닥이 아니에요'}"))
+                   f"{' — 이중바닥 확인이에요' if dbl_valid else f' — {_g2_dbl_diff}% 초과라 무효예요' if dbl_detected else ' — 이중바닥이 아니에요'}"))
     else:
-        c2.append(("no", "이중바닥 (차이 ≤ 3%)", "최근 60일 로컬 최저점 2개 미만이에요"))
-    # ② RSI > 35
-    rsi_rising_3d = rsi is not None and rsi > 35
+        c2.append(("no", f"이중바닥 (차이 <= {_g2_dbl_diff}%)", "최근 60일 로컬 최저점 2개 미만이에요"))
+    # ② RSI > recovery threshold
+    _g2_rsi = _p("entry_growth.2nd_buy.rsi_recovery", 35)
+    rsi_rising_3d = rsi is not None and rsi > _g2_rsi
     if rsi is not None:
         c2.append(("ok" if rsi_rising_3d else "no",
-                   "RSI > 35",
+                   f"RSI > {_g2_rsi}",
                    f"RSI {rsi:.1f} — {'과매도를 벗어났어요' if rsi_rising_3d else '아직 과매도 구간이에요'}"))
     else:
-        c2.append(("no", "RSI > 35", "RSI 데이터가 없어요"))
+        c2.append(("no", f"RSI > {_g2_rsi}", "RSI 데이터가 없어요"))
     # ③ MACD 골든크로스 필수 (hist 증가만으로는 불충분)
     macd_golden = macd is not None and macd_signal is not None and macd > macd_signal
     if macd is not None and macd_signal is not None:
@@ -304,17 +346,18 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
                    f"MACD {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f} — {'골든크로스 발생이에요' if macd_golden else '아직 데스크로스예요'}"))
     else:
         c2.append(("no", "MACD 골든크로스", "MACD 데이터가 없어요"))
-    # ④ 거래량 ≥ 1.2배
-    vol_12 = volume_ratio is not None and volume_ratio >= 1.2
+    # ④ 거래량 ≥ threshold
+    _g2_vol = _p("entry_growth.2nd_buy.volume_ratio", 1.2)
+    vol_12 = volume_ratio is not None and volume_ratio >= _g2_vol
     if skip_volume:
-        c2.append(("ok", "거래량비 ≥ 1.2x",
+        c2.append(("ok", f"거래량비 >= {_g2_vol}x",
                    f"거래량비 {volume_ratio:.2f}x — BUY 2일차 면제예요" if volume_ratio else "거래량 데이터 없음 — BUY 2일차 면제예요"))
     elif volume_ratio is not None:
         c2.append(("ok" if vol_12 else "no",
-                   "거래량비 ≥ 1.2x",
+                   f"거래량비 >= {_g2_vol}x",
                    f"거래량비 {volume_ratio:.2f}x — {'충분해요' if vol_12 else '아직 부족해요'}"))
     else:
-        c2.append(("no", "거래량비 ≥ 1.2x", "거래량 데이터가 없어요"))
+        c2.append(("no", f"거래량비 >= {_g2_vol}x", "거래량 데이터가 없어요"))
 
     if all(c[0] == "ok" for c in c2):
         return "2nd_BUY", c2
@@ -327,14 +370,17 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
         return _growth_watch_fallback(d, conditions)
 
     # ── 1st BUY (20%) — 필수 4개 ALL, 선택 면제  [v5.3b] ──
-    # [필수①] RSI ≤ 45 (조정 확인)
-    rsi_ok = rsi is not None and rsi <= 45
+    _g1_rsi = _p("entry_growth.1st_buy.rsi_max", 45)
+    _g1_dd = _p("entry_growth.1st_buy.dd_52w_max", -15.0)
+    _g1_watch_min = _p("entry_growth.1st_buy.watch_mandatory_min", 3)
+    # [필수①] RSI ≤ threshold (조정 확인)
+    rsi_ok = rsi is not None and rsi <= _g1_rsi
     if rsi is not None:
         conditions.append(("ok" if rsi_ok else "no",
-                           "[필수] RSI ≤ 45",
-                           f"RSI {rsi:.1f} — {'조정 구간이에요' if rsi_ok else '아직 45 이하가 아니에요'}"))
+                           f"[필수] RSI <= {_g1_rsi}",
+                           f"RSI {rsi:.1f} — {'조정 구간이에요' if rsi_ok else f'아직 {_g1_rsi} 이하가 아니에요'}"))
     else:
-        conditions.append(("no", "[필수] RSI ≤ 45", "RSI 데이터가 없어요"))
+        conditions.append(("no", f"[필수] RSI <= {_g1_rsi}", "RSI 데이터가 없어요"))
 
     # [필수②] 가격 < MA20 (조정 확인)
     below_ma20 = price_vs_ma20 == "below"
@@ -348,11 +394,11 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
                        "[필수] MACD hist 2일 증가",
                        f"추세 '{macd_hist_trend}' — {'반전 시작이에요' if hist_increasing else '아직 증가세가 아니에요'}"))
 
-    # [필수④] 52주 고점 대비 ≤ -15% (의미 있는 조정)
+    # [필수④] 52주 고점 대비 ≤ threshold (의미 있는 조정)
     drawdown_52w = d.get("drawdown_52w_pct", 0)
-    dd_ok = drawdown_52w <= -15.0
+    dd_ok = drawdown_52w <= _g1_dd
     conditions.append(("ok" if dd_ok else "no",
-                       "[필수] 52주 고점 대비 ≤ -15%",
+                       f"[필수] 52주 고점 대비 <= {_g1_dd}%",
                        f"52주 대비 {drawdown_52w:.1f}% — {'충분히 조정됐어요' if dd_ok else '아직 조정이 부족해요'}"))
 
     mandatory_ok = rsi_ok and below_ma20 and hist_increasing and dd_ok
@@ -360,9 +406,9 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     if mandatory_ok:
         return "1st_BUY", conditions
 
-    # WATCH: 필수 3개 이상 충족
+    # WATCH: 필수 N개 이상 충족
     mandatory_count = sum([rsi_ok, below_ma20, hist_increasing, dd_ok])
-    if mandatory_count >= 3:
+    if mandatory_count >= _g1_watch_min:
         return "WATCH", conditions
 
     return None, conditions
@@ -396,21 +442,24 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
 
     conditions = []
 
-    # [거부] RSI > 70 (전 단계 공통)
-    reject = rsi is not None and rsi > 70
+    # [거부] RSI > threshold (전 단계 공통)
+    _etf_reject_rsi = _p("entry_etf.reject_rsi", 70)
+    reject = rsi is not None and rsi > _etf_reject_rsi
     if reject:
-        conditions.append(("no", "[거부] RSI > 70", f"RSI {rsi:.1f} — 과열이라 전 단계 매수 금지예요"))
+        conditions.append(("no", f"[거부] RSI > {_etf_reject_rsi}", f"RSI {rsi:.1f} — 과열이라 전 단계 매수 금지예요"))
         return None, conditions
 
     # ── 1st BUY 조건 평가  [v5.3b: 필수 4개 ALL, 선택 면제 — Growth와 동일] ──
-    # [필수①] RSI ≤ 45 (조정 확인)
-    rsi_ok = rsi is not None and rsi <= 45
+    _e1_rsi = _p("entry_etf.1st_buy.rsi_max", 45)
+    _e1_dd = _p("entry_etf.1st_buy.dd_52w_max", -15.0)
+    # [필수①] RSI ≤ threshold (조정 확인)
+    rsi_ok = rsi is not None and rsi <= _e1_rsi
     if rsi is not None:
         conditions.append(("ok" if rsi_ok else "no",
-                           "[필수] RSI ≤ 45",
-                           f"RSI {rsi:.1f} — {'조정 구간이에요' if rsi_ok else '아직 45 이하가 아니에요'}"))
+                           f"[필수] RSI <= {_e1_rsi}",
+                           f"RSI {rsi:.1f} — {'조정 구간이에요' if rsi_ok else f'아직 {_e1_rsi} 이하가 아니에요'}"))
     else:
-        conditions.append(("no", "[필수] RSI ≤ 45", "RSI 데이터가 없어요"))
+        conditions.append(("no", f"[필수] RSI <= {_e1_rsi}", "RSI 데이터가 없어요"))
 
     # [필수②] 가격 < MA20 (조정 확인)
     below_ma20 = price_vs_ma20 == "below"
@@ -424,10 +473,10 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
                        "[필수] MACD hist 2일 증가",
                        f"추세 '{macd_hist_trend}' — {'반전 시작이에요' if hist_increasing else '아직 증가세가 아니에요'}"))
 
-    # [필수④] 52주 고점 대비 ≤ -15% (의미 있는 조정)
-    dd_ok = drawdown_52w <= -15.0
+    # [필수④] 52주 고점 대비 ≤ threshold (의미 있는 조정)
+    dd_ok = drawdown_52w <= _e1_dd
     conditions.append(("ok" if dd_ok else "no",
-                       "[필수] 52주 고점 대비 ≤ -15%",
+                       f"[필수] 52주 고점 대비 <= {_e1_dd}%",
                        f"52주 대비 {drawdown_52w:.1f}% — {'충분히 조정됐어요' if dd_ok else '아직 조정이 부족해요'}"))
 
     # ── 3rd BUY (50%) — ALL 충족  [v5.1b: RSI>55, MACD 골든크로스+0선 돌파] ──
@@ -459,16 +508,18 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
         return "3rd_BUY", c3
 
     # ── 2nd BUY (30%) — Pick 3 of 4 ──
+    _e2_rsi = _p("entry_etf.2nd_buy.rsi_recovery", 42)
+    _e2_min = _p("entry_etf.2nd_buy.min_count", 3)
     macd_signal_val = d.get("macd_signal")
     c2_count = 0
     c2 = []
-    rsi_42 = rsi is not None and rsi > 42
+    rsi_42 = rsi is not None and rsi > _e2_rsi
     if rsi is not None:
         c2.append(("ok" if rsi_42 else "no",
-                   "RSI > 42",
-                   f"RSI {rsi:.1f} — {'과매도 탈출이에요' if rsi_42 else '아직 42 이하예요'}"))
+                   f"RSI > {_e2_rsi}",
+                   f"RSI {rsi:.1f} — {'과매도 탈출이에요' if rsi_42 else f'아직 {_e2_rsi} 이하예요'}"))
     else:
-        c2.append(("no", "RSI > 42", "RSI 데이터가 없어요"))
+        c2.append(("no", f"RSI > {_e2_rsi}", "RSI 데이터가 없어요"))
     if rsi_42: c2_count += 1
     macd_golden = macd is not None and macd_signal_val is not None and macd > macd_signal_val
     if macd is not None and macd_signal_val is not None:
@@ -508,7 +559,7 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
         if higher_low: c2_count += 1
     else:
         c2.append(("na", "Higher Low 형성", "저점 데이터가 부족해요 (60일 미만)"))
-    if c2_count >= 3:
+    if c2_count >= _e2_min:
         return "2nd_BUY", c2
 
     # ── 1st BUY (20%) — 필수 4개 ALL, 선택 면제  [v5.3b] ──
@@ -547,24 +598,27 @@ def _check_entry_bond(d: dict, macro: dict) -> tuple[str | None, list]:
         conditions.append(("na", "30Y 금리 ≥ 5.0%", "30Y 금리 데이터가 없어요"))
         return None, conditions
 
-    # 1st BUY: 30Y ≥ 5.0% AND RSI ≤ 35
-    y_ok = yield_30y >= 5.0
-    r_ok = rsi is not None and rsi <= 35
+    # 1st BUY: 30Y ≥ threshold AND RSI ≤ threshold
+    _b_yield = _p("entry_bond.yield_30y", 5.0)
+    _b_rsi = _p("entry_bond.rsi_max", 35)
+    y_ok = yield_30y >= _b_yield
+    r_ok = rsi is not None and rsi <= _b_rsi
     conditions.append(("ok" if y_ok else "no",
-                       "30Y 금리 ≥ 5.0%",
-                       f"30Y 금리 {yield_30y:.3f}% — {'매수 구간이에요' if y_ok else '아직 5.0% 미만이에요'}"))
+                       f"30Y 금리 >= {_b_yield}%",
+                       f"30Y 금리 {yield_30y:.3f}% — {'매수 구간이에요' if y_ok else f'아직 {_b_yield}% 미만이에요'}"))
     if rsi is not None:
         conditions.append(("ok" if r_ok else "no",
-                           "RSI ≤ 35",
-                           f"RSI {rsi:.1f} — {'과매도 구간이에요' if r_ok else '아직 35 이하가 아니에요'}"))
+                           f"RSI <= {_b_rsi}",
+                           f"RSI {rsi:.1f} — {'과매도 구간이에요' if r_ok else f'아직 {_b_rsi} 이하가 아니에요'}"))
     else:
-        conditions.append(("no", "RSI ≤ 35", "RSI 데이터가 없어요"))
+        conditions.append(("no", f"RSI <= {_b_rsi}", "RSI 데이터가 없어요"))
 
     if y_ok and r_ok:
         return "1st_BUY", conditions
 
-    # BOND_WATCH: 30Y 4.9~5.0%
-    if 4.9 <= yield_30y < 5.0:
+    # BOND_WATCH: near trigger
+    _b_watch = _p("entry_bond.watch_yield_min", 4.9)
+    if _b_watch <= yield_30y < _b_yield:
         conditions.append(("ok", "30Y 트리거 직전", f"30Y {yield_30y:.3f}% — 4.9~5.0% 구간이라 주시해요"))
         return "BOND_WATCH", conditions
 
@@ -582,17 +636,22 @@ def _check_entry_metal(d: dict, macro: dict) -> tuple[str | None, list]:
     vix = macro.get("VIX", 0)
     bb_lower = d.get("bb_lower")
     price = d.get("price", 0)
+    _m_rsi = _p("entry_metal.rsi_max", 40)
+    _m_vix = _p("entry_metal.vix_min", 25)
+    _m_bb = _p("entry_metal.bb_dist_max", 5)
+    _m_rsi_warn = _p("entry_metal.rsi_warn", 80)
+    _m_min = _p("entry_metal.min_count", 2)
 
     conditions = []
     count = 0
 
-    rsi_ok = rsi is not None and rsi <= 40
+    rsi_ok = rsi is not None and rsi <= _m_rsi
     if rsi is not None:
         conditions.append(("ok" if rsi_ok else "no",
-                           "RSI ≤ 40",
-                           f"RSI {rsi:.1f} — {'과매도 근접이에요' if rsi_ok else '아직 40 이하가 아니에요'}"))
+                           f"RSI <= {_m_rsi}",
+                           f"RSI {rsi:.1f} — {'과매도 근접이에요' if rsi_ok else f'아직 {_m_rsi} 이하가 아니에요'}"))
     else:
-        conditions.append(("no", "RSI ≤ 40", "RSI 데이터가 없어요"))
+        conditions.append(("no", f"RSI <= {_m_rsi}", "RSI 데이터가 없어요"))
     if rsi_ok:
         count += 1
 
@@ -603,10 +662,10 @@ def _check_entry_metal(d: dict, macro: dict) -> tuple[str | None, list]:
     if below_ma20:
         count += 1
 
-    # VIX > 25 (변경③: 지정학 리스크 → VIX 대체)
-    vix_ok = vix > 25
+    # VIX > threshold
+    vix_ok = vix > _m_vix
     conditions.append(("ok" if vix_ok else "no",
-                       "VIX > 25",
+                       f"VIX > {_m_vix}",
                        f"VIX {vix:.1f} — {'공포 구간이에요' if vix_ok else '아직 안정적이에요'}"))
     if vix_ok:
         count += 1
@@ -615,20 +674,20 @@ def _check_entry_metal(d: dict, macro: dict) -> tuple[str | None, list]:
     bb_near = False
     if bb_lower and price > 0:
         bb_dist = (price - bb_lower) / bb_lower * 100
-        bb_near = bb_dist <= 5
+        bb_near = bb_dist <= _m_bb
         conditions.append(("ok" if bb_near else "no",
-                           "BB 하단 ≤ 5%",
+                           f"BB 하단 <= {_m_bb}%",
                            f"BB 하단 거리 {bb_dist:.1f}% — {'하단 근접이에요' if bb_near else '아직 멀어요'}"))
     else:
-        conditions.append(("na", "BB 하단 ≤ 5%", "BB 하단 데이터가 없어요"))
+        conditions.append(("na", f"BB 하단 <= {_m_bb}%", "BB 하단 데이터가 없어요"))
     if bb_near:
         count += 1
 
-    # RSI > 80 → TOP_SIGNAL 강제 (별도 처리)
-    if rsi is not None and rsi > 80:
-        conditions.append(("no", "[주의] RSI > 80", f"RSI {rsi:.1f} — TOP_SIGNAL 영역이에요"))
+    # RSI > warn → TOP_SIGNAL 강제 (별도 처리)
+    if rsi is not None and rsi > _m_rsi_warn:
+        conditions.append(("no", f"[주의] RSI > {_m_rsi_warn}", f"RSI {rsi:.1f} — TOP_SIGNAL 영역이에요"))
 
-    if count >= 2:
+    if count >= _m_min:
         return "1st_BUY", conditions
     if count >= 1:
         return "WATCH", conditions

@@ -64,6 +64,8 @@ def save_today(
     }
 
     for ticker, result in signals.items():
+        # conditions_met: 충족된 조건 이름 리스트 (백테스트 분석용)
+        conditions_met = [c[1] for c in result.get("conditions", []) if c[0] == "ok"]
         day_entry[ticker] = {
             "signal": result.get("signal"),
             "price": result.get("price"),
@@ -76,6 +78,7 @@ def save_today(
             "bb_pct": result.get("bb_pct"),                  # v5.1 추가
             "buy_streak": result.get("buy_streak", 0),      # v5.1b 연속일
             "buy_confirmed": result.get("buy_confirmed", False),
+            "conditions_met": conditions_met,                # 백테스트용
             "note": result.get("note", ""),
         }
 

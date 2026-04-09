@@ -230,6 +230,7 @@ def generate_report(
     scanner_sp100: dict | None = None,
     scanner_etf: dict | None = None,
     scanner_kospi: dict | None = None,
+    backtest_analysis: dict | None = None,
 ) -> str:
     """
     Jinja2 템플릿으로 HTML 리포트 생성.
@@ -399,6 +400,8 @@ def generate_report(
         "nav_sp100": f"scanner_sp100_{date_str}.html",
         "nav_etf": f"scanner_etf_{date_str}.html",
         "nav_kospi": f"scanner_kospi_{date_str}.html",
+        # 백테스트 분석
+        "backtest": backtest_analysis or {},
     }
 
     html = template.render(**context)
