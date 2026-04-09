@@ -98,11 +98,17 @@
   <div class="chart-box">
     <canvas id="pnlTrendChart"></canvas>
   </div>
+
+  <!-- 3. Dividend Trend -->
+  <h2>💵 예상 연 배당금 추이</h2>
+  <div class="chart-box">
+    <canvas id="divTrendChart"></canvas>
+  </div>
   {% else %}
   <div class="no-data">데이터가 2일 이상 축적되면 추이 차트가 표시됩니다. (현재 {{ data_days }}일)</div>
   {% endif %}
 
-  <!-- 3. Pie Charts -->
+  <!-- 4. Pie Charts -->
   <h2>🥧 포트폴리오 비중</h2>
   <div class="pie-row">
     <div class="pie-col">
@@ -116,7 +122,7 @@
   </div>
 
   {% if data_days >= 2 %}
-  <!-- 4. Macro Trend -->
+  <!-- 5. Macro Trend -->
   <h2>🌍 매크로 지표 추이</h2>
   <div class="chart-box">
     <canvas id="macroChart"></canvas>
@@ -136,6 +142,8 @@ const totalAsset = trend.map(d => d.total_eok);
 const costBasis = trend.map(d => d.cost_eok);
 const pnlAmount = trend.map(d => d.pnl_eok);
 const pnlPct = trend.map(d => d.pnl_pct);
+const divData = trend.map(d => d.div_annual_man);
+const divYieldData = trend.map(d => d.div_yield);
 const vixData = trend.map(d => d.vix);
 const yieldData = trend.map(d => d.yield_30y);
 const fxData = trend.map(d => d.usd_krw);
@@ -209,7 +217,42 @@ new Chart(document.getElementById('pnlTrendChart'), {
   }
 });
 
-// 4. Macro Trend
+// 4. Dividend Trend
+new Chart(document.getElementById('divTrendChart'), {
+  type: 'bar',
+  data: {
+    labels: dates,
+    datasets: [
+      {
+        label: '예상 연 배당 (만원)',
+        data: divData,
+        backgroundColor: 'rgba(230, 126, 34, 0.6)',
+        borderRadius: 3,
+        yAxisID: 'y',
+      },
+      {
+        label: '배당수익률 (%)',
+        data: divYieldData,
+        type: 'line',
+        borderColor: '#27ae60',
+        backgroundColor: 'transparent',
+        tension: 0.3,
+        pointRadius: 2,
+        yAxisID: 'y1',
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { position: 'left', title: { display: true, text: '만원' } },
+      y1: { position: 'right', title: { display: true, text: '%' }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+
+// 5. Macro Trend
 new Chart(document.getElementById('macroChart'), {
   type: 'line',
   data: {

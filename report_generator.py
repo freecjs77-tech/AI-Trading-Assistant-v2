@@ -594,6 +594,8 @@ def generate_trend_page(
             "cost_eok": round(cost_krw / 1e8, 2),
             "pnl_eok": round(pnl_krw / 1e8, 2),
             "pnl_pct": snap.get("pnl_pct", 0),
+            "div_annual_man": round(snap.get("div_annual_krw", 0) / 1e4),
+            "div_yield": snap.get("div_yield", 0),
             "vix": snap.get("vix"),
             "yield_30y": snap.get("yield_30y"),
             "usd_krw": snap.get("usd_krw", 0),
