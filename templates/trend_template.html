@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asset Trend Dashboard — {{ date }}</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fff; color: #1a1a1a; font-size: 14px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
+  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .header-controls a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: #fff; }
+  .nav-active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
+
+  .chart-box { background: #f8f9fa; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .chart-box canvas { max-height: 320px; }
+
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .sum-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 140px; text-align: center; border-top: 4px solid #ccc; }
+  .sum-card .num { font-size: 26px; font-weight: 800; line-height: 1; }
+  .sum-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
+  .sum-card .sub { font-size: 11px; color: #999; margin-top: 2px; }
+
+  .pie-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+  .pie-col { flex: 1; min-width: 300px; background: #f8f9fa; border-radius: 10px; padding: 20px; }
+  .pie-col h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .pie-col canvas { max-height: 280px; }
+
+  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
+  .no-data { color: #888; font-size: 13px; padding: 40px; text-align: center; }
+
+  @media (max-width: 600px) {
+    .sum-card { min-width: 80px; }
+    .pie-col { min-width: 100%; }
+    .header-row { flex-direction: column; align-items: flex-start; }
+    .header-controls { margin: 8px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header-row">
+    <h1>📈 Asset Trend Dashboard</h1>
+    <div class="header-controls">
+      <a href="{{ nav_portfolio }}" style="background:#2c3e50;">📊 포트폴리오</a>
+      <a href="{{ nav_sp100 }}" style="background:#27ae60;">🔍 S&P 100</a>
+      <a href="{{ nav_etf }}" style="background:#3498db;">📊 ETF</a>
+      <a href="{{ nav_kospi }}" style="background:#e74c3c;">🇰🇷 KOSPI</a>
+      <a href="{{ nav_backtest }}" style="background:#8e44ad;">📈 백테스트</a>
+      <a href="{{ nav_trend }}" style="background:#e67e22;" class="nav-active">📈 트렌드</a>
+      <a href="archive.html" style="background:#7f8c8d;">📁 아카이브</a>
+    </div>
+  </div>
+  <p class="subtitle">{{ date_ko }} &nbsp;|&nbsp; {{ data_days }}일 추이 &nbsp;|&nbsp; 데이터: 일별 스냅샷</p>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#27ae60;">
+      <div class="num" style="color:#27ae60;">₩{{ latest.total_eok }}억</div>
+      <div class="lbl">총 자산</div>
+      <div class="sub" style="color:{{ '#27ae60' if latest.pnl_krw >= 0 else '#e74c3c' }};">{{ '+' if latest.pnl_krw >= 0 else '' }}₩{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
+    </div>
+    <div class="sum-card" style="border-color:#3498db;">
+      <div class="num" style="color:#3498db;">₩{{ latest.cost_eok }}억</div>
+      <div class="lbl">투자 원금</div>
+    </div>
+    <div class="sum-card" style="border-color:#e67e22;">
+      <div class="num" style="color:#e67e22;">₩{{ latest.div_annual_man }}만</div>
+      <div class="lbl">예상 연 배당</div>
+      <div class="sub">수익률 {{ latest.div_yield }}%</div>
+    </div>
+    <div class="sum-card" style="border-color:#95a5a6;">
+      <div class="num">₩{{ latest.cash_eok }}억</div>
+      <div class="lbl">현금 (BIL)</div>
+      <div class="sub">{{ latest.cash_pct }}%</div>
+    </div>
+  </div>
+
+  {% if data_days >= 2 %}
+  <!-- 1. Total Asset Trend -->
+  <h2>💰 총 자산 추이</h2>
+  <div class="chart-box">
+    <canvas id="assetTrendChart"></canvas>
+  </div>
+
+  <!-- 2. P&L Trend -->
+  <h2>📊 수익금 / 수익률 추이</h2>
+  <div class="chart-box">
+    <canvas id="pnlTrendChart"></canvas>
+  </div>
+  {% else %}
+  <div class="no-data">데이터가 2일 이상 축적되면 추이 차트가 표시됩니다. (현재 {{ data_days }}일)</div>
+  {% endif %}
+
+  <!-- 3. Pie Charts -->
+  <h2>🥧 포트폴리오 비중</h2>
+  <div class="pie-row">
+    <div class="pie-col">
+      <h3>카테고리별</h3>
+      <canvas id="categoryPie"></canvas>
+    </div>
+    <div class="pie-col">
+      <h3>종목별 (상위 10)</h3>
+      <canvas id="tickerPie"></canvas>
+    </div>
+  </div>
+
+  {% if data_days >= 2 %}
+  <!-- 4. Macro Trend -->
+  <h2>🌍 매크로 지표 추이</h2>
+  <div class="chart-box">
+    <canvas id="macroChart"></canvas>
+  </div>
+  {% endif %}
+
+  <div class="report-footer">
+    데이터 소스: 일별 파이프라인 실행 스냅샷 | 차트: Chart.js 4.x | 총 자산 = USD 종목 x 환율 + KRW 종목
+  </div>
+
+</div>
+
+<script>
+const trend = {{ trend_json }};
+const dates = trend.map(d => d.date.slice(5));
+const totalAsset = trend.map(d => d.total_eok);
+const costBasis = trend.map(d => d.cost_eok);
+const pnlAmount = trend.map(d => d.pnl_eok);
+const pnlPct = trend.map(d => d.pnl_pct);
+const vixData = trend.map(d => d.vix);
+const yieldData = trend.map(d => d.yield_30y);
+const fxData = trend.map(d => d.usd_krw);
+
+{% if data_days >= 2 %}
+// 1. Total Asset Trend
+new Chart(document.getElementById('assetTrendChart'), {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: [
+      {
+        label: '총 자산 (억원)',
+        data: totalAsset,
+        borderColor: '#27ae60',
+        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+      },
+      {
+        label: '투자 원금 (억원)',
+        data: costBasis,
+        borderColor: '#3498db',
+        borderDash: [5, 5],
+        pointRadius: 0,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { title: { display: true, text: '억원' } }
+    }
+  }
+});
+
+// 2. P&L Trend
+new Chart(document.getElementById('pnlTrendChart'), {
+  type: 'bar',
+  data: {
+    labels: dates,
+    datasets: [
+      {
+        label: '수익금 (억원)',
+        data: pnlAmount,
+        backgroundColor: pnlAmount.map(v => v >= 0 ? 'rgba(39,174,96,0.6)' : 'rgba(231,76,60,0.6)'),
+        borderRadius: 3,
+        yAxisID: 'y',
+      },
+      {
+        label: '수익률 (%)',
+        data: pnlPct,
+        type: 'line',
+        borderColor: '#8e44ad',
+        backgroundColor: 'transparent',
+        tension: 0.3,
+        pointRadius: 2,
+        yAxisID: 'y1',
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { position: 'left', title: { display: true, text: '억원' } },
+      y1: { position: 'right', title: { display: true, text: '%' }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+
+// 4. Macro Trend
+new Chart(document.getElementById('macroChart'), {
+  type: 'line',
+  data: {
+    labels: dates,
+    datasets: [
+      {
+        label: 'VIX',
+        data: vixData,
+        borderColor: '#e74c3c',
+        tension: 0.3,
+        pointRadius: 1,
+        yAxisID: 'y',
+      },
+      {
+        label: '30Y Treasury (%)',
+        data: yieldData,
+        borderColor: '#3498db',
+        tension: 0.3,
+        pointRadius: 1,
+        yAxisID: 'y',
+      },
+      {
+        label: 'USD/KRW',
+        data: fxData,
+        borderColor: '#e67e22',
+        tension: 0.3,
+        pointRadius: 1,
+        yAxisID: 'y1',
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { position: 'left', title: { display: true, text: 'VIX / Yield' } },
+      y1: { position: 'right', title: { display: true, text: 'USD/KRW' }, grid: { drawOnChartArea: false } }
+    }
+  }
+});
+{% endif %}
+
+// 3a. Category Pie
+const catData = {{ category_json }};
+new Chart(document.getElementById('categoryPie'), {
+  type: 'doughnut',
+  data: {
+    labels: catData.map(d => d.name),
+    datasets: [{
+      data: catData.map(d => d.value),
+      backgroundColor: ['#27ae60', '#3498db', '#e67e22', '#e74c3c', '#95a5a6', '#f1c40f', '#9b59b6', '#1abc9c'],
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'right' },
+      tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed.toFixed(1) + '%'; } } }
+    }
+  }
+});
+
+// 3b. Ticker Pie
+const tickerData = {{ ticker_json }};
+new Chart(document.getElementById('tickerPie'), {
+  type: 'doughnut',
+  data: {
+    labels: tickerData.map(d => d.name),
+    datasets: [{
+      data: tickerData.map(d => d.value),
+      backgroundColor: [
+        '#27ae60', '#3498db', '#e74c3c', '#95a5a6', '#2ecc71',
+        '#e67e22', '#9b59b6', '#1abc9c', '#34495e', '#c0392b', '#bdc3c7'
+      ],
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'right' },
+      tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed.toFixed(1) + '%'; } } }
+    }
+  }
+});
+</script>
+</body>
+</html>

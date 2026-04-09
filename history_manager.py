@@ -177,6 +177,65 @@ def backfill_prices(history: dict, today_str: str = ""):
         print(f"  [Portfolio Backfill] {filled}건 종가 교정 완료")
 
 
+def load_portfolio_daily(path: str) -> dict:
+    """portfolio_daily.json 로드."""
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return {}
+
+
+def save_portfolio_snapshot(
+    path: str,
+    date_str: str,
+    total_value_krw: float,
+    cost_basis_krw: float,
+    cash_value_krw: float,
+    cash_pct: float,
+    div_annual_krw: float,
+    div_yield: float,
+    usd_krw: float,
+    vix: float | None,
+    yield_30y: float | None,
+    master_switch: str,
+    holdings_count: int,
+    weights_by_category: dict,
+    weights_by_ticker: dict,
+):
+    """일별 포트폴리오 스냅샷을 portfolio_daily.json에 저장."""
+    daily = load_portfolio_daily(path)
+
+    pnl_krw = total_value_krw - cost_basis_krw
+    pnl_pct = (pnl_krw / cost_basis_krw * 100) if cost_basis_krw > 0 else 0
+
+    daily[date_str] = {
+        "total_value_krw": round(total_value_krw),
+        "cost_basis_krw": round(cost_basis_krw),
+        "pnl_krw": round(pnl_krw),
+        "pnl_pct": round(pnl_pct, 1),
+        "cash_value_krw": round(cash_value_krw),
+        "cash_pct": round(cash_pct, 1),
+        "div_annual_krw": round(div_annual_krw),
+        "div_yield": round(div_yield, 2),
+        "usd_krw": round(usd_krw, 2) if usd_krw else 0,
+        "vix": round(vix, 2) if vix else None,
+        "yield_30y": round(yield_30y, 3) if yield_30y else None,
+        "master_switch": master_switch,
+        "holdings_count": holdings_count,
+        "weights_by_category": weights_by_category,
+        "weights_by_ticker": weights_by_ticker,
+    }
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(daily, f, ensure_ascii=False, indent=2)
+
+    return daily
+
+
 def get_previous_signals(history: dict, date_str: str) -> dict:
     """
     지정 날짜 직전의 시그널 데이터를 반환.

@@ -54,6 +54,13 @@ def prepare_deploy():
     if backtest_files:
         print(f"backtest pages copied ({len(backtest_files)} files)")
 
+    # 트렌드 페이지 복사
+    trend_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "trend_*.html")))
+    for f in trend_files:
+        shutil.copy2(f, DEPLOY_DIR)
+    if trend_files:
+        print(f"trend pages copied ({len(trend_files)} files)")
+
     # details/ 복사 (종목 상세 페이지)
     details_src = os.path.join(REPORTS_DIR, "details")
     if os.path.exists(details_src):

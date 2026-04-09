@@ -17,7 +17,7 @@ if sys.platform == "win32":
 from portfolio_data import TICKER_META
 from signal_judge import judge_all
 from history_manager import load_history, save_today, prune_old, save_history, get_previous_signals, backfill_prices
-from report_generator import generate_report, generate_detail_pages, generate_scanner_pages, generate_backtest_page
+from report_generator import generate_report, generate_detail_pages, generate_scanner_pages, generate_backtest_page, generate_trend_page
 
 
 def _load_market_data(json_path: str) -> dict:
@@ -254,6 +254,102 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 print("  WARN Telegram partial/failed (pipeline continues)")
         except Exception as e:
             print(f"  WARN Telegram error: {e} (pipeline continues)")
+
+        # Step 5c: Portfolio snapshot + Trend page
+        print("[Step 5c] Saving portfolio snapshot & trend page...")
+        try:
+            from history_manager import save_portfolio_snapshot, load_portfolio_daily
+            from portfolio_data import get_ticker_name, get_ticker_class, is_kospi_ticker
+
+            macro = market_data.get("_macro", {})
+            dividends = market_data.get("_dividends", {})
+            data = market_data.get("data", {})
+            usd_krw = macro.get("USD_KRW", 0)
+            rate = usd_krw if usd_krw else 1
+
+            # USD/KRW 분리 계산
+            us_value = us_cost = 0
+            kospi_value = kospi_cost = 0
+            for p in portfolio:
+                t = p["ticker"]
+                price = data.get(t, {}).get("price", 0)
+                val = p["shares"] * price if price else p.get("value", 0)
+                cost = p["shares"] * p["avg_cost"]
+                if is_kospi_ticker(t):
+                    kospi_value += val
+                    kospi_cost += cost
+                else:
+                    us_value += val
+                    us_cost += cost
+
+            total_value_krw = us_value * rate + kospi_value
+            cost_basis_krw = us_cost * rate + kospi_cost
+
+            bil = next((p for p in portfolio if p["ticker"] == "BIL"), None)
+            bil_price = data.get("BIL", {}).get("price", 0)
+            cash_val = bil["shares"] * bil_price if bil and bil_price else 0
+            cash_krw = cash_val * rate
+            cash_pct = (cash_val / (us_value + kospi_value / rate) * 100) if (us_value + kospi_value / rate) > 0 else 0
+
+            div_annual = dividends.get("total_annual", 0)
+            div_annual_krw = div_annual * rate
+            div_yield = dividends.get("portfolio_yield", 0)
+
+            # 비중 계산
+            weights_cat = {}
+            weights_ticker = {}
+            for p in portfolio:
+                t = p["ticker"]
+                price = data.get(t, {}).get("price", 0)
+                val = p["shares"] * price if price else p.get("value", 0)
+                if is_kospi_ticker(t):
+                    val_krw = val
+                else:
+                    val_krw = val * rate
+                w = (val_krw / total_value_krw * 100) if total_value_krw > 0 else 0
+
+                # 종목명 (KOSPI는 한글명, 미국은 티커)
+                if is_kospi_ticker(t):
+                    display_name = get_ticker_name(t) or t
+                else:
+                    display_name = t
+                weights_ticker[display_name] = round(w, 1)
+
+                cls = get_ticker_class(t) or "Other"
+                weights_cat[cls] = weights_cat.get(cls, 0) + w
+
+            weights_cat = {k: round(v, 1) for k, v in weights_cat.items()}
+
+            portfolio_daily_path = os.path.join(project_dir, "history", "portfolio_daily.json")
+            pd_data = save_portfolio_snapshot(
+                path=portfolio_daily_path,
+                date_str=today,
+                total_value_krw=total_value_krw,
+                cost_basis_krw=cost_basis_krw,
+                cash_value_krw=cash_krw,
+                cash_pct=cash_pct,
+                div_annual_krw=div_annual_krw,
+                div_yield=div_yield,
+                usd_krw=usd_krw,
+                vix=macro.get("VIX"),
+                yield_30y=macro.get("yield_30Y"),
+                master_switch=macro.get("master_switch", "UNKNOWN"),
+                holdings_count=len(portfolio),
+                weights_by_category=weights_cat,
+                weights_by_ticker=weights_ticker,
+            )
+            print(f"  OK portfolio_daily.json ({len(pd_data)} days)")
+
+            trend_path = generate_trend_page(
+                portfolio_daily=pd_data,
+                output_dir=reports_dir,
+                date_str=today,
+            )
+            print(f"  OK trend page -> {trend_path}")
+        except Exception as e:
+            import traceback as _tb2
+            _tb2.print_exc()
+            print(f"  WARN trend page failed: {e} (pipeline continues)")
 
         # Step 6: History update
         print("[Step 6] Updating history...")

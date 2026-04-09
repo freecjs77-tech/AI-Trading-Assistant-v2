@@ -401,6 +401,7 @@ def generate_report(
         "nav_etf": f"scanner_etf_{date_str}.html",
         "nav_kospi": f"scanner_kospi_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
+        "nav_trend": f"trend_{date_str}.html",
     }
 
     html = template.render(**context)
@@ -483,6 +484,7 @@ def generate_scanner_pages(
         "nav_etf": f"scanner_etf_{date_str}.html",
         "nav_kospi": f"scanner_kospi_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
+        "nav_trend": f"trend_{date_str}.html",
     }
 
     scanners = [
@@ -558,6 +560,109 @@ def generate_scanner_pages(
     return generated
 
 
+def generate_trend_page(
+    portfolio_daily: dict,
+    output_dir: str,
+    template_dir: str | None = None,
+    date_str: str | None = None,
+) -> str:
+    """자산 트렌드 대시보드 HTML 페이지 생성. 반환: 저장된 파일 경로"""
+    import json as _json
+    if template_dir is None:
+        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+    if date_str is None:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+
+    env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
+
+    template = env.get_template("trend_template.html")
+
+    # 날짜순 정렬
+    sorted_dates = sorted([k for k in portfolio_daily.keys() if not k.startswith("_")])
+    data_days = len(sorted_dates)
+
+    # 트렌드 시계열 데이터
+    trend_data = []
+    for d in sorted_dates:
+        snap = portfolio_daily[d]
+        total_krw = snap.get("total_value_krw", 0)
+        cost_krw = snap.get("cost_basis_krw", 0)
+        pnl_krw = snap.get("pnl_krw", 0)
+        trend_data.append({
+            "date": d,
+            "total_eok": round(total_krw / 1e8, 2),
+            "cost_eok": round(cost_krw / 1e8, 2),
+            "pnl_eok": round(pnl_krw / 1e8, 2),
+            "pnl_pct": snap.get("pnl_pct", 0),
+            "vix": snap.get("vix"),
+            "yield_30y": snap.get("yield_30y"),
+            "usd_krw": snap.get("usd_krw", 0),
+        })
+
+    # 최신 스냅샷 (Summary Cards)
+    latest_snap = portfolio_daily.get(sorted_dates[-1], {}) if sorted_dates else {}
+    latest_total = latest_snap.get("total_value_krw", 0)
+    latest_cost = latest_snap.get("cost_basis_krw", 0)
+    latest_pnl = latest_snap.get("pnl_krw", 0)
+    latest = {
+        "total_eok": f"{latest_total / 1e8:.2f}",
+        "cost_eok": f"{latest_cost / 1e8:.2f}",
+        "pnl_krw": latest_pnl,
+        "pnl_eok": f"{latest_pnl / 1e8:.2f}",
+        "pnl_pct": latest_snap.get("pnl_pct", 0),
+        "cash_eok": f"{latest_snap.get('cash_value_krw', 0) / 1e8:.2f}",
+        "cash_pct": latest_snap.get("cash_pct", 0),
+        "div_annual_man": f"{latest_snap.get('div_annual_krw', 0) / 1e4:,.0f}",
+        "div_yield": latest_snap.get("div_yield", 0),
+    }
+
+    # 카테고리별 비중
+    cat_weights = latest_snap.get("weights_by_category", {})
+    category_data = [{"name": k, "value": v} for k, v in sorted(cat_weights.items(), key=lambda x: -x[1])]
+
+    # 종목별 비중 (상위 10 + 기타)
+    ticker_weights = latest_snap.get("weights_by_ticker", {})
+    sorted_tickers = sorted(ticker_weights.items(), key=lambda x: -x[1])
+    ticker_data = []
+    others = 0
+    for i, (name, weight) in enumerate(sorted_tickers):
+        if i < 10:
+            ticker_data.append({"name": name, "value": round(weight, 1)})
+        else:
+            others += weight
+    if others > 0:
+        ticker_data.append({"name": "기타", "value": round(others, 1)})
+
+    context = {
+        # Nav
+        "nav_portfolio": "index.html",
+        "nav_sp100": f"scanner_sp100_{date_str}.html",
+        "nav_etf": f"scanner_etf_{date_str}.html",
+        "nav_kospi": f"scanner_kospi_{date_str}.html",
+        "nav_backtest": f"backtest_{date_str}.html",
+        "nav_trend": f"trend_{date_str}.html",
+        # Meta
+        "date": date_str,
+        "date_ko": _date_ko(date_str),
+        "data_days": data_days,
+        # Summary
+        "latest": latest,
+        # Chart data (JSON injection)
+        "trend_json": _json.dumps(trend_data, ensure_ascii=False),
+        "category_json": _json.dumps(category_data, ensure_ascii=False),
+        "ticker_json": _json.dumps(ticker_data, ensure_ascii=False),
+    }
+
+    html = template.render(**context)
+
+    os.makedirs(output_dir, exist_ok=True)
+    out_path = os.path.join(output_dir, f"trend_{date_str}.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    return out_path
+
+
 def generate_backtest_page(
     backtest_analysis: dict,
     outcomes: dict,
@@ -612,6 +717,7 @@ def generate_backtest_page(
         "nav_etf": f"scanner_etf_{date_str}.html",
         "nav_kospi": f"scanner_kospi_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
+        "nav_trend": f"trend_{date_str}.html",
         # Meta
         "date": date_str,
         "date_ko": _date_ko(date_str),
