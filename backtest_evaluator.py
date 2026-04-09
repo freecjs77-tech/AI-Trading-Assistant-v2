@@ -19,8 +19,9 @@ import pandas as pd
 
 # ── 설정 ──────────────────────────────────────────────
 
-_EVAL_DAYS = [3, 5, 10]
-_WIN_THRESHOLD_PCT = 3.0  # BUY 시그널 승리 기준: N일 내 +3% 이상
+_EVAL_DAYS = [3, 5, 10]  # 거래일 기준 (trading days)
+_WIN_THRESHOLD_PCT = 3.0  # BUY 시그널 승리 기준: N거래일 내 +3% 이상
+_CALENDAR_BUFFER = 2.0  # 거래일 → 캘린더일 변환 계수 (10거래일 ≈ 14캘린더일)
 _BUY_SIGNALS = {"1st_BUY", "2nd_BUY", "3rd_BUY"}
 _EXIT_SIGNALS = {"TAKE_PROFIT_1", "TAKE_PROFIT_2", "TOP_SIGNAL"}
 _TRACKABLE_SIGNALS = _BUY_SIGNALS | _EXIT_SIGNALS
@@ -63,14 +64,15 @@ def _merge_all_histories(portfolio_history: dict, scanner_histories: dict | None
     """포트폴리오 + 스캐너 히스토리를 통합하여 (date, ticker, info, source) 리스트로 반환."""
     merged = []
     today = datetime.now()
-    max_eval_day = max(_EVAL_DAYS)
+    # 거래일 기준: 10거래일 ≈ 14캘린더일. 여유 포함해서 필터링
+    min_calendar_days = int(max(_EVAL_DAYS) * _CALENDAR_BUFFER)
 
     # 포트폴리오 히스토리
     dates = sorted([k for k in portfolio_history.keys() if not k.startswith("_")])
     for date_str in dates:
         signal_date = datetime.strptime(date_str, "%Y-%m-%d")
         days_ago = (today - signal_date).days
-        if days_ago < max_eval_day:
+        if days_ago < min_calendar_days:
             continue
 
         day_data = portfolio_history[date_str]
@@ -93,7 +95,7 @@ def _merge_all_histories(portfolio_history: dict, scanner_histories: dict | None
             for date_str in sc_dates:
                 signal_date = datetime.strptime(date_str, "%Y-%m-%d")
                 days_ago = (today - signal_date).days
-                if days_ago < max_eval_day:
+                if days_ago < min_calendar_days:
                     continue
 
                 day_data = hist[date_str]
@@ -166,6 +168,7 @@ def evaluate_outcomes(history: dict, outcomes_path: str,
 
     all_dates = [s["date"] for s in new_signals]
     earliest = min(all_dates)
+    # 거래일 기준이므로 충분한 캘린더 여유 확보
     start = (datetime.strptime(earliest, "%Y-%m-%d") - timedelta(days=5)).strftime("%Y-%m-%d")
     end = (today + timedelta(days=2)).strftime("%Y-%m-%d")
 
@@ -205,31 +208,36 @@ def evaluate_outcomes(history: dict, outcomes_path: str,
 
         sig_date = datetime.strptime(sig["date"], "%Y-%m-%d")
         outcomes_data = {}
-        prices_after = []
+
+        # 거래일 인덱스 추출 (시그널 발생일 이후)
+        trading_days = _get_trading_days_after(df, yf_ticker, sig_date, num_tickers)
 
         for eval_day in _EVAL_DAYS:
-            target_date = sig_date + timedelta(days=eval_day)
-            # 주말/공휴일 → 가장 가까운 이후 거래일 사용
-            price = _get_price_near(df, yf_ticker, target_date, num_tickers)
-            if price is not None:
-                ret = round((price - entry_price) / entry_price * 100, 2)
-                outcomes_data[f"{eval_day}d"] = {
-                    "price": round(price, 2) if not (ticker.isdigit() and len(ticker) == 6) else round(price),
-                    "return_pct": ret,
-                }
-                prices_after.append(ret)
+            if eval_day <= len(trading_days):
+                td = trading_days[eval_day - 1]  # 0-indexed → N번째 거래일
+                price = _get_close(df, yf_ticker, td, num_tickers)
+                if price is not None:
+                    ret = round((price - entry_price) / entry_price * 100, 2)
+                    outcomes_data[f"{eval_day}d"] = {
+                        "price": round(price, 2) if not (ticker.isdigit() and len(ticker) == 6) else round(price),
+                        "return_pct": ret,
+                    }
 
-            # SPY 벤치마크 (같은 날짜)
+            # SPY 벤치마크 (같은 거래일 수 기준)
             if ticker != "SPY":
-                spy_entry = _get_price_near(df, spy_yf, sig_date, num_tickers)
-                spy_price = _get_price_near(df, spy_yf, target_date, num_tickers)
-                if spy_entry and spy_price and spy_entry > 0:
-                    spy_ret = round((spy_price - spy_entry) / spy_entry * 100, 2)
-                    outcomes_data[f"spy_{eval_day}d"] = spy_ret
+                spy_trading_days = _get_trading_days_after(df, spy_yf, sig_date, num_tickers)
+                spy_entry_price = _get_close_near(df, spy_yf, sig_date, num_tickers)
+                if eval_day <= len(spy_trading_days) and spy_entry_price:
+                    spy_td = spy_trading_days[eval_day - 1]
+                    spy_price = _get_close(df, spy_yf, spy_td, num_tickers)
+                    if spy_price and spy_entry_price > 0:
+                        spy_ret = round((spy_price - spy_entry_price) / spy_entry_price * 100, 2)
+                        outcomes_data[f"spy_{eval_day}d"] = spy_ret
 
-        # max gain/loss 계산 (eval 기간 내 전체 거래일)
-        max_gain, max_loss = _calc_max_gain_loss(
-            df, yf_ticker, sig_date, max_eval_day, entry_price, num_tickers
+        # max gain/loss 계산 (max_eval_day 거래일 내)
+        max_eval_day = max(_EVAL_DAYS)
+        max_gain, max_loss = _calc_max_gain_loss_td(
+            df, yf_ticker, trading_days, max_eval_day, entry_price, num_tickers
         )
         if max_gain is not None:
             outcomes_data["max_gain_10d"] = max_gain
@@ -252,57 +260,66 @@ def evaluate_outcomes(history: dict, outcomes_path: str,
     return outcomes
 
 
-def _get_price_near(df, yf_ticker: str, target_date: datetime, num_tickers: int) -> float | None:
-    """target_date 근처의 종가 조회. 주말/공휴일이면 직후 거래일 사용."""
-    for offset in range(0, 5):
-        dt = target_date + timedelta(days=offset)
-        ts = pd.Timestamp(dt)
+def _get_trading_days_after(df, yf_ticker: str, sig_date: datetime, num_tickers: int) -> list:
+    """시그널 발생일 이후의 거래일 목록 반환 (Timestamp 리스트)."""
+    sig_ts = pd.Timestamp(sig_date)
+    # df.index에서 시그널일 이후 거래일만 필터
+    if num_tickers == 1:
+        after = df.index[df.index > sig_ts]
+    else:
         try:
-            if num_tickers == 1:
-                if ts in df.index:
-                    val = df.loc[ts, "Close"]
-                    if pd.notna(val):
-                        return float(val)
-            else:
-                if ts in df.index:
-                    val = df.loc[ts, ("Close", yf_ticker)]
-                    if pd.notna(val):
-                        return float(val)
+            # 해당 ticker에 데이터가 있는 날만
+            close_col = df["Close"][yf_ticker] if yf_ticker in df["Close"].columns else pd.Series(dtype=float)
+            valid_dates = close_col.dropna().index
+            after = valid_dates[valid_dates > sig_ts]
         except (KeyError, TypeError):
-            continue
+            after = df.index[df.index > sig_ts]
+    return list(after)
+
+
+def _get_close(df, yf_ticker: str, ts: pd.Timestamp, num_tickers: int) -> float | None:
+    """특정 거래일의 종가 조회."""
+    try:
+        if num_tickers == 1:
+            if ts in df.index:
+                val = df.loc[ts, "Close"]
+                if pd.notna(val):
+                    return float(val)
+        else:
+            if ts in df.index:
+                val = df.loc[ts, ("Close", yf_ticker)]
+                if pd.notna(val):
+                    return float(val)
+    except (KeyError, TypeError):
+        pass
     return None
 
 
-def _calc_max_gain_loss(df, yf_ticker: str, sig_date: datetime,
-                        max_days: int, entry_price: float, num_tickers: int) -> tuple:
-    """시그널 발생 후 max_days 이내의 최대 상승/하락률."""
+def _get_close_near(df, yf_ticker: str, target_date: datetime, num_tickers: int) -> float | None:
+    """target_date 당일 또는 직후 거래일의 종가 조회."""
+    for offset in range(0, 5):
+        dt = target_date + timedelta(days=offset)
+        ts = pd.Timestamp(dt)
+        price = _get_close(df, yf_ticker, ts, num_tickers)
+        if price is not None:
+            return price
+    return None
+
+
+def _calc_max_gain_loss_td(df, yf_ticker: str, trading_days: list,
+                           max_td: int, entry_price: float, num_tickers: int) -> tuple:
+    """시그널 발생 후 max_td 거래일 이내의 최대 상승/하락률."""
     max_gain = None
     max_loss = None
 
-    for offset in range(1, max_days + 5):
-        dt = sig_date + timedelta(days=offset)
-        ts = pd.Timestamp(dt)
-        try:
-            if num_tickers == 1:
-                if ts in df.index:
-                    val = df.loc[ts, "Close"]
-                    if pd.notna(val):
-                        ret = (float(val) - entry_price) / entry_price * 100
-                        if max_gain is None or ret > max_gain:
-                            max_gain = round(ret, 2)
-                        if max_loss is None or ret < max_loss:
-                            max_loss = round(ret, 2)
-            else:
-                if ts in df.index:
-                    val = df.loc[ts, ("Close", yf_ticker)]
-                    if pd.notna(val):
-                        ret = (float(val) - entry_price) / entry_price * 100
-                        if max_gain is None or ret > max_gain:
-                            max_gain = round(ret, 2)
-                        if max_loss is None or ret < max_loss:
-                            max_loss = round(ret, 2)
-        except (KeyError, TypeError):
-            continue
+    for td in trading_days[:max_td]:
+        price = _get_close(df, yf_ticker, td, num_tickers)
+        if price is not None:
+            ret = (price - entry_price) / entry_price * 100
+            if max_gain is None or ret > max_gain:
+                max_gain = round(ret, 2)
+            if max_loss is None or ret < max_loss:
+                max_loss = round(ret, 2)
 
     return max_gain, max_loss
 
@@ -618,17 +635,18 @@ def _generate_recommendations(signal_stats: dict, condition_stats: dict,
 
 
 def get_pending_signals(history: dict, scanner_histories: dict | None = None) -> list:
-    """아직 평가할 수 없는 시그널 (max_eval_day일 미만) 목록 반환."""
+    """아직 평가할 수 없는 시그널 (거래일 기준 미달) 목록 반환."""
     pending = []
     today = datetime.now()
-    max_eval_day = max(_EVAL_DAYS)
+    # 거래일 기준 대기: 10거래일 ≈ 14캘린더일
+    min_calendar_days = int(max(_EVAL_DAYS) * _CALENDAR_BUFFER)
 
     def _collect(hist, source):
         dates = sorted([k for k in hist.keys() if not k.startswith("_")])
         for date_str in dates:
             signal_date = datetime.strptime(date_str, "%Y-%m-%d")
             days_ago = (today - signal_date).days
-            if days_ago >= max_eval_day:
+            if days_ago >= min_calendar_days:
                 continue
             day_data = hist[date_str]
             for ticker, info in day_data.items():
@@ -637,6 +655,8 @@ def get_pending_signals(history: dict, scanner_histories: dict | None = None) ->
                 signal = info.get("signal", "")
                 if signal not in _TRACKABLE_SIGNALS:
                     continue
+                # 남은 캘린더일 (거래일 아닌 근사치)
+                remaining = max(0, min_calendar_days - days_ago)
                 pending.append({
                     "date": date_str,
                     "ticker": ticker,
@@ -644,7 +664,7 @@ def get_pending_signals(history: dict, scanner_histories: dict | None = None) ->
                     "source": source,
                     "price": info.get("price"),
                     "rsi": info.get("rsi"),
-                    "days_until_eval": max_eval_day - days_ago,
+                    "days_until_eval": remaining,
                 })
 
     _collect(history, "portfolio")
