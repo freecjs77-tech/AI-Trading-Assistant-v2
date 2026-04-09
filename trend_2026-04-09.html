@@ -49,17 +49,15 @@
 <div class="container">
 
   <!-- Header -->
-  <div class="header-row">
-    <h1>📈 Asset Trend Dashboard</h1>
-    <div class="header-controls">
-      <a href="index.html" style="background:#2c3e50;">📊 포트폴리오</a>
-      <a href="scanner_sp100_2026-04-09.html" style="background:#27ae60;">🔍 S&P 100</a>
-      <a href="scanner_etf_2026-04-09.html" style="background:#3498db;">📊 ETF</a>
-      <a href="scanner_kospi_2026-04-09.html" style="background:#e74c3c;">🇰🇷 KOSPI</a>
-      <a href="backtest_2026-04-09.html" style="background:#8e44ad;">📈 백테스트</a>
-      <a href="trend_2026-04-09.html" style="background:#e67e22;" class="nav-active">📈 트렌드</a>
-      <a href="archive.html" style="background:#7f8c8d;">📁 아카이브</a>
-    </div>
+  <h1>📈 Asset Trend Dashboard</h1>
+  <div class="header-controls">
+    <a href="index.html" style="background:#2c3e50;">📊 포트폴리오</a>
+    <a href="scanner_sp100_2026-04-09.html" style="background:#27ae60;">🔍 S&P 100</a>
+    <a href="scanner_etf_2026-04-09.html" style="background:#3498db;">📊 ETF</a>
+    <a href="scanner_kospi_2026-04-09.html" style="background:#e74c3c;">🇰🇷 KOSPI</a>
+    <a href="backtest_2026-04-09.html" style="background:#8e44ad;">📈 백테스트</a>
+    <a href="trend_2026-04-09.html" style="background:#e67e22;" class="nav-active">📈 트렌드</a>
+    <a href="archive.html" style="background:#7f8c8d;">📁 아카이브</a>
   </div>
   <p class="subtitle">2026년 4월 9일 (목요일) &nbsp;|&nbsp; 1일 추이 &nbsp;|&nbsp; 데이터: 일별 스냅샷</p>
 
@@ -71,11 +69,11 @@
       <div class="sub" style="color:#27ae60;">+₩12.05억 (+146.3%)</div>
     </div>
     <div class="sum-card" style="border-color:#3498db;">
-      <div class="num" style="color:#3498db;">₩8.23억</div>
+      <div class="num" style="color:#3498db;">₩8.24억</div>
       <div class="lbl">투자 원금</div>
     </div>
     <div class="sum-card" style="border-color:#e67e22;">
-      <div class="num" style="color:#e67e22;">₩4,220만</div>
+      <div class="num" style="color:#e67e22;">₩4,222만</div>
       <div class="lbl">예상 연 배당</div>
       <div class="sub">수익률 2.08%</div>
     </div>
@@ -134,7 +132,7 @@
 </div>
 
 <script>
-const trend = [{"date": "2026-04-09", "total_eok": 20.28, "cost_eok": 8.23, "pnl_eok": 12.05, "pnl_pct": 146.3, "div_annual_man": 4220, "div_yield": 2.08, "vix": 25.78, "yield_30y": 4.921, "usd_krw": 1480.08}];
+const trend = [{"date": "2026-04-09", "total_eok": 20.28, "cost_eok": 8.24, "pnl_eok": 12.05, "pnl_pct": 146.3, "div_annual_man": 4222, "div_yield": 2.08, "vix": 25.78, "yield_30y": 4.921, "usd_krw": 1481.28}];
 const dates = trend.map(d => d.date.slice(5));
 const totalAsset = trend.map(d => d.total_eok);
 const costBasis = trend.map(d => d.cost_eok);
@@ -147,27 +145,29 @@ const yieldData = trend.map(d => d.yield_30y);
 const fxData = trend.map(d => d.usd_krw);
 
 
-// 1. Total Asset Trend
+// 1. Total Asset Trend (Bar + Line combo)
 new Chart(document.getElementById('assetTrendChart'), {
-  type: 'line',
+  type: 'bar',
   data: {
     labels: dates,
     datasets: [
       {
         label: '총 자산 (억원)',
         data: totalAsset,
-        borderColor: '#27ae60',
-        backgroundColor: 'rgba(39, 174, 96, 0.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 2,
+        backgroundColor: 'rgba(39, 174, 96, 0.6)',
+        borderRadius: 3,
+        yAxisID: 'y',
       },
       {
         label: '투자 원금 (억원)',
         data: costBasis,
+        type: 'line',
         borderColor: '#3498db',
         borderDash: [5, 5],
+        backgroundColor: 'transparent',
+        tension: 0.3,
         pointRadius: 0,
+        yAxisID: 'y',
       }
     ]
   },
@@ -314,7 +314,7 @@ new Chart(document.getElementById('categoryPie'), {
 });
 
 // 3b. Ticker Pie
-const tickerData = [{"name": "디아이티", "value": 62.8, "amount_man": 127334}, {"name": "VOO", "value": 7.9, "amount_man": 16018}, {"name": "BIL", "value": 6.0, "amount_man": 12166}, {"name": "QQQ", "value": 5.9, "amount_man": 11963}, {"name": "SCHD", "value": 3.4, "amount_man": 6894}, {"name": "AAPL", "value": 1.5, "amount_man": 3041}, {"name": "O", "value": 1.3, "amount_man": 2636}, {"name": "JEPI", "value": 1.1, "amount_man": 2230}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1825}, {"name": "SOXX", "value": 0.8, "amount_man": 1622}, {"name": "기타", "value": 8.4, "amount_man": 17032}];
+const tickerData = [{"name": "디아이티", "value": 62.7, "amount_man": 127164}, {"name": "VOO", "value": 7.9, "amount_man": 16022}, {"name": "BIL", "value": 6.0, "amount_man": 12169}, {"name": "QQQ", "value": 5.9, "amount_man": 11966}, {"name": "SCHD", "value": 3.4, "amount_man": 6896}, {"name": "AAPL", "value": 1.5, "amount_man": 3042}, {"name": "O", "value": 1.3, "amount_man": 2637}, {"name": "JEPI", "value": 1.1, "amount_man": 2231}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1825}, {"name": "SOXX", "value": 0.8, "amount_man": 1623}, {"name": "기타", "value": 8.4, "amount_man": 17036}];
 new Chart(document.getElementById('tickerPie'), {
   type: 'doughnut',
   data: {
