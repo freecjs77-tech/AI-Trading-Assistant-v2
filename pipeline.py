@@ -17,7 +17,7 @@ if sys.platform == "win32":
 from portfolio_data import TICKER_META
 from signal_judge import judge_all
 from history_manager import load_history, save_today, prune_old, save_history, get_previous_signals, backfill_prices
-from report_generator import generate_report, generate_detail_pages, generate_scanner_pages
+from report_generator import generate_report, generate_detail_pages, generate_scanner_pages, generate_backtest_page
 
 
 def _load_market_data(json_path: str) -> dict:
@@ -174,16 +174,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         portfolio = _parse_portfolio_for_report(portfolio_path)
         prev_signals = get_previous_signals(history, today)
 
-        # 이전 실행의 백테스트 분석 결과 로드 (있으면)
-        analysis_path = os.path.join(project_dir, "history", "backtest_analysis.json")
-        prev_backtest = {}
-        if os.path.exists(analysis_path):
-            try:
-                with open(analysis_path, "r", encoding="utf-8") as f:
-                    prev_backtest = json.load(f)
-            except (json.JSONDecodeError, IOError):
-                pass
-
         report_path = os.path.join(reports_dir, f"report_{today}.html")
         generate_report(
             market_data=market_data,
@@ -195,7 +185,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_sp100=scanner_sp100_result,
             scanner_etf=scanner_etf_result,
             scanner_kospi=scanner_kospi_result,
-            backtest_analysis=prev_backtest,
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -275,17 +264,35 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         save_history(history, history_path)
         print("  OK signals_history.json updated")
 
-        # Step 6b: Backtest evaluation
+        # Step 6b: Backtest evaluation (portfolio + scanner histories)
         print("[Step 6b] Backtest evaluation...")
         outcomes_path = os.path.join(project_dir, "history", "outcomes.json")
         analysis_path = os.path.join(project_dir, "history", "backtest_analysis.json")
         backtest_analysis = {}
         try:
-            from backtest_evaluator import evaluate_outcomes, analyze_accuracy
-            outcomes = evaluate_outcomes(history, outcomes_path)
+            from backtest_evaluator import evaluate_outcomes, analyze_accuracy, get_pending_signals
+            scanner_histories = {
+                "sp100": _sc_sp100_hist,
+                "etf": _sc_etf_hist,
+                "kospi": _sc_kospi_hist,
+            }
+            outcomes = evaluate_outcomes(history, outcomes_path, scanner_histories=scanner_histories)
             backtest_analysis = analyze_accuracy(outcomes, analysis_path)
+            pending_signals = get_pending_signals(history, scanner_histories)
             print(f"  OK backtest: {backtest_analysis.get('total_records', 0)} records, status={backtest_analysis.get('data_status', 'unknown')}")
+
+            # Backtest dashboard page
+            bt_path = generate_backtest_page(
+                backtest_analysis=backtest_analysis,
+                outcomes=outcomes,
+                pending_signals=pending_signals,
+                output_dir=reports_dir,
+                date_str=today,
+            )
+            print(f"  OK backtest page -> {bt_path}")
         except Exception as e:
+            import traceback as _tb
+            _tb.print_exc()
             print(f"  WARN backtest evaluation failed: {e} (pipeline continues)")
 
         # Step 7: Smoke test

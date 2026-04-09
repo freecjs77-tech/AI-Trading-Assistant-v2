@@ -124,6 +124,7 @@
     <a href="{{ nav_sp100 }}" style="padding:6px 14px;background:#27ae60;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🔍 S&amp;P 100</a>
     <a href="{{ nav_etf }}" style="padding:6px 14px;background:#3498db;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">📊 ETF</a>
     <a href="{{ nav_kospi }}" style="padding:6px 14px;background:#e74c3c;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🇰🇷 KOSPI</a>
+    <a href="{{ nav_backtest }}" style="padding:6px 14px;background:#8e44ad;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">📈 백테스트</a>
     <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank"
        style="padding:6px 14px;background:#9b59b6;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🔄 업데이트</a>
     <a href="archive.html" style="padding:6px 14px;background:#7f8c8d;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">📁 아카이브</a>
@@ -394,114 +395,6 @@
   #}
 
   {# 판정 근거 상세는 각 종목 상세 페이지(details/TICKER.html)에서 표시 #}
-
-  <!-- ═══════════════════════════════════════════
-       BACKTEST — 시그널 적중률 분석
-  ═══════════════════════════════════════════ -->
-  {% if backtest and backtest.total_records is defined and backtest.total_records > 0 %}
-  <div id="backtest">
-  <h2>📊 Backtest — 시그널 적중률</h2>
-  <p style="font-size:12px;color:#888;margin:-8px 0 12px;">
-    {{ backtest.period.from }} ~ {{ backtest.period.to }} | {{ backtest.total_records }}건 분석
-    {% if backtest.data_status == 'accumulating' %}
-    | <span style="color:#e67e22;">데이터 축적 중 ({{ backtest.total_records }}/20건)</span>
-    {% endif %}
-  </p>
-
-  {# 시그널별 적중률 테이블 #}
-  <table class="ref-table" style="margin-bottom:16px;">
-    <thead>
-      <tr>
-        <th class="signal-col">시그널</th>
-        <th style="text-align:center;">샘플</th>
-        <th style="text-align:center;">3일 승률</th>
-        <th style="text-align:center;">5일 승률</th>
-        <th style="text-align:center;">10일 승률</th>
-        <th style="text-align:center;">평균수익(5d)</th>
-        <th>Best / Worst</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for sig_name, s in backtest.by_signal.items() %}
-      <tr>
-        <td><span class="badge badge-{{ 'BUY' if 'BUY' in sig_name else ('exit' if sig_name in ['TAKE_PROFIT_1','TAKE_PROFIT_2','TOP_SIGNAL'] else 'HOLD') }}">{{ sig_name }}</span></td>
-        <td style="text-align:center;">{{ s.count }}</td>
-        <td style="text-align:center;">
-          {% if s.win_rate_3d is defined %}
-            <span style="color:{{ '#27ae60' if s.win_rate_3d >= 0.5 else '#e74c3c' }};">{{ (s.win_rate_3d * 100)|round(0)|int }}%</span>
-          {% else %}—{% endif %}
-        </td>
-        <td style="text-align:center;">
-          {% if s.win_rate_5d is defined %}
-            <span style="color:{{ '#27ae60' if s.win_rate_5d >= 0.5 else '#e74c3c' }};">{{ (s.win_rate_5d * 100)|round(0)|int }}%</span>
-          {% else %}—{% endif %}
-        </td>
-        <td style="text-align:center;">
-          {% if s.win_rate_10d is defined %}
-            <span style="color:{{ '#27ae60' if s.win_rate_10d >= 0.5 else '#e74c3c' }};">{{ (s.win_rate_10d * 100)|round(0)|int }}%</span>
-          {% else %}—{% endif %}
-        </td>
-        <td style="text-align:center;">
-          {% if s.avg_return_5d is defined %}
-            <span style="color:{{ '#27ae60' if s.avg_return_5d >= 0 else '#e74c3c' }};">{{ s.avg_return_5d|round(1) }}%</span>
-          {% else %}—{% endif %}
-        </td>
-        <td style="font-size:11px;">
-          {% if s.best is defined %}
-            <span style="color:#27ae60;">▲ {{ s.best.ticker }} {{ s.best.date[-5:] }} +{{ s.best.return|round(1) }}%</span>
-          {% endif %}
-          {% if s.worst is defined %}
-            <br><span style="color:#e74c3c;">▼ {{ s.worst.ticker }} {{ s.worst.date[-5:] }} {{ s.worst.return|round(1) }}%</span>
-          {% endif %}
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-
-  {# 조건별 분석 #}
-  {% if backtest.by_condition %}
-  <h3 style="font-size:13px;font-weight:700;margin:16px 0 8px;color:#555;">조건별 BUY 승률 (5일)</h3>
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-    {% for cond_name, c in backtest.by_condition.items() %}
-    <div style="background:#f0f4f8;border-radius:6px;padding:8px 12px;font-size:12px;min-width:120px;">
-      <div style="font-weight:600;color:#333;">{{ cond_name }}</div>
-      <div>
-        <span style="color:{{ '#27ae60' if c.win_rate_5d >= 0.5 else '#e74c3c' }};font-weight:700;">{{ (c.win_rate_5d * 100)|round(0)|int }}%</span>
-        <span style="color:#888;margin-left:4px;">({{ c.count }}건)</span>
-      </div>
-      <div style="color:#666;">avg {{ c.avg_return_5d|round(1) }}%</div>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  {# 파라미터 추천 #}
-  {% if backtest.recommendations %}
-  <h3 style="font-size:13px;font-weight:700;margin:16px 0 8px;color:#555;">파라미터 추천</h3>
-  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-    {% for rec in backtest.recommendations %}
-    <div style="background:{{ '#fff3e0' if rec.status == 'review' else ('#e8f5e9' if rec.status == 'good' else '#f5f5f5') }};border-radius:6px;padding:8px 12px;font-size:12px;border-left:3px solid {{ '#e67e22' if rec.status == 'review' else ('#27ae60' if rec.status == 'good' else '#bbb') }};min-width:180px;max-width:280px;">
-      <div style="font-weight:600;color:#333;">{{ rec.param }}</div>
-      <div style="color:#555;margin-top:4px;">{{ rec.reason }}</div>
-      {% if rec.confidence != 'none' %}
-      <div style="color:#888;font-size:11px;margin-top:2px;">신뢰도: {{ rec.confidence }} ({{ rec.sample_size }}건)</div>
-      {% endif %}
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  <p style="font-size:11px;color:#999;">
-    BUY 승리 기준: {{ backtest.total_records }}건 중 N일 내 +3% 이상 도달 | EXIT 승리 기준: 시그널 이후 하락
-  </p>
-  </div>
-  {% else %}
-  <div id="backtest">
-  <h2>📊 Backtest — 시그널 적중률</h2>
-  <p style="font-size:12px;color:#888;padding:16px 0;">데이터 축적 중입니다. 10일 이상 히스토리가 쌓이면 분석 결과가 표시됩니다.</p>
-  </div>
-  {% endif %}
 
   <!-- ═══════════════════════════════════════════
        SIGNAL REFERENCE — 포트폴리오 (Exit + Entry 전체)

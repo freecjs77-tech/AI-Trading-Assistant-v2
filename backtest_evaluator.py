@@ -59,9 +59,59 @@ def save_outcomes(outcomes: dict, path: str):
         json.dump(outcomes, f, ensure_ascii=False, indent=2)
 
 
-def evaluate_outcomes(history: dict, outcomes_path: str) -> dict:
+def _merge_all_histories(portfolio_history: dict, scanner_histories: dict | None) -> list:
+    """포트폴리오 + 스캐너 히스토리를 통합하여 (date, ticker, info, source) 리스트로 반환."""
+    merged = []
+    today = datetime.now()
+    max_eval_day = max(_EVAL_DAYS)
+
+    # 포트폴리오 히스토리
+    dates = sorted([k for k in portfolio_history.keys() if not k.startswith("_")])
+    for date_str in dates:
+        signal_date = datetime.strptime(date_str, "%Y-%m-%d")
+        days_ago = (today - signal_date).days
+        if days_ago < max_eval_day:
+            continue
+
+        day_data = portfolio_history[date_str]
+        macro = day_data.get("_macro", {})
+
+        for ticker, info in day_data.items():
+            if ticker.startswith("_") or not isinstance(info, dict):
+                continue
+            signal = info.get("signal", "")
+            if signal not in _TRACKABLE_SIGNALS:
+                continue
+            merged.append((date_str, ticker, info, "portfolio", macro))
+
+    # 스캐너 히스토리
+    if scanner_histories:
+        for source_name, hist in scanner_histories.items():
+            if not hist:
+                continue
+            sc_dates = sorted([k for k in hist.keys() if not k.startswith("_")])
+            for date_str in sc_dates:
+                signal_date = datetime.strptime(date_str, "%Y-%m-%d")
+                days_ago = (today - signal_date).days
+                if days_ago < max_eval_day:
+                    continue
+
+                day_data = hist[date_str]
+                for ticker, info in day_data.items():
+                    if ticker.startswith("_") or not isinstance(info, dict):
+                        continue
+                    signal = info.get("signal", "")
+                    if signal not in _TRACKABLE_SIGNALS:
+                        continue
+                    merged.append((date_str, ticker, info, source_name, {}))
+
+    return merged
+
+
+def evaluate_outcomes(history: dict, outcomes_path: str,
+                      scanner_histories: dict | None = None) -> dict:
     """
-    signals_history.json에서 추적 가능한 시그널을 찾고,
+    signals_history.json + 스캐너 히스토리에서 추적 가능한 시그널을 찾고,
     N일 후 가격을 yfinance에서 조회하여 outcomes.json에 기록.
     이미 평가된 시그널은 스킵.
     """
@@ -71,53 +121,38 @@ def evaluate_outcomes(history: dict, outcomes_path: str) -> dict:
     today = datetime.now()
     max_eval_day = max(_EVAL_DAYS)
 
-    # 히스토리에서 추적 대상 시그널 수집
+    # 통합 히스토리에서 추적 대상 시그널 수집
+    merged = _merge_all_histories(history, scanner_histories)
+
     new_signals = []
-    dates = sorted([k for k in history.keys() if not k.startswith("_")])
-
-    for date_str in dates:
-        signal_date = datetime.strptime(date_str, "%Y-%m-%d")
-        days_ago = (today - signal_date).days
-
-        # 최소 max_eval_day일 이상 지난 시그널만 평가 (결과 확인 가능)
-        if days_ago < max_eval_day:
+    for date_str, ticker, info, source, macro in merged:
+        signal = info.get("signal", "")
+        # source 포함 ID (기존 레코드 호환: source 없으면 portfolio)
+        record_id = f"{date_str}|{ticker}|{signal}|{source}"
+        # 기존 포맷 호환 체크
+        old_id = f"{date_str}|{ticker}|{signal}"
+        if record_id in existing_ids or old_id in existing_ids:
             continue
 
-        day_data = history[date_str]
-        macro = day_data.get("_macro", {})
-
-        for ticker, info in day_data.items():
-            if ticker.startswith("_"):
-                continue
-            if not isinstance(info, dict):
-                continue
-
-            signal = info.get("signal", "")
-            if signal not in _TRACKABLE_SIGNALS:
-                continue
-
-            record_id = f"{date_str}|{ticker}|{signal}"
-            if record_id in existing_ids:
-                continue
-
-            new_signals.append({
-                "id": record_id,
-                "ticker": ticker,
-                "signal": signal,
-                "date": date_str,
-                "entry_price": info.get("price"),
-                "context": {
-                    "rsi": info.get("rsi"),
-                    "macd_hist": info.get("macd_hist"),
-                    "macd_hist_trend": info.get("macd_hist_trend"),
-                    "drawdown": info.get("drawdown"),
-                    "bb_pct": info.get("bb_pct"),
-                    "price_vs_ma20": info.get("price_vs_ma20"),
-                    "vix": macro.get("VIX"),
-                    "master_switch": macro.get("master_switch"),
-                },
-                "note": info.get("note", ""),
-            })
+        new_signals.append({
+            "id": record_id,
+            "ticker": ticker,
+            "signal": signal,
+            "date": date_str,
+            "source": source,
+            "entry_price": info.get("price"),
+            "context": {
+                "rsi": info.get("rsi"),
+                "macd_hist": info.get("macd_hist"),
+                "macd_hist_trend": info.get("macd_hist_trend"),
+                "drawdown": info.get("drawdown"),
+                "bb_pct": info.get("bb_pct"),
+                "price_vs_ma20": info.get("price_vs_ma20"),
+                "vix": macro.get("VIX") if macro else None,
+                "master_switch": macro.get("master_switch") if macro else None,
+            },
+            "note": info.get("note", ""),
+        })
 
     if not new_signals:
         print("  [Backtest] No new signals to evaluate")
@@ -125,6 +160,10 @@ def evaluate_outcomes(history: dict, outcomes_path: str) -> dict:
 
     # yfinance에서 가격 데이터 일괄 조회
     tickers_needed = list({s["ticker"] for s in new_signals})
+    # SPY도 항상 포함 (벤치마크)
+    if "SPY" not in tickers_needed:
+        tickers_needed.append("SPY")
+
     all_dates = [s["date"] for s in new_signals]
     earliest = min(all_dates)
     start = (datetime.strptime(earliest, "%Y-%m-%d") - timedelta(days=5)).strftime("%Y-%m-%d")
@@ -153,6 +192,9 @@ def evaluate_outcomes(history: dict, outcomes_path: str) -> dict:
     num_tickers = len(yf_tickers)
     evaluated = 0
 
+    # SPY yf ticker
+    spy_yf = yf_map.get("SPY", "SPY")
+
     for sig in new_signals:
         ticker = sig["ticker"]
         yf_ticker = yf_map[ticker]
@@ -167,7 +209,7 @@ def evaluate_outcomes(history: dict, outcomes_path: str) -> dict:
 
         for eval_day in _EVAL_DAYS:
             target_date = sig_date + timedelta(days=eval_day)
-            # 주말/공휴일 → 가장 가까운 이전 거래일 사용
+            # 주말/공휴일 → 가장 가까운 이후 거래일 사용
             price = _get_price_near(df, yf_ticker, target_date, num_tickers)
             if price is not None:
                 ret = round((price - entry_price) / entry_price * 100, 2)
@@ -176,6 +218,14 @@ def evaluate_outcomes(history: dict, outcomes_path: str) -> dict:
                     "return_pct": ret,
                 }
                 prices_after.append(ret)
+
+            # SPY 벤치마크 (같은 날짜)
+            if ticker != "SPY":
+                spy_entry = _get_price_near(df, spy_yf, sig_date, num_tickers)
+                spy_price = _get_price_near(df, spy_yf, target_date, num_tickers)
+                if spy_entry and spy_price and spy_entry > 0:
+                    spy_ret = round((spy_price - spy_entry) / spy_entry * 100, 2)
+                    outcomes_data[f"spy_{eval_day}d"] = spy_ret
 
         # max gain/loss 계산 (eval 기간 내 전체 거래일)
         max_gain, max_loss = _calc_max_gain_loss(
@@ -203,7 +253,7 @@ def evaluate_outcomes(history: dict, outcomes_path: str) -> dict:
 
 
 def _get_price_near(df, yf_ticker: str, target_date: datetime, num_tickers: int) -> float | None:
-    """target_date 근처의 종가 조회. 주말/공휴일이면 직전 거래일 사용."""
+    """target_date 근처의 종가 조회. 주말/공휴일이면 직후 거래일 사용."""
     for offset in range(0, 5):
         dt = target_date + timedelta(days=offset)
         ts = pd.Timestamp(dt)
@@ -272,7 +322,9 @@ def analyze_accuracy(outcomes: dict, analysis_path: str) -> dict:
             "generated_at": datetime.now().strftime("%Y-%m-%d"),
             "total_records": 0,
             "by_signal": {},
+            "by_source": {},
             "by_condition": {},
+            "benchmark": {},
             "recommendations": [],
             "data_status": "insufficient",
         }
@@ -289,8 +341,14 @@ def analyze_accuracy(outcomes: dict, analysis_path: str) -> dict:
         stats = _calc_signal_stats(sig_type, sig_records)
         signal_stats[sig_type] = stats
 
+    # 소스별 분석
+    source_stats = _analyze_by_source(records)
+
     # 컨텍스트별 분석 (RSI 구간, VIX 구간 등)
     condition_stats = _analyze_conditions(records)
+
+    # 벤치마크 (SPY 대비 alpha)
+    benchmark = _analyze_benchmark(records)
 
     # 파라미터 추천
     recommendations = _generate_recommendations(signal_stats, condition_stats, records)
@@ -304,7 +362,9 @@ def analyze_accuracy(outcomes: dict, analysis_path: str) -> dict:
         },
         "total_records": len(records),
         "by_signal": signal_stats,
+        "by_source": source_stats,
         "by_condition": condition_stats,
+        "benchmark": benchmark,
         "recommendations": recommendations,
         "data_status": "sufficient" if len(records) >= 20 else "accumulating",
     }
@@ -322,6 +382,7 @@ def _calc_signal_stats(sig_type: str, records: list) -> dict:
     for eval_key in [f"{d}d" for d in _EVAL_DAYS]:
         returns = []
         wins = 0
+        reach_wins = 0  # reach rate용 (BUY만)
         for r in records:
             out = r.get("outcomes", {}).get(eval_key)
             if out and out.get("return_pct") is not None:
@@ -329,9 +390,17 @@ def _calc_signal_stats(sig_type: str, records: list) -> dict:
                 returns.append(ret)
                 if is_buy and ret >= _WIN_THRESHOLD_PCT:
                     wins += 1
-                elif not is_buy and ret <= 0:
-                    # EXIT 시그널: 이후 하락이면 성공
-                    wins += 1
+                elif not is_buy:
+                    # EXIT 시그널: max_gain이 +3% 이하면 성공 (크게 안 올랐다 = 익절 적절)
+                    max_gain = r.get("outcomes", {}).get("max_gain_10d")
+                    if max_gain is not None and max_gain <= _WIN_THRESHOLD_PCT:
+                        wins += 1
+
+            # Reach rate (BUY만): max_gain이 +3% 이상 도달한 적 있는지
+            if is_buy:
+                max_gain = r.get("outcomes", {}).get("max_gain_10d")
+                if max_gain is not None and max_gain >= _WIN_THRESHOLD_PCT:
+                    reach_wins += 1
 
         if returns:
             stats[f"win_rate_{eval_key}"] = round(wins / len(returns), 3)
@@ -344,6 +413,12 @@ def _calc_signal_stats(sig_type: str, records: list) -> dict:
                 stats[f"avg_gain_{eval_key}"] = round(sum(positive) / len(positive), 2)
             if negative:
                 stats[f"avg_loss_{eval_key}"] = round(sum(negative) / len(negative), 2)
+
+    # Reach rate (BUY 시그널)
+    if is_buy:
+        total_with_max = sum(1 for r in records if r.get("outcomes", {}).get("max_gain_10d") is not None)
+        if total_with_max > 0:
+            stats["reach_rate_10d"] = round(reach_wins / total_with_max, 3)
 
     # Best / Worst
     best = None
@@ -364,6 +439,71 @@ def _calc_signal_stats(sig_type: str, records: list) -> dict:
         stats["worst"] = worst
 
     return stats
+
+
+def _analyze_by_source(records: list) -> dict:
+    """소스별 (portfolio, sp100, etf, kospi) 통계."""
+    by_source = defaultdict(list)
+    for r in records:
+        source = r.get("source", "portfolio")
+        by_source[source].append(r)
+
+    source_stats = {}
+    for source, recs in by_source.items():
+        buy_recs = [r for r in recs if r["signal"] in _BUY_SIGNALS]
+        exit_recs = [r for r in recs if r["signal"] in _EXIT_SIGNALS]
+
+        stats = {"count": len(recs), "buy_count": len(buy_recs), "exit_count": len(exit_recs)}
+
+        # BUY 5d 승률
+        buy_returns = []
+        buy_wins = 0
+        for r in buy_recs:
+            out = r.get("outcomes", {}).get("5d")
+            if out and out.get("return_pct") is not None:
+                ret = out["return_pct"]
+                buy_returns.append(ret)
+                if ret >= _WIN_THRESHOLD_PCT:
+                    buy_wins += 1
+        if buy_returns:
+            stats["buy_win_rate_5d"] = round(buy_wins / len(buy_returns), 3)
+            stats["buy_avg_return_5d"] = round(sum(buy_returns) / len(buy_returns), 2)
+
+        source_stats[source] = stats
+
+    return source_stats
+
+
+def _analyze_benchmark(records: list) -> dict:
+    """SPY 벤치마크 대비 alpha 계산."""
+    benchmark = {}
+    buy_records = [r for r in records if r["signal"] in _BUY_SIGNALS]
+
+    for eval_day in _EVAL_DAYS:
+        eval_key = f"{eval_day}d"
+        spy_key = f"spy_{eval_day}d"
+        signal_returns = []
+        spy_returns = []
+
+        for r in buy_records:
+            out = r.get("outcomes", {})
+            sig_ret = out.get(eval_key, {}).get("return_pct") if isinstance(out.get(eval_key), dict) else None
+            spy_ret = out.get(spy_key)
+            if sig_ret is not None and spy_ret is not None:
+                signal_returns.append(sig_ret)
+                spy_returns.append(spy_ret)
+
+        if signal_returns:
+            avg_signal = round(sum(signal_returns) / len(signal_returns), 2)
+            avg_spy = round(sum(spy_returns) / len(spy_returns), 2)
+            benchmark[eval_key] = {
+                "avg_signal": avg_signal,
+                "avg_spy": avg_spy,
+                "alpha": round(avg_signal - avg_spy, 2),
+                "samples": len(signal_returns),
+            }
+
+    return benchmark
 
 
 def _analyze_conditions(records: list) -> dict:
@@ -429,7 +569,7 @@ def _generate_recommendations(signal_stats: dict, condition_stats: dict,
             recommendations.append({
                 "param": f"{sig_type} RSI threshold",
                 "status": "data_needed",
-                "reason": f"샘플 {count}/{min_samples}건 — 데이터 축적 중",
+                "reason": f"샘플 {count}/{min_samples}건 -- 데이터 축적 중",
                 "confidence": "none",
                 "sample_size": count,
             })
@@ -444,7 +584,7 @@ def _generate_recommendations(signal_stats: dict, condition_stats: dict,
                 "current_win_rate": win_rate,
                 "avg_return": avg_return,
                 "status": "review",
-                "reason": f"승률 {win_rate:.0%} < 50% — 조건 강화 검토 필요",
+                "reason": f"승률 {win_rate:.0%} < 50% -- 조건 강화 검토 필요",
                 "confidence": "medium" if count >= 30 else "low",
                 "sample_size": count,
             })
@@ -454,7 +594,7 @@ def _generate_recommendations(signal_stats: dict, condition_stats: dict,
                 "current_win_rate": win_rate,
                 "avg_return": avg_return,
                 "status": "good",
-                "reason": f"승률 {win_rate:.0%} — 현재 기준 유효",
+                "reason": f"승률 {win_rate:.0%} -- 현재 기준 유효",
                 "confidence": "medium" if count >= 30 else "low",
                 "sample_size": count,
             })
@@ -469,12 +609,52 @@ def _generate_recommendations(signal_stats: dict, condition_stats: dict,
             recommendations.append({
                 "param": "entry_growth.1st_buy.rsi_max",
                 "insight": f"RSI 36-45 승률({mid_wr:.0%}) > RSI<=35 승률({low_wr:.0%})",
-                "suggestion": "RSI 임계값을 35→45 범위에서 미세 조정 검토",
+                "suggestion": "RSI 임계값을 35~45 범위에서 미세 조정 검토",
                 "confidence": "low",
                 "sample_size": rsi_low["count"] + rsi_mid["count"],
             })
 
     return recommendations
+
+
+def get_pending_signals(history: dict, scanner_histories: dict | None = None) -> list:
+    """아직 평가할 수 없는 시그널 (max_eval_day일 미만) 목록 반환."""
+    pending = []
+    today = datetime.now()
+    max_eval_day = max(_EVAL_DAYS)
+
+    def _collect(hist, source):
+        dates = sorted([k for k in hist.keys() if not k.startswith("_")])
+        for date_str in dates:
+            signal_date = datetime.strptime(date_str, "%Y-%m-%d")
+            days_ago = (today - signal_date).days
+            if days_ago >= max_eval_day:
+                continue
+            day_data = hist[date_str]
+            for ticker, info in day_data.items():
+                if ticker.startswith("_") or not isinstance(info, dict):
+                    continue
+                signal = info.get("signal", "")
+                if signal not in _TRACKABLE_SIGNALS:
+                    continue
+                pending.append({
+                    "date": date_str,
+                    "ticker": ticker,
+                    "signal": signal,
+                    "source": source,
+                    "price": info.get("price"),
+                    "rsi": info.get("rsi"),
+                    "days_until_eval": max_eval_day - days_ago,
+                })
+
+    _collect(history, "portfolio")
+    if scanner_histories:
+        for source_name, hist in scanner_histories.items():
+            if hist:
+                _collect(hist, source_name)
+
+    pending.sort(key=lambda x: (x["date"], x["source"], x["ticker"]))
+    return pending
 
 
 def _save_analysis(analysis: dict, path: str):

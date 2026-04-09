@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtest Dashboard — {{ date }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fff; color: #1a1a1a; font-size: 14px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
+  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .header-controls a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: #fff; }
+  .nav-active { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
+
+  /* Overview Cards */
+  .overview-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .ov-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 130px; text-align: center; border-top: 4px solid #ccc; }
+  .ov-card .num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .ov-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
+  .ov-card .sub { font-size: 11px; color: #999; margin-top: 2px; }
+
+  /* Tables */
+  .bt-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+  .bt-table th { background: #f0f0f0; padding: 8px 10px; text-align: center; font-weight: 600; border-bottom: 2px solid #ddd; }
+  .bt-table th:first-child { text-align: left; }
+  .bt-table td { padding: 7px 10px; border-bottom: 1px solid #eee; text-align: center; }
+  .bt-table td:first-child { text-align: left; font-weight: 600; }
+  .bt-table tbody tr:hover { background: #f8f9fa; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .badge-BUY { background: #27ae60; color: #fff; }
+  .badge-exit { background: #e74c3c; color: #fff; }
+  .badge-HOLD { background: #95a5a6; color: #fff; }
+  .badge-src { background: #34495e; color: #fff; font-size: 10px; }
+
+  /* Source cards */
+  .source-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .src-card { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; flex: 1; min-width: 200px; border-left: 4px solid #3498db; }
+  .src-card .src-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .src-card .src-row { display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0; }
+
+  /* Condition cards */
+  .cond-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .cond-card { background: #f0f4f8; border-radius: 6px; padding: 8px 12px; font-size: 12px; min-width: 120px; }
+  .cond-card .cond-name { font-weight: 600; color: #333; }
+  .cond-card .cond-wr { font-weight: 700; }
+
+  /* Recommendation cards */
+  .rec-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .rec-card { border-radius: 6px; padding: 8px 12px; font-size: 12px; min-width: 180px; max-width: 300px; }
+  .rec-review { background: #fff3e0; border-left: 3px solid #e67e22; }
+  .rec-good { background: #e8f5e9; border-left: 3px solid #27ae60; }
+  .rec-neutral { background: #f5f5f5; border-left: 3px solid #bbb; }
+  .rec-card .rec-param { font-weight: 600; color: #333; }
+  .rec-card .rec-reason { color: #555; margin-top: 4px; }
+  .rec-card .rec-conf { color: #888; font-size: 11px; margin-top: 2px; }
+
+  /* Records table */
+  .records-controls { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .records-controls select, .records-controls input {
+    padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;
+  }
+
+  /* Pending */
+  .pending-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .pending-card { background: #fffde7; border-radius: 6px; padding: 8px 12px; font-size: 12px; border-left: 3px solid #f9a825; min-width: 160px; }
+
+  /* Footer */
+  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
+
+  .up { color: #27ae60; } .dn { color: #e74c3c; }
+
+  @media (max-width: 600px) {
+    .ov-card { min-width: 80px; }
+    .src-card { min-width: 100%; }
+    .header-row { flex-direction: column; align-items: flex-start; }
+    .header-controls { margin: 8px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header + Navigation -->
+  <div class="header-row">
+  <h1>📈 Backtest Dashboard</h1>
+  <div class="header-controls">
+    <a href="{{ nav_portfolio }}" style="background:#2c3e50;">📊 포트폴리오</a>
+    <a href="{{ nav_sp100 }}" style="background:#27ae60;">🔍 S&P 100</a>
+    <a href="{{ nav_etf }}" style="background:#3498db;">📊 ETF</a>
+    <a href="{{ nav_kospi }}" style="background:#e74c3c;">🇰🇷 KOSPI</a>
+    <a href="{{ nav_backtest }}" style="background:#8e44ad;" class="nav-active">📈 백테스트</a>
+    <a href="archive.html" style="background:#7f8c8d;">📁 아카이브</a>
+  </div>
+  </div>
+  <p class="subtitle">
+    {{ date_ko }} &nbsp;|&nbsp;
+    {% if period %}{{ period.from }} ~ {{ period.to }}{% endif %} &nbsp;|&nbsp;
+    {{ total_records }}건 분석
+    {% if data_status == 'accumulating' %}
+    &nbsp;|&nbsp; <span style="color:#e67e22;">데이터 축적 중 ({{ total_records }}/20건)</span>
+    {% endif %}
+  </p>
+
+  <!-- ═══ 1. Overview Cards ═══ -->
+  <div class="overview-grid">
+    <div class="ov-card" style="border-color:#8e44ad;">
+      <div class="num" style="color:#8e44ad;">{{ total_records }}</div>
+      <div class="lbl">평가 완료</div>
+    </div>
+    <div class="ov-card" style="border-color:#27ae60;">
+      <div class="num {{ 'up' if overall_buy_wr and overall_buy_wr >= 0.5 else 'dn' }}">
+        {% if overall_buy_wr is not none %}{{ (overall_buy_wr * 100)|round(0)|int }}%{% else %}—{% endif %}
+      </div>
+      <div class="lbl">BUY 승률 (5d)</div>
+    </div>
+    <div class="ov-card" style="border-color:#3498db;">
+      <div class="num" style="color:#3498db;">
+        {% if overall_reach_rate is not none %}{{ (overall_reach_rate * 100)|round(0)|int }}%{% else %}—{% endif %}
+      </div>
+      <div class="lbl">도달률 (10d)</div>
+      <div class="sub">+{{ win_threshold }}% 도달</div>
+    </div>
+    <div class="ov-card" style="border-color:{% if alpha and alpha >= 0 %}#27ae60{% else %}#e74c3c{% endif %};">
+      <div class="num" style="color:{% if alpha and alpha >= 0 %}#27ae60{% else %}#e74c3c{% endif %};">
+        {% if alpha is not none %}{{ '+' if alpha >= 0 else '' }}{{ alpha }}%{% else %}—{% endif %}
+      </div>
+      <div class="lbl">Alpha vs SPY</div>
+      <div class="sub">BUY 5d 기준</div>
+    </div>
+    <div class="ov-card" style="border-color:#f39c12;">
+      <div class="num" style="color:#f39c12;">{{ pending_count }}</div>
+      <div class="lbl">평가 대기</div>
+    </div>
+  </div>
+
+  <!-- ═══ 2. Signal Performance Table ═══ -->
+  <h2>📊 시그널별 성과</h2>
+  {% if by_signal %}
+  <table class="bt-table">
+    <thead>
+      <tr>
+        <th>시그널</th>
+        <th>샘플</th>
+        <th>3일 승률</th>
+        <th>5일 승률</th>
+        <th>10일 승률</th>
+        <th>도달률</th>
+        <th>평균수익(5d)</th>
+        <th>Best / Worst</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for sig_name, s in by_signal.items() %}
+      <tr>
+        <td><span class="badge badge-{{ 'BUY' if 'BUY' in sig_name else ('exit' if sig_name in ['TAKE_PROFIT_1','TAKE_PROFIT_2','TOP_SIGNAL'] else 'HOLD') }}">{{ sig_name }}</span></td>
+        <td>{{ s.count }}</td>
+        <td>
+          {% if s.win_rate_3d is defined %}
+            <span class="{{ 'up' if s.win_rate_3d >= 0.5 else 'dn' }}">{{ (s.win_rate_3d * 100)|round(0)|int }}%</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if s.win_rate_5d is defined %}
+            <span class="{{ 'up' if s.win_rate_5d >= 0.5 else 'dn' }}">{{ (s.win_rate_5d * 100)|round(0)|int }}%</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if s.win_rate_10d is defined %}
+            <span class="{{ 'up' if s.win_rate_10d >= 0.5 else 'dn' }}">{{ (s.win_rate_10d * 100)|round(0)|int }}%</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if s.reach_rate_10d is defined %}
+            <span style="color:#3498db;font-weight:700;">{{ (s.reach_rate_10d * 100)|round(0)|int }}%</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if s.avg_return_5d is defined %}
+            <span class="{{ 'up' if s.avg_return_5d >= 0 else 'dn' }}">{{ s.avg_return_5d }}%</span>
+          {% else %}—{% endif %}
+        </td>
+        <td style="font-size:11px;text-align:left;">
+          {% if s.best is defined %}
+            <span class="up">▲ {{ s.best.ticker }} {{ s.best.date[-5:] }} +{{ s.best.return|round(1) }}%</span>
+          {% endif %}
+          {% if s.worst is defined %}
+            <br><span class="dn">▼ {{ s.worst.ticker }} {{ s.worst.date[-5:] }} {{ s.worst.return|round(1) }}%</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:#888;font-size:13px;">평가된 시그널이 없습니다.</p>
+  {% endif %}
+
+  <!-- ═══ 3. Benchmark ═══ -->
+  {% if benchmark %}
+  <h2>📉 SPY 벤치마크 비교 (BUY 시그널)</h2>
+  <table class="bt-table" style="max-width:600px;">
+    <thead>
+      <tr><th>기간</th><th>시그널 평균</th><th>SPY 평균</th><th>Alpha</th><th>샘플</th></tr>
+    </thead>
+    <tbody>
+    {% for key, b in benchmark.items() %}
+      <tr>
+        <td style="font-weight:600;">{{ key }}</td>
+        <td><span class="{{ 'up' if b.avg_signal >= 0 else 'dn' }}">{{ b.avg_signal }}%</span></td>
+        <td><span class="{{ 'up' if b.avg_spy >= 0 else 'dn' }}">{{ b.avg_spy }}%</span></td>
+        <td><span class="{{ 'up' if b.alpha >= 0 else 'dn' }}" style="font-weight:700;">{{ '+' if b.alpha >= 0 else '' }}{{ b.alpha }}%</span></td>
+        <td>{{ b.samples }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- ═══ 4. Source Breakdown ═══ -->
+  {% if by_source %}
+  <h2>🏷️ 소스별 성과</h2>
+  <div class="source-grid">
+    {% for src, s in by_source.items() %}
+    <div class="src-card" style="border-color:{{ '#2c3e50' if src == 'portfolio' else ('#27ae60' if src == 'sp100' else ('#3498db' if src == 'etf' else '#e74c3c')) }};">
+      <div class="src-title">{{ src|upper }}</div>
+      <div class="src-row"><span>전체</span><span>{{ s.count }}건</span></div>
+      <div class="src-row"><span>BUY</span><span>{{ s.buy_count }}건</span></div>
+      <div class="src-row"><span>EXIT</span><span>{{ s.exit_count }}건</span></div>
+      {% if s.buy_win_rate_5d is defined %}
+      <div class="src-row"><span>BUY 승률(5d)</span><span class="{{ 'up' if s.buy_win_rate_5d >= 0.5 else 'dn' }}" style="font-weight:700;">{{ (s.buy_win_rate_5d * 100)|round(0)|int }}%</span></div>
+      {% endif %}
+      {% if s.buy_avg_return_5d is defined %}
+      <div class="src-row"><span>BUY 평균수익(5d)</span><span class="{{ 'up' if s.buy_avg_return_5d >= 0 else 'dn' }}">{{ s.buy_avg_return_5d }}%</span></div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ═══ 5. Condition Analysis ═══ -->
+  {% if by_condition %}
+  <h2>🔬 조건별 BUY 승률 (5일)</h2>
+  <div class="cond-grid">
+    {% for cond_name, c in by_condition.items() %}
+    <div class="cond-card">
+      <div class="cond-name">{{ cond_name }}</div>
+      <div>
+        <span class="cond-wr {{ 'up' if c.win_rate_5d >= 0.5 else 'dn' }}">{{ (c.win_rate_5d * 100)|round(0)|int }}%</span>
+        <span style="color:#888;margin-left:4px;">({{ c.count }}건)</span>
+      </div>
+      <div style="color:#666;">avg {{ c.avg_return_5d }}%</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ═══ 6. Individual Records ═══ -->
+  {% if records %}
+  <h2>📋 개별 시그널 기록</h2>
+  <div class="records-controls">
+    <select id="filterSignal" onchange="filterRecords()">
+      <option value="">전체 시그널</option>
+      <option value="1st_BUY">1st_BUY</option>
+      <option value="2nd_BUY">2nd_BUY</option>
+      <option value="3rd_BUY">3rd_BUY</option>
+      <option value="TAKE_PROFIT_1">TAKE_PROFIT_1</option>
+      <option value="TAKE_PROFIT_2">TAKE_PROFIT_2</option>
+      <option value="TOP_SIGNAL">TOP_SIGNAL</option>
+    </select>
+    <select id="filterSource" onchange="filterRecords()">
+      <option value="">전체 소스</option>
+      <option value="portfolio">Portfolio</option>
+      <option value="sp100">SP100</option>
+      <option value="etf">ETF</option>
+      <option value="kospi">KOSPI</option>
+    </select>
+  </div>
+  <table class="bt-table" id="recordsTable">
+    <thead>
+      <tr>
+        <th style="cursor:pointer;" onclick="sortTable(0)">날짜 ▲▼</th>
+        <th>소스</th>
+        <th>종목</th>
+        <th>시그널</th>
+        <th>진입가</th>
+        <th>RSI</th>
+        <th>3d</th>
+        <th>5d</th>
+        <th>10d</th>
+        <th>Max↑</th>
+        <th>Max↓</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for r in records %}
+      <tr data-signal="{{ r.signal }}" data-source="{{ r.source|default('portfolio') }}">
+        <td style="font-weight:400;">{{ r.date }}</td>
+        <td><span class="badge badge-src">{{ r.source|default('portfolio')|upper }}</span></td>
+        <td style="font-weight:700;">{{ r.ticker }}</td>
+        <td><span class="badge badge-{{ 'BUY' if 'BUY' in r.signal else 'exit' }}">{{ r.signal }}</span></td>
+        <td>{% if r.entry_price %}{{ r.entry_price|round(2) }}{% else %}—{% endif %}</td>
+        <td>{% if r.context and r.context.rsi %}{{ r.context.rsi|round(1) }}{% else %}—{% endif %}</td>
+        {% set o = r.outcomes or {} %}
+        <td>
+          {% if o.get('3d') and o['3d'].return_pct is defined %}
+            <span class="{{ 'up' if o['3d'].return_pct >= 0 else 'dn' }}">{{ o['3d'].return_pct }}%</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if o.get('5d') and o['5d'].return_pct is defined %}
+            <span class="{{ 'up' if o['5d'].return_pct >= 0 else 'dn' }}">{{ o['5d'].return_pct }}%</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if o.get('10d') and o['10d'].return_pct is defined %}
+            <span class="{{ 'up' if o['10d'].return_pct >= 0 else 'dn' }}">{{ o['10d'].return_pct }}%</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if o.max_gain_10d is defined and o.max_gain_10d is not none %}
+            <span class="up">+{{ o.max_gain_10d }}%</span>
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if o.max_loss_10d is defined and o.max_loss_10d is not none %}
+            <span class="{{ 'up' if o.max_loss_10d >= 0 else 'dn' }}">{{ o.max_loss_10d }}%</span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- ═══ 7. Recommendations ═══ -->
+  {% if recommendations %}
+  <h2>💡 파라미터 추천</h2>
+  <div class="rec-grid">
+    {% for rec in recommendations %}
+    <div class="rec-card rec-{{ 'review' if rec.status == 'review' else ('good' if rec.status == 'good' else 'neutral') }}">
+      <div class="rec-param">{{ rec.param }}</div>
+      <div class="rec-reason">{{ rec.reason }}</div>
+      {% if rec.confidence is defined and rec.confidence != 'none' %}
+      <div class="rec-conf">신뢰도: {{ rec.confidence }} ({{ rec.sample_size }}건)</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- ═══ 8. Pending Signals ═══ -->
+  {% if pending %}
+  <h2>⏳ 평가 대기 시그널</h2>
+  <p style="font-size:12px;color:#888;margin:-8px 0 12px;">시그널 발생 후 {{ max_eval_days }}일 경과 시 자동 평가됩니다.</p>
+  <table class="bt-table">
+    <thead>
+      <tr><th>날짜</th><th>소스</th><th>종목</th><th>시그널</th><th>진입가</th><th>RSI</th><th>평가까지</th></tr>
+    </thead>
+    <tbody>
+    {% for p in pending %}
+      <tr>
+        <td style="font-weight:400;">{{ p.date }}</td>
+        <td><span class="badge badge-src">{{ p.source|upper }}</span></td>
+        <td style="font-weight:700;">{{ p.ticker }}</td>
+        <td><span class="badge badge-{{ 'BUY' if 'BUY' in p.signal else 'exit' }}">{{ p.signal }}</span></td>
+        <td>{% if p.price %}{{ p.price|round(2) }}{% else %}—{% endif %}</td>
+        <td>{% if p.rsi %}{{ p.rsi|round(1) }}{% else %}—{% endif %}</td>
+        <td style="color:#f39c12;font-weight:700;">D-{{ p.days_until_eval }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- Footer -->
+  <div class="report-footer">
+    BUY 승리 기준: N일 내 +{{ win_threshold }}% 이상 |
+    EXIT 승리 기준: 시그널 후 {{ max_eval_days }}일 내 max gain ≤ +{{ win_threshold }}% (조기 EXIT 아님) |
+    도달률: {{ max_eval_days }}일 내 +{{ win_threshold }}% 한 번이라도 도달 |
+    Alpha: BUY 평균수익 - SPY 동기간 평균수익
+  </div>
+
+</div>
+
+<script>
+function filterRecords() {
+  var sig = document.getElementById('filterSignal').value;
+  var src = document.getElementById('filterSource').value;
+  var rows = document.querySelectorAll('#recordsTable tbody tr');
+  rows.forEach(function(row) {
+    var matchSig = !sig || row.getAttribute('data-signal') === sig;
+    var matchSrc = !src || row.getAttribute('data-source') === src;
+    row.style.display = (matchSig && matchSrc) ? '' : 'none';
+  });
+}
+
+function sortTable(col) {
+  var table = document.getElementById('recordsTable');
+  var tbody = table.querySelector('tbody');
+  var rows = Array.from(tbody.querySelectorAll('tr'));
+  var asc = table.getAttribute('data-sort-asc') !== 'true';
+  table.setAttribute('data-sort-asc', asc);
+  rows.sort(function(a, b) {
+    var va = a.cells[col].textContent.trim();
+    var vb = b.cells[col].textContent.trim();
+    return asc ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  rows.forEach(function(row) { tbody.appendChild(row); });
+}
+</script>
+</body>
+</html>

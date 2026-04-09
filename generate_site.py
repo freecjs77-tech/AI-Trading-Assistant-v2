@@ -47,6 +47,13 @@ def prepare_deploy():
     if scanner_files:
         print(f"scanner pages copied ({len(scanner_files)} files)")
 
+    # 백테스트 페이지 복사
+    backtest_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "backtest_*.html")))
+    for f in backtest_files:
+        shutil.copy2(f, DEPLOY_DIR)
+    if backtest_files:
+        print(f"backtest pages copied ({len(backtest_files)} files)")
+
     # details/ 복사 (종목 상세 페이지)
     details_src = os.path.join(REPORTS_DIR, "details")
     if os.path.exists(details_src):
