@@ -228,8 +228,8 @@
     </div>
     <div class="metric-card">
       <div class="label">Drawdown 20D</div>
-      <div class="value {{ 'v-red' if drawdown is not none and drawdown < -10 else 'v-orange' if drawdown is not none and drawdown < -5 else 'v-text' }}">{{ drawdown|f1 if drawdown is not none else 'N/A' }}{% if drawdown is not none %}%{% endif %}</div>
-      <div class="desc">&#52572;&#44540; 20&#51068; &#44256;&#51216; &#45824;&#48708;</div>
+      <div class="value {{ 'v-green' if drawdown is not none and drawdown >= 0 else 'v-red' if drawdown is not none and drawdown < -10 else 'v-orange' if drawdown is not none and drawdown < -5 else 'v-text' }}">{{ drawdown|f1 if drawdown is not none else 'N/A' }}{% if drawdown is not none %}%{% endif %}</div>
+      <div class="desc">{{ '20일 신고가' if drawdown is not none and drawdown >= 0 else '최근 20일 고점 대비' }}</div>
     </div>
     <div class="metric-card">
       <div class="label">MA20</div>
