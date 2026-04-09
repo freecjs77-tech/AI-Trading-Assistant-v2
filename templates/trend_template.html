@@ -149,27 +149,29 @@ const yieldData = trend.map(d => d.yield_30y);
 const fxData = trend.map(d => d.usd_krw);
 
 {% if data_days >= 1 %}
-// 1. Total Asset Trend
+// 1. Total Asset Trend (Bar + Line combo)
 new Chart(document.getElementById('assetTrendChart'), {
-  type: 'line',
+  type: 'bar',
   data: {
     labels: dates,
     datasets: [
       {
         label: '총 자산 (억원)',
         data: totalAsset,
-        borderColor: '#27ae60',
-        backgroundColor: 'rgba(39, 174, 96, 0.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 2,
+        backgroundColor: 'rgba(39, 174, 96, 0.6)',
+        borderRadius: 3,
+        yAxisID: 'y',
       },
       {
         label: '투자 원금 (억원)',
         data: costBasis,
+        type: 'line',
         borderColor: '#3498db',
         borderDash: [5, 5],
+        backgroundColor: 'transparent',
+        tension: 0.3,
         pointRadius: 0,
+        yAxisID: 'y',
       }
     ]
   },
