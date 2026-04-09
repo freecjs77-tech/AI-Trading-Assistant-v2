@@ -622,18 +622,22 @@ def generate_trend_page(
     cat_weights = latest_snap.get("weights_by_category", {})
     category_data = [{"name": k, "value": v} for k, v in sorted(cat_weights.items(), key=lambda x: -x[1])]
 
-    # 종목별 비중 (상위 10 + 기타)
+    # 종목별 비중 (상위 10 + 기타) — 금액 포함
     ticker_weights = latest_snap.get("weights_by_ticker", {})
     sorted_tickers = sorted(ticker_weights.items(), key=lambda x: -x[1])
     ticker_data = []
     others = 0
+    others_krw = 0
+    total_krw_val = latest_snap.get("total_value_krw", 0)
     for i, (name, weight) in enumerate(sorted_tickers):
+        amt_krw = round(total_krw_val * weight / 100)
         if i < 10:
-            ticker_data.append({"name": name, "value": round(weight, 1)})
+            ticker_data.append({"name": name, "value": round(weight, 1), "amount_man": round(amt_krw / 1e4)})
         else:
             others += weight
+            others_krw += amt_krw
     if others > 0:
-        ticker_data.append({"name": "기타", "value": round(others, 1)})
+        ticker_data.append({"name": "기타", "value": round(others, 1), "amount_man": round(others_krw / 1e4)})
 
     context = {
         # Nav

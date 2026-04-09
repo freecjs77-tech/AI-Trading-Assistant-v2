@@ -86,7 +86,7 @@
     </div>
   </div>
 
-  {% if data_days >= 2 %}
+  {% if data_days >= 1 %}
   <!-- 1. Total Asset Trend -->
   <h2>💰 총 자산 추이</h2>
   <div class="chart-box">
@@ -105,7 +105,7 @@
     <canvas id="divTrendChart"></canvas>
   </div>
   {% else %}
-  <div class="no-data">데이터가 2일 이상 축적되면 추이 차트가 표시됩니다. (현재 {{ data_days }}일)</div>
+  <div class="no-data">데이터가 축적되면 추이 차트가 표시됩니다.</div>
   {% endif %}
 
   <!-- 4. Pie Charts -->
@@ -121,7 +121,7 @@
     </div>
   </div>
 
-  {% if data_days >= 2 %}
+  {% if data_days >= 1 %}
   <!-- 5. Macro Trend -->
   <h2>🌍 매크로 지표 추이</h2>
   <div class="chart-box">
@@ -148,7 +148,7 @@ const vixData = trend.map(d => d.vix);
 const yieldData = trend.map(d => d.yield_30y);
 const fxData = trend.map(d => d.usd_krw);
 
-{% if data_days >= 2 %}
+{% if data_days >= 1 %}
 // 1. Total Asset Trend
 new Chart(document.getElementById('assetTrendChart'), {
   type: 'line',
@@ -320,7 +320,11 @@ const tickerData = {{ ticker_json }};
 new Chart(document.getElementById('tickerPie'), {
   type: 'doughnut',
   data: {
-    labels: tickerData.map(d => d.name),
+    labels: tickerData.map(d => {
+      var amt = d.amount_man;
+      if (amt >= 10000) return d.name + ' ₩' + (amt/10000).toFixed(1) + '억';
+      return d.name + ' ₩' + amt.toLocaleString() + '만';
+    }),
     datasets: [{
       data: tickerData.map(d => d.value),
       backgroundColor: [
@@ -333,7 +337,12 @@ new Chart(document.getElementById('tickerPie'), {
     responsive: true,
     plugins: {
       legend: { position: 'right' },
-      tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed.toFixed(1) + '%'; } } }
+      tooltip: { callbacks: { label: function(ctx) {
+        var d = tickerData[ctx.dataIndex];
+        var amt = d.amount_man;
+        var amtStr = amt >= 10000 ? '₩' + (amt/10000).toFixed(1) + '억' : '₩' + amt.toLocaleString() + '만';
+        return d.name + ': ' + ctx.parsed.toFixed(1) + '% (' + amtStr + ')';
+      } } }
     }
   }
 });
