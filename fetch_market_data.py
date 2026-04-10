@@ -35,6 +35,39 @@ import argparse
 from datetime import datetime, date, timezone, timedelta
 
 KST = timezone(timedelta(hours=9))
+EST = timezone(timedelta(hours=-5))   # 미국 동부 표준시 (보수적 기준)
+
+
+def is_market_open_us() -> bool:
+    """미국 시장 개장 여부 (09:30~16:00 ET, 평일). 서머타임 포함 보수적 판단."""
+    now_utc = datetime.now(timezone.utc)
+    weekday = now_utc.weekday()
+    if weekday >= 5:
+        return False
+    h, m = now_utc.hour, now_utc.minute
+    # 서머타임: 13:30~20:00 UTC, 표준시: 14:30~21:00 UTC → 보수적으로 13:30~21:00
+    mins = h * 60 + m
+    return 13 * 60 + 30 <= mins < 21 * 60
+
+
+def is_market_open_krx() -> bool:
+    """한국 시장 개장 여부 (09:00~15:30 KST, 평일)."""
+    now_kst = datetime.now(KST)
+    weekday = now_kst.weekday()
+    if weekday >= 5:
+        return False
+    h, m = now_kst.hour, now_kst.minute
+    mins = h * 60 + m
+    return 9 * 60 <= mins < 15 * 60 + 30
+
+
+def get_market_status() -> dict:
+    """US/KRX 시장 상태 반환."""
+    return {
+        "US": "open" if is_market_open_us() else "closed",
+        "KRX": "open" if is_market_open_krx() else "closed",
+    }
+
 
 # ── 의존성 확인 ──────────────────────────────────────
 try:
@@ -568,6 +601,7 @@ def main():
         if not args.quiet:
             print(f"\n  💰 배당 집계: 연 ${total_annual:,.0f}  |  월 ${total_annual/12:,.0f}  |  수익률 {port_yield:.2f}%")
 
+    mkt_status = get_market_status()
     payload = {
         "_meta": {
             "date": today,
@@ -577,6 +611,7 @@ def main():
             "tickers": tickers,
             "success": success,
             "fail": fail,
+            "market_status": mkt_status,
         },
         "_macro": macro_data,
         "_dividends": dividends_summary,  # 포트폴리오 배당 집계 (portfolio.md 소스일 때)

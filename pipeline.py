@@ -82,7 +82,7 @@ def _parse_portfolio_for_report(portfolio_path: str) -> list[dict]:
     return holdings
 
 
-def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = False) -> dict:
+def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = False, auto: bool = False) -> dict:
     today = date.today().strftime("%Y-%m-%d")
     screenshots_dir = os.path.join(project_dir, "screenshots")
     reports_dir = os.path.join(project_dir, "reports")
@@ -355,7 +355,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         print("[Step 6] Updating history...")
         meta = market_data.get("_meta", {})
         history = save_today(history, today, signals, market_data, meta.get("ticker_source", "portfolio.md"))
-        backfill_prices(history, today)
+        backfill_prices(history, today, include_today=auto)
         history = prune_old(history)
         save_history(history, history_path)
         print("  OK signals_history.json updated")
@@ -420,7 +420,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
 
 if __name__ == "__main__":
     project_dir = os.path.dirname(os.path.abspath(__file__))
-    result = run_pipeline(project_dir, skip_ocr="--skip-ocr" in sys.argv, skip_fetch="--skip-fetch" in sys.argv)
+    result = run_pipeline(project_dir, skip_ocr="--skip-ocr" in sys.argv, skip_fetch="--skip-fetch" in sys.argv, auto="--auto" in sys.argv)
     if result["status"] != "ok":
         print(f"\nERROR: {result.get('error')}")
         sys.exit(1)

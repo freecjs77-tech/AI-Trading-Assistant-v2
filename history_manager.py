@@ -95,15 +95,18 @@ def prune_old(history: dict, keep_days: int = 30) -> dict:
     return history
 
 
-def backfill_prices(history: dict, today_str: str = ""):
+def backfill_prices(history: dict, today_str: str = "", include_today: bool = False):
     """과거 날짜의 price를 yfinance 실제 종가로 교정.
 
     장중 실행 시 현재가가 저장되므로, 오늘이 아닌 모든 과거 항목의
     가격을 실제 종가로 덮어쓴다.
+    include_today=True (--auto 모드): 당일 포함 모든 날짜를 종가로 교정.
     """
     targets: dict[str, list[str]] = {}  # {ticker: [date1, date2, ...]}
     for dt, day_data in history.items():
-        if dt == today_str or dt.startswith("_"):
+        if dt.startswith("_"):
+            continue
+        if dt == today_str and not include_today:
             continue
         for ticker, info in day_data.items():
             if ticker.startswith("_"):

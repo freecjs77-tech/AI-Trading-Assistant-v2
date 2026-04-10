@@ -37,7 +37,7 @@ jobs:
           PYTHONIOENCODING: utf-8
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python pipeline.py --skip-ocr
+        run: python pipeline.py --skip-ocr --auto
 
       - name: Prepare deploy directory
         run: python generate_site.py

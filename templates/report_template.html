@@ -131,8 +131,17 @@
   </div>
   <p class="subtitle">
     {{ date_ko }} &nbsp;|&nbsp;
-    데이터 수집: {{ fetched_at }} &nbsp;|&nbsp;
-    기술지표: yfinance &nbsp;|&nbsp;
+    데이터 수집: {{ fetched_at }}
+    {% if market_status %}
+      &nbsp;|&nbsp;
+      {% if market_status.US == 'open' or market_status.KRX == 'open' %}
+        <span style="color:#e67e22;font-weight:700;">⚠️ 장중 실시간</span>
+        (US:{{ market_status.US }} / KRX:{{ market_status.KRX }})
+      {% else %}
+        <span style="color:#27ae60;font-weight:700;">종가(확정)</span>
+      {% endif %}
+    {% endif %}
+    &nbsp;|&nbsp;
     포트폴리오: {{ portfolio_source }}
   </p>
 

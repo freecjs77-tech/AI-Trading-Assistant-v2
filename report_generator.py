@@ -346,6 +346,7 @@ def generate_report(
         "date": date_str,
         "date_ko": _date_ko(date_str),
         "fetched_at": meta.get("generated_at", ""),
+        "market_status": meta.get("market_status"),
         "portfolio_source": meta.get("ticker_source", "portfolio.md"),
         # 매크로
         **master,
