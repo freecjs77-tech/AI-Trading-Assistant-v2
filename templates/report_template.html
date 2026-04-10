@@ -1,672 +1,491 @@
 <!DOCTYPE html>
 <!--
-  AI Trading Assistant — Report Template v4.0 (Kinetic Ledger Dark Theme)
+  AI Trading Assistant — Report Template v5.0 (Precision Curator)
   업데이트: 2026-04-10
   변경 이력:
-    v4.0: Kinetic Ledger 다크 테마 리디자인, 좌측 사이드바 네비게이션
-    v3.0: Jinja2 템플릿 변환, 통화 토글(USD/KRW), Signal Reference 상세화
+    v5.0: Precision Curator 디자인 — Tailwind CSS + Material Symbols + M3 컬러
+    v4.0: Kinetic Ledger 다크 테마 리디자인
+    v3.0: Jinja2 템플릿 변환, 통화 토글(USD/KRW)
 -->
-<html lang="ko">
+<html class="dark" lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Signal Report — {{ date }}</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container": "#0f1930",
+        "surface-container-highest": "#192540",
+        "surface-dim": "#060e20",
+        "surface": "#060e20",
+        "surface-container-high": "#141f38",
+        "surface-container-low": "#091328",
+        "surface-container-lowest": "#000000",
+        "surface-bright": "#1f2b49",
+        "surface-variant": "#192540",
+        "surface-tint": "#6dddff",
+        "background": "#060e20",
+        "primary": "#6dddff",
+        "primary-dim": "#00c3eb",
+        "primary-container": "#00d2fd",
+        "on-primary": "#004c5e",
+        "on-primary-container": "#004352",
+        "secondary": "#2ff801",
+        "secondary-dim": "#2be800",
+        "secondary-container": "#106e00",
+        "on-secondary": "#0b5800",
+        "on-secondary-container": "#e7ffd9",
+        "tertiary": "#ff7166",
+        "tertiary-dim": "#e51a22",
+        "tertiary-container": "#f5282b",
+        "on-tertiary": "#4a0003",
+        "on-tertiary-container": "#000000",
+        "on-surface": "#dee5ff",
+        "on-surface-variant": "#a3aac4",
+        "on-background": "#dee5ff",
+        "outline": "#6d758c",
+        "outline-variant": "#40485d",
+        "error": "#ff716c",
+        "error-container": "#9f0519",
+        "on-error": "#490006",
+        "on-error-container": "#ffa8a3",
+        "inverse-surface": "#faf8ff",
+        "inverse-primary": "#00687e",
+        "inverse-on-surface": "#4d556b",
+      },
+      borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" },
+      fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
+    },
+  },
+}
+</script>
 <style>
-  :root {
-    --bg-body: #0a0e17;
-    --bg-sidebar: #111827;
-    --bg-card: #1a1f2e;
-    --bg-card-alt: #151a28;
-    --bg-hover: #1e293b;
-    --border: #1e2636;
-    --border-light: #2a3348;
-    --text-primary: #e5e7eb;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
-    --accent-green: #10b981;
-    --accent-red: #ef4444;
-    --accent-orange: #f59e0b;
-    --accent-blue: #3b82f6;
-    --accent-purple: #8b5cf6;
-    --accent-teal: #14b8a6;
-    --sidebar-w: 220px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-    background: var(--bg-body); color: var(--text-primary); font-size: 14px;
-  }
-
-  /* ── Sidebar ── */
-  .sidebar {
-    width: var(--sidebar-w); background: var(--bg-sidebar);
-    border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
-  }
-  .sidebar-brand {
-    padding: 24px 20px 20px;
-    border-bottom: 1px solid var(--border);
-  }
-  .sidebar-brand h2 {
-    font-size: 16px; font-weight: 800; color: #fff;
-    letter-spacing: 1px; margin: 0; border: none; padding: 0;
-  }
-  .sidebar-brand .brand-sub {
-    font-size: 11px; color: var(--accent-green); font-weight: 600;
-    letter-spacing: 0.5px; margin-top: 2px;
-  }
-  .sidebar-nav { flex: 1; padding: 16px 0; }
-  .sidebar-nav a {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 20px; color: var(--text-secondary);
-    text-decoration: none; font-size: 14px; font-weight: 500;
-    transition: all 0.15s;
-  }
-  .sidebar-nav a:hover { background: var(--bg-hover); color: var(--text-primary); }
-  .sidebar-nav a.active {
-    background: rgba(16, 185, 129, 0.1); color: var(--accent-green);
-    border-left: 3px solid var(--accent-green);
-  }
-  .sidebar-nav .nav-icon { font-size: 18px; width: 24px; text-align: center; }
-  .sidebar-footer {
-    padding: 16px 20px; border-top: 1px solid var(--border);
-  }
-  .sidebar-footer .currency-btn {
-    width: 100%; padding: 10px; border: 1px solid var(--border-light);
-    border-radius: 8px; background: var(--bg-card); color: var(--text-primary);
-    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
-  }
-  .sidebar-footer .currency-btn:hover { border-color: var(--accent-green); }
-  .sidebar-footer .status-info {
-    font-size: 11px; color: var(--text-muted); margin-top: 10px; line-height: 1.5;
-  }
-
-  /* ── Main Content ── */
-  .main { flex: 1; margin-left: var(--sidebar-w); padding: 24px 28px; }
-
-  /* ── Top Header ── */
-  .top-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 24px;
-  }
-  .top-header h1 {
-    font-size: 22px; font-weight: 700; color: #fff; margin: 0;
-  }
-  .top-header .header-meta {
-    font-size: 12px; color: var(--text-muted);
-  }
-
-  /* ── Macro Cards Bar ── */
-  .macro-cards {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-    margin-bottom: 24px;
-  }
-  .macro-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 16px 18px;
-  }
-  .macro-card .mc-label {
-    font-size: 11px; color: var(--text-muted); font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
-  }
-  .macro-card .mc-value {
-    font-size: 26px; font-weight: 800; color: #fff;
-  }
-  .macro-card .mc-change {
-    font-size: 13px; font-weight: 600; margin-left: 8px;
-  }
-  .macro-card .mc-change.up { color: var(--accent-green); }
-  .macro-card .mc-change.dn { color: var(--accent-red); }
-  .macro-card.regime { border-color: var(--border-light); }
-  .macro-card .mc-regime {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 18px; font-weight: 800; margin-top: 4px;
-  }
-  .regime-dot {
-    width: 10px; height: 10px; border-radius: 50%;
-    display: inline-block;
-  }
-  .regime-dot.green { background: var(--accent-green); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
-  .regime-dot.yellow { background: var(--accent-orange); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
-  .regime-dot.red { background: var(--accent-red); box-shadow: 0 0 8px rgba(239,68,68,0.5); }
-
-  /* ── Portfolio Summary Row ── */
-  .portfolio-row {
-    display: grid; grid-template-columns: 2fr 1fr; gap: 16px;
-    margin-bottom: 24px;
-  }
-  .equity-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 28px 32px;
-  }
-  .equity-card .eq-label {
-    font-size: 12px; color: var(--text-muted); font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
-  }
-  .equity-card .eq-value {
-    font-size: 42px; font-weight: 800; color: #fff; line-height: 1;
-  }
-  .equity-card .eq-sub {
-    font-size: 14px; color: var(--text-secondary); margin-top: 8px;
-  }
-  .equity-stats {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
-    margin-top: 24px; border-top: 1px solid var(--border); padding-top: 20px;
-  }
-  .equity-stat .es-label {
-    font-size: 11px; color: var(--text-muted); text-transform: uppercase;
-    letter-spacing: 0.3px; margin-bottom: 6px;
-  }
-  .equity-stat .es-value {
-    font-size: 18px; font-weight: 700;
-  }
-  .equity-stat .es-value.pos { color: var(--accent-green); }
-  .equity-stat .es-value.neg { color: var(--accent-red); }
-  .equity-stat .es-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  /* ── Right Column: Urgent Actions ── */
-  .right-col {
-    display: flex; flex-direction: column; gap: 16px;
-  }
-  .urgent-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px;
-  }
-  .urgent-card .uc-title {
-    font-size: 12px; font-weight: 700; color: var(--accent-red);
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px;
-  }
-  .urgent-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; margin-bottom: 8px;
-    border-radius: 8px; border-left: 3px solid var(--accent-red);
-    background: rgba(239, 68, 68, 0.06);
-  }
-  .urgent-item.tp1 {
-    border-left-color: var(--accent-orange);
-    background: rgba(245, 158, 11, 0.06);
-  }
-  .urgent-item .ui-ticker {
-    font-size: 15px; font-weight: 800; color: #fff;
-  }
-  .urgent-item .ui-note {
-    font-size: 11px; color: var(--text-muted);
-  }
-  .urgent-badge {
-    padding: 4px 12px; border-radius: 6px; font-size: 11px;
-    font-weight: 700; letter-spacing: 0.5px;
-  }
-  .urgent-badge.exit { background: var(--accent-red); color: #fff; }
-  .urgent-badge.trim { background: var(--accent-orange); color: #fff; }
-  .no-urgent {
-    color: var(--text-muted); font-size: 13px; text-align: center;
-    padding: 20px 0;
-  }
-
-  /* ── Signal Summary Cards ── */
-  .signal-summary-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px;
-  }
-  .signal-summary-card .ssc-title {
-    font-size: 12px; font-weight: 700; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px;
-  }
-  .signal-counts {
-    display: flex; gap: 12px; flex-wrap: wrap;
-  }
-  .sig-count {
-    flex: 1; min-width: 80px; text-align: center;
-    padding: 12px 8px; border-radius: 8px;
-    background: var(--bg-card-alt);
-  }
-  .sig-count .sc-num {
-    font-size: 28px; font-weight: 800; line-height: 1;
-  }
-  .sig-count .sc-label {
-    font-size: 10px; font-weight: 600; color: var(--text-muted);
-    margin-top: 6px; text-transform: uppercase; letter-spacing: 0.3px;
-  }
-  .sig-count.exit .sc-num { color: var(--accent-red); }
-  .sig-count.tp1 .sc-num { color: var(--accent-orange); }
-  .sig-count.buy .sc-num { color: var(--accent-green); }
-  .sig-count.watch .sc-num { color: var(--accent-orange); }
-  .sig-count.hold .sc-num { color: var(--text-muted); }
-
-  /* ── Portfolio Detail Cards Row ── */
-  .port-detail-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-    margin-bottom: 24px;
-  }
-  .pd-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 16px 18px;
-  }
-  .pd-card .pd-label {
-    font-size: 11px; color: var(--text-muted); font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;
-  }
-  .pd-card .pd-value {
-    font-size: 20px; font-weight: 700; color: #fff;
-  }
-  .pd-card .pd-sub {
-    font-size: 12px; color: var(--text-secondary); margin-top: 3px;
-  }
-  .pd-card .pd-value.vix-danger { color: var(--accent-red); }
-  .pd-card .pd-value.vix-warn { color: var(--accent-orange); }
-  .pd-card .pd-value.vix-safe { color: var(--accent-green); }
-
-  /* ── Section Headers ── */
-  .section-header {
-    display: flex; align-items: center; gap: 10px;
-    margin: 28px 0 16px; padding-bottom: 0;
-  }
-  .section-header .sh-bar {
-    width: 4px; height: 20px; border-radius: 2px;
-    background: var(--accent-green);
-  }
-  .section-header h2 {
-    font-size: 16px; font-weight: 700; color: #fff;
-    border: none; margin: 0; padding: 0;
-  }
-
-  /* ── Holdings Table ── */
-  .holdings-tbl {
-    width: 100%; border-collapse: collapse; font-size: 13px;
-    background: var(--bg-card); border-radius: 12px; overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .holdings-tbl thead { background: var(--bg-card-alt); }
-  .holdings-tbl th {
-    padding: 12px 14px; text-align: left; font-weight: 600;
-    color: var(--text-muted); font-size: 11px; text-transform: uppercase;
-    letter-spacing: 0.3px; border-bottom: 1px solid var(--border);
-    background: transparent;
-  }
-  .holdings-tbl th.tbl-num, .holdings-tbl td.tbl-num { text-align: right; }
-  .holdings-tbl td {
-    padding: 12px 14px; border-bottom: 1px solid var(--border);
-    vertical-align: middle; color: var(--text-primary);
-  }
-  .holdings-tbl tr:hover td { background: var(--bg-hover); }
-  .holdings-tbl tr:last-child td { border-bottom: none; }
-  .holdings-tbl a { color: var(--accent-blue); text-decoration: none; font-weight: 700; }
-  .holdings-tbl a:hover { text-decoration: underline; }
-  .pnl-pos { color: var(--accent-green); font-weight: 600; }
-  .pnl-neg { color: var(--accent-red); font-weight: 600; }
-  .tbl-num { text-align: right; }
-
-  /* ── Badges ── */
-  .badge {
-    display: inline-block; padding: 3px 10px; border-radius: 6px;
-    font-size: 11px; font-weight: 700; white-space: nowrap;
-    letter-spacing: 0.3px;
-  }
-  .badge-exit { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
-  .badge-tp1 { background: rgba(245,158,11,0.15); color: var(--accent-orange); border: 1px solid rgba(245,158,11,0.3); }
-  .badge-BUY { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
-  .badge-WATCH { background: rgba(245,158,11,0.15); color: var(--accent-orange); border: 1px solid rgba(245,158,11,0.3); }
-  .badge-HOLD { background: rgba(107,114,128,0.15); color: var(--text-muted); border: 1px solid rgba(107,114,128,0.3); }
-  .badge-CASH { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
-  .badge-BOND { background: rgba(20,184,166,0.15); color: var(--accent-teal); border: 1px solid rgba(20,184,166,0.3); }
-  .prev-signal { font-size: 10px; color: var(--text-muted); margin-left: 4px; }
-
-  /* ── Data Sources ── */
-  .source-table {
-    width: 100%; border-collapse: collapse; font-size: 12px;
-    background: var(--bg-card); border-radius: 10px; overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .source-table th {
-    background: var(--bg-card-alt); padding: 10px 14px; text-align: left;
-    font-weight: 600; color: var(--text-muted); font-size: 11px;
-    text-transform: uppercase; border-bottom: 1px solid var(--border);
-  }
-  .source-table td {
-    padding: 8px 14px; border-bottom: 1px solid var(--border);
-    color: var(--text-secondary);
-  }
-  .source-table tr:last-child td { border-bottom: none; }
-
-  /* ── Alert Box ── */
-  .alert-box {
-    background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3);
-    border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;
-  }
-  .alert-box strong { color: var(--accent-red); font-size: 15px; }
-  .alert-box span { color: var(--text-secondary); }
-
-  /* ── Footer ── */
-  .report-footer {
-    font-size: 11px; color: var(--text-muted); margin-top: 32px;
-    padding-top: 16px; border-top: 1px solid var(--border);
-    line-height: 1.6;
-  }
-
-  /* ── Mobile Menu Toggle ── */
-  .mobile-menu-btn {
-    display: none; position: fixed; top: 12px; left: 12px; z-index: 200;
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 12px; color: var(--text-primary);
-    font-size: 20px; cursor: pointer;
-  }
-  .sidebar-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90;
-  }
-
-  /* ── Responsive ── */
-  @media (max-width: 768px) {
-    .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
-    .sidebar.open { transform: translateX(0); }
-    .sidebar-overlay.open { display: block; }
-    .mobile-menu-btn { display: block; }
-    .main { margin-left: 0; padding: 16px; padding-top: 56px; }
-    .macro-cards { grid-template-columns: repeat(2, 1fr); }
-    .portfolio-row { grid-template-columns: 1fr; }
-    .port-detail-grid { grid-template-columns: 1fr; }
-    .equity-stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .signal-counts { flex-wrap: wrap; }
-    .sig-count { min-width: 60px; }
-    .holdings-tbl { font-size: 12px; }
-    .holdings-tbl th, .holdings-tbl td { padding: 8px 8px; }
-    .top-header { flex-direction: column; align-items: flex-start; gap: 6px; }
-  }
-  @media (max-width: 480px) {
-    .macro-cards { grid-template-columns: 1fr; }
-    .equity-card .eq-value { font-size: 30px; }
-    .equity-stats { grid-template-columns: 1fr; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .gradient-text {
+    background: linear-gradient(135deg, #6dddff 0%, #00d2fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 </style>
 </head>
-<body data-usdkrw="{{ usd_krw_raw }}">
-
-<!-- Mobile Menu Button -->
-<button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="{{ usd_krw_raw }}">
 
 <!-- ── Sidebar ── -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <h2>TRADING</h2>
-    <div class="brand-sub">COMMAND CENTER</div>
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center">
+      <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">dashboard_customize</span>
+    </div>
+    <div>
+      <h2 class="text-lg font-black text-primary leading-none">Signal Report</h2>
+      <p class="text-[10px] uppercase tracking-widest text-on-surface/40 mt-1">Precision Curator</p>
+    </div>
   </div>
-  <nav class="sidebar-nav">
-    <a href="index.html" class="active">
-      <span class="nav-icon">&#9638;</span> Dashboard
+  <div class="space-y-2 flex-grow">
+    <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)] transition-all" href="index.html">
+      <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
     </a>
-    <a href="{{ nav_scanner }}">
-      <span class="nav-icon">&#9678;</span> Scanner
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_scanner }}">
+      <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
     </a>
-    <a href="{{ nav_backtest }}">
-      <span class="nav-icon">&#8634;</span> Backtest
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_backtest }}">
+      <span class="material-symbols-outlined">history</span><span>Backtest</span>
     </a>
-    <a href="{{ nav_trend }}">
-      <span class="nav-icon">&#8599;</span> Trend
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_trend }}">
+      <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
     </a>
-    <a href="archive.html">
-      <span class="nav-icon">&#9783;</span> Archive
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="archive.html">
+      <span class="material-symbols-outlined">inventory_2</span><span>Archive</span>
     </a>
-  </nav>
-  <div class="sidebar-footer">
-    <button class="currency-btn" id="currencyToggle" onclick="toggleCurrency()">&#128178; USD / KRW</button>
-    <div class="status-info">
+  </div>
+  <div class="pt-6 mt-6 border-t border-outline-variant/20 space-y-2">
+    <button id="currencyToggle" onclick="toggleCurrency()" class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all w-full text-left">
+      <span class="material-symbols-outlined">currency_exchange</span><span>USD / KRW</span>
+    </button>
+    <div class="px-4 py-2 text-[10px] text-outline leading-relaxed">
       {{ date_ko }}<br>
       {% if market_status %}
         {% if market_status.US == 'open' or market_status.KRX == 'open' %}
-          <span style="color:var(--accent-orange);">LIVE</span> US:{{ market_status.US }} / KRX:{{ market_status.KRX }}
+          <span class="text-tertiary">LIVE</span> US:{{ market_status.US }} / KRX:{{ market_status.KRX }}
         {% else %}
-          <span style="color:var(--accent-green);">CLOSED</span>
+          <span class="text-secondary">CLOSED</span>
         {% endif %}
       {% endif %}
     </div>
   </div>
-</aside>
+</nav>
 
-<!-- ── Main Content ── -->
-<div class="main">
+<!-- ── Mobile Sidebar Overlay ── -->
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-  <!-- Top Header -->
-  <div class="top-header">
-    <h1>Signal Report</h1>
-    <div class="header-meta">
-      Data: {{ fetched_at }} &nbsp;|&nbsp; Source: {{ portfolio_source }}
-    </div>
-  </div>
+<!-- ── Main ── -->
+<main class="md:ml-64 min-h-screen">
 
-  {% if alert_msg %}
-  <div class="alert-box">
-    <strong>{{ alert_msg }}</strong><br>
-    <span>BIL(&#54788;&#44552;) &#51228;&#50808; &#51452;&#50836; &#51333;&#47785; &#52397;&#49328; &#49888;&#54840;. &#52572;&#50864;&#49440; &#45824;&#51025; &#54596;&#50836;.</span>
-  </div>
-  {% endif %}
+  <!-- ── Top Header Bar ── -->
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-8">
+      <!-- Mobile menu button -->
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Trading Command Center</span>
+      <nav class="hidden lg:flex items-center gap-6 font-headline tracking-tight">
+        <div class="flex items-center gap-2">
+          <span class="text-on-surface/60 text-xs">VIX</span>
+          <span class="text-primary font-bold">{{ vix }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-on-surface/60 text-xs">30Y US Yield</span>
+          <span class="text-primary font-bold">{{ yield_30y }}%</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-on-surface/60 text-xs">USD/KRW</span>
+          <span class="text-primary font-bold">{{ usd_krw }}</span>
+        </div>
+      </nav>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="text-xs text-outline font-label hidden sm:block">{{ fetched_at }}</div>
+      <button class="p-2 text-on-surface/60 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+      <button class="p-2 text-on-surface/60 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+    </div>
+  </header>
 
-  <!-- ── Macro Cards ── -->
-  <div class="macro-cards">
-    <div class="macro-card">
-      <div class="mc-label">VIX Index</div>
-      <div>
-        <span class="mc-value">{{ vix }}</span>
-      </div>
-    </div>
-    <div class="macro-card">
-      <div class="mc-label">30Y US Yield</div>
-      <div>
-        <span class="mc-value">{{ yield_30y }}%</span>
-      </div>
-    </div>
-    <div class="macro-card">
-      <div class="mc-label">USD/KRW</div>
-      <div>
-        <span class="mc-value">{{ usd_krw }}</span>
-      </div>
-    </div>
-    <div class="macro-card regime">
-      <div class="mc-label">Market Regime</div>
-      <div class="mc-regime">
-        {% if master_class == 'green' %}
-        <span class="regime-dot green"></span> <span style="color:var(--accent-green);">BULLISH</span>
-        {% elif master_class == 'yellow' %}
-        <span class="regime-dot yellow"></span> <span style="color:var(--accent-orange);">CAUTION</span>
-        {% else %}
-        <span class="regime-dot red"></span> <span style="color:var(--accent-red);">BEARISH</span>
-        {% endif %}
-      </div>
-      <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">
-        QQQ {{ qqq_status }} &middot; SPY {{ spy_status }}
-      </div>
-    </div>
-  </div>
+  <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
 
-  <!-- ── Portfolio + Urgent Actions ── -->
-  <div class="portfolio-row">
-    <!-- Left: Equity Card -->
-    <div class="equity-card">
-      <div class="eq-label">Total Equity Value</div>
-      <div class="eq-value money" data-usd="{{ total_value }}" data-krw="{{ total_value_krw }}">${{ total_value|comma }}</div>
-      <div class="eq-sub">{{ krw_equiv }}</div>
-      <div class="equity-stats">
-        <div class="equity-stat">
-          <div class="es-label">Unrealized P&amp;L</div>
-          <div class="es-value {{ 'pos' if total_pnl >= 0 else 'neg' }}">
-            <span class="money" data-usd="{{ total_pnl }}" data-krw="{{ total_pnl_krw }}" data-signed="1">{{ '+' if total_pnl >= 0 else '' }}${{ total_pnl|comma }}</span>
+    {% if alert_msg %}
+    <div class="p-4 rounded-xl bg-error-container/20 border border-error/30">
+      <strong class="text-error text-base">{{ alert_msg }}</strong><br>
+      <span class="text-on-surface/60 text-sm">BIL(현금) 제외 주요 종목 청산 신호. 최우선 대응 필요.</span>
+    </div>
+    {% endif %}
+
+    <!-- ══ Hero: Equity + Dividends + Signal Overview ══ -->
+    <section class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <!-- Col 1-2: Total Equity -->
+      <div class="lg:col-span-2 relative overflow-hidden rounded-xl bg-surface-container p-8 border border-outline-variant/10">
+        <div class="absolute top-0 right-0 p-8 opacity-10">
+          <span class="material-symbols-outlined text-[120px]">account_balance_wallet</span>
+        </div>
+        <div class="relative z-10 flex flex-col h-full justify-between gap-8">
+          <div>
+            <p class="text-on-surface-variant font-label text-sm uppercase tracking-widest mb-2">Total Equity Value</p>
+            <h1 class="text-5xl md:text-6xl font-headline font-bold gradient-text money" data-usd="{{ total_value }}" data-krw="{{ total_value_krw }}">${{ total_value|comma }}</h1>
           </div>
-          <div class="es-sub">({{ total_pnl_pct|sign_pct }})</div>
-        </div>
-        <div class="equity-stat">
-          <div class="es-label">Cash Reserve</div>
-          <div class="es-value" style="color:var(--text-primary);">
-            <span class="money" data-usd="{{ cash_value }}" data-krw="{{ cash_value_krw }}">${{ cash_value|comma }}</span>
-          </div>
-          <div class="es-sub">({{ cash_pct|pct1 }}%)</div>
-        </div>
-        <div class="equity-stat">
-          <div class="es-label">Active Positions</div>
-          <div class="es-value" style="color:var(--text-primary);">{{ n_holdings }}</div>
-          <div class="es-sub">{{ n_categories }} categories</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right: Signal Summary + Urgent Actions -->
-    <div class="right-col">
-      <!-- Signal Counts -->
-      <div class="signal-summary-card">
-        <div class="ssc-title">Signal Overview</div>
-        <div class="signal-counts">
-          <div class="sig-count exit"><div class="sc-num">{{ n_tp2 }}</div><div class="sc-label">TP2 Exit</div></div>
-          <div class="sig-count tp1"><div class="sc-num">{{ n_tp1 }}</div><div class="sc-label">TP1 Trim</div></div>
-          <div class="sig-count buy"><div class="sc-num">{{ n_buy }}</div><div class="sc-label">Buy</div></div>
-          <div class="sig-count watch"><div class="sc-num">{{ n_watch }}</div><div class="sc-label">Watch</div></div>
-          <div class="sig-count hold"><div class="sc-num">{{ n_hold }}</div><div class="sc-label">Hold</div></div>
-        </div>
-      </div>
-
-      <!-- Urgent Actions -->
-      <div class="urgent-card">
-        <div class="uc-title">Urgent Actions</div>
-        {% if tp2_signals or tp1_signals %}
-          {% for h in tp2_signals %}
-          <div class="urgent-item">
+          <div class="flex flex-wrap gap-12">
             <div>
-              <div class="ui-ticker">{{ h.ticker }}</div>
-              <div class="ui-note">{{ h.signal }}</div>
+              <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Unrealized P&amp;L</p>
+              <p class="text-2xl font-headline font-semibold {{ 'text-secondary' if total_pnl >= 0 else 'text-tertiary' }}">
+                <span class="money" data-usd="{{ total_pnl }}" data-krw="{{ total_pnl_krw }}" data-signed="1">{{ '+' if total_pnl >= 0 else '' }}${{ total_pnl|comma }}</span>
+              </p>
+              <p class="text-xs font-label {{ 'text-secondary/60' if total_pnl >= 0 else 'text-tertiary/60' }}">{{ '&#9650;' if total_pnl_pct >= 0 else '&#9660;' }} {{ total_pnl_pct|sign_pct }} vs Principal</p>
             </div>
-            <span class="urgent-badge exit">SELL-LIMIT</span>
-          </div>
-          {% endfor %}
-          {% for h in tp1_signals %}
-          <div class="urgent-item tp1">
             <div>
-              <div class="ui-ticker">{{ h.ticker }}</div>
-              <div class="ui-note">{{ h.signal }}</div>
+              <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Cash Reserve</p>
+              <p class="text-2xl font-headline font-semibold text-on-surface">
+                <span class="money" data-usd="{{ cash_value }}" data-krw="{{ cash_value_krw }}">${{ cash_value|comma }}</span>
+              </p>
+              <p class="text-on-surface-variant/60 text-xs font-label">{{ cash_pct|pct1 }}% of portfolio</p>
             </div>
-            <span class="urgent-badge trim">TRIM</span>
           </div>
-          {% endfor %}
-        {% else %}
-          <div class="no-urgent">No urgent actions required</div>
-        {% endif %}
+        </div>
+      </div>
+
+      <!-- Col 3: Dividends -->
+      <div class="rounded-xl bg-surface-container-high p-8 border border-outline-variant/10 flex flex-col justify-between">
+        <div>
+          <h3 class="font-headline font-bold text-lg mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">payments</span> Dividends
+          </h3>
+          <div class="space-y-6">
+            <div>
+              <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Annual Total</p>
+              <p class="text-3xl font-headline font-bold text-on-surface money" data-usd="{{ div_annual }}" data-krw="{{ div_annual_krw }}">${{ div_annual|comma }}</p>
+              <p class="text-primary text-xs font-label mt-1">Yield {{ div_yield|pct2 }}%</p>
+            </div>
+            <div>
+              <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Monthly Average</p>
+              <p class="text-2xl font-headline font-bold text-on-surface money" data-usd="{{ div_monthly }}" data-krw="{{ div_monthly_krw }}">${{ div_monthly|comma }}</p>
+              <p class="text-on-surface-variant/60 text-[10px] font-label mt-1">{{ div_top }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 4: Signal Overview -->
+      <div class="rounded-xl bg-surface-container-high p-8 border border-outline-variant/10 flex flex-col">
+        <h3 class="font-headline font-bold text-lg mb-6 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">radar</span> Signal Overview
+        </h3>
+        <div class="grid grid-cols-2 gap-4 flex-grow">
+          <div class="p-4 rounded bg-tertiary-container/10 border border-tertiary-container/20 flex flex-col justify-center items-center">
+            <span class="text-tertiary text-2xl font-headline font-bold">{{ "%02d"|format(n_tp2) }}</span>
+            <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Exit</span>
+          </div>
+          <div class="p-4 rounded bg-surface-bright border border-outline-variant/10 flex flex-col justify-center items-center">
+            <span class="text-on-surface text-2xl font-headline font-bold">{{ "%02d"|format(n_tp1) }}</span>
+            <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Trim</span>
+          </div>
+          <div class="p-4 rounded bg-secondary-container/10 border border-secondary-container/20 flex flex-col justify-center items-center">
+            <span class="text-secondary text-2xl font-headline font-bold">{{ "%02d"|format(n_buy) }}</span>
+            <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Buy</span>
+          </div>
+          <div class="p-4 rounded bg-primary/10 border border-primary/20 flex flex-col justify-center items-center">
+            <span class="text-primary text-2xl font-headline font-bold">{{ n_watch }}</span>
+            <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Watch</span>
+          </div>
+        </div>
+        <div class="mt-4 p-3 bg-surface-dim rounded text-center">
+          <span class="text-on-surface-variant text-sm font-label">Hold: <span class="text-on-surface font-bold">{{ n_hold }}</span> &nbsp;|&nbsp;
+          {% if master_class == 'green' %}<span class="text-secondary font-bold">Bullish</span>
+          {% elif master_class == 'yellow' %}<span class="text-tertiary font-bold">Caution</span>
+          {% else %}<span class="text-error font-bold">Bearish</span>{% endif %}
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ Holdings + Urgent Actions ══ -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <!-- Left: Holdings Tables -->
+      <div class="lg:col-span-3 space-y-6">
+
+        <!-- US Holdings -->
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-headline font-bold">US Holdings</h2>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+                <th class="px-6 py-4">Ticker</th>
+                <th class="px-6 py-4">Price / Avg</th>
+                <th class="px-6 py-4">Total Value</th>
+                <th class="px-6 py-4">Weight</th>
+                <th class="px-6 py-4">P&amp;L %</th>
+                <th class="px-6 py-4">Dividend</th>
+                <th class="px-6 py-4">Signal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+              {% for h in holdings if not h.is_kospi %}
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/{{ h.ticker }}.html" class="block font-headline font-bold text-primary hover:underline">{{ h.ticker }}</a>
+                  <span class="text-[10px] text-on-surface-variant">{{ h.name }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">${{ h.price|f2 }}</span>
+                  <span class="text-[10px] text-on-surface-variant">${{ h.avg_cost|f2 }} avg</span>
+                </td>
+                <td class="px-6 py-4 money" data-usd="{{ h.value }}">${{ h.value|comma }}</td>
+                <td class="px-6 py-4">{{ h.weight|f1 }}%</td>
+                <td class="px-6 py-4 font-bold {{ 'text-secondary' if h.pnl_pct >= 0 else 'text-tertiary' }}">{{ h.pnl_pct|sign_pct }}</td>
+                <td class="px-6 py-4 text-on-surface">${{ h.div_annual|comma }}</td>
+                <td class="px-6 py-4">
+                  {% if 'TAKE_PROFIT_2' in h.signal or 'TOP' in h.signal %}
+                  <span class="px-2 py-1 bg-tertiary-container/20 text-xs rounded text-tertiary border border-tertiary/30">{{ h.signal }}</span>
+                  {% elif 'TAKE_PROFIT_1' in h.signal %}
+                  <span class="px-2 py-1 bg-tertiary/10 text-xs rounded text-tertiary border border-tertiary/20">{{ h.signal }}</span>
+                  {% elif 'BUY' in h.signal %}
+                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">{{ h.signal }}</span>
+                  {% elif 'WATCH' in h.signal %}
+                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface-variant border border-outline-variant/30">WATCH</span>
+                  {% elif 'CASH' in h.signal or 'BOND' in h.signal %}
+                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface border border-outline-variant/30 uppercase">{{ h.signal }}</span>
+                  {% else %}
+                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  {% endif %}
+                  {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
+                  <span class="text-[10px] text-outline ml-1">({{ prev_signal_map[h.ticker] }})</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- KOSPI Holdings -->
+        <h2 class="text-2xl font-headline font-bold mt-8">KOSPI Holdings</h2>
+        <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+                <th class="px-6 py-4">Ticker</th>
+                <th class="px-6 py-4">Price / Avg</th>
+                <th class="px-6 py-4">Total Value</th>
+                <th class="px-6 py-4">Weight</th>
+                <th class="px-6 py-4">P&amp;L %</th>
+                <th class="px-6 py-4">Dividend</th>
+                <th class="px-6 py-4">Signal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+              {% for h in holdings if h.is_kospi %}
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/{{ h.ticker }}.html" class="block font-headline font-bold text-primary hover:underline">{{ h.ticker }}</a>
+                  <span class="text-[10px] text-on-surface-variant">{{ h.name }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;{{ h.price|comma }}</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;{{ h.avg_cost|comma }} avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;{{ h.value|comma }}</td>
+                <td class="px-6 py-4">{{ h.weight|f1 }}%</td>
+                <td class="px-6 py-4 font-bold {{ 'text-secondary' if h.pnl_pct >= 0 else 'text-tertiary' }}">{{ h.pnl_pct|sign_pct }}</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;{{ h.div_annual_krw|comma }}</td>
+                <td class="px-6 py-4">
+                  {% if 'TAKE_PROFIT_2' in h.signal or 'TOP' in h.signal %}
+                  <span class="px-2 py-1 bg-tertiary-container/20 text-xs rounded text-tertiary border border-tertiary/30">{{ h.signal }}</span>
+                  {% elif 'TAKE_PROFIT_1' in h.signal %}
+                  <span class="px-2 py-1 bg-tertiary/10 text-xs rounded text-tertiary border border-tertiary/20">{{ h.signal }}</span>
+                  {% elif 'BUY' in h.signal %}
+                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">{{ h.signal }}</span>
+                  {% elif 'WATCH' in h.signal %}
+                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface-variant border border-outline-variant/30">WATCH</span>
+                  {% elif 'CASH' in h.signal or 'BOND' in h.signal %}
+                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface border border-outline-variant/30 uppercase">{{ h.signal }}</span>
+                  {% else %}
+                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  {% endif %}
+                  {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
+                  <span class="text-[10px] text-outline ml-1">({{ prev_signal_map[h.ticker] }})</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Data Sources -->
+        <div class="mt-8 overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+          <table class="w-full text-left border-collapse font-label text-xs">
+            <thead>
+              <tr class="bg-surface-container text-on-surface-variant text-[10px] uppercase tracking-widest">
+                <th class="px-6 py-3">Category</th><th class="px-6 py-3">Source</th><th class="px-6 py-3">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10 text-on-surface-variant">
+              <tr><td class="px-6 py-2">Portfolio</td><td class="px-6 py-2">{{ portfolio_source }}</td><td class="px-6 py-2">Screenshot date</td></tr>
+              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">{{ fetched_at }}</td></tr>
+              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">{{ fetched_at }}</td></tr>
+              <tr><td class="px-6 py-2">Dividends (TTM)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">{{ fetched_at }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right: Urgent Actions -->
+      <div class="space-y-6">
+        <h2 class="text-xl font-headline font-bold flex items-center gap-2">
+          <span class="material-symbols-outlined text-tertiary">priority_high</span> Urgent Actions
+        </h2>
+        <div class="space-y-4">
+          {% if tp2_signals or tp1_signals %}
+            {% for h in tp2_signals %}
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-tertiary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">{{ h.ticker }}</h4>
+                </div>
+                <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">EXIT</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
+            </div>
+            {% endfor %}
+            {% for h in tp1_signals %}
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-tertiary-dim shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">{{ h.ticker }}</h4>
+                </div>
+                <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">TRIM</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
+            </div>
+            {% endfor %}
+            {% for h in buy_signals %}
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">{{ h.ticker }}</h4>
+                </div>
+                <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">ENTRY</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="p-6 rounded-xl bg-surface-container border border-outline-variant/10 text-center">
+              <p class="text-on-surface-variant text-sm">No urgent actions</p>
+            </div>
+          {% endif %}
+
+          <!-- Market Regime -->
+          <div class="p-6 rounded-xl bg-surface-container border border-outline-variant/10">
+            <p class="text-xs font-label text-on-surface-variant uppercase tracking-widest mb-3">Market Regime</p>
+            <div class="flex items-center gap-4">
+              {% if master_class == 'green' %}
+              <div class="w-12 h-12 rounded-full border-4 border-secondary border-t-transparent"></div>
+              <div><p class="text-sm font-bold text-secondary">Bullish</p><p class="text-[10px] text-on-surface-variant">QQQ {{ qqq_status }} &middot; SPY {{ spy_status }}</p></div>
+              {% elif master_class == 'yellow' %}
+              <div class="w-12 h-12 rounded-full border-4 border-tertiary border-t-transparent"></div>
+              <div><p class="text-sm font-bold text-tertiary">Caution</p><p class="text-[10px] text-on-surface-variant">QQQ {{ qqq_status }} &middot; SPY {{ spy_status }}</p></div>
+              {% else %}
+              <div class="w-12 h-12 rounded-full border-4 border-error border-t-transparent"></div>
+              <div><p class="text-sm font-bold text-error">Bearish</p><p class="text-[10px] text-on-surface-variant">QQQ {{ qqq_status }} &middot; SPY {{ spy_status }}</p></div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Footer -->
+    <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
+      This report is for personal reference only. Trading signals are generated from technical indicators (RSI, MACD, MA, BB, ADX, Volume) and do not constitute investment advice.<br>
+      Generated by Trading Assistant v5.0 | {{ date }} | Data: yfinance ({{ fetched_at }}) | Portfolio: {{ portfolio_source }}
+    </p>
   </div>
+</main>
 
-  <!-- ── Portfolio Detail: Dividend + Macro ── -->
-  <div class="port-detail-grid">
-    <div class="pd-card">
-      <div class="pd-label">Annual Dividend</div>
-      <div class="pd-value money" data-usd="{{ div_annual }}" data-krw="{{ div_annual_krw }}">${{ div_annual|comma }}</div>
-      <div class="pd-sub">Yield {{ div_yield|pct2 }}%</div>
-    </div>
-    <div class="pd-card">
-      <div class="pd-label">Monthly Avg</div>
-      <div class="pd-value money" data-usd="{{ div_monthly }}" data-krw="{{ div_monthly_krw }}">${{ div_monthly|comma }}</div>
-      <div class="pd-sub">{{ div_top }}</div>
-    </div>
-    <div class="pd-card">
-      <div class="pd-label">Cost Basis</div>
-      <div class="pd-value money" data-usd="{{ cost_basis }}" data-krw="{{ cost_basis_krw }}">${{ cost_basis|comma }}</div>
-      <div class="pd-sub">Investment Principal</div>
-    </div>
-  </div>
-
-  <!-- ── US Holdings ── -->
-  <div class="section-header">
-    <div class="sh-bar"></div>
-    <h2>US Holdings</h2>
-  </div>
-  <table class="holdings-tbl">
-    <thead>
-      <tr>
-        <th>#</th><th>Ticker</th><th>Name</th>
-        <th class="tbl-num">Shares</th><th class="tbl-num">Avg Cost</th><th class="tbl-num">Price</th>
-        <th class="tbl-num">Value</th><th class="tbl-num">Weight</th><th class="tbl-num">P&amp;L</th><th class="tbl-num">Dividend</th><th>Signal</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% set us_idx = namespace(n=0) %}
-      {% for h in holdings if not h.is_kospi %}
-      {% set us_idx.n = us_idx.n + 1 %}
-      <tr>
-        <td>{{ us_idx.n }}</td>
-        <td><a href="details/{{ h.ticker }}.html">{{ h.ticker }}</a></td>
-        <td>{{ h.name }}</td>
-        <td class="tbl-num">{{ h.shares|shares_fmt }}</td>
-        <td class="tbl-num">${{ h.avg_cost|f2 }}</td>
-        <td class="tbl-num">${{ h.price|f2 }}</td>
-        <td class="tbl-num">${{ h.value|comma }}</td>
-        <td class="tbl-num">{{ h.weight|f1 }}%</td>
-        <td class="tbl-num {{ 'pnl-pos' if h.pnl_pct >= 0 else 'pnl-neg' }}">{{ h.pnl_pct|sign_pct }}</td>
-        <td class="tbl-num">${{ h.div_annual|comma }}</td>
-        <td>
-          <span class="badge {{ h.signal|badge_class }}">{{ h.signal }}</span>
-          {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
-          <span class="prev-signal">({{ prev_signal_map[h.ticker] }})</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- ── KOSPI Holdings ── -->
-  <div class="section-header">
-    <div class="sh-bar" style="background:var(--accent-blue);"></div>
-    <h2>KOSPI Holdings</h2>
-  </div>
-  <table class="holdings-tbl">
-    <thead>
-      <tr>
-        <th>#</th><th>Ticker</th><th>Name</th>
-        <th class="tbl-num">Shares</th><th class="tbl-num">Avg Cost</th><th class="tbl-num">Price</th>
-        <th class="tbl-num">Value</th><th class="tbl-num">Weight</th><th class="tbl-num">P&amp;L</th><th class="tbl-num">Dividend</th><th>Signal</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% set kr_idx = namespace(n=0) %}
-      {% for h in holdings if h.is_kospi %}
-      {% set kr_idx.n = kr_idx.n + 1 %}
-      <tr>
-        <td>{{ kr_idx.n }}</td>
-        <td><a href="details/{{ h.ticker }}.html">{{ h.ticker }}</a></td>
-        <td>{{ h.name }}</td>
-        <td class="tbl-num">{{ h.shares|shares_fmt }}</td>
-        <td class="tbl-num">&#8361;{{ h.avg_cost|comma }}</td>
-        <td class="tbl-num">&#8361;{{ h.price|comma }}</td>
-        <td class="tbl-num">&#8361;{{ h.value|comma }}</td>
-        <td class="tbl-num">{{ h.weight|f1 }}%</td>
-        <td class="tbl-num {{ 'pnl-pos' if h.pnl_pct >= 0 else 'pnl-neg' }}">{{ h.pnl_pct|sign_pct }}</td>
-        <td class="tbl-num">&#8361;{{ h.div_annual_krw|comma }}</td>
-        <td>
-          <span class="badge {{ h.signal|badge_class }}">{{ h.signal }}</span>
-          {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
-          <span class="prev-signal">({{ prev_signal_map[h.ticker] }})</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- ── Data Sources ── -->
-  <div class="section-header">
-    <div class="sh-bar" style="background:var(--text-muted);"></div>
-    <h2>Data Sources</h2>
-  </div>
-  <table class="source-table">
-    <tr><th>Category</th><th>Source</th><th>Timestamp</th></tr>
-    <tr><td>Portfolio (shares/avg cost)</td><td>{{ portfolio_source }}</td><td>Screenshot date</td></tr>
-    <tr><td>Technical Indicators</td><td>yfinance (fetch_market_data.py)</td><td>{{ fetched_at }}</td></tr>
-    <tr><td>VIX / 30Y Yield / USD-KRW</td><td>yfinance (^VIX / ^TYX / KRW=X)</td><td>{{ fetched_at }}</td></tr>
-    <tr><td>Dividends (TTM)</td><td>yfinance ticker.dividends</td><td>{{ fetched_at }}</td></tr>
-  </table>
-
-  <p class="report-footer">
-    This report is for personal reference only. Trading signals are generated from technical indicators (RSI, MACD, MA, BB, ADX, Volume) and do not constitute investment advice.<br>
-    Generated by Trading Assistant v4.0 | {{ date }} | Data: yfinance ({{ fetched_at }}) | Portfolio: {{ portfolio_source }}
-  </p>
-
-</div>
+<!-- Mobile Bottom Nav -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="index.html" class="text-primary flex flex-col items-center gap-1">
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+    <span class="text-[10px] font-label">Home</span>
+  </a>
+  <a href="{{ nav_scanner }}" class="text-on-surface-variant flex flex-col items-center gap-1">
+    <span class="material-symbols-outlined">analytics</span>
+    <span class="text-[10px] font-label">Scan</span>
+  </a>
+  <a href="{{ nav_trend }}" class="text-on-surface-variant flex flex-col items-center gap-1">
+    <span class="material-symbols-outlined">trending_up</span>
+    <span class="text-[10px] font-label">Trend</span>
+  </a>
+  <a href="{{ nav_backtest }}" class="text-on-surface-variant flex flex-col items-center gap-1">
+    <span class="material-symbols-outlined">history</span>
+    <span class="text-[10px] font-label">Backtest</span>
+  </a>
+</nav>
 
 <script>
 let isKRW = true;
@@ -679,57 +498,43 @@ function toggleCurrency() {
     const usd = parseFloat(el.dataset.usd);
     const hasKrw = !isNaN(krw);
     const hasUsd = !isNaN(usd);
-
     if (hasKrw && hasUsd) {
       const sign = el.dataset.signed === '1' && usd > 0 ? '+' : '';
-      if (isKRW) {
-        el.textContent = sign + formatKRW(Math.round(krw));
-      } else {
+      if (isKRW) { el.textContent = sign + formatKRW(Math.round(krw)); }
+      else {
         if (Math.abs(usd) >= 1000) el.textContent = sign + '$' + usd.toLocaleString('en-US', {maximumFractionDigits:0});
         else el.textContent = sign + '$' + usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
       }
       return;
     }
     if (hasKrw) {
-      if (isKRW) {
-        if (el.dataset.fmt === 'full') {
-          el.textContent = '\u20a9' + Math.round(krw).toLocaleString('ko-KR');
-        } else {
-          el.textContent = formatKRW(Math.round(krw));
-        }
-      } else {
-        el.textContent = '\u20a9' + krw.toLocaleString('ko-KR', {maximumFractionDigits:0});
-      }
+      if (isKRW) { el.textContent = el.dataset.fmt === 'full' ? '\u20a9' + Math.round(krw).toLocaleString('ko-KR') : formatKRW(Math.round(krw)); }
+      else { el.textContent = '\u20a9' + krw.toLocaleString('ko-KR', {maximumFractionDigits:0}); }
       return;
     }
     if (!hasUsd) return;
-    if (isKRW) {
-      el.textContent = formatKRW(Math.round(usd * rate));
-    } else {
+    if (isKRW) { el.textContent = formatKRW(Math.round(usd * rate)); }
+    else {
       if (usd >= 1000) el.textContent = '$' + usd.toLocaleString('en-US', {maximumFractionDigits:0});
       else el.textContent = '$' + usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
     }
   });
-  btn.textContent = isKRW ? '\ud83d\udcb2 USD / KRW' : '\ud83d\udcb1 KRW / USD';
+  const spans = btn.querySelectorAll('span');
+  if (spans.length > 1) spans[1].textContent = isKRW ? 'KRW / USD' : 'USD / KRW';
 }
-
 function formatKRW(krw) {
-  const abs = Math.abs(krw);
-  const sign = krw < 0 ? '-' : '';
+  const abs = Math.abs(krw); const sign = krw < 0 ? '-' : '';
   if (abs >= 100000000) return sign + '\u20a9' + (abs/100000000).toFixed(2) + '\uc5b5';
   if (abs >= 10000) return sign + '\u20a9' + Math.round(abs/10000).toLocaleString() + '\ub9cc';
   return sign + '\u20a9' + abs.toLocaleString();
 }
-
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('open');
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  sb.classList.toggle('hidden'); sb.classList.toggle('flex');
+  ov.classList.toggle('hidden');
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-  isKRW = false;
-  toggleCurrency();
-});
+document.addEventListener('DOMContentLoaded', function() { isKRW = false; toggleCurrency(); });
 </script>
 </body>
 </html>

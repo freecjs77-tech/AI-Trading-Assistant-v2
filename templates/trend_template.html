@@ -1,125 +1,109 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html class="dark" lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Asset Trend Dashboard — {{ date }}</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-<style>
-  :root {
-    --bg-body: #0a0e17; --bg-sidebar: #111827; --bg-card: #1a1f2e; --bg-card-alt: #151a28;
-    --bg-hover: #1e293b; --border: #1e2636; --border-light: #2a3348;
-    --text-primary: #e5e7eb; --text-secondary: #9ca3af; --text-muted: #6b7280;
-    --accent-green: #10b981; --accent-red: #ef4444; --accent-orange: #f59e0b;
-    --accent-blue: #3b82f6; --accent-purple: #8b5cf6; --accent-teal: #14b8a6;
-    --sidebar-w: 220px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; background: var(--bg-body); color: var(--text-primary); font-size: 14px; }
-  .sidebar { width: var(--sidebar-w); background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
-  .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
-  .sidebar-brand h2 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 1px; margin: 0; border: none; padding: 0; }
-  .sidebar-brand .brand-sub { font-size: 11px; color: var(--accent-green); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px; }
-  .sidebar-nav { flex: 1; padding: 16px 0; }
-  .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.15s; }
-  .sidebar-nav a:hover { background: var(--bg-hover); color: var(--text-primary); }
-  .sidebar-nav a.active { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); border-left: 3px solid var(--accent-green); }
-  .sidebar-nav .nav-icon { font-size: 18px; width: 24px; text-align: center; }
-  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); line-height: 1.5; }
-  .main { margin-left: var(--sidebar-w); padding: 24px 28px; }
-  .top-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .top-header h1 { font-size: 22px; font-weight: 700; color: #fff; margin: 0; }
-  .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
-  .section-header { display: flex; align-items: center; gap: 10px; margin: 28px 0 16px; }
-  .section-header .sh-bar { width: 4px; height: 20px; border-radius: 2px; }
-  .section-header h2 { font-size: 16px; font-weight: 700; color: #fff; border: none; margin: 0; padding: 0; }
-  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-  .sum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; text-align: center; }
-  .sum-card .num { font-size: 24px; font-weight: 800; line-height: 1; }
-  .sum-card .lbl { font-size: 11px; color: var(--text-muted); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
-  .sum-card .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .chart-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-  .chart-box canvas { max-height: 320px; }
-  .pie-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-  .pie-col { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-  .pie-col h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #fff; }
-  .pie-col canvas { max-height: 280px; }
-  .no-data { color: var(--text-muted); font-size: 13px; padding: 40px; text-align: center; background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border); }
-  .report-footer { font-size: 11px; color: var(--text-muted); margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); }
-  .mobile-menu-btn { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text-primary); font-size: 20px; cursor: pointer; }
-  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
-  @media (max-width: 768px) {
-    .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
-    .sidebar.open { transform: translateX(0); }
-    .sidebar-overlay.open { display: block; }
-    .mobile-menu-btn { display: block; }
-    .main { margin-left: 0; padding: 16px; padding-top: 56px; }
-    .summary-grid { grid-template-columns: repeat(2, 1fr); }
-    .pie-row { grid-template-columns: 1fr; }
-    .top-header { flex-direction: column; align-items: flex-start; gap: 6px; }
-  }
-</style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","on-primary-container":"#004352","secondary":"#2ff801","secondary-container":"#106e00","on-secondary":"#0b5800","tertiary":"#ff7166","tertiary-container":"#f5282b","on-tertiary":"#4a0003","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+</script>
 </head>
-<body>
-<button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand"><h2>TRADING</h2><div class="brand-sub">COMMAND CENTER</div></div>
-  <nav class="sidebar-nav">
-    <a href="{{ nav_portfolio }}"><span class="nav-icon">&#9638;</span> Dashboard</a>
-    <a href="{{ nav_scanner }}"><span class="nav-icon">&#9678;</span> Scanner</a>
-    <a href="{{ nav_backtest }}"><span class="nav-icon">&#8634;</span> Backtest</a>
-    <a href="{{ nav_trend }}" class="active"><span class="nav-icon">&#8599;</span> Trend</a>
-    <a href="archive.html"><span class="nav-icon">&#9783;</span> Archive</a>
-  </nav>
-  <div class="sidebar-footer">{{ date_ko }}</div>
-</aside>
+<body class="bg-surface text-on-surface font-body">
 
-<div class="main">
-  <div class="top-header"><h1>Asset Trend</h1></div>
-  <p class="subtitle">{{ date_ko }} &nbsp;|&nbsp; {{ data_days }}일 추이 &nbsp;|&nbsp; 데이터: 일별 스냅샷</p>
-
-  <div class="summary-grid">
-    <div class="sum-card"><div class="num" style="color:var(--accent-green);">&#8361;{{ latest.total_eok }}억</div><div class="lbl">총 자산</div><div class="sub" style="color:{{ 'var(--accent-green)' if latest.pnl_krw >= 0 else 'var(--accent-red)' }};">{{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div></div>
-    <div class="sum-card"><div class="num" style="color:var(--accent-blue);">&#8361;{{ latest.cost_eok }}억</div><div class="lbl">투자 원금</div></div>
-    <div class="sum-card"><div class="num" style="color:var(--accent-orange);">&#8361;{{ latest.div_annual_man }}만</div><div class="lbl">예상 연 배당</div><div class="sub">수익률 {{ latest.div_yield }}%</div></div>
-    <div class="sum-card"><div class="num" style="color:var(--text-primary);">&#8361;{{ latest.cash_eok }}억</div><div class="lbl">현금 (BIL)</div><div class="sub">{{ latest.cash_pct }}%</div></div>
+<!-- Sidebar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings:'FILL' 1;">dashboard_customize</span></div>
+    <div><h2 class="text-lg font-black text-primary leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-on-surface/40 mt-1">Precision Curator</p></div>
   </div>
-
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-purple);"></div><h2>포트폴리오 비중</h2></div>
-  <div class="pie-row">
-    <div class="pie-col"><h3>카테고리별</h3><canvas id="categoryPie"></canvas></div>
-    <div class="pie-col"><h3>종목별 (상위 10)</h3><canvas id="tickerPie"></canvas></div>
+  <div class="space-y-2 flex-grow">
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_portfolio }}"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_scanner }}"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_backtest }}"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="{{ nav_trend }}"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
   </div>
+  <div class="pt-6 mt-6 border-t border-outline-variant/20 px-4 text-[10px] text-outline leading-relaxed">{{ date_ko }}</div>
+</nav>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-  {% if data_days >= 1 %}
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-green);"></div><h2>총 자산 추이</h2></div>
-  <div class="chart-box"><canvas id="assetTrendChart"></canvas></div>
+<main class="md:ml-64 min-h-screen">
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Asset Trend</span>
+      <span class="text-xs text-outline font-label hidden sm:block">{{ data_days }}일 추이</span>
+    </div>
+  </header>
 
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-purple);"></div><h2>수익금 / 수익률 추이</h2></div>
-  <div class="chart-box"><canvas id="pnlTrendChart"></canvas></div>
+  <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
+    <!-- Summary -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-2xl font-headline font-bold text-secondary">&#8361;{{ latest.total_eok }}억</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">총 자산</div>
+        <div class="text-xs mt-1 {{ 'text-secondary' if latest.pnl_krw >= 0 else 'text-tertiary' }}">{{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-2xl font-headline font-bold text-primary">&#8361;{{ latest.cost_eok }}억</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">투자 원금</div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-2xl font-headline font-bold text-tertiary">&#8361;{{ latest.div_annual_man }}만</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">예상 연 배당</div>
+        <div class="text-xs text-outline mt-1">수익률 {{ latest.div_yield }}%</div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-2xl font-headline font-bold text-on-surface">&#8361;{{ latest.cash_eok }}억</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">현금 (BIL)</div>
+        <div class="text-xs text-outline mt-1">{{ latest.cash_pct }}%</div>
+      </div>
+    </div>
 
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-orange);"></div><h2>예상 연 배당금 추이</h2></div>
-  <div class="chart-box"><canvas id="divTrendChart"></canvas></div>
+    <!-- Pie Charts -->
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">pie_chart</span> 포트폴리오 비중</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">카테고리별</h3><canvas id="categoryPie" style="max-height:280px;"></canvas></div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">종목별 (상위 10)</h3><canvas id="tickerPie" style="max-height:280px;"></canvas></div>
+    </div>
 
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-red);"></div><h2>매크로 지표 추이</h2></div>
-  <div class="chart-box"><canvas id="macroChart"></canvas></div>
-  {% else %}
-  <div class="no-data">데이터가 축적되면 추이 차트가 표시됩니다.</div>
-  {% endif %}
+    {% if data_days >= 1 %}
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="assetTrendChart" style="max-height:320px;"></canvas></div>
 
-  <div class="report-footer">
-    데이터 소스: 일별 파이프라인 실행 스냅샷 | 차트: Chart.js 4.x | 총 자산 = USD 종목 x 환율 + KRW 종목
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">insights</span> 수익금 / 수익률 추이</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="pnlTrendChart" style="max-height:320px;"></canvas></div>
+
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">payments</span> 예상 연 배당금 추이</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="divTrendChart" style="max-height:320px;"></canvas></div>
+
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-error">public</span> 매크로 지표 추이</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="macroChart" style="max-height:320px;"></canvas></div>
+    {% else %}
+    <div class="rounded-xl bg-surface-container border border-outline-variant/10 p-12 text-center text-on-surface-variant">데이터가 축적되면 추이 차트가 표시됩니다.</div>
+    {% endif %}
+
+    <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10">데이터 소스: 일별 파이프라인 스냅샷 | Chart.js 4.x | 총 자산 = USD x 환율 + KRW</p>
   </div>
-</div>
+</main>
+
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="{{ nav_portfolio }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
+  <a href="{{ nav_scanner }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="{{ nav_trend }}" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="{{ nav_backtest }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">history</span><span class="text-[10px] font-label">Backtest</span></a>
+</nav>
 
 <script>
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
 
-// Dark theme defaults
-Chart.defaults.color = '#9ca3af';
-Chart.defaults.borderColor = '#1e2636';
-Chart.defaults.plugins.legend.labels.color = '#e5e7eb';
+Chart.defaults.color = '#a3aac4';
+Chart.defaults.borderColor = '#40485d';
+Chart.defaults.plugins.legend.labels.color = '#dee5ff';
 
 const trend = {{ trend_json }};
 const dates = trend.map(d => d.date.slice(5));
@@ -132,76 +116,36 @@ const divYieldData = trend.map(d => d.div_yield);
 const vixData = trend.map(d => d.vix);
 const yieldData = trend.map(d => d.yield_30y);
 const fxData = trend.map(d => d.usd_krw);
-
-const darkScaleOpts = { ticks: { color: '#9ca3af' }, grid: { color: '#1e2636' } };
+const dso = { ticks: { color: '#a3aac4' }, grid: { color: 'rgba(64,72,93,0.3)' } };
 
 {% if data_days >= 1 %}
-new Chart(document.getElementById('assetTrendChart'), {
-  type: 'line',
-  data: {
-    labels: dates,
-    datasets: [
-      { label: '총 자산 (억원)', data: totalAsset, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y' },
-      { label: '투자 원금 (억원)', data: costBasis, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, borderDash: [5, 5], tension: 0.3, pointRadius: 0, yAxisID: 'y' }
-    ]
-  },
-  options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ...darkScaleOpts, title: { display: true, text: '억원', color: '#9ca3af' } } } }
-});
+new Chart(document.getElementById('assetTrendChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'총 자산 (억원)', data:totalAsset, borderColor:'#2ff801', backgroundColor:'rgba(47,248,1,0.08)', fill:true, tension:0.3, pointRadius:2 },
+  { label:'투자 원금 (억원)', data:costBasis, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, borderDash:[5,5], tension:0.3, pointRadius:0 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'억원', color:'#a3aac4' }}}}});
 
-new Chart(document.getElementById('pnlTrendChart'), {
-  type: 'line',
-  data: {
-    labels: dates,
-    datasets: [
-      { label: '수익금 (억원)', data: pnlAmount, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y' },
-      { label: '수익률 (%)', data: pnlPct, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.10)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y1' }
-    ]
-  },
-  options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ...darkScaleOpts, position: 'left', title: { display: true, text: '억원', color: '#9ca3af' } }, y1: { ...darkScaleOpts, position: 'right', title: { display: true, text: '%', color: '#9ca3af' }, grid: { drawOnChartArea: false } } } }
-});
+new Chart(document.getElementById('pnlTrendChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'수익금 (억원)', data:pnlAmount, borderColor:'#2ff801', backgroundColor:'rgba(47,248,1,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
+  { label:'수익률 (%)', data:pnlPct, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'억원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
-new Chart(document.getElementById('divTrendChart'), {
-  type: 'line',
-  data: {
-    labels: dates,
-    datasets: [
-      { label: '예상 연 배당 (만원)', data: divData, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.12)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y' },
-      { label: '배당수익률 (%)', data: divYieldData, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y1' }
-    ]
-  },
-  options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ...darkScaleOpts, position: 'left', title: { display: true, text: '만원', color: '#9ca3af' } }, y1: { ...darkScaleOpts, position: 'right', title: { display: true, text: '%', color: '#9ca3af' }, grid: { drawOnChartArea: false } } } }
-});
+new Chart(document.getElementById('divTrendChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'예상 연 배당 (만원)', data:divData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
+  { label:'배당수익률 (%)', data:divYieldData, borderColor:'#2ff801', backgroundColor:'rgba(47,248,1,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'만원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
-new Chart(document.getElementById('macroChart'), {
-  type: 'line',
-  data: {
-    labels: dates,
-    datasets: [
-      { label: 'VIX', data: vixData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.10)', fill: true, tension: 0.3, pointRadius: 1, yAxisID: 'y' },
-      { label: '30Y Treasury (%)', data: yieldData, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, tension: 0.3, pointRadius: 1, yAxisID: 'y' },
-      { label: 'USD/KRW', data: fxData, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)', fill: true, tension: 0.3, pointRadius: 1, yAxisID: 'y1' }
-    ]
-  },
-  options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ...darkScaleOpts, position: 'left', title: { display: true, text: 'VIX / Yield', color: '#9ca3af' } }, y1: { ...darkScaleOpts, position: 'right', title: { display: true, text: 'USD/KRW', color: '#9ca3af' }, grid: { drawOnChartArea: false } } } }
-});
+new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'VIX', data:vixData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,108,0.08)', fill:true, tension:0.3, pointRadius:1, yAxisID:'y' },
+  { label:'30Y Treasury (%)', data:yieldData, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, tension:0.3, pointRadius:1, yAxisID:'y' },
+  { label:'USD/KRW', data:fxData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.05)', fill:true, tension:0.3, pointRadius:1, yAxisID:'y1' }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'VIX / Yield', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'USD/KRW', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 {% endif %}
 
 const catData = {{ category_json }};
-new Chart(document.getElementById('categoryPie'), {
-  type: 'doughnut',
-  data: { labels: catData.map(d => d.name), datasets: [{ data: catData.map(d => d.value), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#6b7280', '#eab308', '#8b5cf6', '#14b8a6'] }] },
-  options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#e5e7eb' } }, tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed.toFixed(1) + '%'; } } } } }
-});
+new Chart(document.getElementById('categoryPie'), { type:'doughnut', data:{ labels:catData.map(d=>d.name), datasets:[{ data:catData.map(d=>d.value), backgroundColor:['#2ff801','#6dddff','#ff7166','#ff716c','#6d758c','#fbbf24','#a78bfa','#22d3ee'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ return c.label+': '+c.parsed.toFixed(1)+'%'; }}}}}});
 
 const tickerData = {{ ticker_json }};
-new Chart(document.getElementById('tickerPie'), {
-  type: 'doughnut',
-  data: {
-    labels: tickerData.map(d => { var a = d.amount_man; if (a >= 10000) return d.name + ' \u20a9' + (a/10000).toFixed(1) + '\uc5b5'; return d.name + ' \u20a9' + a.toLocaleString() + '\ub9cc'; }),
-    datasets: [{ data: tickerData.map(d => d.value), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#6b7280', '#34d399', '#f59e0b', '#8b5cf6', '#14b8a6', '#475569', '#dc2626', '#94a3b8'] }]
-  },
-  options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#e5e7eb' } }, tooltip: { callbacks: { label: function(ctx) { var d = tickerData[ctx.dataIndex]; var a = d.amount_man; var s = a >= 10000 ? '\u20a9' + (a/10000).toFixed(1) + '\uc5b5' : '\u20a9' + a.toLocaleString() + '\ub9cc'; return d.name + ': ' + ctx.parsed.toFixed(1) + '% (' + s + ')'; } } } } }
-});
+new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>{ var a=d.amount_man; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:['#2ff801','#6dddff','#ff716c','#6d758c','#34d399','#fbbf24','#a78bfa','#22d3ee','#475569','#e51a22','#94a3b8'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
 </script>
 </body>
 </html>

@@ -1,289 +1,216 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html class="dark" lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Backtest Dashboard — {{ date }}</title>
-<style>
-  :root {
-    --bg-body: #0a0e17; --bg-sidebar: #111827; --bg-card: #1a1f2e; --bg-card-alt: #151a28;
-    --bg-hover: #1e293b; --border: #1e2636; --border-light: #2a3348;
-    --text-primary: #e5e7eb; --text-secondary: #9ca3af; --text-muted: #6b7280;
-    --accent-green: #10b981; --accent-red: #ef4444; --accent-orange: #f59e0b;
-    --accent-blue: #3b82f6; --accent-purple: #8b5cf6; --accent-teal: #14b8a6;
-    --sidebar-w: 220px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; background: var(--bg-body); color: var(--text-primary); font-size: 14px; }
-  .sidebar { width: var(--sidebar-w); background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
-  .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
-  .sidebar-brand h2 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 1px; margin: 0; border: none; padding: 0; }
-  .sidebar-brand .brand-sub { font-size: 11px; color: var(--accent-green); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px; }
-  .sidebar-nav { flex: 1; padding: 16px 0; }
-  .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.15s; }
-  .sidebar-nav a:hover { background: var(--bg-hover); color: var(--text-primary); }
-  .sidebar-nav a.active { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); border-left: 3px solid var(--accent-green); }
-  .sidebar-nav .nav-icon { font-size: 18px; width: 24px; text-align: center; }
-  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); line-height: 1.5; }
-  .main { margin-left: var(--sidebar-w); padding: 24px 28px; }
-  .top-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-  .top-header h1 { font-size: 22px; font-weight: 700; color: #fff; margin: 0; }
-  .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
-  .section-header { display: flex; align-items: center; gap: 10px; margin: 28px 0 16px; }
-  .section-header .sh-bar { width: 4px; height: 20px; border-radius: 2px; }
-  .section-header h2 { font-size: 16px; font-weight: 700; color: #fff; border: none; margin: 0; padding: 0; }
-  .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-  .ov-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; text-align: center; }
-  .ov-card .num { font-size: 28px; font-weight: 800; line-height: 1; }
-  .ov-card .lbl { font-size: 11px; color: var(--text-muted); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
-  .ov-card .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .bt-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-  .bt-table thead { background: var(--bg-card-alt); }
-  .bt-table th { padding: 10px 10px; text-align: center; font-weight: 600; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid var(--border); background: transparent; }
-  .bt-table th:first-child { text-align: left; }
-  .bt-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text-primary); }
-  .bt-table td:first-child { text-align: left; font-weight: 600; }
-  .bt-table tbody tr:hover td { background: var(--bg-hover); }
-  .bt-table tr:last-child td { border-bottom: none; }
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; letter-spacing: 0.3px; }
-  .badge-BUY { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
-  .badge-exit { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
-  .badge-HOLD { background: rgba(107,114,128,0.15); color: var(--text-muted); border: 1px solid rgba(107,114,128,0.3); }
-  .badge-src { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); font-size: 10px; }
-  .source-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px; }
-  .src-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; border-left: 4px solid var(--accent-blue); }
-  .src-card .src-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #fff; }
-  .src-card .src-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: var(--text-secondary); }
-  .cond-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-  .cond-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 12px; min-width: 130px; }
-  .cond-card .cond-name { font-weight: 600; color: var(--text-primary); }
-  .cond-card .cond-wr { font-weight: 700; }
-  .rec-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-  .rec-card { border-radius: 8px; padding: 10px 14px; font-size: 12px; min-width: 200px; max-width: 320px; background: var(--bg-card); border: 1px solid var(--border); }
-  .rec-review { border-left: 3px solid var(--accent-orange); }
-  .rec-good { border-left: 3px solid var(--accent-green); }
-  .rec-neutral { border-left: 3px solid var(--text-muted); }
-  .rec-card .rec-param { font-weight: 600; color: #fff; }
-  .rec-card .rec-reason { color: var(--text-secondary); margin-top: 4px; }
-  .rec-card .rec-conf { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
-  .records-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-  .records-controls select { padding: 6px 10px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 12px; background: var(--bg-card); color: var(--text-primary); }
-  .pending-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-  .pending-card { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; border-left: 3px solid var(--accent-orange); min-width: 180px; color: var(--text-secondary); }
-  .up { color: var(--accent-green); } .dn { color: var(--accent-red); }
-  .report-footer { font-size: 11px; color: var(--text-muted); margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); line-height: 1.6; }
-  .mobile-menu-btn { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text-primary); font-size: 20px; cursor: pointer; }
-  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
-  @media (max-width: 768px) {
-    .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
-    .sidebar.open { transform: translateX(0); }
-    .sidebar-overlay.open { display: block; }
-    .mobile-menu-btn { display: block; }
-    .main { margin-left: 0; padding: 16px; padding-top: 56px; }
-    .overview-grid { grid-template-columns: repeat(2, 1fr); }
-    .top-header { flex-direction: column; align-items: flex-start; gap: 6px; }
-  }
-</style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","on-primary-container":"#004352","secondary":"#2ff801","secondary-container":"#106e00","on-secondary":"#0b5800","tertiary":"#ff7166","tertiary-container":"#f5282b","on-tertiary":"#4a0003","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c","error-container":"#9f0519"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+</script>
 </head>
-<body>
-<button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand"><h2>TRADING</h2><div class="brand-sub">COMMAND CENTER</div></div>
-  <nav class="sidebar-nav">
-    <a href="{{ nav_portfolio }}"><span class="nav-icon">&#9638;</span> Dashboard</a>
-    <a href="{{ nav_scanner }}"><span class="nav-icon">&#9678;</span> Scanner</a>
-    <a href="{{ nav_backtest }}" class="active"><span class="nav-icon">&#8634;</span> Backtest</a>
-    <a href="{{ nav_trend }}"><span class="nav-icon">&#8599;</span> Trend</a>
-    <a href="archive.html"><span class="nav-icon">&#9783;</span> Archive</a>
-  </nav>
-  <div class="sidebar-footer">{{ date_ko }}</div>
-</aside>
+<body class="bg-surface text-on-surface font-body">
 
-<div class="main">
-  <div class="top-header"><h1>Backtest Dashboard</h1></div>
-  <p class="subtitle">
-    {{ date_ko }} &nbsp;|&nbsp;
-    {% if period %}{{ period.from }} ~ {{ period.to }}{% endif %} &nbsp;|&nbsp;
-    {{ total_records }}건 분석
-    {% if data_status == 'accumulating' %}
-    &nbsp;|&nbsp; <span style="color:var(--accent-orange);">데이터 축적 중 ({{ total_records }}/20건)</span>
+<!-- Sidebar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings:'FILL' 1;">dashboard_customize</span></div>
+    <div><h2 class="text-lg font-black text-primary leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-on-surface/40 mt-1">Precision Curator</p></div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_portfolio }}"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_scanner }}"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="{{ nav_backtest }}"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_trend }}"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
+  </div>
+  <div class="pt-6 mt-6 border-t border-outline-variant/20 px-4 text-[10px] text-outline leading-relaxed">{{ date_ko }}</div>
+</nav>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<main class="md:ml-64 min-h-screen">
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Backtest Dashboard</span>
+    </div>
+    <div class="text-xs text-outline font-label">{{ total_records }} records analyzed</div>
+  </header>
+
+  <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
+    <p class="text-sm text-on-surface-variant font-label">
+      {{ date_ko }} &nbsp;|&nbsp; {% if period %}{{ period.from }} ~ {{ period.to }}{% endif %}
+      {% if data_status == 'accumulating' %} &nbsp;|&nbsp; <span class="text-tertiary">데이터 축적 중 ({{ total_records }}/20건)</span>{% endif %}
+    </p>
+
+    <!-- Overview -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-3xl font-headline font-bold text-primary">{{ total_records }}</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">평가 완료</div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-3xl font-headline font-bold {{ 'text-secondary' if overall_buy_wr and overall_buy_wr >= 0.5 else 'text-tertiary' }}">{% if overall_buy_wr is not none %}{{ (overall_buy_wr * 100)|round(0)|int }}%{% else %}—{% endif %}</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">BUY 승률 (5d)</div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-3xl font-headline font-bold text-primary">{% if overall_reach_rate is not none %}{{ (overall_reach_rate * 100)|round(0)|int }}%{% else %}—{% endif %}</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">도달률 (10d)</div>
+        <div class="text-[10px] text-outline mt-1">+{{ win_threshold }}% target</div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-3xl font-headline font-bold {{ 'text-secondary' if alpha and alpha >= 0 else 'text-tertiary' }}">{% if alpha is not none %}{{ '+' if alpha >= 0 else '' }}{{ alpha }}%{% else %}—{% endif %}</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">Alpha vs SPY</div>
+      </div>
+    </div>
+
+    <!-- Signal Performance -->
+    {% if by_signal %}
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">bar_chart</span> 시그널별 성과</h2>
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+      <table class="w-full text-left border-collapse">
+        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+          <th class="px-5 py-3">시그널</th><th class="px-5 py-3 text-center">샘플</th><th class="px-5 py-3 text-center">3일</th><th class="px-5 py-3 text-center">5일</th><th class="px-5 py-3 text-center">10일</th><th class="px-5 py-3 text-center">도달률</th><th class="px-5 py-3 text-center">평균(5d)</th><th class="px-5 py-3">Best / Worst</th>
+        </tr></thead>
+        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+        {% for sig_name, s in by_signal.items() %}
+        <tr class="hover:bg-surface-container-high/50">
+          <td class="px-5 py-3"><span class="px-2 py-1 text-xs rounded font-bold {% if 'BUY' in sig_name %}bg-secondary/10 text-secondary border border-secondary/20{% elif sig_name in ['TAKE_PROFIT_1','TAKE_PROFIT_2','TOP_SIGNAL'] %}bg-tertiary/10 text-tertiary border border-tertiary/20{% else %}bg-surface-bright text-on-surface-variant border border-outline-variant/20{% endif %}">{{ sig_name }}</span></td>
+          <td class="px-5 py-3 text-center">{{ s.count }}</td>
+          <td class="px-5 py-3 text-center">{% if s.win_rate_3d is defined %}<span class="{{ 'text-secondary' if s.win_rate_3d >= 0.5 else 'text-tertiary' }} font-bold">{{ (s.win_rate_3d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-center">{% if s.win_rate_5d is defined %}<span class="{{ 'text-secondary' if s.win_rate_5d >= 0.5 else 'text-tertiary' }} font-bold">{{ (s.win_rate_5d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-center">{% if s.win_rate_10d is defined %}<span class="{{ 'text-secondary' if s.win_rate_10d >= 0.5 else 'text-tertiary' }} font-bold">{{ (s.win_rate_10d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-center">{% if s.reach_rate_10d is defined %}<span class="text-primary font-bold">{{ (s.reach_rate_10d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-center">{% if s.avg_return_5d is defined %}<span class="{{ 'text-secondary' if s.avg_return_5d >= 0 else 'text-tertiary' }}">{{ s.avg_return_5d }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-[11px]">{% if s.best is defined %}<span class="text-secondary">&#9650; {{ s.best.ticker }} +{{ s.best.return|round(1) }}%</span>{% endif %}{% if s.worst is defined %}<br><span class="text-tertiary">&#9660; {{ s.worst.ticker }} {{ s.worst.return|round(1) }}%</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% endif %}
-  </p>
 
-  <!-- Overview -->
-  <div class="overview-grid">
-    <div class="ov-card"><div class="num" style="color:var(--accent-purple);">{{ total_records }}</div><div class="lbl">평가 완료</div></div>
-    <div class="ov-card"><div class="num {{ 'up' if overall_buy_wr and overall_buy_wr >= 0.5 else 'dn' }}">{% if overall_buy_wr is not none %}{{ (overall_buy_wr * 100)|round(0)|int }}%{% else %}—{% endif %}</div><div class="lbl">BUY 승률 (5d)</div></div>
-    <div class="ov-card"><div class="num" style="color:var(--accent-blue);">{% if overall_reach_rate is not none %}{{ (overall_reach_rate * 100)|round(0)|int }}%{% else %}—{% endif %}</div><div class="lbl">도달률 (10d)</div><div class="sub">+{{ win_threshold }}% 도달</div></div>
-    <div class="ov-card"><div class="num" style="color:{% if alpha and alpha >= 0 %}var(--accent-green){% else %}var(--accent-red){% endif %};">{% if alpha is not none %}{{ '+' if alpha >= 0 else '' }}{{ alpha }}%{% else %}—{% endif %}</div><div class="lbl">Alpha vs SPY</div><div class="sub">BUY 5d 기준</div></div>
-  </div>
-
-  <!-- Signal Performance -->
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-purple);"></div><h2>시그널별 성과</h2></div>
-  {% if by_signal %}
-  <table class="bt-table">
-    <thead><tr><th>시그널</th><th>샘플</th><th>3일 승률</th><th>5일 승률</th><th>10일 승률</th><th>도달률</th><th>평균수익(5d)</th><th>Best / Worst</th></tr></thead>
-    <tbody>
-    {% for sig_name, s in by_signal.items() %}
-    <tr>
-      <td><span class="badge badge-{{ 'BUY' if 'BUY' in sig_name else ('exit' if sig_name in ['TAKE_PROFIT_1','TAKE_PROFIT_2','TOP_SIGNAL'] else 'HOLD') }}">{{ sig_name }}</span></td>
-      <td>{{ s.count }}</td>
-      <td>{% if s.win_rate_3d is defined %}<span class="{{ 'up' if s.win_rate_3d >= 0.5 else 'dn' }}">{{ (s.win_rate_3d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
-      <td>{% if s.win_rate_5d is defined %}<span class="{{ 'up' if s.win_rate_5d >= 0.5 else 'dn' }}">{{ (s.win_rate_5d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
-      <td>{% if s.win_rate_10d is defined %}<span class="{{ 'up' if s.win_rate_10d >= 0.5 else 'dn' }}">{{ (s.win_rate_10d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
-      <td>{% if s.reach_rate_10d is defined %}<span style="color:var(--accent-blue);font-weight:700;">{{ (s.reach_rate_10d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
-      <td>{% if s.avg_return_5d is defined %}<span class="{{ 'up' if s.avg_return_5d >= 0 else 'dn' }}">{{ s.avg_return_5d }}%</span>{% else %}—{% endif %}</td>
-      <td style="font-size:11px;text-align:left;">{% if s.best is defined %}<span class="up">&#9650; {{ s.best.ticker }} {{ s.best.date[-5:] }} +{{ s.best.return|round(1) }}%</span>{% endif %}{% if s.worst is defined %}<br><span class="dn">&#9660; {{ s.worst.ticker }} {{ s.worst.date[-5:] }} {{ s.worst.return|round(1) }}%</span>{% endif %}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}<p style="color:var(--text-muted);font-size:13px;">평가된 시그널이 없습니다.</p>{% endif %}
-
-  <!-- Benchmark -->
-  {% if benchmark %}
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-blue);"></div><h2>SPY 벤치마크 비교</h2></div>
-  <table class="bt-table" style="max-width:600px;">
-    <thead><tr><th>기간</th><th>시그널 평균</th><th>SPY 평균</th><th>Alpha</th><th>샘플</th></tr></thead>
-    <tbody>
-    {% for key, b in benchmark.items() %}
-    <tr>
-      <td style="font-weight:600;">{{ key }}</td>
-      <td><span class="{{ 'up' if b.avg_signal >= 0 else 'dn' }}">{{ b.avg_signal }}%</span></td>
-      <td><span class="{{ 'up' if b.avg_spy >= 0 else 'dn' }}">{{ b.avg_spy }}%</span></td>
-      <td><span class="{{ 'up' if b.alpha >= 0 else 'dn' }}" style="font-weight:700;">{{ '+' if b.alpha >= 0 else '' }}{{ b.alpha }}%</span></td>
-      <td>{{ b.samples }}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% endif %}
-
-  <!-- Source Breakdown -->
-  {% if by_source %}
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-teal);"></div><h2>소스별 성과</h2></div>
-  <div class="source-grid">
-    {% for src, s in by_source.items() %}
-    <div class="src-card" style="border-left-color:{{ '#6b7280' if src == 'portfolio' else ('var(--accent-green)' if src == 'sp100' else ('var(--accent-blue)' if src == 'etf' else 'var(--accent-red)')) }};">
-      <div class="src-title">{{ src|upper }}</div>
-      <div class="src-row"><span>전체</span><span>{{ s.count }}건</span></div>
-      <div class="src-row"><span>BUY</span><span>{{ s.buy_count }}건</span></div>
-      <div class="src-row"><span>EXIT</span><span>{{ s.exit_count }}건</span></div>
-      {% if s.buy_win_rate_5d is defined %}
-      <div class="src-row"><span>BUY 승률(5d)</span><span class="{{ 'up' if s.buy_win_rate_5d >= 0.5 else 'dn' }}" style="font-weight:700;">{{ (s.buy_win_rate_5d * 100)|round(0)|int }}%</span></div>
-      {% endif %}
-      {% if s.buy_avg_return_5d is defined %}
-      <div class="src-row"><span>BUY 평균수익(5d)</span><span class="{{ 'up' if s.buy_avg_return_5d >= 0 else 'dn' }}">{{ s.buy_avg_return_5d }}%</span></div>
-      {% endif %}
+    <!-- Benchmark -->
+    {% if benchmark %}
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">compare_arrows</span> SPY 벤치마크</h2>
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low max-w-2xl">
+      <table class="w-full text-left border-collapse">
+        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+          <th class="px-5 py-3">기간</th><th class="px-5 py-3 text-center">시그널</th><th class="px-5 py-3 text-center">SPY</th><th class="px-5 py-3 text-center">Alpha</th><th class="px-5 py-3 text-center">샘플</th>
+        </tr></thead>
+        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+        {% for key, b in benchmark.items() %}
+        <tr class="hover:bg-surface-container-high/50"><td class="px-5 py-3 font-bold">{{ key }}</td><td class="px-5 py-3 text-center {{ 'text-secondary' if b.avg_signal >= 0 else 'text-tertiary' }}">{{ b.avg_signal }}%</td><td class="px-5 py-3 text-center {{ 'text-secondary' if b.avg_spy >= 0 else 'text-tertiary' }}">{{ b.avg_spy }}%</td><td class="px-5 py-3 text-center font-bold {{ 'text-secondary' if b.alpha >= 0 else 'text-tertiary' }}">{{ '+' if b.alpha >= 0 else '' }}{{ b.alpha }}%</td><td class="px-5 py-3 text-center">{{ b.samples }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
     </div>
-    {% endfor %}
-  </div>
-  {% endif %}
+    {% endif %}
 
-  <!-- Condition Analysis -->
-  {% if by_condition %}
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-orange);"></div><h2>조건별 BUY 승률 (5일)</h2></div>
-  <div class="cond-grid">
-    {% for cond_name, c in by_condition.items() %}
-    <div class="cond-card">
-      <div class="cond-name">{{ cond_name }}</div>
-      <div><span class="cond-wr {{ 'up' if c.win_rate_5d >= 0.5 else 'dn' }}">{{ (c.win_rate_5d * 100)|round(0)|int }}%</span> <span style="color:var(--text-muted);margin-left:4px;">({{ c.count }}건)</span></div>
-      <div style="color:var(--text-secondary);">avg {{ c.avg_return_5d }}%</div>
+    <!-- Source Breakdown -->
+    {% if by_source %}
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">category</span> 소스별 성과</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {% for src, s in by_source.items() %}
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-outline' if src == 'portfolio' else ('border-l-secondary' if src == 'sp100' else ('border-l-primary' if src == 'etf' else 'border-l-tertiary')) }}">
+        <div class="font-headline font-bold text-base mb-3 text-on-surface">{{ src|upper }}</div>
+        <div class="space-y-1 text-xs font-label text-on-surface-variant">
+          <div class="flex justify-between"><span>전체</span><span class="text-on-surface">{{ s.count }}건</span></div>
+          <div class="flex justify-between"><span>BUY</span><span class="text-on-surface">{{ s.buy_count }}건</span></div>
+          <div class="flex justify-between"><span>EXIT</span><span class="text-on-surface">{{ s.exit_count }}건</span></div>
+          {% if s.buy_win_rate_5d is defined %}<div class="flex justify-between"><span>승률(5d)</span><span class="font-bold {{ 'text-secondary' if s.buy_win_rate_5d >= 0.5 else 'text-tertiary' }}">{{ (s.buy_win_rate_5d * 100)|round(0)|int }}%</span></div>{% endif %}
+          {% if s.buy_avg_return_5d is defined %}<div class="flex justify-between"><span>평균(5d)</span><span class="{{ 'text-secondary' if s.buy_avg_return_5d >= 0 else 'text-tertiary' }}">{{ s.buy_avg_return_5d }}%</span></div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
-  {% endif %}
+    {% endif %}
 
-  <!-- Individual Records -->
-  {% if records %}
-  <div class="section-header"><div class="sh-bar" style="background:var(--text-muted);"></div><h2>개별 시그널 기록</h2></div>
-  <div class="records-controls">
-    <select id="filterSignal" onchange="filterRecords()">
-      <option value="">전체 시그널</option>
-      <option value="1st_BUY">1st_BUY</option><option value="2nd_BUY">2nd_BUY</option><option value="3rd_BUY">3rd_BUY</option>
-      <option value="TAKE_PROFIT_1">TAKE_PROFIT_1</option><option value="TAKE_PROFIT_2">TAKE_PROFIT_2</option><option value="TOP_SIGNAL">TOP_SIGNAL</option>
-    </select>
-    <select id="filterSource" onchange="filterRecords()">
-      <option value="">전체 소스</option>
-      <option value="portfolio">Portfolio</option><option value="sp100">SP100</option><option value="etf">ETF</option><option value="kospi">KOSPI</option>
-    </select>
-  </div>
-  <table class="bt-table" id="recordsTable">
-    <thead><tr>
-      <th style="cursor:pointer;" onclick="sortTable(0)">날짜 &#9650;&#9660;</th>
-      <th>소스</th><th>종목</th><th>시그널</th><th>진입가</th><th>RSI</th><th>3d</th><th>5d</th><th>10d</th><th>Max&#8593;</th><th>Max&#8595;</th>
-    </tr></thead>
-    <tbody>
-    {% for r in records %}
-    <tr data-signal="{{ r.signal }}" data-source="{{ r.source|default('portfolio') }}">
-      <td style="font-weight:400;">{{ r.date }}</td>
-      <td><span class="badge badge-src">{{ r.source|default('portfolio')|upper }}</span></td>
-      <td style="font-weight:700;">{{ r.ticker }}</td>
-      <td><span class="badge badge-{{ 'BUY' if 'BUY' in r.signal else 'exit' }}">{{ r.signal }}</span></td>
-      <td>{% if r.entry_price %}{{ r.entry_price|round(2) }}{% else %}—{% endif %}</td>
-      <td>{% if r.context and r.context.rsi %}{{ r.context.rsi|round(1) }}{% else %}—{% endif %}</td>
-      {% set o = r.outcomes or {} %}
-      <td>{% if o.get('3d') and o['3d'].return_pct is defined %}<span class="{{ 'up' if o['3d'].return_pct >= 0 else 'dn' }}">{{ o['3d'].return_pct }}%</span>{% else %}—{% endif %}</td>
-      <td>{% if o.get('5d') and o['5d'].return_pct is defined %}<span class="{{ 'up' if o['5d'].return_pct >= 0 else 'dn' }}">{{ o['5d'].return_pct }}%</span>{% else %}—{% endif %}</td>
-      <td>{% if o.get('10d') and o['10d'].return_pct is defined %}<span class="{{ 'up' if o['10d'].return_pct >= 0 else 'dn' }}">{{ o['10d'].return_pct }}%</span>{% else %}—{% endif %}</td>
-      <td>{% if o.max_gain_10d is defined and o.max_gain_10d is not none %}<span class="up">+{{ o.max_gain_10d }}%</span>{% else %}—{% endif %}</td>
-      <td>{% if o.max_loss_10d is defined and o.max_loss_10d is not none %}<span class="{{ 'up' if o.max_loss_10d >= 0 else 'dn' }}">{{ o.max_loss_10d }}%</span>{% else %}—{% endif %}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% endif %}
-
-  <!-- Recommendations -->
-  {% if recommendations %}
-  <div class="section-header"><div class="sh-bar" style="background:var(--accent-green);"></div><h2>파라미터 추천</h2></div>
-  <div class="rec-grid">
-    {% for rec in recommendations %}
-    <div class="rec-card rec-{{ 'review' if rec.status == 'review' else ('good' if rec.status == 'good' else 'neutral') }}">
-      <div class="rec-param">{{ rec.param }}</div>
-      <div class="rec-reason">{{ rec.reason }}</div>
-      {% if rec.confidence is defined and rec.confidence != 'none' %}
-      <div class="rec-conf">신뢰도: {{ rec.confidence }} ({{ rec.sample_size }}건)</div>
-      {% endif %}
+    <!-- Condition Analysis -->
+    {% if by_condition %}
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">science</span> 조건별 BUY 승률 (5일)</h2>
+    <div class="flex flex-wrap gap-3">
+      {% for cond_name, c in by_condition.items() %}
+      <div class="rounded-xl bg-surface-container p-4 border border-outline-variant/10 min-w-[140px]">
+        <div class="font-bold text-sm text-on-surface mb-1">{{ cond_name }}</div>
+        <span class="font-bold {{ 'text-secondary' if c.win_rate_5d >= 0.5 else 'text-tertiary' }}">{{ (c.win_rate_5d * 100)|round(0)|int }}%</span>
+        <span class="text-outline text-xs ml-1">({{ c.count }})</span>
+        <div class="text-on-surface-variant text-xs">avg {{ c.avg_return_5d }}%</div>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
-  {% endif %}
+    {% endif %}
 
-  <div class="report-footer">
-    BUY 승리 기준: N거래일 내 +{{ win_threshold }}% 이상 |
-    EXIT 승리 기준: 시그널 후 {{ max_eval_days }}거래일 내 max gain &#8804; +{{ win_threshold }}% |
-    도달률: {{ max_eval_days }}거래일 내 +{{ win_threshold }}% 도달 |
-    Alpha: BUY 평균수익 - SPY 동기간 평균수익
+    <!-- Records -->
+    {% if records %}
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">list_alt</span> 개별 시그널 기록</h2>
+    <div class="flex gap-3 mb-4">
+      <select id="filterSignal" onchange="filterRecords()" class="bg-surface-container border border-outline-variant/20 rounded-lg px-3 py-2 text-xs font-label text-on-surface">
+        <option value="">전체 시그널</option><option value="1st_BUY">1st_BUY</option><option value="2nd_BUY">2nd_BUY</option><option value="3rd_BUY">3rd_BUY</option><option value="TAKE_PROFIT_1">TP1</option><option value="TAKE_PROFIT_2">TP2</option><option value="TOP_SIGNAL">TOP</option>
+      </select>
+      <select id="filterSource" onchange="filterRecords()" class="bg-surface-container border border-outline-variant/20 rounded-lg px-3 py-2 text-xs font-label text-on-surface">
+        <option value="">전체 소스</option><option value="portfolio">Portfolio</option><option value="sp100">SP100</option><option value="etf">ETF</option><option value="kospi">KOSPI</option>
+      </select>
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+      <table class="w-full text-left border-collapse" id="recordsTable">
+        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+          <th class="px-5 py-3 cursor-pointer" onclick="sortTable(0)">날짜 &#9650;&#9660;</th><th class="px-5 py-3">소스</th><th class="px-5 py-3">종목</th><th class="px-5 py-3">시그널</th><th class="px-5 py-3 text-right">진입가</th><th class="px-5 py-3 text-right">RSI</th><th class="px-5 py-3 text-right">3d</th><th class="px-5 py-3 text-right">5d</th><th class="px-5 py-3 text-right">10d</th><th class="px-5 py-3 text-right">Max&#8593;</th><th class="px-5 py-3 text-right">Max&#8595;</th>
+        </tr></thead>
+        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+        {% for r in records %}
+        <tr data-signal="{{ r.signal }}" data-source="{{ r.source|default('portfolio') }}" class="hover:bg-surface-container-high/50">
+          <td class="px-5 py-3">{{ r.date }}</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded border border-primary/20 font-bold">{{ r.source|default('portfolio')|upper }}</span></td>
+          <td class="px-5 py-3 font-bold">{{ r.ticker }}</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 text-[10px] rounded font-bold {% if 'BUY' in r.signal %}bg-secondary/10 text-secondary border border-secondary/20{% else %}bg-tertiary/10 text-tertiary border border-tertiary/20{% endif %}">{{ r.signal }}</span></td>
+          <td class="px-5 py-3 text-right">{% if r.entry_price %}{{ r.entry_price|round(2) }}{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-right">{% if r.context and r.context.rsi %}{{ r.context.rsi|round(1) }}{% else %}—{% endif %}</td>
+          {% set o = r.outcomes or {} %}
+          <td class="px-5 py-3 text-right">{% if o.get('3d') and o['3d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['3d'].return_pct >= 0 else 'text-tertiary' }}">{{ o['3d'].return_pct }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-right">{% if o.get('5d') and o['5d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['5d'].return_pct >= 0 else 'text-tertiary' }}">{{ o['5d'].return_pct }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-right">{% if o.get('10d') and o['10d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['10d'].return_pct >= 0 else 'text-tertiary' }}">{{ o['10d'].return_pct }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-right">{% if o.max_gain_10d is defined and o.max_gain_10d is not none %}<span class="text-secondary">+{{ o.max_gain_10d }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-right">{% if o.max_loss_10d is defined and o.max_loss_10d is not none %}<span class="{{ 'text-secondary' if o.max_loss_10d >= 0 else 'text-tertiary' }}">{{ o.max_loss_10d }}%</span>{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if recommendations %}
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">lightbulb</span> 파라미터 추천</h2>
+    <div class="flex flex-wrap gap-3">
+      {% for rec in recommendations %}
+      <div class="rounded-xl bg-surface-container p-4 border border-outline-variant/10 min-w-[200px] max-w-[320px] border-l-4 {{ 'border-l-tertiary' if rec.status == 'review' else ('border-l-secondary' if rec.status == 'good' else 'border-l-outline') }}">
+        <div class="font-bold text-sm text-on-surface">{{ rec.param }}</div>
+        <div class="text-xs text-on-surface-variant mt-1">{{ rec.reason }}</div>
+        {% if rec.confidence is defined and rec.confidence != 'none' %}<div class="text-[10px] text-outline mt-1">신뢰도: {{ rec.confidence }} ({{ rec.sample_size }}건)</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
+      BUY 승리: N거래일 +{{ win_threshold }}% | EXIT 승리: {{ max_eval_days }}거래일 max gain &#8804; +{{ win_threshold }}% | Alpha: BUY avg - SPY avg
+    </div>
   </div>
-</div>
+</main>
+
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="{{ nav_portfolio }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
+  <a href="{{ nav_scanner }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="{{ nav_trend }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="{{ nav_backtest }}" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">history</span><span class="text-[10px] font-label">Backtest</span></a>
+</nav>
 
 <script>
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }
-function filterRecords() {
-  var sig = document.getElementById('filterSignal').value;
-  var src = document.getElementById('filterSource').value;
-  var rows = document.querySelectorAll('#recordsTable tbody tr');
-  rows.forEach(function(row) {
-    var matchSig = !sig || row.getAttribute('data-signal') === sig;
-    var matchSrc = !src || row.getAttribute('data-source') === src;
-    row.style.display = (matchSig && matchSrc) ? '' : 'none';
-  });
-}
-function sortTable(col) {
-  var table = document.getElementById('recordsTable');
-  var tbody = table.querySelector('tbody');
-  var rows = Array.from(tbody.querySelectorAll('tr'));
-  var asc = table.getAttribute('data-sort-asc') !== 'true';
-  table.setAttribute('data-sort-asc', asc);
-  rows.sort(function(a, b) {
-    var va = a.cells[col].textContent.trim();
-    var vb = b.cells[col].textContent.trim();
-    return asc ? va.localeCompare(vb) : vb.localeCompare(va);
-  });
-  rows.forEach(function(row) { tbody.appendChild(row); });
-}
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
+function filterRecords(){var sig=document.getElementById('filterSignal').value,src=document.getElementById('filterSource').value;document.querySelectorAll('#recordsTable tbody tr').forEach(function(r){r.style.display=(!sig||r.dataset.signal===sig)&&(!src||r.dataset.source===src)?'':'none';});}
+function sortTable(col){var t=document.getElementById('recordsTable'),b=t.querySelector('tbody'),rows=Array.from(b.querySelectorAll('tr')),asc=t.dataset.sortAsc!=='true';t.dataset.sortAsc=asc;rows.sort(function(a,c){return asc?a.cells[col].textContent.trim().localeCompare(c.cells[col].textContent.trim()):c.cells[col].textContent.trim().localeCompare(a.cells[col].textContent.trim());});rows.forEach(function(r){b.appendChild(r);});}
 </script>
 </body>
 </html>

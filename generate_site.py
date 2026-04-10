@@ -92,62 +92,53 @@ def _generate_archive(report_files):
             display = dt.strftime("%Y년 %m월 %d일 (%a)")
         except ValueError:
             display = date_str
-        rows.append(f'      <tr><td><a href="reports/{name}">{display}</a></td></tr>')
+        rows.append(f'            <tr class="hover:bg-surface-container-high/50 transition-colors"><td class="px-6 py-4"><a href="reports/{name}" class="text-primary hover:underline font-medium">{display}</a></td></tr>')
 
     html = f"""<!DOCTYPE html>
-<html lang="ko">
+<html class="dark" lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Archive — Trading Assistant</title>
-  <style>
-    :root {{ --bg-body:#0a0e17; --bg-sidebar:#111827; --bg-card:#1a1f2e; --border:#1e2636; --text-primary:#e5e7eb; --text-secondary:#9ca3af; --text-muted:#6b7280; --accent-green:#10b981; --accent-blue:#3b82f6; --bg-hover:#1e293b; --sidebar-w:220px; }}
-    * {{ box-sizing:border-box; margin:0; padding:0; }}
-    body {{ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif; background:var(--bg-body); color:var(--text-primary); font-size:14px; }}
-    .sidebar {{ width:var(--sidebar-w); background:var(--bg-sidebar); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:100; }}
-    .sidebar-brand {{ padding:24px 20px 20px; border-bottom:1px solid var(--border); }}
-    .sidebar-brand h2 {{ font-size:16px; font-weight:800; color:#fff; letter-spacing:1px; }}
-    .sidebar-brand .brand-sub {{ font-size:11px; color:var(--accent-green); font-weight:600; letter-spacing:0.5px; margin-top:2px; }}
-    .sidebar-nav {{ flex:1; padding:16px 0; }}
-    .sidebar-nav a {{ display:flex; align-items:center; gap:12px; padding:12px 20px; color:var(--text-secondary); text-decoration:none; font-size:14px; font-weight:500; transition:all 0.15s; }}
-    .sidebar-nav a:hover {{ background:var(--bg-hover); color:var(--text-primary); }}
-    .sidebar-nav a.active {{ background:rgba(16,185,129,0.1); color:var(--accent-green); border-left:3px solid var(--accent-green); }}
-    .sidebar-nav .nav-icon {{ font-size:18px; width:24px; text-align:center; }}
-    .sidebar-footer {{ padding:16px 20px; border-top:1px solid var(--border); font-size:11px; color:var(--text-muted); }}
-    .main {{ margin-left:var(--sidebar-w); padding:24px 28px; max-width:800px; }}
-    h1 {{ font-size:22px; font-weight:700; color:#fff; margin-bottom:20px; }}
-    .archive-tbl {{ width:100%; border-collapse:collapse; background:var(--bg-card); border-radius:12px; overflow:hidden; border:1px solid var(--border); }}
-    .archive-tbl td {{ padding:12px 16px; border-bottom:1px solid var(--border); }}
-    .archive-tbl tr:last-child td {{ border-bottom:none; }}
-    .archive-tbl tr:hover td {{ background:var(--bg-hover); }}
-    .archive-tbl a {{ color:var(--accent-blue); text-decoration:none; font-weight:500; }}
-    .archive-tbl a:hover {{ text-decoration:underline; }}
-    .mobile-menu-btn {{ display:none; position:fixed; top:12px; left:12px; z-index:200; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:8px 12px; color:var(--text-primary); font-size:20px; cursor:pointer; }}
-    .sidebar-overlay {{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:90; }}
-    @media (max-width:768px) {{ .sidebar {{ transform:translateX(-100%); transition:transform 0.2s; }} .sidebar.open {{ transform:translateX(0); }} .sidebar-overlay.open {{ display:block; }} .mobile-menu-btn {{ display:block; }} .main {{ margin-left:0; padding:16px; padding-top:56px; }} }}
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script>tailwind.config={{darkMode:"class",theme:{{extend:{{colors:{{"surface-container":"#0f1930","surface-container-high":"#141f38","surface-container-low":"#091328","surface":"#060e20","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary-container":"#004352","secondary":"#2ff801","tertiary":"#ff7166","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d"}},fontFamily:{{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}}}}}</script>
 </head>
-<body>
-  <button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand"><h2>TRADING</h2><div class="brand-sub">COMMAND CENTER</div></div>
-    <nav class="sidebar-nav">
-      <a href="index.html"><span class="nav-icon">&#9638;</span> Dashboard</a>
-      <a href="#"><span class="nav-icon">&#9678;</span> Scanner</a>
-      <a href="#"><span class="nav-icon">&#8634;</span> Backtest</a>
-      <a href="#"><span class="nav-icon">&#8599;</span> Trend</a>
-      <a href="archive.html" class="active"><span class="nav-icon">&#9783;</span> Archive</a>
-    </nav>
-    <div class="sidebar-footer">{len(rows)} reports</div>
-  </aside>
-  <div class="main">
-    <h1>Archive</h1>
-    <table class="archive-tbl">
+<body class="bg-surface text-on-surface font-body">
+  <nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 md:flex hidden" id="sidebar">
+    <div class="flex items-center gap-3 mb-10">
+      <div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings:'FILL' 1;">dashboard_customize</span></div>
+      <div><h2 class="text-lg font-black text-primary leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-on-surface/40 mt-1">Precision Curator</p></div>
+    </div>
+    <div class="space-y-2 flex-grow">
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="index.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+      <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
+    </div>
+    <div class="pt-6 mt-6 border-t border-outline-variant/20 px-4 text-[10px] text-outline leading-relaxed">{len(rows)} reports</div>
+  </nav>
+  <div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <main class="md:ml-64 min-h-screen">
+    <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+      <div class="flex items-center gap-4">
+        <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+        <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Archive</span>
+      </div>
+    </header>
+    <div class="p-8 max-w-3xl">
+      <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+        <table class="w-full text-left border-collapse">
+          <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
 {chr(10).join(rows)}
-    </table>
-  </div>
-  <script>function toggleSidebar(){{ document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }}</script>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+  <script>function toggleSidebar(){{const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}}</script>
 </body>
 </html>"""
 
