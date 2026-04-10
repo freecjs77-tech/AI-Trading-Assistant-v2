@@ -80,9 +80,9 @@
   <p class="subtitle">2026년 4월 10일 (금요일) &nbsp;|&nbsp; 2일 추이 &nbsp;|&nbsp; 데이터: 일별 스냅샷</p>
 
   <div class="summary-grid">
-    <div class="sum-card"><div class="num" style="color:var(--accent-green);">&#8361;20.06억</div><div class="lbl">총 자산</div><div class="sub" style="color:var(--accent-green);">+&#8361;11.83억 (+143.5%)</div></div>
+    <div class="sum-card"><div class="num" style="color:var(--accent-green);">&#8361;20.06억</div><div class="lbl">총 자산</div><div class="sub" style="color:var(--accent-green);">+&#8361;11.82억 (+143.6%)</div></div>
     <div class="sum-card"><div class="num" style="color:var(--accent-blue);">&#8361;8.24억</div><div class="lbl">투자 원금</div></div>
-    <div class="sum-card"><div class="num" style="color:var(--accent-orange);">&#8361;4,223만</div><div class="lbl">예상 연 배당</div><div class="sub">수익률 2.1%</div></div>
+    <div class="sum-card"><div class="num" style="color:var(--accent-orange);">&#8361;4,222만</div><div class="lbl">예상 연 배당</div><div class="sub">수익률 2.1%</div></div>
     <div class="sum-card"><div class="num" style="color:var(--text-primary);">&#8361;1.22억</div><div class="lbl">현금 (BIL)</div><div class="sub">6.1%</div></div>
   </div>
 
@@ -119,7 +119,7 @@ Chart.defaults.color = '#9ca3af';
 Chart.defaults.borderColor = '#1e2636';
 Chart.defaults.plugins.legend.labels.color = '#e5e7eb';
 
-const trend = [{"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4218, "div_yield": 2.11, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.06, "cost_eok": 8.24, "pnl_eok": 11.83, "pnl_pct": 143.5, "div_annual_man": 4223, "div_yield": 2.1, "vix": 19.44, "yield_30y": 4.897, "usd_krw": 1482.38}];
+const trend = [{"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4218, "div_yield": 2.11, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.06, "cost_eok": 8.24, "pnl_eok": 11.82, "pnl_pct": 143.6, "div_annual_man": 4222, "div_yield": 2.1, "vix": 19.21, "yield_30y": 4.904, "usd_krw": 1481.53}];
 const dates = trend.map(d => d.date.slice(5));
 const totalAsset = trend.map(d => d.total_eok);
 const costBasis = trend.map(d => d.cost_eok);
@@ -191,7 +191,7 @@ new Chart(document.getElementById('categoryPie'), {
   options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#e5e7eb' } }, tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed.toFixed(1) + '%'; } } } } }
 });
 
-const tickerData = [{"name": "디아이티", "value": 61.6, "amount_man": 123599}, {"name": "VOO", "value": 8.2, "amount_man": 16453}, {"name": "QQQ", "value": 6.2, "amount_man": 12440}, {"name": "BIL", "value": 6.1, "amount_man": 12240}, {"name": "SCHD", "value": 3.5, "amount_man": 7023}, {"name": "AAPL", "value": 1.5, "amount_man": 3010}, {"name": "O", "value": 1.3, "amount_man": 2608}, {"name": "JEPI", "value": 1.1, "amount_man": 2207}, {"name": "SOXX", "value": 0.9, "amount_man": 1806}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1806}, {"name": "기타", "value": 8.6, "amount_man": 17256}];
+const tickerData = [{"name": "디아이티", "value": 61.6, "amount_man": 123576}, {"name": "VOO", "value": 8.2, "amount_man": 16450}, {"name": "QQQ", "value": 6.2, "amount_man": 12438}, {"name": "BIL", "value": 6.1, "amount_man": 12237}, {"name": "SCHD", "value": 3.5, "amount_man": 7021}, {"name": "AAPL", "value": 1.5, "amount_man": 3009}, {"name": "O", "value": 1.3, "amount_man": 2608}, {"name": "JEPI", "value": 1.1, "amount_man": 2207}, {"name": "SOXX", "value": 0.9, "amount_man": 1805}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1805}, {"name": "기타", "value": 8.6, "amount_man": 17252}];
 new Chart(document.getElementById('tickerPie'), {
   type: 'doughnut',
   data: {
