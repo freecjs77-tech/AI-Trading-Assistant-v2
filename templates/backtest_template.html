@@ -91,15 +91,13 @@
 <div class="container">
 
   <!-- Header + Navigation -->
-  <h1>📈 Backtest Dashboard</h1>
+  <h1>Trading Assistant v2.0 — Backtest</h1>
   <div class="header-controls">
-    <a href="{{ nav_portfolio }}" style="background:#2c3e50;">📊 포트폴리오</a>
-    <a href="{{ nav_sp100 }}" style="background:#27ae60;">🔍 S&P 100</a>
-    <a href="{{ nav_etf }}" style="background:#3498db;">📊 ETF</a>
-    <a href="{{ nav_kospi }}" style="background:#e74c3c;">🇰🇷 KOSPI</a>
-    <a href="{{ nav_backtest }}" style="background:#8e44ad;" class="nav-active">📈 백테스트</a>
-    <a href="{{ nav_trend }}" style="background:#e67e22;">📈 트렌드</a>
-    <a href="archive.html" style="background:#7f8c8d;">📁 아카이브</a>
+    <a href="{{ nav_portfolio }}" style="background:#2c3e50;">Signal Report</a>
+    <a href="{{ nav_scanner }}" style="background:#27ae60;">Market Scanner</a>
+    <a href="{{ nav_backtest }}" style="background:#8e44ad;" class="nav-active">Backtest</a>
+    <a href="{{ nav_trend }}" style="background:#e67e22;">Asset Trend</a>
+    <a href="archive.html" style="background:#7f8c8d;">Archive</a>
   </div>
   <p class="subtitle">
     {{ date_ko }} &nbsp;|&nbsp;
@@ -135,10 +133,6 @@
       </div>
       <div class="lbl">Alpha vs SPY</div>
       <div class="sub">BUY 5d 기준</div>
-    </div>
-    <div class="ov-card" style="border-color:#f39c12;">
-      <div class="num" style="color:#f39c12;">{{ pending_count }}</div>
-      <div class="lbl">평가 대기</div>
     </div>
   </div>
 
@@ -357,29 +351,6 @@
   </div>
   {% endif %}
 
-  <!-- ═══ 8. Pending Signals ═══ -->
-  {% if pending %}
-  <h2>⏳ 평가 대기 시그널</h2>
-  <p style="font-size:12px;color:#888;margin:-8px 0 12px;">시그널 발생 후 {{ max_eval_days }}일 경과 시 자동 평가됩니다.</p>
-  <table class="bt-table">
-    <thead>
-      <tr><th>날짜</th><th>소스</th><th>종목</th><th>시그널</th><th>진입가</th><th>RSI</th><th>평가까지</th></tr>
-    </thead>
-    <tbody>
-    {% for p in pending %}
-      <tr>
-        <td style="font-weight:400;">{{ p.date }}</td>
-        <td><span class="badge badge-src">{{ p.source|upper }}</span></td>
-        <td style="font-weight:700;">{{ p.ticker }}</td>
-        <td><span class="badge badge-{{ 'BUY' if 'BUY' in p.signal else 'exit' }}">{{ p.signal }}</span></td>
-        <td>{% if p.price %}{{ p.price|round(2) }}{% else %}—{% endif %}</td>
-        <td>{% if p.rsi %}{{ p.rsi|round(1) }}{% else %}—{% endif %}</td>
-        <td style="color:#f39c12;font-weight:700;">D-{{ p.days_until_eval }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% endif %}
 
   <!-- Footer -->
   <div class="report-footer">

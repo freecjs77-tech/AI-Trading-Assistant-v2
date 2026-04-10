@@ -398,9 +398,7 @@ def generate_report(
         "badge_class": _badge_class,
         "card_class": _card_class,
         # 네비게이션 링크
-        "nav_sp100": f"scanner_sp100_{date_str}.html",
-        "nav_etf": f"scanner_etf_{date_str}.html",
-        "nav_kospi": f"scanner_kospi_{date_str}.html",
+        "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
     }
@@ -473,7 +471,7 @@ def generate_scanner_pages(
     env.filters["mcap"] = _mcap
     env.filters["badge_class"] = _badge_class
 
-    template = env.get_template("scanner_template.html")
+    template = env.get_template("scanner_unified_template.html")
 
     meta = market_data.get("_meta", {})
     date_str = meta.get("date", datetime.now().strftime("%Y-%m-%d"))
@@ -481,84 +479,48 @@ def generate_scanner_pages(
 
     nav = {
         "nav_portfolio": "index.html",
-        "nav_sp100": f"scanner_sp100_{date_str}.html",
-        "nav_etf": f"scanner_etf_{date_str}.html",
-        "nav_kospi": f"scanner_kospi_{date_str}.html",
+        "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
     }
 
-    scanners = [
-        {
-            "scanner_id": "sp100",
-            "scanner_title": "S&P 100 Market Scanner",
-            "scanner_icon": "🔍",
-            "scan_desc": "Growth v2.2 Entry 규칙 적용",
-            "accent_color": "#8e44ad",
-            "buy_1st_label": "저가 매수 기회",
-            "is_kospi": False,
-            "data": scanner_sp100,
-            "ref_html": _REF_SP100,
-            "filename": f"scanner_sp100_{date_str}.html",
-        },
-        {
-            "scanner_id": "etf",
-            "scanner_title": "ETF Scanner — Sector & Theme",
-            "scanner_icon": "📊",
-            "scan_desc": "ETF v2.4 Entry 규칙 적용",
-            "accent_color": "#8e44ad",
-            "buy_1st_label": "ETF 매수 기회",
-            "is_kospi": False,
-            "data": scanner_etf,
-            "ref_html": _REF_ETF,
-            "filename": f"scanner_etf_{date_str}.html",
-        },
-        {
-            "scanner_id": "kospi",
-            "scanner_title": "KOSPI Scanner — 코스피 시총 상위 100",
-            "scanner_icon": "🇰🇷",
-            "scan_desc": "Growth v2.2 Entry 규칙 적용 | 가격: KRW(₩)",
-            "accent_color": "#c0392b",
-            "buy_1st_label": "저가 매수 기회",
-            "is_kospi": True,
-            "data": scanner_kospi,
-            "ref_html": _REF_KOSPI,
-            "filename": f"scanner_kospi_{date_str}.html",
-        },
-    ]
+    sp100 = scanner_sp100 or {}
+    etf = scanner_etf or {}
+    kospi = scanner_kospi or {}
+
+    context = {
+        **nav,
+        "date": date_str,
+        "date_ko": _date_ko(date_str),
+        "fetched_at": fetched_at,
+        # S&P 100
+        "sp100_buy_1st": sp100.get("buy_1st", []),
+        "sp100_buy_2nd": sp100.get("buy_2nd", []),
+        "sp100_buy_3rd": sp100.get("buy_3rd", []),
+        "sp100_scanned": sp100.get("scanned", 0),
+        "sp100_total": sp100.get("total_signals", 0),
+        # ETF
+        "etf_buy_1st": etf.get("buy_1st", []),
+        "etf_buy_2nd": etf.get("buy_2nd", []),
+        "etf_buy_3rd": etf.get("buy_3rd", []),
+        "etf_scanned": etf.get("scanned", 0),
+        "etf_total": etf.get("total_signals", 0),
+        # KOSPI
+        "kospi_buy_1st": kospi.get("buy_1st", []),
+        "kospi_buy_2nd": kospi.get("buy_2nd", []),
+        "kospi_buy_3rd": kospi.get("buy_3rd", []),
+        "kospi_scanned": kospi.get("scanned", 0),
+        "kospi_total": kospi.get("total_signals", 0),
+    }
+
+    html = template.render(**context)
 
     os.makedirs(output_dir, exist_ok=True)
-    generated = []
+    out_path = os.path.join(output_dir, f"scanner_{date_str}.html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(html)
 
-    for s in scanners:
-        sd = s["data"] or {}
-        context = {
-            **nav,
-            "scanner_id": s["scanner_id"],
-            "scanner_title": s["scanner_title"],
-            "scanner_icon": s["scanner_icon"],
-            "scan_desc": s["scan_desc"],
-            "accent_color": s["accent_color"],
-            "buy_1st_label": s["buy_1st_label"],
-            "is_kospi": s["is_kospi"],
-            "buy_1st": sd.get("buy_1st", []),
-            "buy_2nd": sd.get("buy_2nd", []),
-            "buy_3rd": sd.get("buy_3rd", []),
-            "scanned": sd.get("scanned", 0),
-            "scan_time": sd.get("scan_time", ""),
-            "ref_html": s["ref_html"],
-            "date": date_str,
-            "date_ko": _date_ko(date_str),
-            "fetched_at": fetched_at,
-        }
-
-        html = template.render(**context)
-        out_path = os.path.join(output_dir, s["filename"])
-        with open(out_path, "w", encoding="utf-8") as f:
-            f.write(html)
-        generated.append(out_path)
-
-    return generated
+    return [out_path]
 
 
 def generate_trend_page(
@@ -643,9 +605,7 @@ def generate_trend_page(
     context = {
         # Nav
         "nav_portfolio": "index.html",
-        "nav_sp100": f"scanner_sp100_{date_str}.html",
-        "nav_etf": f"scanner_etf_{date_str}.html",
-        "nav_kospi": f"scanner_kospi_{date_str}.html",
+        "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
         # Meta
@@ -720,9 +680,7 @@ def generate_backtest_page(
     context = {
         # Nav
         "nav_portfolio": "index.html",
-        "nav_sp100": f"scanner_sp100_{date_str}.html",
-        "nav_etf": f"scanner_etf_{date_str}.html",
-        "nav_kospi": f"scanner_kospi_{date_str}.html",
+        "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
         # Meta
@@ -737,7 +695,6 @@ def generate_backtest_page(
         "alpha": alpha,
         "win_threshold": 3.0,
         "max_eval_days": 10,
-        "pending_count": len(pending_signals),
         # Data
         "by_signal": by_signal,
         "by_source": ba.get("by_source", {}),
@@ -745,7 +702,6 @@ def generate_backtest_page(
         "benchmark": benchmark,
         "records": outcomes.get("records", []),
         "recommendations": ba.get("recommendations", []),
-        "pending": pending_signals,
     }
 
     html = template.render(**context)

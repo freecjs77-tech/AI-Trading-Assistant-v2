@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Scanner — {{ date }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fff; color: #1a1a1a; font-size: 14px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
+  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  .header-controls a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: #fff; }
+  .nav-active { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .sum-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 90px; text-align: center; border-top: 4px solid #ccc; }
+  .sum-card .num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .sum-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .badge-1st { background: #27ae60; color: #fff; }
+  .badge-2nd { background: #3498db; color: #fff; }
+  .badge-3rd { background: #8e44ad; color: #fff; }
+  .badge-BUY { background: #27ae60; color: #fff; }
+  .scanner-tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
+  .scanner-tbl th { background: #f0f0f0; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; white-space: nowrap; }
+  .scanner-tbl td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  .scanner-tbl tbody tr:hover { background: #f8f9fa; }
+  .tbl-num { text-align: right; }
+  .up { color: #27ae60; } .dn { color: #e74c3c; }
+  .streak-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+  .streak-confirmed { background: #27ae60; color: #fff; }
+  .streak-pending { background: #e67e22; color: #fff; }
+  .note-cell { max-width: 200px; font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .section-empty { font-size: 13px; color: #888; text-align: center; padding: 20px; }
+  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
+  @media (max-width: 600px) { .sum-card { min-width: 70px; } .header-controls { margin: 8px 0; } .scanner-tbl { font-size: 11px; } .scanner-tbl th, .scanner-tbl td { padding: 5px 6px; } .note-cell { max-width: 100px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Trading Assistant v2.0 — Market Scanner</h1>
+  <div class="header-controls">
+    <a href="{{ nav_portfolio }}" style="background:#2c3e50;">Signal Report</a>
+    <a href="{{ nav_scanner }}" style="background:#27ae60;" class="nav-active">Market Scanner</a>
+    <a href="{{ nav_backtest }}" style="background:#8e44ad;">Backtest</a>
+    <a href="{{ nav_trend }}" style="background:#e67e22;">Asset Trend</a>
+    <a href="archive.html" style="background:#7f8c8d;">Archive</a>
+  </div>
+  <p class="subtitle">{{ date_ko }} &nbsp;|&nbsp; S&P 100: {{ sp100_scanned }}종목 / ETF: {{ etf_scanned }}종목 / KOSPI: {{ kospi_scanned }}종목 스캔</p>
+
+  <!-- Summary -->
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#2c3e50;"><div class="num">{{ sp100_total + etf_total + kospi_total }}</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card" style="border-color:#27ae60;"><div class="num" style="color:#27ae60;">{{ sp100_total }}</div><div class="lbl">S&P 100</div></div>
+    <div class="sum-card" style="border-color:#3498db;"><div class="num" style="color:#3498db;">{{ etf_total }}</div><div class="lbl">ETF</div></div>
+    <div class="sum-card" style="border-color:#e74c3c;"><div class="num" style="color:#e74c3c;">{{ kospi_total }}</div><div class="lbl">KOSPI</div></div>
+  </div>
+
+  <!-- ═══ S&P 100 ═══ -->
+  <h2>S&P 100 ({{ (sp100_buy_1st|length) + (sp100_buy_2nd|length) + (sp100_buy_3rd|length) }}종목)</h2>
+  {% set sp100_all = [] %}
+  {% for e in sp100_buy_1st %}{% if sp100_all.append({"entry": e, "stage": "1st_BUY", "badge_cls": "badge-1st"}) %}{% endif %}{% endfor %}
+  {% for e in sp100_buy_2nd %}{% if sp100_all.append({"entry": e, "stage": "2nd_BUY", "badge_cls": "badge-2nd"}) %}{% endif %}{% endfor %}
+  {% for e in sp100_buy_3rd %}{% if sp100_all.append({"entry": e, "stage": "3rd_BUY", "badge_cls": "badge-3rd"}) %}{% endif %}{% endfor %}
+  {% if sp100_all %}
+  <table class="scanner-tbl">
+    <thead>
+      <tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+    {% for item in sp100_all %}
+    {% set e = item.entry %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><a href="details/{{ e.ticker }}.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">{{ e.ticker }}</a></td>
+        <td>{{ e.name }}{% if e.market_cap_fmt %} <span style="font-size:11px;color:#999;">{{ e.market_cap_fmt }}</span>{% endif %}</td>
+        <td class="tbl-num">${{ e.price|f2 }}</td>
+        <td class="tbl-num {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
+        <td><span class="badge {{ item.badge_cls }}">{{ item.stage }}</span></td>
+        <td class="tbl-num">{{ e.rsi|f1 if e.rsi else '—' }}</td>
+        <td class="tbl-num">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td>
+        <td class="tbl-num">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td>
+        <td>
+          {% if e.buy_confirmed %}<span class="streak-badge streak-confirmed">{{ e.buy_streak }}일 ✅</span>
+          {% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="streak-badge streak-pending">{{ e.buy_streak }}/2일</span>
+          {% else %}—{% endif %}
+        </td>
+        <td class="note-cell" title="{{ e.note }}">{{ e.note }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="section-empty">S&P 100 스캔 결과 없음</p>
+  {% endif %}
+
+  <!-- ═══ ETF ═══ -->
+  <h2>ETF ({{ (etf_buy_1st|length) + (etf_buy_2nd|length) + (etf_buy_3rd|length) }}종목)</h2>
+  {% set etf_all = [] %}
+  {% for e in etf_buy_1st %}{% if etf_all.append({"entry": e, "stage": "1st_BUY", "badge_cls": "badge-1st"}) %}{% endif %}{% endfor %}
+  {% for e in etf_buy_2nd %}{% if etf_all.append({"entry": e, "stage": "2nd_BUY", "badge_cls": "badge-2nd"}) %}{% endif %}{% endfor %}
+  {% for e in etf_buy_3rd %}{% if etf_all.append({"entry": e, "stage": "3rd_BUY", "badge_cls": "badge-3rd"}) %}{% endif %}{% endfor %}
+  {% if etf_all %}
+  <table class="scanner-tbl">
+    <thead>
+      <tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+    {% for item in etf_all %}
+    {% set e = item.entry %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><a href="details/{{ e.ticker }}.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">{{ e.ticker }}</a></td>
+        <td>{{ e.name }}{% if e.market_cap_fmt %} <span style="font-size:11px;color:#999;">{{ e.market_cap_fmt }}</span>{% endif %}</td>
+        <td class="tbl-num">${{ e.price|f2 }}</td>
+        <td class="tbl-num {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
+        <td><span class="badge {{ item.badge_cls }}">{{ item.stage }}</span></td>
+        <td class="tbl-num">{{ e.rsi|f1 if e.rsi else '—' }}</td>
+        <td class="tbl-num">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td>
+        <td class="tbl-num">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td>
+        <td>
+          {% if e.buy_confirmed %}<span class="streak-badge streak-confirmed">{{ e.buy_streak }}일 ✅</span>
+          {% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="streak-badge streak-pending">{{ e.buy_streak }}/2일</span>
+          {% else %}—{% endif %}
+        </td>
+        <td class="note-cell" title="{{ e.note }}">{{ e.note }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="section-empty">ETF 스캔 결과 없음</p>
+  {% endif %}
+
+  <!-- ═══ KOSPI ═══ -->
+  <h2>KOSPI ({{ (kospi_buy_1st|length) + (kospi_buy_2nd|length) + (kospi_buy_3rd|length) }}종목)</h2>
+  {% set kospi_all = [] %}
+  {% for e in kospi_buy_1st %}{% if kospi_all.append({"entry": e, "stage": "1st_BUY", "badge_cls": "badge-1st"}) %}{% endif %}{% endfor %}
+  {% for e in kospi_buy_2nd %}{% if kospi_all.append({"entry": e, "stage": "2nd_BUY", "badge_cls": "badge-2nd"}) %}{% endif %}{% endfor %}
+  {% for e in kospi_buy_3rd %}{% if kospi_all.append({"entry": e, "stage": "3rd_BUY", "badge_cls": "badge-3rd"}) %}{% endif %}{% endfor %}
+  {% if kospi_all %}
+  <table class="scanner-tbl">
+    <thead>
+      <tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+    {% for item in kospi_all %}
+    {% set e = item.entry %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><a href="details/{{ e.ticker }}.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">{{ e.ticker }}</a></td>
+        <td>{{ e.name }}{% if e.market_cap_fmt %} <span style="font-size:11px;color:#999;">{{ e.market_cap_fmt }}</span>{% endif %}</td>
+        <td class="tbl-num">₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}</td>
+        <td class="tbl-num {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
+        <td><span class="badge {{ item.badge_cls }}">{{ item.stage }}</span></td>
+        <td class="tbl-num">{{ e.rsi|f1 if e.rsi else '—' }}</td>
+        <td class="tbl-num">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td>
+        <td class="tbl-num">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td>
+        <td>
+          {% if e.buy_confirmed %}<span class="streak-badge streak-confirmed">{{ e.buy_streak }}일 ✅</span>
+          {% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="streak-badge streak-pending">{{ e.buy_streak }}/2일</span>
+          {% else %}—{% endif %}
+        </td>
+        <td class="note-cell" title="{{ e.note }}">{{ e.note }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="section-empty">KOSPI 스캔 결과 없음</p>
+  {% endif %}
+
+  <p class="report-footer">
+    Generated by Trading Assistant v2.0 | {{ date }} | Data: yfinance ({{ fetched_at }})
+  </p>
+
+</div>
+</body>
+</html>
