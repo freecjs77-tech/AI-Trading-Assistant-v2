@@ -46,14 +46,14 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
       <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
         <div class="text-2xl font-headline font-bold text-secondary">&#8361;20.07억</div>
         <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">총 자산</div>
-        <div class="text-xs mt-1 text-secondary">+&#8361;11.83억 (+143.6%)</div>
+        <div class="text-xs mt-1 text-secondary">+&#8361;11.83억 (+143.7%)</div>
       </div>
       <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
         <div class="text-2xl font-headline font-bold text-primary">&#8361;8.24억</div>
         <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">투자 원금</div>
       </div>
       <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-2xl font-headline font-bold text-tertiary">&#8361;4,223만</div>
+        <div class="text-2xl font-headline font-bold text-tertiary">&#8361;4,222만</div>
         <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">예상 연 배당</div>
         <div class="text-xs text-outline mt-1">수익률 2.1%</div>
       </div>
@@ -103,7 +103,7 @@ Chart.defaults.color = '#a3aac4';
 Chart.defaults.borderColor = '#40485d';
 Chart.defaults.plugins.legend.labels.color = '#dee5ff';
 
-const trend = [{"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4218, "div_yield": 2.11, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.07, "cost_eok": 8.24, "pnl_eok": 11.83, "pnl_pct": 143.6, "div_annual_man": 4223, "div_yield": 2.1, "vix": 18.97, "yield_30y": 4.906, "usd_krw": 1482.37}];
+const trend = [{"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4218, "div_yield": 2.11, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.07, "cost_eok": 8.24, "pnl_eok": 11.83, "pnl_pct": 143.7, "div_annual_man": 4222, "div_yield": 2.1, "vix": 18.94, "yield_30y": 4.909, "usd_krw": 1481.88}];
 const dates = trend.map(d => d.date.slice(5));
 const totalAsset = trend.map(d => d.total_eok);
 const costBasis = trend.map(d => d.cost_eok);
@@ -139,10 +139,10 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'VIX / Yield', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'USD/KRW', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
 
-const catData = [{"name": "Growth", "value": 67.4, "amount_man": 135287}, {"name": "ETF", "value": 23.4, "amount_man": 46969}, {"name": "CASH", "value": 6.1, "amount_man": 12244}, {"name": "Value", "value": 2.2, "amount_man": 4416}, {"name": "Bond", "value": 0.6, "amount_man": 1204}, {"name": "Speculative", "value": 0.2, "amount_man": 401}, {"name": "Metal", "value": 0.1, "amount_man": 201}];
+const catData = [{"name": "Growth", "value": 67.4, "amount_man": 135285}, {"name": "ETF", "value": 23.4, "amount_man": 46968}, {"name": "CASH", "value": 6.1, "amount_man": 12244}, {"name": "Value", "value": 2.2, "amount_man": 4416}, {"name": "Bond", "value": 0.6, "amount_man": 1204}, {"name": "Speculative", "value": 0.2, "amount_man": 401}, {"name": "Metal", "value": 0.1, "amount_man": 201}];
 new Chart(document.getElementById('categoryPie'), { type:'doughnut', data:{ labels:catData.map(d=>{ var a=d.amount_man||0; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:catData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff7166','#ff716c','#6d758c','#fbbf24','#a78bfa','#22d3ee'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=catData[c.dataIndex],a=d.amount_man||0,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
 
-const tickerData = [{"name": "디아이티", "value": 61.6, "amount_man": 123646}, {"name": "VOO", "value": 8.3, "amount_man": 16660}, {"name": "QQQ", "value": 6.2, "amount_man": 12445}, {"name": "BIL", "value": 6.1, "amount_man": 12244}, {"name": "SCHD", "value": 3.4, "amount_man": 6825}, {"name": "AAPL", "value": 1.5, "amount_man": 3011}, {"name": "O", "value": 1.3, "amount_man": 2609}, {"name": "JEPI", "value": 1.1, "amount_man": 2208}, {"name": "SOXX", "value": 0.9, "amount_man": 1807}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1807}, {"name": "기타", "value": 8.6, "amount_man": 17262}];
+const tickerData = [{"name": "디아이티", "value": 61.6, "amount_man": 123643}, {"name": "VOO", "value": 8.2, "amount_man": 16459}, {"name": "QQQ", "value": 6.2, "amount_man": 12445}, {"name": "BIL", "value": 6.1, "amount_man": 12244}, {"name": "SCHD", "value": 3.4, "amount_man": 6824}, {"name": "AAPL", "value": 1.5, "amount_man": 3011}, {"name": "O", "value": 1.3, "amount_man": 2609}, {"name": "JEPI", "value": 1.1, "amount_man": 2208}, {"name": "SOXX", "value": 0.9, "amount_man": 1806}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1806}, {"name": "기타", "value": 8.6, "amount_man": 17262}];
 new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>{ var a=d.amount_man; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff716c','#6d758c','#34d399','#fbbf24','#a78bfa','#22d3ee','#475569','#e51a22','#94a3b8'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
 </script>
 </body>
