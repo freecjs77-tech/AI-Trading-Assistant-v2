@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script>
-tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","on-primary-container":"#004352","secondary":"#2ff801","secondary-container":"#106e00","on-secondary":"#0b5800","tertiary":"#ff7166","tertiary-container":"#f5282b","on-tertiary":"#4a0003","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","on-primary-container":"#004352","secondary":"#00E5BC","secondary-container":"#106e00","on-secondary":"#0b5800","tertiary":"#ff7166","tertiary-container":"#f5282b","on-tertiary":"#4a0003","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
 </script>
 </head>
 <body class="bg-surface text-on-surface font-body">
@@ -44,7 +44,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
     <!-- Summary -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-2xl font-headline font-bold text-secondary">&#8361;20.06억</div>
+        <div class="text-2xl font-headline font-bold text-secondary">&#8361;20.07억</div>
         <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">총 자산</div>
         <div class="text-xs mt-1 text-secondary">+&#8361;11.83억 (+143.6%)</div>
       </div>
@@ -53,7 +53,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
         <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">투자 원금</div>
       </div>
       <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-2xl font-headline font-bold text-tertiary">&#8361;4,222만</div>
+        <div class="text-2xl font-headline font-bold text-tertiary">&#8361;4,223만</div>
         <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">예상 연 배당</div>
         <div class="text-xs text-outline mt-1">수익률 2.1%</div>
       </div>
@@ -103,7 +103,7 @@ Chart.defaults.color = '#a3aac4';
 Chart.defaults.borderColor = '#40485d';
 Chart.defaults.plugins.legend.labels.color = '#dee5ff';
 
-const trend = [{"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4218, "div_yield": 2.11, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.06, "cost_eok": 8.24, "pnl_eok": 11.83, "pnl_pct": 143.6, "div_annual_man": 4222, "div_yield": 2.1, "vix": 19.25, "yield_30y": 4.906, "usd_krw": 1481.78}];
+const trend = [{"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4218, "div_yield": 2.11, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.07, "cost_eok": 8.24, "pnl_eok": 11.83, "pnl_pct": 143.6, "div_annual_man": 4223, "div_yield": 2.1, "vix": 18.97, "yield_30y": 4.906, "usd_krw": 1482.37}];
 const dates = trend.map(d => d.date.slice(5));
 const totalAsset = trend.map(d => d.total_eok);
 const costBasis = trend.map(d => d.cost_eok);
@@ -118,32 +118,32 @@ const dso = { ticks: { color: '#a3aac4' }, grid: { color: 'rgba(64,72,93,0.3)' }
 
 
 new Chart(document.getElementById('assetTrendChart'), { type:'line', data:{ labels:dates, datasets:[
-  { label:'총 자산 (억원)', data:totalAsset, borderColor:'#2ff801', backgroundColor:'rgba(47,248,1,0.08)', fill:true, tension:0.3, pointRadius:2 },
+  { label:'총 자산 (억원)', data:totalAsset, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2 },
   { label:'투자 원금 (억원)', data:costBasis, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, borderDash:[5,5], tension:0.3, pointRadius:0 }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'억원', color:'#a3aac4' }}}}});
 
 new Chart(document.getElementById('pnlTrendChart'), { type:'line', data:{ labels:dates, datasets:[
-  { label:'수익금 (억원)', data:pnlAmount, borderColor:'#2ff801', backgroundColor:'rgba(47,248,1,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
+  { label:'수익금 (억원)', data:pnlAmount, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
   { label:'수익률 (%)', data:pnlPct, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'억원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
 new Chart(document.getElementById('divTrendChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'예상 연 배당 (만원)', data:divData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
-  { label:'배당수익률 (%)', data:divYieldData, borderColor:'#2ff801', backgroundColor:'rgba(47,248,1,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
+  { label:'배당수익률 (%)', data:divYieldData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'만원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
 new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:dates, datasets:[
-  { label:'VIX', data:vixData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,108,0.08)', fill:true, tension:0.3, pointRadius:1, yAxisID:'y' },
-  { label:'30Y Treasury (%)', data:yieldData, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, tension:0.3, pointRadius:1, yAxisID:'y' },
-  { label:'USD/KRW', data:fxData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.05)', fill:true, tension:0.3, pointRadius:1, yAxisID:'y1' }
+  { label:'VIX', data:vixData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,108,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, yAxisID:'y' },
+  { label:'30Y Treasury (%)', data:yieldData, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, yAxisID:'y' },
+  { label:'USD/KRW', data:fxData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.05)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, borderDash:[6,3], yAxisID:'y1' }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'VIX / Yield', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'USD/KRW', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
 
-const catData = [{"name": "Growth", "value": 67.4}, {"name": "ETF", "value": 23.4}, {"name": "CASH", "value": 6.1}, {"name": "Value", "value": 2.2}, {"name": "Bond", "value": 0.6}, {"name": "Speculative", "value": 0.2}, {"name": "Metal", "value": 0.1}];
-new Chart(document.getElementById('categoryPie'), { type:'doughnut', data:{ labels:catData.map(d=>d.name), datasets:[{ data:catData.map(d=>d.value), backgroundColor:['#2ff801','#6dddff','#ff7166','#ff716c','#6d758c','#fbbf24','#a78bfa','#22d3ee'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ return c.label+': '+c.parsed.toFixed(1)+'%'; }}}}}});
+const catData = [{"name": "Growth", "value": 67.4, "amount_man": 135287}, {"name": "ETF", "value": 23.4, "amount_man": 46969}, {"name": "CASH", "value": 6.1, "amount_man": 12244}, {"name": "Value", "value": 2.2, "amount_man": 4416}, {"name": "Bond", "value": 0.6, "amount_man": 1204}, {"name": "Speculative", "value": 0.2, "amount_man": 401}, {"name": "Metal", "value": 0.1, "amount_man": 201}];
+new Chart(document.getElementById('categoryPie'), { type:'doughnut', data:{ labels:catData.map(d=>{ var a=d.amount_man||0; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:catData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff7166','#ff716c','#6d758c','#fbbf24','#a78bfa','#22d3ee'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=catData[c.dataIndex],a=d.amount_man||0,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
 
-const tickerData = [{"name": "디아이티", "value": 61.6, "amount_man": 123583}, {"name": "VOO", "value": 8.2, "amount_man": 16451}, {"name": "QQQ", "value": 6.2, "amount_man": 12439}, {"name": "BIL", "value": 6.1, "amount_man": 12238}, {"name": "SCHD", "value": 3.5, "amount_man": 7022}, {"name": "AAPL", "value": 1.5, "amount_man": 3009}, {"name": "O", "value": 1.3, "amount_man": 2608}, {"name": "JEPI", "value": 1.1, "amount_man": 2207}, {"name": "SOXX", "value": 0.9, "amount_man": 1806}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1806}, {"name": "기타", "value": 8.6, "amount_man": 17253}];
-new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>{ var a=d.amount_man; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:['#2ff801','#6dddff','#ff716c','#6d758c','#34d399','#fbbf24','#a78bfa','#22d3ee','#475569','#e51a22','#94a3b8'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
+const tickerData = [{"name": "디아이티", "value": 61.6, "amount_man": 123646}, {"name": "VOO", "value": 8.3, "amount_man": 16660}, {"name": "QQQ", "value": 6.2, "amount_man": 12445}, {"name": "BIL", "value": 6.1, "amount_man": 12244}, {"name": "SCHD", "value": 3.4, "amount_man": 6825}, {"name": "AAPL", "value": 1.5, "amount_man": 3011}, {"name": "O", "value": 1.3, "amount_man": 2609}, {"name": "JEPI", "value": 1.1, "amount_man": 2208}, {"name": "SOXX", "value": 0.9, "amount_man": 1807}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1807}, {"name": "기타", "value": 8.6, "amount_man": 17262}];
+new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>{ var a=d.amount_man; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff716c','#6d758c','#34d399','#fbbf24','#a78bfa','#22d3ee','#475569','#e51a22','#94a3b8'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
 </script>
 </body>
 </html>

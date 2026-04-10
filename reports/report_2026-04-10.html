@@ -37,8 +37,8 @@ tailwind.config = {
         "primary-container": "#00d2fd",
         "on-primary": "#004c5e",
         "on-primary-container": "#004352",
-        "secondary": "#2ff801",
-        "secondary-dim": "#2be800",
+        "secondary": "#00E5BC",
+        "secondary-dim": "#00C9A5",
         "secondary-container": "#106e00",
         "on-secondary": "#0b5800",
         "on-secondary-container": "#e7ffd9",
@@ -76,7 +76,7 @@ tailwind.config = {
   }
 </style>
 </head>
-<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="1481.78">
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="1482.37">
 
 <!-- ── Sidebar ── -->
 <nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
@@ -107,6 +107,9 @@ tailwind.config = {
     </a>
   </div>
   <div class="pt-6 mt-6 border-t border-outline-variant/20 space-y-2">
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" class="flex items-center gap-3 px-4 py-3 w-full text-left bg-primary/10 text-primary hover:bg-primary/20 rounded-md transition-all font-bold text-sm">
+      <span class="material-symbols-outlined">rocket_launch</span><span>Run Workflow</span>
+    </a>
     <button id="currencyToggle" onclick="toggleCurrency()" class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all w-full text-left">
       <span class="material-symbols-outlined">currency_exchange</span><span>USD / KRW</span>
     </button>
@@ -114,7 +117,7 @@ tailwind.config = {
       2026년 4월 10일 (금요일)<br>
       
         
-          <span class="text-secondary">CLOSED</span>
+          <span class="text-tertiary">LIVE</span> US:open / KRX:closed
         
       
     </div>
@@ -138,7 +141,7 @@ tailwind.config = {
       <nav class="hidden lg:flex items-center gap-6 font-headline tracking-tight">
         <div class="flex items-center gap-2">
           <span class="text-on-surface/60 text-xs">VIX</span>
-          <span class="text-primary font-bold">19.25</span>
+          <span class="text-primary font-bold">18.97</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="text-on-surface/60 text-xs">30Y US Yield</span>
@@ -146,12 +149,12 @@ tailwind.config = {
         </div>
         <div class="flex items-center gap-2">
           <span class="text-on-surface/60 text-xs">USD/KRW</span>
-          <span class="text-primary font-bold">1,481.78</span>
+          <span class="text-primary font-bold">1,482.37</span>
         </div>
       </nav>
     </div>
     <div class="flex items-center gap-4">
-      <div class="text-xs text-outline font-label hidden sm:block">2026-04-10 22:10:25</div>
+      <div class="text-xs text-outline font-label hidden sm:block">2026-04-10 22:46:44</div>
       <button class="p-2 text-on-surface/60 hover:text-primary transition-colors">
         <span class="material-symbols-outlined">notifications</span>
       </button>
@@ -175,20 +178,20 @@ tailwind.config = {
         <div class="relative z-10 flex flex-col h-full justify-between gap-8">
           <div>
             <p class="text-on-surface-variant font-label text-sm uppercase tracking-widest mb-2">Total Equity Value</p>
-            <h1 class="text-5xl md:text-6xl font-headline font-bold gradient-text money" data-usd="1353919.5139668572" data-krw="2006210857.4058099">$1,353,920</h1>
+            <h1 class="text-5xl md:text-6xl font-headline font-bold gradient-text money" data-usd="1354069.7129799062" data-krw="2007232320.4300237">$1,354,070</h1>
           </div>
           <div class="flex flex-wrap gap-12">
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Unrealized P&amp;L</p>
               <p class="text-2xl font-headline font-semibold text-secondary">
-                <span class="money" data-usd="798029.9102540254" data-krw="1182504760.41621" data-signed="1">+$798,030</span>
+                <span class="money" data-usd="798251.9583785584" data-krw="1183304755.5416236" data-signed="1">+$798,252</span>
               </p>
               <p class="text-xs font-label text-secondary/60">&#9650; +143.6% vs Principal</p>
             </div>
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Cash Reserve</p>
               <p class="text-2xl font-headline font-semibold text-on-surface">
-                <span class="money" data-usd="82314.0" data-krw="121971238.92">$82,314</span>
+                <span class="money" data-usd="82341.0" data-krw="122059828.16999999">$82,341</span>
               </p>
               <p class="text-on-surface-variant/60 text-xs font-label">6.1% of portfolio</p>
             </div>
@@ -205,13 +208,13 @@ tailwind.config = {
           <div class="space-y-6">
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Annual Total</p>
-              <p class="text-3xl font-headline font-bold text-on-surface money" data-usd="28493.08" data-krw="42220476.0824">$28,493</p>
+              <p class="text-3xl font-headline font-bold text-on-surface money" data-usd="28485.53" data-krw="42226095.10609999">$28,486</p>
               <p class="text-primary text-xs font-label mt-1">Yield 2.10%</p>
             </div>
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Monthly Average</p>
-              <p class="text-2xl font-headline font-bold text-on-surface money" data-usd="2374.42" data-krw="3518368.0676">$2,374</p>
-              <p class="text-on-surface-variant/60 text-[10px] font-label mt-1">110990 $1499/mo · BIL $271/mo · SCHD $133/mo</p>
+              <p class="text-2xl font-headline font-bold text-on-surface money" data-usd="2373.79" data-krw="3518835.0823">$2,374</p>
+              <p class="text-on-surface-variant/60 text-[10px] font-label mt-1">110990 $1498/mo · BIL $271/mo · SCHD $133/mo</p>
             </div>
           </div>
         </div>
@@ -224,7 +227,7 @@ tailwind.config = {
         </h3>
         <div class="grid grid-cols-2 gap-4 flex-grow">
           <div class="p-4 rounded bg-tertiary-container/10 border border-tertiary-container/20 flex flex-col justify-center items-center">
-            <span class="text-tertiary text-2xl font-headline font-bold">02</span>
+            <span class="text-tertiary text-2xl font-headline font-bold">03</span>
             <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Exit</span>
           </div>
           <div class="p-4 rounded bg-surface-bright border border-outline-variant/10 flex flex-col justify-center items-center">
@@ -236,7 +239,7 @@ tailwind.config = {
             <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Buy</span>
           </div>
           <div class="p-4 rounded bg-primary/10 border border-primary/20 flex flex-col justify-center items-center">
-            <span class="text-primary text-2xl font-headline font-bold">9</span>
+            <span class="text-primary text-2xl font-headline font-bold">8</span>
             <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Watch</span>
           </div>
         </div>
@@ -279,12 +282,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Vanguard S&P 500 ETF</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$625.02</span>
+                  <span class="block">$625.77</span>
                   <span class="text-[10px] text-on-surface-variant">$514.21 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="111578.44352094001">$111,578</td>
-                <td class="px-6 py-4">8.2%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+21.6%</td>
+                <td class="px-6 py-4 money" data-usd="111712.33336869">$111,712</td>
+                <td class="px-6 py-4">8.3%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+21.7%</td>
                 <td class="px-6 py-4 text-on-surface">$1,272</td>
                 <td class="px-6 py-4">
                   
@@ -300,17 +303,19 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Invesco QQQ Trust ETF</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$610.19</span>
+                  <span class="block">$612.11</span>
                   <span class="text-[10px] text-on-surface-variant">$497.94 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="83864.025448">$83,864</td>
+                <td class="px-6 py-4 money" data-usd="84127.908712">$84,128</td>
                 <td class="px-6 py-4">6.2%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+22.5%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+22.9%</td>
                 <td class="px-6 py-4 text-on-surface">$386</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">2nd_BUY</span>
+                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
                   
+                  
+                  <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
                   
                 </td>
               </tr>
@@ -321,10 +326,10 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">SPDR 1-3 Month T-Bill ETF</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$91.46</span>
+                  <span class="block">$91.49</span>
                   <span class="text-[10px] text-on-surface-variant">$82.70 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="82314.0">$82,314</td>
+                <td class="px-6 py-4 money" data-usd="82341.0">$82,341</td>
                 <td class="px-6 py-4">6.1%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+10.6%</td>
                 <td class="px-6 py-4 text-on-surface">$3,254</td>
@@ -342,12 +347,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Schwab US Dividend ETF</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$30.94</span>
+                  <span class="block">$30.83</span>
                   <span class="text-[10px] text-on-surface-variant">$24.47 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="46842.56870566">$46,843</td>
-                <td class="px-6 py-4">3.5%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+26.4%</td>
+                <td class="px-6 py-4 money" data-usd="46676.030807869996">$46,676</td>
+                <td class="px-6 py-4">3.4%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+26.0%</td>
                 <td class="px-6 py-4 text-on-surface">$1,597</td>
                 <td class="px-6 py-4">
                   
@@ -363,12 +368,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Apple Inc.</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$260.49</span>
+                  <span class="block">$259.54</span>
                   <span class="text-[10px] text-on-surface-variant">$170.90 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="20736.84149646">$20,737</td>
+                <td class="px-6 py-4 money" data-usd="20661.21479516">$20,661</td>
                 <td class="px-6 py-4">1.5%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+52.4%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+51.9%</td>
                 <td class="px-6 py-4 text-on-surface">$83</td>
                 <td class="px-6 py-4">
                   
@@ -384,12 +389,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Realty Income Corp</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$63.20</span>
+                  <span class="block">$63.40</span>
                   <span class="text-[10px] text-on-surface-variant">$50.94 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="17828.488751200002">$17,828</td>
+                <td class="px-6 py-4 money" data-usd="17884.908019399998">$17,885</td>
                 <td class="px-6 py-4">1.3%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+24.1%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+24.5%</td>
                 <td class="px-6 py-4 text-on-surface">$913</td>
                 <td class="px-6 py-4">
                   
@@ -405,12 +410,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">JPMorgan Equity Premium ETF</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$57.80</span>
+                  <span class="block">$57.71</span>
                   <span class="text-[10px] text-on-surface-variant">$50.59 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="14820.253390400001">$14,820</td>
+                <td class="px-6 py-4 money" data-usd="14797.176871280002">$14,797</td>
                 <td class="px-6 py-4">1.1%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+14.3%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+14.1%</td>
                 <td class="px-6 py-4 text-on-surface">$1,224</td>
                 <td class="px-6 py-4">
                   
@@ -426,12 +431,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">iShares Semiconductor ETF</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$378.63</span>
+                  <span class="block">$386.97</span>
                   <span class="text-[10px] text-on-surface-variant">$183.89 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="11773.734979230001">$11,774</td>
+                <td class="px-6 py-4 money" data-usd="12033.072458370001">$12,033</td>
                 <td class="px-6 py-4">0.9%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+105.9%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+110.4%</td>
                 <td class="px-6 py-4 text-on-surface">$52</td>
                 <td class="px-6 py-4">
                   
@@ -447,17 +452,19 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Tesla Inc.</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$345.62</span>
+                  <span class="block">$347.70</span>
                   <span class="text-[10px] text-on-surface-variant">$388.93 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="9313.89771312">$9,314</td>
+                <td class="px-6 py-4 money" data-usd="9369.9503352">$9,370</td>
                 <td class="px-6 py-4">0.7%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-11.1%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-10.6%</td>
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface-variant border border-outline-variant/30">WATCH</span>
+                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">1st_BUY</span>
                   
+                  
+                  <span class="text-[10px] text-outline ml-1">(WATCH)</span>
                   
                 </td>
               </tr>
@@ -468,12 +475,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">NVIDIA Corp.</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$183.91</span>
+                  <span class="block">$186.35</span>
                   <span class="text-[10px] text-on-surface-variant">$164.40 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="8963.13100237">$8,963</td>
+                <td class="px-6 py-4 money" data-usd="9082.04807945">$9,082</td>
                 <td class="px-6 py-4">0.7%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+11.9%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+13.3%</td>
                 <td class="px-6 py-4 text-on-surface">$2</td>
                 <td class="px-6 py-4">
                   
@@ -489,12 +496,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">iShares 20+ Year Treasury ETF</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$86.70</span>
+                  <span class="block">$86.55</span>
                   <span class="text-[10px] text-on-surface-variant">$83.80 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="8670.0">$8,670</td>
+                <td class="px-6 py-4 money" data-usd="8655.0">$8,655</td>
                 <td class="px-6 py-4">0.6%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+3.5%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+3.3%</td>
                 <td class="px-6 py-4 text-on-surface">$391</td>
                 <td class="px-6 py-4">
                   
@@ -512,12 +519,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Palantir Technologies</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$130.49</span>
+                  <span class="block">$125.72</span>
                   <span class="text-[10px] text-on-surface-variant">$137.17 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="7420.87404357">$7,421</td>
+                <td class="px-6 py-4 money" data-usd="7149.60751596">$7,150</td>
                 <td class="px-6 py-4">0.5%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-4.9%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-8.3%</td>
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
@@ -533,12 +540,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">SPDR S&P 500 ETF</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$679.91</span>
+                  <span class="block">$680.67</span>
                   <span class="text-[10px] text-on-surface-variant">$508.93 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="6042.72392185">$6,043</td>
+                <td class="px-6 py-4 money" data-usd="6049.47844845">$6,049</td>
                 <td class="px-6 py-4">0.4%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+33.6%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+33.7%</td>
                 <td class="px-6 py-4 text-on-surface">$66</td>
                 <td class="px-6 py-4">
                   
@@ -554,12 +561,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">UnitedHealth Group</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$306.91</span>
+                  <span class="block">$309.93</span>
                   <span class="text-[10px] text-on-surface-variant">$280.44 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="5524.38">$5,524</td>
+                <td class="px-6 py-4 money" data-usd="5578.74">$5,579</td>
                 <td class="px-6 py-4">0.4%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+9.4%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+10.5%</td>
                 <td class="px-6 py-4 text-on-surface">$159</td>
                 <td class="px-6 py-4">
                   
@@ -575,12 +582,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Microsoft Corp.</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$373.07</span>
+                  <span class="block">$373.45</span>
                   <span class="text-[10px] text-on-surface-variant">$390.37 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="4849.54177991">$4,850</td>
+                <td class="px-6 py-4 money" data-usd="4854.481404849999">$4,854</td>
                 <td class="px-6 py-4">0.4%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-4.4%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-4.3%</td>
                 <td class="px-6 py-4 text-on-surface">$45</td>
                 <td class="px-6 py-4">
                   
@@ -596,12 +603,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Alphabet Inc. Class A</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$318.49</span>
+                  <span class="block">$319.86</span>
                   <span class="text-[10px] text-on-surface-variant">$296.51 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="3400.47823724">$3,400</td>
+                <td class="px-6 py-4 money" data-usd="3415.10555736">$3,415</td>
                 <td class="px-6 py-4">0.3%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+7.4%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+7.9%</td>
                 <td class="px-6 py-4 text-on-surface">$9</td>
                 <td class="px-6 py-4">
                   
@@ -613,16 +620,39 @@ tailwind.config = {
               
               <tr class="hover:bg-surface-container-high/50 transition-colors">
                 <td class="px-6 py-4">
+                  <a href="details/AMZN.html" class="block font-headline font-bold text-primary hover:underline">AMZN</a>
+                  <span class="text-[10px] text-on-surface-variant">Amazon.com Inc.</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">$237.93</span>
+                  <span class="text-[10px] text-on-surface-variant">$207.98 avg</span>
+                </td>
+                <td class="px-6 py-4 money" data-usd="1391.4479502">$1,391</td>
+                <td class="px-6 py-4">0.1%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+14.4%</td>
+                <td class="px-6 py-4 text-on-surface">$0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="px-2 py-1 bg-tertiary-container/20 text-xs rounded text-tertiary border border-tertiary/30">TOP_SIGNAL</span>
+                  
+                  
+                  <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
                   <a href="details/SLV.html" class="block font-headline font-bold text-primary hover:underline">SLV</a>
                   <span class="text-[10px] text-on-surface-variant">iShares Silver Trust</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$68.39</span>
+                  <span class="block">$68.83</span>
                   <span class="text-[10px] text-on-surface-variant">$64.11 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="1367.8">$1,368</td>
+                <td class="px-6 py-4 money" data-usd="1376.6">$1,377</td>
                 <td class="px-6 py-4">0.1%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+6.7%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+7.4%</td>
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
@@ -634,37 +664,16 @@ tailwind.config = {
               
               <tr class="hover:bg-surface-container-high/50 transition-colors">
                 <td class="px-6 py-4">
-                  <a href="details/AMZN.html" class="block font-headline font-bold text-primary hover:underline">AMZN</a>
-                  <span class="text-[10px] text-on-surface-variant">Amazon.com Inc.</span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="block">$233.65</span>
-                  <span class="text-[10px] text-on-surface-variant">$207.98 avg</span>
-                </td>
-                <td class="px-6 py-4 money" data-usd="1366.417911">$1,366</td>
-                <td class="px-6 py-4">0.1%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+12.3%</td>
-                <td class="px-6 py-4 text-on-surface">$0</td>
-                <td class="px-6 py-4">
-                  
-                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
-                  
-                  
-                </td>
-              </tr>
-              
-              <tr class="hover:bg-surface-container-high/50 transition-colors">
-                <td class="px-6 py-4">
                   <a href="details/QLD.html" class="block font-headline font-bold text-primary hover:underline">QLD</a>
                   <span class="text-[10px] text-on-surface-variant">ProShares Ultra QQQ</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$68.01</span>
+                  <span class="block">$68.42</span>
                   <span class="text-[10px] text-on-surface-variant">$60.60 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="1360.2">$1,360</td>
+                <td class="px-6 py-4 money" data-usd="1368.4">$1,368</td>
                 <td class="px-6 py-4">0.1%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+12.2%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+12.9%</td>
                 <td class="px-6 py-4 text-on-surface">$2</td>
                 <td class="px-6 py-4">
                   
@@ -680,12 +689,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Direxion Semiconductor Bull 3X</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$71.98</span>
+                  <span class="block">$76.89</span>
                   <span class="text-[10px] text-on-surface-variant">$50.60 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="359.90000000000003">$360</td>
+                <td class="px-6 py-4 money" data-usd="384.45">$384</td>
                 <td class="px-6 py-4">0.0%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+42.2%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+52.0%</td>
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
@@ -701,12 +710,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">ProShares Ultra Ether ETF</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$24.84</span>
+                  <span class="block">$24.80</span>
                   <span class="text-[10px] text-on-surface-variant">$25.88 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="248.4">$248</td>
+                <td class="px-6 py-4 money" data-usd="248.0">$248</td>
                 <td class="px-6 py-4">0.0%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-4.0%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-4.2%</td>
                 <td class="px-6 py-4 text-on-surface">$8</td>
                 <td class="px-6 py-4">
                   
@@ -722,12 +731,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Circle Internet Group</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$85.10</span>
+                  <span class="block">$86.01</span>
                   <span class="text-[10px] text-on-surface-variant">$123.44 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="85.1">$85</td>
+                <td class="px-6 py-4 money" data-usd="86.01">$86</td>
                 <td class="px-6 py-4">0.0%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-31.1%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-30.3%</td>
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
@@ -743,12 +752,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Energy Select Sector SPDR</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$57.33</span>
+                  <span class="block">$57.18</span>
                   <span class="text-[10px] text-on-surface-variant">$60.35 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="57.33">$57</td>
+                <td class="px-6 py-4 money" data-usd="57.18">$57</td>
                 <td class="px-6 py-4">0.0%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-5.0%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-5.3%</td>
                 <td class="px-6 py-4 text-on-surface">$1</td>
                 <td class="px-6 py-4">
                   
@@ -764,17 +773,19 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Financial Select Sector SPDR</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$51.33</span>
+                  <span class="block">$50.89</span>
                   <span class="text-[10px] text-on-surface-variant">$50.27 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="51.33">$51</td>
+                <td class="px-6 py-4 money" data-usd="50.89">$51</td>
                 <td class="px-6 py-4">0.0%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+2.1%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+1.2%</td>
                 <td class="px-6 py-4 text-on-surface">$1</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">2nd_BUY</span>
+                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
                   
+                  
+                  <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
                   
                 </td>
               </tr>
@@ -785,12 +796,12 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">Nike Inc.</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">$44.00</span>
+                  <span class="block">$43.24</span>
                   <span class="text-[10px] text-on-surface-variant">$48.61 avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="44.0">$44</td>
+                <td class="px-6 py-4 money" data-usd="43.24">$43</td>
                 <td class="px-6 py-4">0.0%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-9.5%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-11.0%</td>
                 <td class="px-6 py-4 text-on-surface">$2</td>
                 <td class="px-6 py-4">
                   
@@ -833,7 +844,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;1,236,278,720</td>
                 <td class="px-6 py-4">61.6%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+630.3%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;26,654,881</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;26,654,880</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface-variant border border-outline-variant/30">WATCH</span>
@@ -854,7 +865,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;17,918,410</td>
                 <td class="px-6 py-4">0.9%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+11.7%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;177,754</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;177,766</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
@@ -875,7 +886,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;12,380,250</td>
                 <td class="px-6 py-4">0.6%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+23.4%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;353,597</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;353,605</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
@@ -898,7 +909,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;12,360,000</td>
                 <td class="px-6 py-4">0.6%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+8.3%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;78,179</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;78,180</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
@@ -919,7 +930,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;10,270,000</td>
                 <td class="px-6 py-4">0.5%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+14.1%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;30,006</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;30,003</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
@@ -940,7 +951,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;9,790,000</td>
                 <td class="px-6 py-4">0.5%</td>
                 <td class="px-6 py-4 font-bold text-tertiary">-13.2%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;199,996</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;200,001</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface-variant border border-outline-variant/30">WATCH</span>
@@ -961,7 +972,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;9,178,000</td>
                 <td class="px-6 py-4">0.5%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+14.0%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;155,602</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;155,604</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
@@ -982,7 +993,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;7,830,350</td>
                 <td class="px-6 py-4">0.4%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+1.5%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;17,248</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;17,255</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
@@ -1003,7 +1014,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;7,404,000</td>
                 <td class="px-6 py-4">0.4%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+31.4%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;66,902</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;66,899</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
@@ -1045,7 +1056,7 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;5,170,000</td>
                 <td class="px-6 py-4">0.3%</td>
                 <td class="px-6 py-4 font-bold text-tertiary">-0.4%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;452,802</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;452,805</td>
                 <td class="px-6 py-4">
                   
                   <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">3rd_BUY</span>
@@ -1133,9 +1144,9 @@ tailwind.config = {
             </thead>
             <tbody class="divide-y divide-outline-variant/10 text-on-surface-variant">
               <tr><td class="px-6 py-2">Portfolio</td><td class="px-6 py-2">portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolio.md)</td><td class="px-6 py-2">Screenshot date</td></tr>
-              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-10 22:10:25</td></tr>
-              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-10 22:10:25</td></tr>
-              <tr><td class="px-6 py-2">Dividends (TTM)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-10 22:10:25</td></tr>
+              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-10 22:46:44</td></tr>
+              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-10 22:46:44</td></tr>
+              <tr><td class="px-6 py-2">Dividends (TTM)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-10 22:46:44</td></tr>
             </tbody>
           </table>
         </div>
@@ -1154,6 +1165,17 @@ tailwind.config = {
                 <div>
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">SOXX</h4>
+                </div>
+                <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">EXIT</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">BB 상단 2일 연속 + 3일 누적 >= +10%</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-tertiary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">AMZN</h4>
                 </div>
                 <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">EXIT</span>
               </div>
@@ -1302,7 +1324,7 @@ tailwind.config = {
                 </div>
                 <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">ENTRY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1342,6 +1364,17 @@ tailwind.config = {
               <div class="flex justify-between items-start mb-3">
                 <div>
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">TSLA</h4>
+                </div>
+                <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">ENTRY</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">SPY</h4>
                 </div>
                 <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">ENTRY</span>
@@ -1364,22 +1397,11 @@ tailwind.config = {
               <div class="flex justify-between items-start mb-3">
                 <div>
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
-                  <h4 class="text-xl font-headline font-bold">AMZN</h4>
-                </div>
-                <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">ENTRY</span>
-              </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</p>
-            </div>
-            
-            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
-              <div class="flex justify-between items-start mb-3">
-                <div>
-                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">XLF</h4>
                 </div>
                 <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">ENTRY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1412,7 +1434,7 @@ tailwind.config = {
     <!-- Footer -->
     <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
       This report is for personal reference only. Trading signals are generated from technical indicators (RSI, MACD, MA, BB, ADX, Volume) and do not constitute investment advice.<br>
-      Generated by Trading Assistant v5.0 | 2026-04-10 | Data: yfinance (2026-04-10 22:10:25) | Portfolio: portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolio.md)
+      Generated by Trading Assistant v5.0 | 2026-04-10 | Data: yfinance (2026-04-10 22:46:44) | Portfolio: portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolio.md)
     </p>
   </div>
 </main>
