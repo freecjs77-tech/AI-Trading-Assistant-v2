@@ -405,9 +405,9 @@ tailwind.config = {
               <div class="flex justify-between items-start mb-3">
                 <div>
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
-                  <h4 class="text-xl font-headline font-bold">{{ h.ticker }}</h4>
+                  <h4 class="text-xl font-headline font-bold">{{ h.name if h.is_kospi else h.ticker }}</h4>
                 </div>
-                <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">EXIT</span>
+                <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">{{ h.signal | replace('_', ' ') }}</span>
               </div>
               <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
             </div>
@@ -417,9 +417,9 @@ tailwind.config = {
               <div class="flex justify-between items-start mb-3">
                 <div>
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
-                  <h4 class="text-xl font-headline font-bold">{{ h.ticker }}</h4>
+                  <h4 class="text-xl font-headline font-bold">{{ h.name if h.is_kospi else h.ticker }}</h4>
                 </div>
-                <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">TRIM</span>
+                <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">{{ h.signal | replace('_', ' ') }}</span>
               </div>
               <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
             </div>
@@ -429,9 +429,9 @@ tailwind.config = {
               <div class="flex justify-between items-start mb-3">
                 <div>
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
-                  <h4 class="text-xl font-headline font-bold">{{ h.ticker }}</h4>
+                  <h4 class="text-xl font-headline font-bold">{{ h.name if h.is_kospi else h.ticker }}</h4>
                 </div>
-                <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">ENTRY</span>
+                <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">{{ h.signal | replace('_', ' ') }}</span>
               </div>
               <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
             </div>
