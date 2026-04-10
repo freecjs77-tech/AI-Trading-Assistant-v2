@@ -5,260 +5,173 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Backtest Dashboard — 2026-04-10</title>
 <style>
+  :root {
+    --bg-body: #0a0e17; --bg-sidebar: #111827; --bg-card: #1a1f2e; --bg-card-alt: #151a28;
+    --bg-hover: #1e293b; --border: #1e2636; --border-light: #2a3348;
+    --text-primary: #e5e7eb; --text-secondary: #9ca3af; --text-muted: #6b7280;
+    --accent-green: #10b981; --accent-red: #ef4444; --accent-orange: #f59e0b;
+    --accent-blue: #3b82f6; --accent-purple: #8b5cf6; --accent-teal: #14b8a6;
+    --sidebar-w: 220px;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #fff; color: #1a1a1a; font-size: 14px;
-  }
-  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
-  .header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
-  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
-  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
-  h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
-  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .header-controls a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: #fff; }
-  .nav-active { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
-
-  /* Overview Cards */
-  .overview-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
-  .ov-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 130px; text-align: center; border-top: 4px solid #ccc; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; background: var(--bg-body); color: var(--text-primary); font-size: 14px; }
+  .sidebar { width: var(--sidebar-w); background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+  .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+  .sidebar-brand h2 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 1px; margin: 0; border: none; padding: 0; }
+  .sidebar-brand .brand-sub { font-size: 11px; color: var(--accent-green); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px; }
+  .sidebar-nav { flex: 1; padding: 16px 0; }
+  .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+  .sidebar-nav a:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .sidebar-nav a.active { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); border-left: 3px solid var(--accent-green); }
+  .sidebar-nav .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+  .main { margin-left: var(--sidebar-w); padding: 24px 28px; }
+  .top-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .top-header h1 { font-size: 22px; font-weight: 700; color: #fff; margin: 0; }
+  .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin: 28px 0 16px; }
+  .section-header .sh-bar { width: 4px; height: 20px; border-radius: 2px; }
+  .section-header h2 { font-size: 16px; font-weight: 700; color: #fff; border: none; margin: 0; padding: 0; }
+  .overview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .ov-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; text-align: center; }
   .ov-card .num { font-size: 28px; font-weight: 800; line-height: 1; }
-  .ov-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
-  .ov-card .sub { font-size: 11px; color: #999; margin-top: 2px; }
-
-  /* Tables */
-  .bt-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
-  .bt-table th { background: #f0f0f0; padding: 8px 10px; text-align: center; font-weight: 600; border-bottom: 2px solid #ddd; }
+  .ov-card .lbl { font-size: 11px; color: var(--text-muted); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .ov-card .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .bt-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .bt-table thead { background: var(--bg-card-alt); }
+  .bt-table th { padding: 10px 10px; text-align: center; font-weight: 600; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid var(--border); background: transparent; }
   .bt-table th:first-child { text-align: left; }
-  .bt-table td { padding: 7px 10px; border-bottom: 1px solid #eee; text-align: center; }
+  .bt-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text-primary); }
   .bt-table td:first-child { text-align: left; font-weight: 600; }
-  .bt-table tbody tr:hover { background: #f8f9fa; }
-
-  /* Badges */
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-  .badge-BUY { background: #27ae60; color: #fff; }
-  .badge-exit { background: #e74c3c; color: #fff; }
-  .badge-HOLD { background: #95a5a6; color: #fff; }
-  .badge-src { background: #34495e; color: #fff; font-size: 10px; }
-
-  /* Source cards */
-  .source-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-  .src-card { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; flex: 1; min-width: 200px; border-left: 4px solid #3498db; }
-  .src-card .src-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
-  .src-card .src-row { display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0; }
-
-  /* Condition cards */
-  .cond-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-  .cond-card { background: #f0f4f8; border-radius: 6px; padding: 8px 12px; font-size: 12px; min-width: 120px; }
-  .cond-card .cond-name { font-weight: 600; color: #333; }
+  .bt-table tbody tr:hover td { background: var(--bg-hover); }
+  .bt-table tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; letter-spacing: 0.3px; }
+  .badge-BUY { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+  .badge-exit { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+  .badge-HOLD { background: rgba(107,114,128,0.15); color: var(--text-muted); border: 1px solid rgba(107,114,128,0.3); }
+  .badge-src { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); font-size: 10px; }
+  .source-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .src-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; border-left: 4px solid var(--accent-blue); }
+  .src-card .src-title { font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #fff; }
+  .src-card .src-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: var(--text-secondary); }
+  .cond-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .cond-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 12px; min-width: 130px; }
+  .cond-card .cond-name { font-weight: 600; color: var(--text-primary); }
   .cond-card .cond-wr { font-weight: 700; }
-
-  /* Recommendation cards */
-  .rec-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-  .rec-card { border-radius: 6px; padding: 8px 12px; font-size: 12px; min-width: 180px; max-width: 300px; }
-  .rec-review { background: #fff3e0; border-left: 3px solid #e67e22; }
-  .rec-good { background: #e8f5e9; border-left: 3px solid #27ae60; }
-  .rec-neutral { background: #f5f5f5; border-left: 3px solid #bbb; }
-  .rec-card .rec-param { font-weight: 600; color: #333; }
-  .rec-card .rec-reason { color: #555; margin-top: 4px; }
-  .rec-card .rec-conf { color: #888; font-size: 11px; margin-top: 2px; }
-
-  /* Records table */
-  .records-controls { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-  .records-controls select, .records-controls input {
-    padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;
-  }
-
-  /* Pending */
+  .rec-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .rec-card { border-radius: 8px; padding: 10px 14px; font-size: 12px; min-width: 200px; max-width: 320px; background: var(--bg-card); border: 1px solid var(--border); }
+  .rec-review { border-left: 3px solid var(--accent-orange); }
+  .rec-good { border-left: 3px solid var(--accent-green); }
+  .rec-neutral { border-left: 3px solid var(--text-muted); }
+  .rec-card .rec-param { font-weight: 600; color: #fff; }
+  .rec-card .rec-reason { color: var(--text-secondary); margin-top: 4px; }
+  .rec-card .rec-conf { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+  .records-controls { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .records-controls select { padding: 6px 10px; border: 1px solid var(--border-light); border-radius: 8px; font-size: 12px; background: var(--bg-card); color: var(--text-primary); }
   .pending-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-  .pending-card { background: #fffde7; border-radius: 6px; padding: 8px 12px; font-size: 12px; border-left: 3px solid #f9a825; min-width: 160px; }
-
-  /* Footer */
-  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
-
-  .up { color: #27ae60; } .dn { color: #e74c3c; }
-
-  @media (max-width: 600px) {
-    .ov-card { min-width: 80px; }
-    .src-card { min-width: 100%; }
-    .header-row { flex-direction: column; align-items: flex-start; }
-    .header-controls { margin: 8px 0; }
+  .pending-card { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 10px 14px; font-size: 12px; border-left: 3px solid var(--accent-orange); min-width: 180px; color: var(--text-secondary); }
+  .up { color: var(--accent-green); } .dn { color: var(--accent-red); }
+  .report-footer { font-size: 11px; color: var(--text-muted); margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); line-height: 1.6; }
+  .mobile-menu-btn { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text-primary); font-size: 20px; cursor: pointer; }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.open { display: block; }
+    .mobile-menu-btn { display: block; }
+    .main { margin-left: 0; padding: 16px; padding-top: 56px; }
+    .overview-grid { grid-template-columns: repeat(2, 1fr); }
+    .top-header { flex-direction: column; align-items: flex-start; gap: 6px; }
   }
 </style>
 </head>
 <body>
-<div class="container">
+<button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><h2>TRADING</h2><div class="brand-sub">COMMAND CENTER</div></div>
+  <nav class="sidebar-nav">
+    <a href="index.html"><span class="nav-icon">&#9638;</span> Dashboard</a>
+    <a href="scanner_2026-04-10.html"><span class="nav-icon">&#9678;</span> Scanner</a>
+    <a href="backtest_2026-04-10.html" class="active"><span class="nav-icon">&#8634;</span> Backtest</a>
+    <a href="trend_2026-04-10.html"><span class="nav-icon">&#8599;</span> Trend</a>
+    <a href="archive.html"><span class="nav-icon">&#9783;</span> Archive</a>
+  </nav>
+  <div class="sidebar-footer">2026년 4월 10일 (금요일)</div>
+</aside>
 
-  <!-- Header + Navigation -->
-  <h1>Trading Assistant v2.0 — Backtest</h1>
-  <div class="header-controls">
-    <a href="index.html" style="background:#2c3e50;">Signal Report</a>
-    <a href="scanner_2026-04-10.html" style="background:#27ae60;">Market Scanner</a>
-    <a href="backtest_2026-04-10.html" style="background:#8e44ad;" class="nav-active">Backtest</a>
-    <a href="trend_2026-04-10.html" style="background:#e67e22;">Asset Trend</a>
-    <a href="archive.html" style="background:#7f8c8d;">Archive</a>
-  </div>
+<div class="main">
+  <div class="top-header"><h1>Backtest Dashboard</h1></div>
   <p class="subtitle">
     2026년 4월 10일 (금요일) &nbsp;|&nbsp;
     2026-03-30 ~ 2026-03-30 &nbsp;|&nbsp;
     6건 분석
     
-    &nbsp;|&nbsp; <span style="color:#e67e22;">데이터 축적 중 (6/20건)</span>
+    &nbsp;|&nbsp; <span style="color:var(--accent-orange);">데이터 축적 중 (6/20건)</span>
     
   </p>
 
-  <!-- ═══ 1. Overview Cards ═══ -->
+  <!-- Overview -->
   <div class="overview-grid">
-    <div class="ov-card" style="border-color:#8e44ad;">
-      <div class="num" style="color:#8e44ad;">6</div>
-      <div class="lbl">평가 완료</div>
-    </div>
-    <div class="ov-card" style="border-color:#27ae60;">
-      <div class="num dn">
-        0%
-      </div>
-      <div class="lbl">BUY 승률 (5d)</div>
-    </div>
-    <div class="ov-card" style="border-color:#3498db;">
-      <div class="num" style="color:#3498db;">
-        100%
-      </div>
-      <div class="lbl">도달률 (10d)</div>
-      <div class="sub">+3.0% 도달</div>
-    </div>
-    <div class="ov-card" style="border-color:#e74c3c;">
-      <div class="num" style="color:#e74c3c;">
-        —
-      </div>
-      <div class="lbl">Alpha vs SPY</div>
-      <div class="sub">BUY 5d 기준</div>
-    </div>
+    <div class="ov-card"><div class="num" style="color:var(--accent-purple);">6</div><div class="lbl">평가 완료</div></div>
+    <div class="ov-card"><div class="num dn">0%</div><div class="lbl">BUY 승률 (5d)</div></div>
+    <div class="ov-card"><div class="num" style="color:var(--accent-blue);">100%</div><div class="lbl">도달률 (10d)</div><div class="sub">+3.0% 도달</div></div>
+    <div class="ov-card"><div class="num" style="color:var(--accent-red);">—</div><div class="lbl">Alpha vs SPY</div><div class="sub">BUY 5d 기준</div></div>
   </div>
 
-  <!-- ═══ 2. Signal Performance Table ═══ -->
-  <h2>📊 시그널별 성과</h2>
+  <!-- Signal Performance -->
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-purple);"></div><h2>시그널별 성과</h2></div>
   
   <table class="bt-table">
-    <thead>
-      <tr>
-        <th>시그널</th>
-        <th>샘플</th>
-        <th>3일 승률</th>
-        <th>5일 승률</th>
-        <th>10일 승률</th>
-        <th>도달률</th>
-        <th>평균수익(5d)</th>
-        <th>Best / Worst</th>
-      </tr>
-    </thead>
+    <thead><tr><th>시그널</th><th>샘플</th><th>3일 승률</th><th>5일 승률</th><th>10일 승률</th><th>도달률</th><th>평균수익(5d)</th><th>Best / Worst</th></tr></thead>
     <tbody>
     
-      <tr>
-        <td><span class="badge badge-exit">TAKE_PROFIT_1</span></td>
-        <td>2</td>
-        <td>
-          
-            <span class="dn">0%</span>
-          
-        </td>
-        <td>
-          
-            <span class="dn">0%</span>
-          
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          
-            <span class="up">4.83%</span>
-          
-        </td>
-        <td style="font-size:11px;text-align:left;">
-          
-          
-        </td>
-      </tr>
+    <tr>
+      <td><span class="badge badge-exit">TAKE_PROFIT_1</span></td>
+      <td>2</td>
+      <td><span class="dn">0%</span></td>
+      <td><span class="dn">0%</span></td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="up">4.83%</span></td>
+      <td style="font-size:11px;text-align:left;"></td>
+    </tr>
     
-      <tr>
-        <td><span class="badge badge-BUY">1st_BUY</span></td>
-        <td>1</td>
-        <td>
-          
-            <span class="dn">0%</span>
-          
-        </td>
-        <td>
-          
-            <span class="dn">0%</span>
-          
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          
-            <span style="color:#3498db;font-weight:700;">100%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">2.64%</span>
-          
-        </td>
-        <td style="font-size:11px;text-align:left;">
-          
-          
-        </td>
-      </tr>
+    <tr>
+      <td><span class="badge badge-BUY">1st_BUY</span></td>
+      <td>1</td>
+      <td><span class="dn">0%</span></td>
+      <td><span class="dn">0%</span></td>
+      <td>—</td>
+      <td><span style="color:var(--accent-blue);font-weight:700;">100%</span></td>
+      <td><span class="up">2.64%</span></td>
+      <td style="font-size:11px;text-align:left;"></td>
+    </tr>
     
-      <tr>
-        <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
-        <td>3</td>
-        <td>
-          
-            <span class="dn">0%</span>
-          
-        </td>
-        <td>
-          
-            <span class="dn">0%</span>
-          
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          
-            <span class="up">3.98%</span>
-          
-        </td>
-        <td style="font-size:11px;text-align:left;">
-          
-          
-        </td>
-      </tr>
+    <tr>
+      <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
+      <td>3</td>
+      <td><span class="dn">0%</span></td>
+      <td><span class="dn">0%</span></td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="up">3.98%</span></td>
+      <td style="font-size:11px;text-align:left;"></td>
+    </tr>
     
     </tbody>
   </table>
   
 
-  <!-- ═══ 3. Benchmark ═══ -->
+  <!-- Benchmark -->
   
 
-  <!-- ═══ 4. Source Breakdown ═══ -->
+  <!-- Source Breakdown -->
   
-  <h2>🏷️ 소스별 성과</h2>
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-teal);"></div><h2>소스별 성과</h2></div>
   <div class="source-grid">
     
-    <div class="src-card" style="border-color:#2c3e50;">
+    <div class="src-card" style="border-left-color:#6b7280;">
       <div class="src-title">PORTFOLIO</div>
       <div class="src-row"><span>전체</span><span>6건</span></div>
       <div class="src-row"><span>BUY</span><span>1건</span></div>
@@ -274,280 +187,154 @@
   </div>
   
 
-  <!-- ═══ 5. Condition Analysis ═══ -->
+  <!-- Condition Analysis -->
   
-  <h2>🔬 조건별 BUY 승률 (5일)</h2>
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-orange);"></div><h2>조건별 BUY 승률 (5일)</h2></div>
   <div class="cond-grid">
     
     <div class="cond-card">
       <div class="cond-name">RSI<=35</div>
-      <div>
-        <span class="cond-wr dn">0%</span>
-        <span style="color:#888;margin-left:4px;">(1건)</span>
-      </div>
-      <div style="color:#666;">avg 2.64%</div>
+      <div><span class="cond-wr dn">0%</span> <span style="color:var(--text-muted);margin-left:4px;">(1건)</span></div>
+      <div style="color:var(--text-secondary);">avg 2.64%</div>
     </div>
     
     <div class="cond-card">
       <div class="cond-name">MS_RED</div>
-      <div>
-        <span class="cond-wr dn">0%</span>
-        <span style="color:#888;margin-left:4px;">(1건)</span>
-      </div>
-      <div style="color:#666;">avg 2.64%</div>
+      <div><span class="cond-wr dn">0%</span> <span style="color:var(--text-muted);margin-left:4px;">(1건)</span></div>
+      <div style="color:var(--text-secondary);">avg 2.64%</div>
     </div>
     
   </div>
   
 
-  <!-- ═══ 6. Individual Records ═══ -->
+  <!-- Individual Records -->
   
-  <h2>📋 개별 시그널 기록</h2>
+  <div class="section-header"><div class="sh-bar" style="background:var(--text-muted);"></div><h2>개별 시그널 기록</h2></div>
   <div class="records-controls">
     <select id="filterSignal" onchange="filterRecords()">
       <option value="">전체 시그널</option>
-      <option value="1st_BUY">1st_BUY</option>
-      <option value="2nd_BUY">2nd_BUY</option>
-      <option value="3rd_BUY">3rd_BUY</option>
-      <option value="TAKE_PROFIT_1">TAKE_PROFIT_1</option>
-      <option value="TAKE_PROFIT_2">TAKE_PROFIT_2</option>
-      <option value="TOP_SIGNAL">TOP_SIGNAL</option>
+      <option value="1st_BUY">1st_BUY</option><option value="2nd_BUY">2nd_BUY</option><option value="3rd_BUY">3rd_BUY</option>
+      <option value="TAKE_PROFIT_1">TAKE_PROFIT_1</option><option value="TAKE_PROFIT_2">TAKE_PROFIT_2</option><option value="TOP_SIGNAL">TOP_SIGNAL</option>
     </select>
     <select id="filterSource" onchange="filterRecords()">
       <option value="">전체 소스</option>
-      <option value="portfolio">Portfolio</option>
-      <option value="sp100">SP100</option>
-      <option value="etf">ETF</option>
-      <option value="kospi">KOSPI</option>
+      <option value="portfolio">Portfolio</option><option value="sp100">SP100</option><option value="etf">ETF</option><option value="kospi">KOSPI</option>
     </select>
   </div>
   <table class="bt-table" id="recordsTable">
-    <thead>
-      <tr>
-        <th style="cursor:pointer;" onclick="sortTable(0)">날짜 ▲▼</th>
-        <th>소스</th>
-        <th>종목</th>
-        <th>시그널</th>
-        <th>진입가</th>
-        <th>RSI</th>
-        <th>3d</th>
-        <th>5d</th>
-        <th>10d</th>
-        <th>Max↑</th>
-        <th>Max↓</th>
-      </tr>
-    </thead>
+    <thead><tr>
+      <th style="cursor:pointer;" onclick="sortTable(0)">날짜 &#9650;&#9660;</th>
+      <th>소스</th><th>종목</th><th>시그널</th><th>진입가</th><th>RSI</th><th>3d</th><th>5d</th><th>10d</th><th>Max&#8593;</th><th>Max&#8595;</th>
+    </tr></thead>
     <tbody>
     
-      <tr data-signal="TAKE_PROFIT_1" data-source="portfolio">
-        <td style="font-weight:400;">2026-03-30</td>
-        <td><span class="badge badge-src">PORTFOLIO</span></td>
-        <td style="font-weight:700;">VOO</td>
-        <td><span class="badge badge-exit">TAKE_PROFIT_1</span></td>
-        <td>580.93</td>
-        <td>27.9</td>
-        
-        <td>
-          
-            <span class="up">3.8%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">4.26%</span>
-          
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          
-            <span class="up">+6.96%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">2.86%</span>
-          
-        </td>
-      </tr>
+    <tr data-signal="TAKE_PROFIT_1" data-source="portfolio">
+      <td style="font-weight:400;">2026-03-30</td>
+      <td><span class="badge badge-src">PORTFOLIO</span></td>
+      <td style="font-weight:700;">VOO</td>
+      <td><span class="badge badge-exit">TAKE_PROFIT_1</span></td>
+      <td>580.93</td>
+      <td>27.9</td>
+      
+      <td><span class="up">3.8%</span></td>
+      <td><span class="up">4.26%</span></td>
+      <td>—</td>
+      <td><span class="up">+6.96%</span></td>
+      <td><span class="up">2.86%</span></td>
+    </tr>
     
-      <tr data-signal="TAKE_PROFIT_1" data-source="portfolio">
-        <td style="font-weight:400;">2026-03-30</td>
-        <td><span class="badge badge-src">PORTFOLIO</span></td>
-        <td style="font-weight:700;">QQQ</td>
-        <td><span class="badge badge-exit">TAKE_PROFIT_1</span></td>
-        <td>558.28</td>
-        <td>29.9</td>
-        
-        <td>
-          
-            <span class="up">4.78%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">5.41%</span>
-          
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          
-            <span class="up">+8.56%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">3.39%</span>
-          
-        </td>
-      </tr>
+    <tr data-signal="TAKE_PROFIT_1" data-source="portfolio">
+      <td style="font-weight:400;">2026-03-30</td>
+      <td><span class="badge badge-src">PORTFOLIO</span></td>
+      <td style="font-weight:700;">QQQ</td>
+      <td><span class="badge badge-exit">TAKE_PROFIT_1</span></td>
+      <td>558.28</td>
+      <td>29.9</td>
+      
+      <td><span class="up">4.78%</span></td>
+      <td><span class="up">5.41%</span></td>
+      <td>—</td>
+      <td><span class="up">+8.56%</span></td>
+      <td><span class="up">3.39%</span></td>
+    </tr>
     
-      <tr data-signal="1st_BUY" data-source="portfolio">
-        <td style="font-weight:400;">2026-03-30</td>
-        <td><span class="badge badge-src">PORTFOLIO</span></td>
-        <td style="font-weight:700;">JEPI</td>
-        <td><span class="badge badge-BUY">1st_BUY</span></td>
-        <td>55.24</td>
-        <td>29.7</td>
-        
-        <td>
-          
-            <span class="up">2.19%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">2.64%</span>
-          
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          
-            <span class="up">+4.29%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">1.84%</span>
-          
-        </td>
-      </tr>
+    <tr data-signal="1st_BUY" data-source="portfolio">
+      <td style="font-weight:400;">2026-03-30</td>
+      <td><span class="badge badge-src">PORTFOLIO</span></td>
+      <td style="font-weight:700;">JEPI</td>
+      <td><span class="badge badge-BUY">1st_BUY</span></td>
+      <td>55.24</td>
+      <td>29.7</td>
+      
+      <td><span class="up">2.19%</span></td>
+      <td><span class="up">2.64%</span></td>
+      <td>—</td>
+      <td><span class="up">+4.29%</span></td>
+      <td><span class="up">1.84%</span></td>
+    </tr>
     
-      <tr data-signal="TAKE_PROFIT_2" data-source="portfolio">
-        <td style="font-weight:400;">2026-03-30</td>
-        <td><span class="badge badge-src">PORTFOLIO</span></td>
-        <td style="font-weight:700;">SOXX</td>
-        <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
-        <td>309.79</td>
-        <td>40.4</td>
-        
-        <td>
-          
-            <span class="up">9.63%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">11.08%</span>
-          
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          
-            <span class="up">+19.56%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">6.09%</span>
-          
-        </td>
-      </tr>
+    <tr data-signal="TAKE_PROFIT_2" data-source="portfolio">
+      <td style="font-weight:400;">2026-03-30</td>
+      <td><span class="badge badge-src">PORTFOLIO</span></td>
+      <td style="font-weight:700;">SOXX</td>
+      <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
+      <td>309.79</td>
+      <td>40.4</td>
+      
+      <td><span class="up">9.63%</span></td>
+      <td><span class="up">11.08%</span></td>
+      <td>—</td>
+      <td><span class="up">+19.56%</span></td>
+      <td><span class="up">6.09%</span></td>
+    </tr>
     
-      <tr data-signal="TAKE_PROFIT_2" data-source="portfolio">
-        <td style="font-weight:400;">2026-03-30</td>
-        <td><span class="badge badge-src">PORTFOLIO</span></td>
-        <td style="font-weight:700;">TSLA</td>
-        <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
-        <td>355.28</td>
-        <td>33.9</td>
-        
-        <td>
-          
-            <span class="up">1.49%</span>
-          
-        </td>
-        <td>
-          
-            <span class="dn">-0.69%</span>
-          
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          
-            <span class="up">+7.31%</span>
-          
-        </td>
-        <td>
-          
-            <span class="dn">-3.39%</span>
-          
-        </td>
-      </tr>
+    <tr data-signal="TAKE_PROFIT_2" data-source="portfolio">
+      <td style="font-weight:400;">2026-03-30</td>
+      <td><span class="badge badge-src">PORTFOLIO</span></td>
+      <td style="font-weight:700;">TSLA</td>
+      <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
+      <td>355.28</td>
+      <td>33.9</td>
+      
+      <td><span class="up">1.49%</span></td>
+      <td><span class="dn">-0.69%</span></td>
+      <td>—</td>
+      <td><span class="up">+7.31%</span></td>
+      <td><span class="dn">-3.39%</span></td>
+    </tr>
     
-      <tr data-signal="TAKE_PROFIT_2" data-source="portfolio">
-        <td style="font-weight:400;">2026-03-30</td>
-        <td><span class="badge badge-src">PORTFOLIO</span></td>
-        <td style="font-weight:700;">O</td>
-        <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
-        <td>60.88</td>
-        <td>34.1</td>
-        
-        <td>
-          
-            <span class="up">2.18%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">1.56%</span>
-          
-        </td>
-        <td>
-          —
-        </td>
-        <td>
-          
-            <span class="up">+3.14%</span>
-          
-        </td>
-        <td>
-          
-            <span class="up">0.49%</span>
-          
-        </td>
-      </tr>
+    <tr data-signal="TAKE_PROFIT_2" data-source="portfolio">
+      <td style="font-weight:400;">2026-03-30</td>
+      <td><span class="badge badge-src">PORTFOLIO</span></td>
+      <td style="font-weight:700;">O</td>
+      <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
+      <td>60.88</td>
+      <td>34.1</td>
+      
+      <td><span class="up">2.18%</span></td>
+      <td><span class="up">1.56%</span></td>
+      <td>—</td>
+      <td><span class="up">+3.14%</span></td>
+      <td><span class="up">0.49%</span></td>
+    </tr>
     
     </tbody>
   </table>
   
 
-  <!-- ═══ 7. Recommendations ═══ -->
+  <!-- Recommendations -->
   
-  <h2>💡 파라미터 추천</h2>
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-green);"></div><h2>파라미터 추천</h2></div>
   <div class="rec-grid">
     
     <div class="rec-card rec-neutral">
       <div class="rec-param">3rd_BUY RSI threshold</div>
+      <div class="rec-reason">샘플 0/20건 -- 데이터 축적 중</div>
+      
+    </div>
+    
+    <div class="rec-card rec-neutral">
+      <div class="rec-param">2nd_BUY RSI threshold</div>
       <div class="rec-reason">샘플 0/20건 -- 데이터 축적 중</div>
       
     </div>
@@ -558,27 +345,19 @@
       
     </div>
     
-    <div class="rec-card rec-neutral">
-      <div class="rec-param">2nd_BUY RSI threshold</div>
-      <div class="rec-reason">샘플 0/20건 -- 데이터 축적 중</div>
-      
-    </div>
-    
   </div>
   
 
-
-  <!-- Footer -->
   <div class="report-footer">
     BUY 승리 기준: N거래일 내 +3.0% 이상 |
-    EXIT 승리 기준: 시그널 후 10거래일 내 max gain ≤ +3.0% (조기 EXIT 아님) |
-    도달률: 10거래일 내 +3.0% 한 번이라도 도달 |
+    EXIT 승리 기준: 시그널 후 10거래일 내 max gain &#8804; +3.0% |
+    도달률: 10거래일 내 +3.0% 도달 |
     Alpha: BUY 평균수익 - SPY 동기간 평균수익
   </div>
-
 </div>
 
 <script>
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }
 function filterRecords() {
   var sig = document.getElementById('filterSignal').value;
   var src = document.getElementById('filterSource').value;
@@ -589,7 +368,6 @@ function filterRecords() {
     row.style.display = (matchSig && matchSrc) ? '' : 'none';
   });
 }
-
 function sortTable(col) {
   var table = document.getElementById('recordsTable');
   var tbody = table.querySelector('tbody');
