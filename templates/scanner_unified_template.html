@@ -5,181 +5,152 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Market Scanner — {{ date }}</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #fff; color: #1a1a1a; font-size: 14px;
+  :root {
+    --bg-body: #0a0e17; --bg-sidebar: #111827; --bg-card: #1a1f2e; --bg-card-alt: #151a28;
+    --bg-hover: #1e293b; --border: #1e2636; --border-light: #2a3348;
+    --text-primary: #e5e7eb; --text-secondary: #9ca3af; --text-muted: #6b7280;
+    --accent-green: #10b981; --accent-red: #ef4444; --accent-orange: #f59e0b;
+    --accent-blue: #3b82f6; --accent-purple: #8b5cf6; --accent-teal: #14b8a6;
+    --sidebar-w: 220px;
   }
-  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
-  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
-  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
-  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
-  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
-  .header-controls a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: #fff; }
-  .nav-active { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
-  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
-  .sum-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 90px; text-align: center; border-top: 4px solid #ccc; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; background: var(--bg-body); color: var(--text-primary); font-size: 14px; }
+  .sidebar { width: var(--sidebar-w); background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+  .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+  .sidebar-brand h2 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 1px; margin: 0; border: none; padding: 0; }
+  .sidebar-brand .brand-sub { font-size: 11px; color: var(--accent-green); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px; }
+  .sidebar-nav { flex: 1; padding: 16px 0; }
+  .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+  .sidebar-nav a:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .sidebar-nav a.active { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); border-left: 3px solid var(--accent-green); }
+  .sidebar-nav .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+  .main { margin-left: var(--sidebar-w); padding: 24px 28px; }
+  .top-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .top-header h1 { font-size: 22px; font-weight: 700; color: #fff; margin: 0; }
+  .top-header .header-meta { font-size: 12px; color: var(--text-muted); }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .sum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; text-align: center; }
   .sum-card .num { font-size: 28px; font-weight: 800; line-height: 1; }
-  .sum-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-  .badge-1st { background: #27ae60; color: #fff; }
-  .badge-2nd { background: #3498db; color: #fff; }
-  .badge-3rd { background: #8e44ad; color: #fff; }
-  .badge-BUY { background: #27ae60; color: #fff; }
-  .scanner-tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
-  .scanner-tbl th { background: #f0f0f0; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; white-space: nowrap; }
-  .scanner-tbl td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
-  .scanner-tbl tbody tr:hover { background: #f8f9fa; }
+  .sum-card .lbl { font-size: 11px; color: var(--text-muted); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin: 28px 0 16px; }
+  .section-header .sh-bar { width: 4px; height: 20px; border-radius: 2px; }
+  .section-header h2 { font-size: 16px; font-weight: 700; color: #fff; border: none; margin: 0; padding: 0; }
+  .scanner-tbl { width: 100%; border-collapse: collapse; font-size: 13px; background: var(--bg-card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 24px; }
+  .scanner-tbl thead { background: var(--bg-card-alt); }
+  .scanner-tbl th { padding: 12px 14px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid var(--border); background: transparent; }
+  .scanner-tbl th.tbl-num, .scanner-tbl td.tbl-num { text-align: right; }
+  .scanner-tbl td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-primary); }
+  .scanner-tbl tr:hover td { background: var(--bg-hover); }
+  .scanner-tbl tr:last-child td { border-bottom: none; }
+  .scanner-tbl a { color: var(--accent-blue); text-decoration: none; font-weight: 700; }
+  .scanner-tbl a:hover { text-decoration: underline; }
   .tbl-num { text-align: right; }
-  .up { color: #27ae60; } .dn { color: #e74c3c; }
-  .streak-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; }
-  .streak-confirmed { background: #27ae60; color: #fff; }
-  .streak-pending { background: #e67e22; color: #fff; }
-  .note-cell { max-width: 200px; font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .section-empty { font-size: 13px; color: #888; text-align: center; padding: 20px; }
-  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
-  @media (max-width: 600px) { .sum-card { min-width: 70px; } .header-controls { margin: 8px 0; } .scanner-tbl { font-size: 11px; } .scanner-tbl th, .scanner-tbl td { padding: 5px 6px; } .note-cell { max-width: 100px; } }
+  .up { color: var(--accent-green); } .dn { color: var(--accent-red); }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; letter-spacing: 0.3px; }
+  .badge-1st { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+  .badge-2nd { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
+  .badge-3rd { background: rgba(139,92,246,0.15); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
+  .badge-BUY { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+  .streak-badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+  .streak-confirmed { background: rgba(16,185,129,0.2); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+  .streak-pending { background: rgba(245,158,11,0.2); color: var(--accent-orange); border: 1px solid rgba(245,158,11,0.3); }
+  .note-cell { max-width: 200px; font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .section-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 24px; background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border); }
+  .report-footer { font-size: 11px; color: var(--text-muted); margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .mobile-menu-btn { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text-primary); font-size: 20px; cursor: pointer; }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.open { display: block; }
+    .mobile-menu-btn { display: block; }
+    .main { margin-left: 0; padding: 16px; padding-top: 56px; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .scanner-tbl { font-size: 11px; }
+    .scanner-tbl th, .scanner-tbl td { padding: 8px 8px; }
+    .note-cell { max-width: 100px; }
+    .top-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  }
 </style>
 </head>
 <body>
-<div class="container">
+<button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><h2>TRADING</h2><div class="brand-sub">COMMAND CENTER</div></div>
+  <nav class="sidebar-nav">
+    <a href="{{ nav_portfolio }}"><span class="nav-icon">&#9638;</span> Dashboard</a>
+    <a href="{{ nav_scanner }}" class="active"><span class="nav-icon">&#9678;</span> Scanner</a>
+    <a href="{{ nav_backtest }}"><span class="nav-icon">&#8634;</span> Backtest</a>
+    <a href="{{ nav_trend }}"><span class="nav-icon">&#8599;</span> Trend</a>
+    <a href="archive.html"><span class="nav-icon">&#9783;</span> Archive</a>
+  </nav>
+  <div class="sidebar-footer">{{ date_ko }}</div>
+</aside>
 
-  <h1>Trading Assistant v2.0 — Market Scanner</h1>
-  <div class="header-controls">
-    <a href="{{ nav_portfolio }}" style="background:#2c3e50;">Signal Report</a>
-    <a href="{{ nav_scanner }}" style="background:#27ae60;" class="nav-active">Market Scanner</a>
-    <a href="{{ nav_backtest }}" style="background:#8e44ad;">Backtest</a>
-    <a href="{{ nav_trend }}" style="background:#e67e22;">Asset Trend</a>
-    <a href="archive.html" style="background:#7f8c8d;">Archive</a>
+<div class="main">
+  <div class="top-header">
+    <h1>Market Scanner</h1>
+    <div class="header-meta">S&P 100: {{ sp100_scanned }} / ETF: {{ etf_scanned }} / KOSPI: {{ kospi_scanned }} scanned</div>
   </div>
-  <p class="subtitle">{{ date_ko }} &nbsp;|&nbsp; S&P 100: {{ sp100_scanned }}종목 / ETF: {{ etf_scanned }}종목 / KOSPI: {{ kospi_scanned }}종목 스캔</p>
 
-  <!-- Summary -->
   <div class="summary-grid">
-    <div class="sum-card" style="border-color:#2c3e50;"><div class="num">{{ sp100_total + etf_total + kospi_total }}</div><div class="lbl">TOTAL</div></div>
-    <div class="sum-card" style="border-color:#27ae60;"><div class="num" style="color:#27ae60;">{{ sp100_total }}</div><div class="lbl">S&P 100</div></div>
-    <div class="sum-card" style="border-color:#3498db;"><div class="num" style="color:#3498db;">{{ etf_total }}</div><div class="lbl">ETF</div></div>
-    <div class="sum-card" style="border-color:#e74c3c;"><div class="num" style="color:#e74c3c;">{{ kospi_total }}</div><div class="lbl">KOSPI</div></div>
+    <div class="sum-card"><div class="num" style="color:#fff;">{{ sp100_total + etf_total + kospi_total }}</div><div class="lbl">Total</div></div>
+    <div class="sum-card"><div class="num" style="color:var(--accent-green);">{{ sp100_total }}</div><div class="lbl">S&P 100</div></div>
+    <div class="sum-card"><div class="num" style="color:var(--accent-blue);">{{ etf_total }}</div><div class="lbl">ETF</div></div>
+    <div class="sum-card"><div class="num" style="color:var(--accent-red);">{{ kospi_total }}</div><div class="lbl">KOSPI</div></div>
   </div>
 
-  <!-- ═══ S&P 100 ═══ -->
-  <h2>S&P 100 ({{ (sp100_buy_1st|length) + (sp100_buy_2nd|length) + (sp100_buy_3rd|length) }}종목)</h2>
+  <!-- S&P 100 -->
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-green);"></div><h2>S&P 100 ({{ (sp100_buy_1st|length) + (sp100_buy_2nd|length) + (sp100_buy_3rd|length) }})</h2></div>
   {% set sp100_all = [] %}
   {% for e in sp100_buy_1st %}{% if sp100_all.append({"entry": e, "stage": "1st_BUY", "badge_cls": "badge-1st"}) %}{% endif %}{% endfor %}
   {% for e in sp100_buy_2nd %}{% if sp100_all.append({"entry": e, "stage": "2nd_BUY", "badge_cls": "badge-2nd"}) %}{% endif %}{% endfor %}
   {% for e in sp100_buy_3rd %}{% if sp100_all.append({"entry": e, "stage": "3rd_BUY", "badge_cls": "badge-3rd"}) %}{% endif %}{% endfor %}
   {% if sp100_all %}
-  <table class="scanner-tbl">
-    <thead>
-      <tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr>
-    </thead>
-    <tbody>
-    {% for item in sp100_all %}
-    {% set e = item.entry %}
-      <tr>
-        <td>{{ loop.index }}</td>
-        <td><a href="details/{{ e.ticker }}.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">{{ e.ticker }}</a></td>
-        <td>{{ e.name }}{% if e.market_cap_fmt %} <span style="font-size:11px;color:#999;">{{ e.market_cap_fmt }}</span>{% endif %}</td>
-        <td class="tbl-num">${{ e.price|f2 }}</td>
-        <td class="tbl-num {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
-        <td><span class="badge {{ item.badge_cls }}">{{ item.stage }}</span></td>
-        <td class="tbl-num">{{ e.rsi|f1 if e.rsi else '—' }}</td>
-        <td class="tbl-num">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td>
-        <td class="tbl-num">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td>
-        <td>
-          {% if e.buy_confirmed %}<span class="streak-badge streak-confirmed">{{ e.buy_streak }}일 ✅</span>
-          {% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="streak-badge streak-pending">{{ e.buy_streak }}/2일</span>
-          {% else %}—{% endif %}
-        </td>
-        <td class="note-cell" title="{{ e.note }}">{{ e.note }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p class="section-empty">S&P 100 스캔 결과 없음</p>
-  {% endif %}
+  <table class="scanner-tbl"><thead><tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr></thead>
+  <tbody>
+  {% for item in sp100_all %}{% set e = item.entry %}
+  <tr><td>{{ loop.index }}</td><td><a href="details/{{ e.ticker }}.html">{{ e.ticker }}</a></td><td>{{ e.name }}{% if e.market_cap_fmt %} <span style="font-size:11px;color:var(--text-muted);">{{ e.market_cap_fmt }}</span>{% endif %}</td><td class="tbl-num">${{ e.price|f2 }}</td><td class="tbl-num {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td><td><span class="badge {{ item.badge_cls }}">{{ item.stage }}</span></td><td class="tbl-num">{{ e.rsi|f1 if e.rsi else '—' }}</td><td class="tbl-num">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td><td class="tbl-num">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td><td>{% if e.buy_confirmed %}<span class="streak-badge streak-confirmed">{{ e.buy_streak }}d &#10003;</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="streak-badge streak-pending">{{ e.buy_streak }}/2d</span>{% else %}—{% endif %}</td><td class="note-cell" title="{{ e.note }}">{{ e.note }}</td></tr>
+  {% endfor %}
+  </tbody></table>
+  {% else %}<p class="section-empty">No S&P 100 signals</p>{% endif %}
 
-  <!-- ═══ ETF ═══ -->
-  <h2>ETF ({{ (etf_buy_1st|length) + (etf_buy_2nd|length) + (etf_buy_3rd|length) }}종목)</h2>
+  <!-- ETF -->
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-blue);"></div><h2>ETF ({{ (etf_buy_1st|length) + (etf_buy_2nd|length) + (etf_buy_3rd|length) }})</h2></div>
   {% set etf_all = [] %}
   {% for e in etf_buy_1st %}{% if etf_all.append({"entry": e, "stage": "1st_BUY", "badge_cls": "badge-1st"}) %}{% endif %}{% endfor %}
   {% for e in etf_buy_2nd %}{% if etf_all.append({"entry": e, "stage": "2nd_BUY", "badge_cls": "badge-2nd"}) %}{% endif %}{% endfor %}
   {% for e in etf_buy_3rd %}{% if etf_all.append({"entry": e, "stage": "3rd_BUY", "badge_cls": "badge-3rd"}) %}{% endif %}{% endfor %}
   {% if etf_all %}
-  <table class="scanner-tbl">
-    <thead>
-      <tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr>
-    </thead>
-    <tbody>
-    {% for item in etf_all %}
-    {% set e = item.entry %}
-      <tr>
-        <td>{{ loop.index }}</td>
-        <td><a href="details/{{ e.ticker }}.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">{{ e.ticker }}</a></td>
-        <td>{{ e.name }}{% if e.market_cap_fmt %} <span style="font-size:11px;color:#999;">{{ e.market_cap_fmt }}</span>{% endif %}</td>
-        <td class="tbl-num">${{ e.price|f2 }}</td>
-        <td class="tbl-num {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
-        <td><span class="badge {{ item.badge_cls }}">{{ item.stage }}</span></td>
-        <td class="tbl-num">{{ e.rsi|f1 if e.rsi else '—' }}</td>
-        <td class="tbl-num">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td>
-        <td class="tbl-num">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td>
-        <td>
-          {% if e.buy_confirmed %}<span class="streak-badge streak-confirmed">{{ e.buy_streak }}일 ✅</span>
-          {% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="streak-badge streak-pending">{{ e.buy_streak }}/2일</span>
-          {% else %}—{% endif %}
-        </td>
-        <td class="note-cell" title="{{ e.note }}">{{ e.note }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p class="section-empty">ETF 스캔 결과 없음</p>
-  {% endif %}
+  <table class="scanner-tbl"><thead><tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr></thead>
+  <tbody>
+  {% for item in etf_all %}{% set e = item.entry %}
+  <tr><td>{{ loop.index }}</td><td><a href="details/{{ e.ticker }}.html">{{ e.ticker }}</a></td><td>{{ e.name }}{% if e.market_cap_fmt %} <span style="font-size:11px;color:var(--text-muted);">{{ e.market_cap_fmt }}</span>{% endif %}</td><td class="tbl-num">${{ e.price|f2 }}</td><td class="tbl-num {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td><td><span class="badge {{ item.badge_cls }}">{{ item.stage }}</span></td><td class="tbl-num">{{ e.rsi|f1 if e.rsi else '—' }}</td><td class="tbl-num">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td><td class="tbl-num">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td><td>{% if e.buy_confirmed %}<span class="streak-badge streak-confirmed">{{ e.buy_streak }}d &#10003;</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="streak-badge streak-pending">{{ e.buy_streak }}/2d</span>{% else %}—{% endif %}</td><td class="note-cell" title="{{ e.note }}">{{ e.note }}</td></tr>
+  {% endfor %}
+  </tbody></table>
+  {% else %}<p class="section-empty">No ETF signals</p>{% endif %}
 
-  <!-- ═══ KOSPI ═══ -->
-  <h2>KOSPI ({{ (kospi_buy_1st|length) + (kospi_buy_2nd|length) + (kospi_buy_3rd|length) }}종목)</h2>
+  <!-- KOSPI -->
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-red);"></div><h2>KOSPI ({{ (kospi_buy_1st|length) + (kospi_buy_2nd|length) + (kospi_buy_3rd|length) }})</h2></div>
   {% set kospi_all = [] %}
   {% for e in kospi_buy_1st %}{% if kospi_all.append({"entry": e, "stage": "1st_BUY", "badge_cls": "badge-1st"}) %}{% endif %}{% endfor %}
   {% for e in kospi_buy_2nd %}{% if kospi_all.append({"entry": e, "stage": "2nd_BUY", "badge_cls": "badge-2nd"}) %}{% endif %}{% endfor %}
   {% for e in kospi_buy_3rd %}{% if kospi_all.append({"entry": e, "stage": "3rd_BUY", "badge_cls": "badge-3rd"}) %}{% endif %}{% endfor %}
   {% if kospi_all %}
-  <table class="scanner-tbl">
-    <thead>
-      <tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr>
-    </thead>
-    <tbody>
-    {% for item in kospi_all %}
-    {% set e = item.entry %}
-      <tr>
-        <td>{{ loop.index }}</td>
-        <td><a href="details/{{ e.ticker }}.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">{{ e.ticker }}</a></td>
-        <td>{{ e.name }}{% if e.market_cap_fmt %} <span style="font-size:11px;color:#999;">{{ e.market_cap_fmt }}</span>{% endif %}</td>
-        <td class="tbl-num">₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}</td>
-        <td class="tbl-num {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
-        <td><span class="badge {{ item.badge_cls }}">{{ item.stage }}</span></td>
-        <td class="tbl-num">{{ e.rsi|f1 if e.rsi else '—' }}</td>
-        <td class="tbl-num">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td>
-        <td class="tbl-num">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td>
-        <td>
-          {% if e.buy_confirmed %}<span class="streak-badge streak-confirmed">{{ e.buy_streak }}일 ✅</span>
-          {% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="streak-badge streak-pending">{{ e.buy_streak }}/2일</span>
-          {% else %}—{% endif %}
-        </td>
-        <td class="note-cell" title="{{ e.note }}">{{ e.note }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p class="section-empty">KOSPI 스캔 결과 없음</p>
-  {% endif %}
+  <table class="scanner-tbl"><thead><tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr></thead>
+  <tbody>
+  {% for item in kospi_all %}{% set e = item.entry %}
+  <tr><td>{{ loop.index }}</td><td><a href="details/{{ e.ticker }}.html">{{ e.ticker }}</a></td><td>{{ e.name }}{% if e.market_cap_fmt %} <span style="font-size:11px;color:var(--text-muted);">{{ e.market_cap_fmt }}</span>{% endif %}</td><td class="tbl-num">&#8361;{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}</td><td class="tbl-num {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td><td><span class="badge {{ item.badge_cls }}">{{ item.stage }}</span></td><td class="tbl-num">{{ e.rsi|f1 if e.rsi else '—' }}</td><td class="tbl-num">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td><td class="tbl-num">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td><td>{% if e.buy_confirmed %}<span class="streak-badge streak-confirmed">{{ e.buy_streak }}d &#10003;</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="streak-badge streak-pending">{{ e.buy_streak }}/2d</span>{% else %}—{% endif %}</td><td class="note-cell" title="{{ e.note }}">{{ e.note }}</td></tr>
+  {% endfor %}
+  </tbody></table>
+  {% else %}<p class="section-empty">No KOSPI signals</p>{% endif %}
 
-  <p class="report-footer">
-    Generated by Trading Assistant v2.0 | {{ date }} | Data: yfinance ({{ fetched_at }})
-  </p>
-
+  <p class="report-footer">Generated by Trading Assistant v4.0 | {{ date }} | Data: yfinance ({{ fetched_at }})</p>
 </div>
+<script>
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }
+</script>
 </body>
 </html>

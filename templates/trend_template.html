@@ -6,119 +6,104 @@
 <title>Asset Trend Dashboard — {{ date }}</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #fff; color: #1a1a1a; font-size: 14px;
+  :root {
+    --bg-body: #0a0e17; --bg-sidebar: #111827; --bg-card: #1a1f2e; --bg-card-alt: #151a28;
+    --bg-hover: #1e293b; --border: #1e2636; --border-light: #2a3348;
+    --text-primary: #e5e7eb; --text-secondary: #9ca3af; --text-muted: #6b7280;
+    --accent-green: #10b981; --accent-red: #ef4444; --accent-orange: #f59e0b;
+    --accent-blue: #3b82f6; --accent-purple: #8b5cf6; --accent-teal: #14b8a6;
+    --sidebar-w: 220px;
   }
-  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
-  .header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
-  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
-  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
-  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
-  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .header-controls a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: #fff; }
-  .nav-active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
-
-  .chart-box { background: #f8f9fa; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; background: var(--bg-body); color: var(--text-primary); font-size: 14px; }
+  .sidebar { width: var(--sidebar-w); background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+  .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+  .sidebar-brand h2 { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: 1px; margin: 0; border: none; padding: 0; }
+  .sidebar-brand .brand-sub { font-size: 11px; color: var(--accent-green); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px; }
+  .sidebar-nav { flex: 1; padding: 16px 0; }
+  .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.15s; }
+  .sidebar-nav a:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .sidebar-nav a.active { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); border-left: 3px solid var(--accent-green); }
+  .sidebar-nav .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+  .main { margin-left: var(--sidebar-w); padding: 24px 28px; }
+  .top-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .top-header h1 { font-size: 22px; font-weight: 700; color: #fff; margin: 0; }
+  .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin: 28px 0 16px; }
+  .section-header .sh-bar { width: 4px; height: 20px; border-radius: 2px; }
+  .section-header h2 { font-size: 16px; font-weight: 700; color: #fff; border: none; margin: 0; padding: 0; }
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .sum-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; text-align: center; }
+  .sum-card .num { font-size: 24px; font-weight: 800; line-height: 1; }
+  .sum-card .lbl { font-size: 11px; color: var(--text-muted); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .sum-card .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .chart-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
   .chart-box canvas { max-height: 320px; }
-
-  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
-  .sum-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 140px; text-align: center; border-top: 4px solid #ccc; }
-  .sum-card .num { font-size: 26px; font-weight: 800; line-height: 1; }
-  .sum-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
-  .sum-card .sub { font-size: 11px; color: #999; margin-top: 2px; }
-
-  .pie-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
-  .pie-col { flex: 1; min-width: 300px; background: #f8f9fa; border-radius: 10px; padding: 20px; }
-  .pie-col h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .pie-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .pie-col { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .pie-col h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: #fff; }
   .pie-col canvas { max-height: 280px; }
-
-  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
-  .no-data { color: #888; font-size: 13px; padding: 40px; text-align: center; }
-
-  @media (max-width: 600px) {
-    .sum-card { min-width: 80px; }
-    .pie-col { min-width: 100%; }
-    .header-row { flex-direction: column; align-items: flex-start; }
-    .header-controls { margin: 8px 0; }
+  .no-data { color: var(--text-muted); font-size: 13px; padding: 40px; text-align: center; background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border); }
+  .report-footer { font-size: 11px; color: var(--text-muted); margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .mobile-menu-btn { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text-primary); font-size: 20px; cursor: pointer; }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 90; }
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.open { display: block; }
+    .mobile-menu-btn { display: block; }
+    .main { margin-left: 0; padding: 16px; padding-top: 56px; }
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+    .pie-row { grid-template-columns: 1fr; }
+    .top-header { flex-direction: column; align-items: flex-start; gap: 6px; }
   }
 </style>
 </head>
 <body>
-<div class="container">
+<button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><h2>TRADING</h2><div class="brand-sub">COMMAND CENTER</div></div>
+  <nav class="sidebar-nav">
+    <a href="{{ nav_portfolio }}"><span class="nav-icon">&#9638;</span> Dashboard</a>
+    <a href="{{ nav_scanner }}"><span class="nav-icon">&#9678;</span> Scanner</a>
+    <a href="{{ nav_backtest }}"><span class="nav-icon">&#8634;</span> Backtest</a>
+    <a href="{{ nav_trend }}" class="active"><span class="nav-icon">&#8599;</span> Trend</a>
+    <a href="archive.html"><span class="nav-icon">&#9783;</span> Archive</a>
+  </nav>
+  <div class="sidebar-footer">{{ date_ko }}</div>
+</aside>
 
-  <!-- Header -->
-  <h1>Trading Assistant v2.0 — Asset Trend</h1>
-  <div class="header-controls">
-    <a href="{{ nav_portfolio }}" style="background:#2c3e50;">Signal Report</a>
-    <a href="{{ nav_scanner }}" style="background:#27ae60;">Market Scanner</a>
-    <a href="{{ nav_backtest }}" style="background:#8e44ad;">Backtest</a>
-    <a href="{{ nav_trend }}" style="background:#e67e22;" class="nav-active">Asset Trend</a>
-    <a href="archive.html" style="background:#7f8c8d;">Archive</a>
-  </div>
+<div class="main">
+  <div class="top-header"><h1>Asset Trend</h1></div>
   <p class="subtitle">{{ date_ko }} &nbsp;|&nbsp; {{ data_days }}일 추이 &nbsp;|&nbsp; 데이터: 일별 스냅샷</p>
 
-  <!-- Summary Cards -->
   <div class="summary-grid">
-    <div class="sum-card" style="border-color:#27ae60;">
-      <div class="num" style="color:#27ae60;">₩{{ latest.total_eok }}억</div>
-      <div class="lbl">총 자산</div>
-      <div class="sub" style="color:{{ '#27ae60' if latest.pnl_krw >= 0 else '#e74c3c' }};">{{ '+' if latest.pnl_krw >= 0 else '' }}₩{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
-    </div>
-    <div class="sum-card" style="border-color:#3498db;">
-      <div class="num" style="color:#3498db;">₩{{ latest.cost_eok }}억</div>
-      <div class="lbl">투자 원금</div>
-    </div>
-    <div class="sum-card" style="border-color:#e67e22;">
-      <div class="num" style="color:#e67e22;">₩{{ latest.div_annual_man }}만</div>
-      <div class="lbl">예상 연 배당</div>
-      <div class="sub">수익률 {{ latest.div_yield }}%</div>
-    </div>
-    <div class="sum-card" style="border-color:#95a5a6;">
-      <div class="num">₩{{ latest.cash_eok }}억</div>
-      <div class="lbl">현금 (BIL)</div>
-      <div class="sub">{{ latest.cash_pct }}%</div>
-    </div>
+    <div class="sum-card"><div class="num" style="color:var(--accent-green);">&#8361;{{ latest.total_eok }}억</div><div class="lbl">총 자산</div><div class="sub" style="color:{{ 'var(--accent-green)' if latest.pnl_krw >= 0 else 'var(--accent-red)' }};">{{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div></div>
+    <div class="sum-card"><div class="num" style="color:var(--accent-blue);">&#8361;{{ latest.cost_eok }}억</div><div class="lbl">투자 원금</div></div>
+    <div class="sum-card"><div class="num" style="color:var(--accent-orange);">&#8361;{{ latest.div_annual_man }}만</div><div class="lbl">예상 연 배당</div><div class="sub">수익률 {{ latest.div_yield }}%</div></div>
+    <div class="sum-card"><div class="num" style="color:var(--text-primary);">&#8361;{{ latest.cash_eok }}억</div><div class="lbl">현금 (BIL)</div><div class="sub">{{ latest.cash_pct }}%</div></div>
   </div>
 
-  <!-- 1. Pie Charts (최상단) -->
-  <h2>🥧 포트폴리오 비중</h2>
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-purple);"></div><h2>포트폴리오 비중</h2></div>
   <div class="pie-row">
-    <div class="pie-col">
-      <h3>카테고리별</h3>
-      <canvas id="categoryPie"></canvas>
-    </div>
-    <div class="pie-col">
-      <h3>종목별 (상위 10)</h3>
-      <canvas id="tickerPie"></canvas>
-    </div>
+    <div class="pie-col"><h3>카테고리별</h3><canvas id="categoryPie"></canvas></div>
+    <div class="pie-col"><h3>종목별 (상위 10)</h3><canvas id="tickerPie"></canvas></div>
   </div>
 
   {% if data_days >= 1 %}
-  <!-- 2. Total Asset Trend -->
-  <h2>💰 총 자산 추이</h2>
-  <div class="chart-box">
-    <canvas id="assetTrendChart"></canvas>
-  </div>
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-green);"></div><h2>총 자산 추이</h2></div>
+  <div class="chart-box"><canvas id="assetTrendChart"></canvas></div>
 
-  <!-- 3. P&L Trend -->
-  <h2>📊 수익금 / 수익률 추이</h2>
-  <div class="chart-box">
-    <canvas id="pnlTrendChart"></canvas>
-  </div>
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-purple);"></div><h2>수익금 / 수익률 추이</h2></div>
+  <div class="chart-box"><canvas id="pnlTrendChart"></canvas></div>
 
-  <!-- 4. Dividend Trend -->
-  <h2>💵 예상 연 배당금 추이</h2>
-  <div class="chart-box">
-    <canvas id="divTrendChart"></canvas>
-  </div>
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-orange);"></div><h2>예상 연 배당금 추이</h2></div>
+  <div class="chart-box"><canvas id="divTrendChart"></canvas></div>
 
-  <!-- 5. Macro Trend -->
-  <h2>🌍 매크로 지표 추이</h2>
-  <div class="chart-box">
-    <canvas id="macroChart"></canvas>
-  </div>
+  <div class="section-header"><div class="sh-bar" style="background:var(--accent-red);"></div><h2>매크로 지표 추이</h2></div>
+  <div class="chart-box"><canvas id="macroChart"></canvas></div>
   {% else %}
   <div class="no-data">데이터가 축적되면 추이 차트가 표시됩니다.</div>
   {% endif %}
@@ -126,10 +111,16 @@
   <div class="report-footer">
     데이터 소스: 일별 파이프라인 실행 스냅샷 | 차트: Chart.js 4.x | 총 자산 = USD 종목 x 환율 + KRW 종목
   </div>
-
 </div>
 
 <script>
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }
+
+// Dark theme defaults
+Chart.defaults.color = '#9ca3af';
+Chart.defaults.borderColor = '#1e2636';
+Chart.defaults.plugins.legend.labels.color = '#e5e7eb';
+
 const trend = {{ trend_json }};
 const dates = trend.map(d => d.date.slice(5));
 const totalAsset = trend.map(d => d.total_eok);
@@ -142,202 +133,74 @@ const vixData = trend.map(d => d.vix);
 const yieldData = trend.map(d => d.yield_30y);
 const fxData = trend.map(d => d.usd_krw);
 
+const darkScaleOpts = { ticks: { color: '#9ca3af' }, grid: { color: '#1e2636' } };
+
 {% if data_days >= 1 %}
-// 2. Total Asset Trend (line)
 new Chart(document.getElementById('assetTrendChart'), {
   type: 'line',
   data: {
     labels: dates,
     datasets: [
-      {
-        label: '총 자산 (억원)',
-        data: totalAsset,
-        borderColor: '#27ae60',
-        tension: 0.3,
-        pointRadius: 2,
-        yAxisID: 'y',
-      },
-      {
-        label: '투자 원금 (억원)',
-        data: costBasis,
-        borderColor: '#3498db',
-        borderDash: [5, 5],
-        tension: 0.3,
-        pointRadius: 0,
-        yAxisID: 'y',
-      }
+      { label: '총 자산 (억원)', data: totalAsset, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y' },
+      { label: '투자 원금 (억원)', data: costBasis, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, borderDash: [5, 5], tension: 0.3, pointRadius: 0, yAxisID: 'y' }
     ]
   },
-  options: {
-    responsive: true,
-    plugins: { legend: { position: 'top' } },
-    scales: {
-      y: { title: { display: true, text: '억원' } }
-    }
-  }
+  options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ...darkScaleOpts, title: { display: true, text: '억원', color: '#9ca3af' } } } }
 });
 
-// 3. P&L Trend (line, dual axis)
 new Chart(document.getElementById('pnlTrendChart'), {
   type: 'line',
   data: {
     labels: dates,
     datasets: [
-      {
-        label: '수익금 (억원)',
-        data: pnlAmount,
-        borderColor: '#27ae60',
-        tension: 0.3,
-        pointRadius: 2,
-        yAxisID: 'y',
-      },
-      {
-        label: '수익률 (%)',
-        data: pnlPct,
-        borderColor: '#8e44ad',
-        tension: 0.3,
-        pointRadius: 2,
-        yAxisID: 'y1',
-      }
+      { label: '수익금 (억원)', data: pnlAmount, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y' },
+      { label: '수익률 (%)', data: pnlPct, borderColor: '#8b5cf6', backgroundColor: 'rgba(139,92,246,0.10)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y1' }
     ]
   },
-  options: {
-    responsive: true,
-    plugins: { legend: { position: 'top' } },
-    scales: {
-      y: { position: 'left', title: { display: true, text: '억원' } },
-      y1: { position: 'right', title: { display: true, text: '%' }, grid: { drawOnChartArea: false } }
-    }
-  }
+  options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ...darkScaleOpts, position: 'left', title: { display: true, text: '억원', color: '#9ca3af' } }, y1: { ...darkScaleOpts, position: 'right', title: { display: true, text: '%', color: '#9ca3af' }, grid: { drawOnChartArea: false } } } }
 });
 
-// 4. Dividend Trend (line, dual axis)
 new Chart(document.getElementById('divTrendChart'), {
   type: 'line',
   data: {
     labels: dates,
     datasets: [
-      {
-        label: '예상 연 배당 (만원)',
-        data: divData,
-        borderColor: '#e67e22',
-        tension: 0.3,
-        pointRadius: 2,
-        yAxisID: 'y',
-      },
-      {
-        label: '배당수익률 (%)',
-        data: divYieldData,
-        borderColor: '#27ae60',
-        tension: 0.3,
-        pointRadius: 2,
-        yAxisID: 'y1',
-      }
+      { label: '예상 연 배당 (만원)', data: divData, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.12)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y' },
+      { label: '배당수익률 (%)', data: divYieldData, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', fill: true, tension: 0.3, pointRadius: 2, yAxisID: 'y1' }
     ]
   },
-  options: {
-    responsive: true,
-    plugins: { legend: { position: 'top' } },
-    scales: {
-      y: { position: 'left', title: { display: true, text: '만원' } },
-      y1: { position: 'right', title: { display: true, text: '%' }, grid: { drawOnChartArea: false } }
-    }
-  }
+  options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ...darkScaleOpts, position: 'left', title: { display: true, text: '만원', color: '#9ca3af' } }, y1: { ...darkScaleOpts, position: 'right', title: { display: true, text: '%', color: '#9ca3af' }, grid: { drawOnChartArea: false } } } }
 });
 
-// 5. Macro Trend
 new Chart(document.getElementById('macroChart'), {
   type: 'line',
   data: {
     labels: dates,
     datasets: [
-      {
-        label: 'VIX',
-        data: vixData,
-        borderColor: '#e74c3c',
-        tension: 0.3,
-        pointRadius: 1,
-        yAxisID: 'y',
-      },
-      {
-        label: '30Y Treasury (%)',
-        data: yieldData,
-        borderColor: '#3498db',
-        tension: 0.3,
-        pointRadius: 1,
-        yAxisID: 'y',
-      },
-      {
-        label: 'USD/KRW',
-        data: fxData,
-        borderColor: '#e67e22',
-        tension: 0.3,
-        pointRadius: 1,
-        yAxisID: 'y1',
-      }
+      { label: 'VIX', data: vixData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.10)', fill: true, tension: 0.3, pointRadius: 1, yAxisID: 'y' },
+      { label: '30Y Treasury (%)', data: yieldData, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.08)', fill: true, tension: 0.3, pointRadius: 1, yAxisID: 'y' },
+      { label: 'USD/KRW', data: fxData, borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)', fill: true, tension: 0.3, pointRadius: 1, yAxisID: 'y1' }
     ]
   },
-  options: {
-    responsive: true,
-    plugins: { legend: { position: 'top' } },
-    scales: {
-      y: { position: 'left', title: { display: true, text: 'VIX / Yield' } },
-      y1: { position: 'right', title: { display: true, text: 'USD/KRW' }, grid: { drawOnChartArea: false } }
-    }
-  }
+  options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { ...darkScaleOpts, position: 'left', title: { display: true, text: 'VIX / Yield', color: '#9ca3af' } }, y1: { ...darkScaleOpts, position: 'right', title: { display: true, text: 'USD/KRW', color: '#9ca3af' }, grid: { drawOnChartArea: false } } } }
 });
 {% endif %}
 
-// 3a. Category Pie
 const catData = {{ category_json }};
 new Chart(document.getElementById('categoryPie'), {
   type: 'doughnut',
-  data: {
-    labels: catData.map(d => d.name),
-    datasets: [{
-      data: catData.map(d => d.value),
-      backgroundColor: ['#27ae60', '#3498db', '#e67e22', '#e74c3c', '#95a5a6', '#f1c40f', '#9b59b6', '#1abc9c'],
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: 'right' },
-      tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed.toFixed(1) + '%'; } } }
-    }
-  }
+  data: { labels: catData.map(d => d.name), datasets: [{ data: catData.map(d => d.value), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#6b7280', '#eab308', '#8b5cf6', '#14b8a6'] }] },
+  options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#e5e7eb' } }, tooltip: { callbacks: { label: function(ctx) { return ctx.label + ': ' + ctx.parsed.toFixed(1) + '%'; } } } } }
 });
 
-// 3b. Ticker Pie
 const tickerData = {{ ticker_json }};
 new Chart(document.getElementById('tickerPie'), {
   type: 'doughnut',
   data: {
-    labels: tickerData.map(d => {
-      var amt = d.amount_man;
-      if (amt >= 10000) return d.name + ' ₩' + (amt/10000).toFixed(1) + '억';
-      return d.name + ' ₩' + amt.toLocaleString() + '만';
-    }),
-    datasets: [{
-      data: tickerData.map(d => d.value),
-      backgroundColor: [
-        '#27ae60', '#3498db', '#e74c3c', '#95a5a6', '#2ecc71',
-        '#e67e22', '#9b59b6', '#1abc9c', '#34495e', '#c0392b', '#bdc3c7'
-      ],
-    }]
+    labels: tickerData.map(d => { var a = d.amount_man; if (a >= 10000) return d.name + ' \u20a9' + (a/10000).toFixed(1) + '\uc5b5'; return d.name + ' \u20a9' + a.toLocaleString() + '\ub9cc'; }),
+    datasets: [{ data: tickerData.map(d => d.value), backgroundColor: ['#10b981', '#3b82f6', '#ef4444', '#6b7280', '#34d399', '#f59e0b', '#8b5cf6', '#14b8a6', '#475569', '#dc2626', '#94a3b8'] }]
   },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: 'right' },
-      tooltip: { callbacks: { label: function(ctx) {
-        var d = tickerData[ctx.dataIndex];
-        var amt = d.amount_man;
-        var amtStr = amt >= 10000 ? '₩' + (amt/10000).toFixed(1) + '억' : '₩' + amt.toLocaleString() + '만';
-        return d.name + ': ' + ctx.parsed.toFixed(1) + '% (' + amtStr + ')';
-      } } }
-    }
-  }
+  options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#e5e7eb' } }, tooltip: { callbacks: { label: function(ctx) { var d = tickerData[ctx.dataIndex]; var a = d.amount_man; var s = a >= 10000 ? '\u20a9' + (a/10000).toFixed(1) + '\uc5b5' : '\u20a9' + a.toLocaleString() + '\ub9cc'; return d.name + ': ' + ctx.parsed.toFixed(1) + '% (' + s + ')'; } } } } }
 });
 </script>
 </body>
