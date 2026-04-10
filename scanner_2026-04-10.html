@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Scanner — 2026-04-10</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fff; color: #1a1a1a; font-size: 14px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
+  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  .header-controls a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: #fff; }
+  .nav-active { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .sum-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 90px; text-align: center; border-top: 4px solid #ccc; }
+  .sum-card .num { font-size: 28px; font-weight: 800; line-height: 1; }
+  .sum-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .badge-1st { background: #27ae60; color: #fff; }
+  .badge-2nd { background: #3498db; color: #fff; }
+  .badge-3rd { background: #8e44ad; color: #fff; }
+  .badge-BUY { background: #27ae60; color: #fff; }
+  .scanner-tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
+  .scanner-tbl th { background: #f0f0f0; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; white-space: nowrap; }
+  .scanner-tbl td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  .scanner-tbl tbody tr:hover { background: #f8f9fa; }
+  .tbl-num { text-align: right; }
+  .up { color: #27ae60; } .dn { color: #e74c3c; }
+  .streak-badge { display: inline-block; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+  .streak-confirmed { background: #27ae60; color: #fff; }
+  .streak-pending { background: #e67e22; color: #fff; }
+  .note-cell { max-width: 200px; font-size: 11px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .section-empty { font-size: 13px; color: #888; text-align: center; padding: 20px; }
+  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
+  @media (max-width: 600px) { .sum-card { min-width: 70px; } .header-controls { margin: 8px 0; } .scanner-tbl { font-size: 11px; } .scanner-tbl th, .scanner-tbl td { padding: 5px 6px; } .note-cell { max-width: 100px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Trading Assistant v2.0 — Market Scanner</h1>
+  <div class="header-controls">
+    <a href="index.html" style="background:#2c3e50;">Signal Report</a>
+    <a href="scanner_2026-04-10.html" style="background:#27ae60;" class="nav-active">Market Scanner</a>
+    <a href="backtest_2026-04-10.html" style="background:#8e44ad;">Backtest</a>
+    <a href="trend_2026-04-10.html" style="background:#e67e22;">Asset Trend</a>
+    <a href="archive.html" style="background:#7f8c8d;">Archive</a>
+  </div>
+  <p class="subtitle">2026년 4월 10일 (금요일) &nbsp;|&nbsp; S&P 100: 101종목 / ETF: 20종목 / KOSPI: 90종목 스캔</p>
+
+  <!-- Summary -->
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#2c3e50;"><div class="num">147</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card" style="border-color:#27ae60;"><div class="num" style="color:#27ae60;">67</div><div class="lbl">S&P 100</div></div>
+    <div class="sum-card" style="border-color:#3498db;"><div class="num" style="color:#3498db;">18</div><div class="lbl">ETF</div></div>
+    <div class="sum-card" style="border-color:#e74c3c;"><div class="num" style="color:#e74c3c;">62</div><div class="lbl">KOSPI</div></div>
+  </div>
+
+  <!-- ═══ S&P 100 ═══ -->
+  <h2>S&P 100 (12종목)</h2>
+  
+  
+  
+  
+  
+  <table class="scanner-tbl">
+    <thead>
+      <tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+    
+    
+      <tr>
+        <td>1</td>
+        <td><a href="details/MSFT.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">MSFT</a></td>
+        <td>Microsoft</td>
+        <td class="tbl-num">$373.07</td>
+        <td class="tbl-num dn">-0.34%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">40.0</td>
+        <td class="tbl-num">30.8</td>
+        <td class="tbl-num">-30.9%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>2</td>
+        <td><a href="details/ABT.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">ABT</a></td>
+        <td>Abbott Labs</td>
+        <td class="tbl-num">$102.72</td>
+        <td class="tbl-num dn">-0.81%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">37.2</td>
+        <td class="tbl-num">34.8</td>
+        <td class="tbl-num">-24.6%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>3</td>
+        <td><a href="details/QCOM.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">QCOM</a></td>
+        <td>Qualcomm</td>
+        <td class="tbl-num">$127.75</td>
+        <td class="tbl-num up">+0.19%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">41.1</td>
+        <td class="tbl-num">31.9</td>
+        <td class="tbl-num">-31.1%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>4</td>
+        <td><a href="details/NKE.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">NKE</a></td>
+        <td>Nike</td>
+        <td class="tbl-num">$44.00</td>
+        <td class="tbl-num up">+2.02%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">25.0</td>
+        <td class="tbl-num">44.9</td>
+        <td class="tbl-num">-43.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>5</td>
+        <td><a href="details/AAPL.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">AAPL</a></td>
+        <td>Apple</td>
+        <td class="tbl-num">$260.49</td>
+        <td class="tbl-num up">+0.61%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">55.7</td>
+        <td class="tbl-num">18.1</td>
+        <td class="tbl-num">-8.9%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">4일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>6</td>
+        <td><a href="details/SCHW.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">SCHW</a></td>
+        <td>Schwab</td>
+        <td class="tbl-num">$97.27</td>
+        <td class="tbl-num up">+0.59%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">58.9</td>
+        <td class="tbl-num">18.3</td>
+        <td class="tbl-num">-9.0%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>7</td>
+        <td><a href="details/COF.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">COF</a></td>
+        <td>Capital One</td>
+        <td class="tbl-num">$194.73</td>
+        <td class="tbl-num up">+1.18%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">57.4</td>
+        <td class="tbl-num">25.4</td>
+        <td class="tbl-num">-24.2%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>8</td>
+        <td><a href="details/MDT.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">MDT</a></td>
+        <td>Medtronic</td>
+        <td class="tbl-num">$87.91</td>
+        <td class="tbl-num dn">-0.83%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">46.3</td>
+        <td class="tbl-num">36.4</td>
+        <td class="tbl-num">-15.2%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>9</td>
+        <td><a href="details/AMZN.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">AMZN</a></td>
+        <td>Amazon</td>
+        <td class="tbl-num">$233.65</td>
+        <td class="tbl-num up">+5.60%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">69.0</td>
+        <td class="tbl-num">15.5</td>
+        <td class="tbl-num">-8.0%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>10</td>
+        <td><a href="details/COST.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">COST</a></td>
+        <td>Costco</td>
+        <td class="tbl-num">$1032.03</td>
+        <td class="tbl-num up">+0.17%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">67.4</td>
+        <td class="tbl-num">19.0</td>
+        <td class="tbl-num">-1.9%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>11</td>
+        <td><a href="details/CAT.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">CAT</a></td>
+        <td>Caterpillar</td>
+        <td class="tbl-num">$787.07</td>
+        <td class="tbl-num up">+2.01%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">66.6</td>
+        <td class="tbl-num">16.0</td>
+        <td class="tbl-num">—%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>12</td>
+        <td><a href="details/INTC.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">INTC</a></td>
+        <td>Intel</td>
+        <td class="tbl-num">$61.72</td>
+        <td class="tbl-num up">+4.70%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">74.8</td>
+        <td class="tbl-num">19.8</td>
+        <td class="tbl-num">—%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">4일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    </tbody>
+  </table>
+  
+
+  <!-- ═══ ETF ═══ -->
+  <h2>ETF (17종목)</h2>
+  
+  
+  
+  
+  
+  <table class="scanner-tbl">
+    <thead>
+      <tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+    
+    
+      <tr>
+        <td>1</td>
+        <td><a href="details/KWEB.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">KWEB</a></td>
+        <td>China Internet</td>
+        <td class="tbl-num">$28.79</td>
+        <td class="tbl-num dn">-1.07%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">44.3</td>
+        <td class="tbl-num">32.5</td>
+        <td class="tbl-num">-28.9%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>2</td>
+        <td><a href="details/GLD.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">GLD</a></td>
+        <td>Gold</td>
+        <td class="tbl-num">$437.91</td>
+        <td class="tbl-num up">+0.78%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">50.4</td>
+        <td class="tbl-num">22.8</td>
+        <td class="tbl-num">-11.7%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>3</td>
+        <td><a href="details/EEM.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">EEM</a></td>
+        <td>Emerging Markets</td>
+        <td class="tbl-num">$60.28</td>
+        <td class="tbl-num dn">-0.26%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">59.7</td>
+        <td class="tbl-num">17.1</td>
+        <td class="tbl-num">-4.8%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>4</td>
+        <td><a href="details/XLF.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLF</a></td>
+        <td>Financial Select</td>
+        <td class="tbl-num">$51.33</td>
+        <td class="tbl-num up">+0.25%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">62.2</td>
+        <td class="tbl-num">25.5</td>
+        <td class="tbl-num">-8.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>5</td>
+        <td><a href="details/XLK.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLK</a></td>
+        <td>Technology Select</td>
+        <td class="tbl-num">$142.07</td>
+        <td class="tbl-num up">+0.27%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">59.7</td>
+        <td class="tbl-num">27.9</td>
+        <td class="tbl-num">-6.3%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>6</td>
+        <td><a href="details/XLV.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLV</a></td>
+        <td>Health Care Select</td>
+        <td class="tbl-num">$149.33</td>
+        <td class="tbl-num dn">-0.23%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">51.8</td>
+        <td class="tbl-num">26.9</td>
+        <td class="tbl-num">-6.4%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>7</td>
+        <td><a href="details/XLI.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLI</a></td>
+        <td>Industrial Select</td>
+        <td class="tbl-num">$172.19</td>
+        <td class="tbl-num up">+1.03%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">61.5</td>
+        <td class="tbl-num">31.0</td>
+        <td class="tbl-num">-3.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>8</td>
+        <td><a href="details/XLP.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLP</a></td>
+        <td>Consumer Staples</td>
+        <td class="tbl-num">$83.45</td>
+        <td class="tbl-num up">+0.81%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">52.5</td>
+        <td class="tbl-num">29.2</td>
+        <td class="tbl-num">-6.8%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>9</td>
+        <td><a href="details/XLY.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLY</a></td>
+        <td>Consumer Disc.</td>
+        <td class="tbl-num">$112.74</td>
+        <td class="tbl-num up">+1.73%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">54.2</td>
+        <td class="tbl-num">30.1</td>
+        <td class="tbl-num">-9.3%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>10</td>
+        <td><a href="details/XLRE.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLRE</a></td>
+        <td>Real Estate Select</td>
+        <td class="tbl-num">$42.73</td>
+        <td class="tbl-num up">+0.68%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">63.1</td>
+        <td class="tbl-num">27.6</td>
+        <td class="tbl-num">-2.1%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>11</td>
+        <td><a href="details/XLC.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLC</a></td>
+        <td>Communication Svc</td>
+        <td class="tbl-num">$114.27</td>
+        <td class="tbl-num up">+0.40%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">55.5</td>
+        <td class="tbl-num">27.8</td>
+        <td class="tbl-num">-4.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+      </tr>
+    
+    
+      <tr>
+        <td>12</td>
+        <td><a href="details/EFA.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">EFA</a></td>
+        <td>Intl Developed</td>
+        <td class="tbl-num">$101.95</td>
+        <td class="tbl-num dn">-0.23%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">60.9</td>
+        <td class="tbl-num">29.0</td>
+        <td class="tbl-num">-3.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>13</td>
+        <td><a href="details/IWM.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">IWM</a></td>
+        <td>Russell 2000</td>
+        <td class="tbl-num">$261.96</td>
+        <td class="tbl-num up">+0.57%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">61.8</td>
+        <td class="tbl-num">28.8</td>
+        <td class="tbl-num">-2.7%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>14</td>
+        <td><a href="details/HYG.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">HYG</a></td>
+        <td>High Yield Bond</td>
+        <td class="tbl-num">$80.28</td>
+        <td class="tbl-num up">+0.11%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">62.6</td>
+        <td class="tbl-num">25.7</td>
+        <td class="tbl-num">—%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>15</td>
+        <td><a href="details/XLU.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLU</a></td>
+        <td>Utilities Select</td>
+        <td class="tbl-num">$47.15</td>
+        <td class="tbl-num up">+0.79%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">64.2</td>
+        <td class="tbl-num">15.3</td>
+        <td class="tbl-num">-0.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>16</td>
+        <td><a href="details/XLB.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">XLB</a></td>
+        <td>Materials Select</td>
+        <td class="tbl-num">$51.67</td>
+        <td class="tbl-num dn">-0.15%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">62.9</td>
+        <td class="tbl-num">21.9</td>
+        <td class="tbl-num">-3.2%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>17</td>
+        <td><a href="details/SOXX.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">SOXX</a></td>
+        <td>Semiconductors</td>
+        <td class="tbl-num">$378.63</td>
+        <td class="tbl-num up">+2.22%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">67.2</td>
+        <td class="tbl-num">25.0</td>
+        <td class="tbl-num">—%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+      </tr>
+    
+    </tbody>
+  </table>
+  
+
+  <!-- ═══ KOSPI ═══ -->
+  <h2>KOSPI (38종목)</h2>
+  
+  
+  
+  
+  
+  <table class="scanner-tbl">
+    <thead>
+      <tr><th>#</th><th>Ticker</th><th>Name</th><th class="tbl-num">Price</th><th class="tbl-num">Change%</th><th>Signal</th><th class="tbl-num">RSI</th><th class="tbl-num">ADX</th><th class="tbl-num">52w DD</th><th>Streak</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+    
+    
+      <tr>
+        <td>1</td>
+        <td><a href="details/329180.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">329180</a></td>
+        <td>한국조선해양 <span style="font-size:11px;color:#999;">49.9조</span></td>
+        <td class="tbl-num">₩475,000</td>
+        <td class="tbl-num up">+0.96%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">40.6</td>
+        <td class="tbl-num">32.9</td>
+        <td class="tbl-num">-26.2%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>2</td>
+        <td><a href="details/035420.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">035420</a></td>
+        <td>NAVER <span style="font-size:11px;color:#999;">30.2조</span></td>
+        <td class="tbl-num">₩202,000</td>
+        <td class="tbl-num up">+0.25%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">39.9</td>
+        <td class="tbl-num">30.8</td>
+        <td class="tbl-num">-29.7%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>3</td>
+        <td><a href="details/015760.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">015760</a></td>
+        <td>한국전력 <span style="font-size:11px;color:#999;">27.9조</span></td>
+        <td class="tbl-num">₩43,400</td>
+        <td class="tbl-num up">+0.00%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">43.1</td>
+        <td class="tbl-num">26.3</td>
+        <td class="tbl-num">-36.1%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>4</td>
+        <td><a href="details/000100.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">000100</a></td>
+        <td>유한양행 <span style="font-size:11px;color:#999;">6.9조</span></td>
+        <td class="tbl-num">₩92,900</td>
+        <td class="tbl-num dn">-0.96%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">41.7</td>
+        <td class="tbl-num">23.5</td>
+        <td class="tbl-num">-31.2%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>5</td>
+        <td><a href="details/030000.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">030000</a></td>
+        <td>제일기획 <span style="font-size:11px;color:#999;">2.0조</span></td>
+        <td class="tbl-num">₩19,440</td>
+        <td class="tbl-num up">+1.57%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">43.7</td>
+        <td class="tbl-num">36.7</td>
+        <td class="tbl-num">-15.1%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>6</td>
+        <td><a href="details/009240.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">009240</a></td>
+        <td>한샘 <span style="font-size:11px;color:#999;">6524억</span></td>
+        <td class="tbl-num">₩39,300</td>
+        <td class="tbl-num dn">-1.75%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">39.0</td>
+        <td class="tbl-num">18.0</td>
+        <td class="tbl-num">-23.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>7</td>
+        <td><a href="details/068760.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">068760</a></td>
+        <td>셀트리온제약</td>
+        <td class="tbl-num">₩55,700</td>
+        <td class="tbl-num dn">-1.59%</td>
+        <td><span class="badge badge-1st">1st_BUY</span></td>
+        <td class="tbl-num">40.6</td>
+        <td class="tbl-num">34.1</td>
+        <td class="tbl-num">-26.4%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+      </tr>
+    
+    
+      <tr>
+        <td>8</td>
+        <td><a href="details/207940.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">207940</a></td>
+        <td>삼성바이오로직스 <span style="font-size:11px;color:#999;">72.7조</span></td>
+        <td class="tbl-num">₩1,571,000</td>
+        <td class="tbl-num dn">-0.57%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">46.6</td>
+        <td class="tbl-num">15.1</td>
+        <td class="tbl-num">-20.1%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>9</td>
+        <td><a href="details/012330.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">012330</a></td>
+        <td>현대모비스 <span style="font-size:11px;color:#999;">35.9조</span></td>
+        <td class="tbl-num">₩402,500</td>
+        <td class="tbl-num up">+0.25%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">49.1</td>
+        <td class="tbl-num">11.5</td>
+        <td class="tbl-num">-23.0%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>10</td>
+        <td><a href="details/066570.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">066570</a></td>
+        <td>LG전자 <span style="font-size:11px;color:#999;">21.3조</span></td>
+        <td class="tbl-num">₩118,400</td>
+        <td class="tbl-num up">+1.02%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">56.0</td>
+        <td class="tbl-num">13.8</td>
+        <td class="tbl-num">-18.7%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 2일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>11</td>
+        <td><a href="details/011200.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">011200</a></td>
+        <td>HMM <span style="font-size:11px;color:#999;">20.4조</span></td>
+        <td class="tbl-num">₩21,650</td>
+        <td class="tbl-num up">+3.84%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">61.2</td>
+        <td class="tbl-num">14.3</td>
+        <td class="tbl-num">-14.0%</td>
+        <td>
+          <span class="streak-badge streak-pending">1/2일</span>
+          
+        </td>
+        <td class="note-cell" title="[확인 대기 1/2일] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확인 대기 1/2일] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>12</td>
+        <td><a href="details/000810.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">000810</a></td>
+        <td>삼성화재 <span style="font-size:11px;color:#999;">20.0조</span></td>
+        <td class="tbl-num">₩469,500</td>
+        <td class="tbl-num up">+0.43%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">52.6</td>
+        <td class="tbl-num">13.7</td>
+        <td class="tbl-num">-22.4%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>13</td>
+        <td><a href="details/021240.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">021240</a></td>
+        <td>코웨이 <span style="font-size:11px;color:#999;">5.3조</span></td>
+        <td class="tbl-num">₩75,500</td>
+        <td class="tbl-num up">+1.07%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">53.9</td>
+        <td class="tbl-num">24.6</td>
+        <td class="tbl-num">-31.4%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">4일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>14</td>
+        <td><a href="details/000080.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">000080</a></td>
+        <td>하이트진로 <span style="font-size:11px;color:#999;">1.2조</span></td>
+        <td class="tbl-num">₩17,400</td>
+        <td class="tbl-num up">+2.72%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">58.9</td>
+        <td class="tbl-num">28.3</td>
+        <td class="tbl-num">-20.9%</td>
+        <td>
+          <span class="streak-badge streak-pending">1/2일</span>
+          
+        </td>
+        <td class="note-cell" title="[확인 대기 1/2일] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확인 대기 1/2일] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>15</td>
+        <td><a href="details/096530.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">096530</a></td>
+        <td>씨젠</td>
+        <td class="tbl-num">₩23,350</td>
+        <td class="tbl-num up">+2.41%</td>
+        <td><span class="badge badge-2nd">2nd_BUY</span></td>
+        <td class="tbl-num">52.0</td>
+        <td class="tbl-num">16.3</td>
+        <td class="tbl-num">-31.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 2일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+      </tr>
+    
+    
+      <tr>
+        <td>16</td>
+        <td><a href="details/005930.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">005930</a></td>
+        <td>삼성전자 <span style="font-size:11px;color:#999;">1359.3조</span></td>
+        <td class="tbl-num">₩206,000</td>
+        <td class="tbl-num up">+0.98%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">58.5</td>
+        <td class="tbl-num">16.2</td>
+        <td class="tbl-num">-5.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>17</td>
+        <td><a href="details/000660.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">000660</a></td>
+        <td>SK하이닉스 <span style="font-size:11px;color:#999;">727.4조</span></td>
+        <td class="tbl-num">₩1,027,000</td>
+        <td class="tbl-num up">+2.91%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">57.6</td>
+        <td class="tbl-num">15.3</td>
+        <td class="tbl-num">-6.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>18</td>
+        <td><a href="details/373220.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">373220</a></td>
+        <td>LG에너지솔루션 <span style="font-size:11px;color:#999;">96.4조</span></td>
+        <td class="tbl-num">₩412,000</td>
+        <td class="tbl-num dn">-2.14%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">55.4</td>
+        <td class="tbl-num">12.5</td>
+        <td class="tbl-num">-19.8%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>19</td>
+        <td><a href="details/009150.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">009150</a></td>
+        <td>삼성전기 <span style="font-size:11px;color:#999;">42.7조</span></td>
+        <td class="tbl-num">₩565,000</td>
+        <td class="tbl-num up">+9.50%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">71.2</td>
+        <td class="tbl-num">20.6</td>
+        <td class="tbl-num">—%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>20</td>
+        <td><a href="details/006400.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">006400</a></td>
+        <td>삼성SDI <span style="font-size:11px;color:#999;">37.9조</span></td>
+        <td class="tbl-num">₩481,000</td>
+        <td class="tbl-num up">+0.21%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">69.5</td>
+        <td class="tbl-num">20.6</td>
+        <td class="tbl-num">—%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>21</td>
+        <td><a href="details/086790.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">086790</a></td>
+        <td>하나금융지주 <span style="font-size:11px;color:#999;">32.7조</span></td>
+        <td class="tbl-num">₩119,500</td>
+        <td class="tbl-num up">+2.05%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">61.4</td>
+        <td class="tbl-num">19.9</td>
+        <td class="tbl-num">-8.0%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>22</td>
+        <td><a href="details/005490.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">005490</a></td>
+        <td>POSCO홀딩스 <span style="font-size:11px;color:#999;">27.9조</span></td>
+        <td class="tbl-num">₩369,000</td>
+        <td class="tbl-num up">+0.54%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">59.1</td>
+        <td class="tbl-num">15.1</td>
+        <td class="tbl-num">-10.7%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>23</td>
+        <td><a href="details/051910.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">051910</a></td>
+        <td>LG화학 <span style="font-size:11px;color:#999;">27.9조</span></td>
+        <td class="tbl-num">₩356,000</td>
+        <td class="tbl-num up">+0.28%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">61.1</td>
+        <td class="tbl-num">17.2</td>
+        <td class="tbl-num">-14.6%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>24</td>
+        <td><a href="details/298040.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">298040</a></td>
+        <td>효성티앤씨 <span style="font-size:11px;color:#999;">27.4조</span></td>
+        <td class="tbl-num">₩2,940,000</td>
+        <td class="tbl-num up">+2.01%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">59.9</td>
+        <td class="tbl-num">11.7</td>
+        <td class="tbl-num">-1.7%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>25</td>
+        <td><a href="details/000150.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">000150</a></td>
+        <td>두산 <span style="font-size:11px;color:#999;">21.8조</span></td>
+        <td class="tbl-num">₩1,281,000</td>
+        <td class="tbl-num dn">-1.08%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">60.0</td>
+        <td class="tbl-num">13.7</td>
+        <td class="tbl-num">-1.1%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>26</td>
+        <td><a href="details/096770.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">096770</a></td>
+        <td>SK이노베이션 <span style="font-size:11px;color:#999;">20.5조</span></td>
+        <td class="tbl-num">₩122,400</td>
+        <td class="tbl-num dn">-1.29%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">55.9</td>
+        <td class="tbl-num">14.8</td>
+        <td class="tbl-num">-11.1%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">4일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>27</td>
+        <td><a href="details/000720.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">000720</a></td>
+        <td>현대건설 <span style="font-size:11px;color:#999;">20.2조</span></td>
+        <td class="tbl-num">₩179,500</td>
+        <td class="tbl-num dn">-2.13%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">62.2</td>
+        <td class="tbl-num">28.4</td>
+        <td class="tbl-num">-4.9%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>28</td>
+        <td><a href="details/017670.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">017670</a></td>
+        <td>SK텔레콤 <span style="font-size:11px;color:#999;">19.8조</span></td>
+        <td class="tbl-num">₩93,000</td>
+        <td class="tbl-num dn">-0.85%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">70.4</td>
+        <td class="tbl-num">18.9</td>
+        <td class="tbl-num">-0.8%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>29</td>
+        <td><a href="details/047810.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">047810</a></td>
+        <td>한국항공우주 <span style="font-size:11px;color:#999;">19.5조</span></td>
+        <td class="tbl-num">₩199,900</td>
+        <td class="tbl-num up">+0.00%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">60.2</td>
+        <td class="tbl-num">21.2</td>
+        <td class="tbl-num">-0.8%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>30</td>
+        <td><a href="details/033780.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">033780</a></td>
+        <td>KT&G <span style="font-size:11px;color:#999;">17.3조</span></td>
+        <td class="tbl-num">₩164,300</td>
+        <td class="tbl-num up">+0.67%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">59.9</td>
+        <td class="tbl-num">14.4</td>
+        <td class="tbl-num">-6.2%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>31</td>
+        <td><a href="details/030200.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">030200</a></td>
+        <td>KT <span style="font-size:11px;color:#999;">15.0조</span></td>
+        <td class="tbl-num">₩62,100</td>
+        <td class="tbl-num up">+1.80%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">56.7</td>
+        <td class="tbl-num">18.7</td>
+        <td class="tbl-num">-9.1%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>32</td>
+        <td><a href="details/010950.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">010950</a></td>
+        <td>S-Oil <span style="font-size:11px;color:#999;">14.1조</span></td>
+        <td class="tbl-num">₩120,700</td>
+        <td class="tbl-num up">+0.92%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">57.3</td>
+        <td class="tbl-num">28.3</td>
+        <td class="tbl-num">-14.3%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>33</td>
+        <td><a href="details/241560.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">241560</a></td>
+        <td>두산퓨얼셀 <span style="font-size:11px;color:#999;">6.7조</span></td>
+        <td class="tbl-num">₩69,500</td>
+        <td class="tbl-num up">+3.12%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">66.1</td>
+        <td class="tbl-num">17.4</td>
+        <td class="tbl-num">—%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>34</td>
+        <td><a href="details/004020.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">004020</a></td>
+        <td>현대제철 <span style="font-size:11px;color:#999;">5.3조</span></td>
+        <td class="tbl-num">₩40,400</td>
+        <td class="tbl-num up">+3.06%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">63.2</td>
+        <td class="tbl-num">24.7</td>
+        <td class="tbl-num">-11.9%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">3일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>35</td>
+        <td><a href="details/036570.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">036570</a></td>
+        <td>엔씨소프트 <span style="font-size:11px;color:#999;">4.7조</span></td>
+        <td class="tbl-num">₩240,000</td>
+        <td class="tbl-num up">+2.56%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">60.5</td>
+        <td class="tbl-num">14.6</td>
+        <td class="tbl-num">-2.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>36</td>
+        <td><a href="details/011170.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">011170</a></td>
+        <td>롯데케미칼 <span style="font-size:11px;color:#999;">3.9조</span></td>
+        <td class="tbl-num">₩92,300</td>
+        <td class="tbl-num dn">-4.55%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">62.5</td>
+        <td class="tbl-num">23.5</td>
+        <td class="tbl-num">-4.5%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">4일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>37</td>
+        <td><a href="details/097950.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">097950</a></td>
+        <td>CJ제일제당 <span style="font-size:11px;color:#999;">3.8조</span></td>
+        <td class="tbl-num">₩238,500</td>
+        <td class="tbl-num up">+2.58%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">66.6</td>
+        <td class="tbl-num">21.1</td>
+        <td class="tbl-num">-9.7%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">5일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    
+      <tr>
+        <td>38</td>
+        <td><a href="details/006360.html" style="color:#2980b9;font-weight:bold;text-decoration:underline;">006360</a></td>
+        <td>GS건설 <span style="font-size:11px;color:#999;">3.2조</span></td>
+        <td class="tbl-num">₩37,650</td>
+        <td class="tbl-num up">+5.91%</td>
+        <td><span class="badge badge-3rd">3rd_BUY</span></td>
+        <td class="tbl-num">71.9</td>
+        <td class="tbl-num">33.3</td>
+        <td class="tbl-num">—%</td>
+        <td>
+          <span class="streak-badge streak-confirmed">2일 ✅</span>
+          
+        </td>
+        <td class="note-cell" title="[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.3x</td>
+      </tr>
+    
+    </tbody>
+  </table>
+  
+
+  <p class="report-footer">
+    Generated by Trading Assistant v2.0 | 2026-04-10 | Data: yfinance (2026-04-10 20:11:11)
+  </p>
+
+</div>
+</body>
+</html>
