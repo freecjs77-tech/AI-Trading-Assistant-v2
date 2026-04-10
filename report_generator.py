@@ -581,9 +581,13 @@ def generate_trend_page(
         "div_yield": latest_snap.get("div_yield", 0),
     }
 
-    # 카테고리별 비중
+    # 카테고리별 비중 + 금액
     cat_weights = latest_snap.get("weights_by_category", {})
-    category_data = [{"name": k, "value": v} for k, v in sorted(cat_weights.items(), key=lambda x: -x[1])]
+    _cat_total_krw = latest_snap.get("total_value_krw", 0)
+    category_data = [
+        {"name": k, "value": v, "amount_man": round(_cat_total_krw * v / 100 / 1e4)}
+        for k, v in sorted(cat_weights.items(), key=lambda x: -x[1])
+    ]
 
     # 종목별 비중 (상위 10 + 기타) — 금액 포함
     ticker_weights = latest_snap.get("weights_by_ticker", {})

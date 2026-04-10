@@ -103,7 +103,7 @@ def _generate_archive(report_files):
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-  <script>tailwind.config={{darkMode:"class",theme:{{extend:{{colors:{{"surface-container":"#0f1930","surface-container-high":"#141f38","surface-container-low":"#091328","surface":"#060e20","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary-container":"#004352","secondary":"#2ff801","tertiary":"#ff7166","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d"}},fontFamily:{{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}}}}}</script>
+  <script>tailwind.config={{darkMode:"class",theme:{{extend:{{colors:{{"surface-container":"#0f1930","surface-container-high":"#141f38","surface-container-low":"#091328","surface":"#060e20","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary-container":"#004352","secondary":"#00E5BC","tertiary":"#ff7166","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d"}},fontFamily:{{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}}}}}</script>
 </head>
 <body class="bg-surface text-on-surface font-body">
   <nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 md:flex hidden" id="sidebar">
