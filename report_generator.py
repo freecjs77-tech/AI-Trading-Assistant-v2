@@ -861,6 +861,7 @@ def generate_detail_pages(
             "judgment_sections": sig.get("judgment_sections", []),
             "buy_streak": sig.get("buy_streak", 0),
             "buy_confirmed": sig.get("buy_confirmed", False),
+            "hypo_return": sig.get("hypo_return", {}),
             # 가격
             "price": price,
             "change_pct": sig.get("change_pct", d.get("change_pct", 0)),
@@ -961,6 +962,7 @@ def generate_detail_pages(
             "judgment_sections": e.get("judgment_sections", []),
             "buy_streak": e.get("buy_streak", 0),
             "buy_confirmed": e.get("buy_confirmed", False),
+            "hypo_return": e.get("hypo_return", {}),
             # 가격
             "price": price,
             "change_pct": e.get("change_pct", 0),
