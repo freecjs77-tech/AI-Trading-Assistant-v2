@@ -96,11 +96,11 @@ def generate_chart(symbol: str, output_path: str, days: int = 120) -> bool:
         # 추가 플롯 구성
         add_plots = [
             # MA 오버레이
-            mpf.make_addplot(ma20, color="#2563EB", width=1.0, linestyle="-"),
-            mpf.make_addplot(ma50, color="#F59E0B", width=1.0, linestyle="-"),
+            mpf.make_addplot(ma20, color="#06B6D4", width=1.0, linestyle="-"),     # cyan
+            mpf.make_addplot(ma50, color="#F59E0B", width=1.0, linestyle="-"),     # orange
             # 볼린저 밴드
-            mpf.make_addplot(bb_upper, color="#64748B", width=0.7, linestyle="--"),
-            mpf.make_addplot(bb_lower, color="#64748B", width=0.7, linestyle="--"),
+            mpf.make_addplot(bb_upper, color="#8B5CF6", width=0.7, linestyle="--"),  # purple 점선
+            mpf.make_addplot(bb_lower, color="#8B5CF6", width=0.7, linestyle="--"),  # purple 점선
             # RSI 서브플롯
             mpf.make_addplot(rsi, panel=2, color="#06B6D4", width=1.0, ylabel="RSI"),
             # MACD 서브플롯
