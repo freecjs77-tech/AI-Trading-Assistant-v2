@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Asset Trend Dashboard — 2026-04-10</title>
+<title>Asset Trend Dashboard — 2026-04-12</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,12 +22,12 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
   </div>
   <div class="space-y-2 flex-grow">
     <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="index.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="scanner_2026-04-10.html"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="backtest_2026-04-10.html"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="trend_2026-04-10.html"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="scanner_2026-04-12.html"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="backtest_2026-04-12.html"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="trend_2026-04-12.html"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
     <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
   </div>
-  <div class="pt-6 mt-6 border-t border-outline-variant/20 px-4 text-[10px] text-outline leading-relaxed">2026년 4월 10일 (금요일)</div>
+  <div class="pt-6 mt-6 border-t border-outline-variant/20 px-4 text-[10px] text-outline leading-relaxed">2026년 4월 12일 (일요일)</div>
 </nav>
 <div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
@@ -36,7 +36,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
     <div class="flex items-center gap-4">
       <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
       <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Asset Trend</span>
-      <span class="text-xs text-outline font-label hidden sm:block">2일 추이</span>
+      <span class="text-xs text-outline font-label hidden sm:block">3일 추이</span>
     </div>
   </header>
 
@@ -44,16 +44,16 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
     <!-- Summary -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-2xl font-headline font-bold text-secondary">&#8361;20.57억</div>
+        <div class="text-2xl font-headline font-bold text-secondary">&#8361;20.55억</div>
         <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">총 자산</div>
-        <div class="text-xs mt-1 text-secondary">+&#8361;12.32억 (+149.3%)</div>
+        <div class="text-xs mt-1 text-secondary">+&#8361;12.31억 (+149.4%)</div>
       </div>
       <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-2xl font-headline font-bold text-primary">&#8361;8.25억</div>
+        <div class="text-2xl font-headline font-bold text-primary">&#8361;8.24억</div>
         <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">투자 원금</div>
       </div>
       <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-2xl font-headline font-bold text-tertiary">&#8361;4,225만</div>
+        <div class="text-2xl font-headline font-bold text-tertiary">&#8361;4,223만</div>
         <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">예상 연 배당</div>
         <div class="text-xs text-outline mt-1">수익률 2.05%</div>
       </div>
@@ -66,10 +66,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
 
     <!-- Pie Charts -->
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">pie_chart</span> 포트폴리오 비중</h2>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">카테고리별</h3><canvas id="categoryPie" style="max-height:280px;"></canvas></div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">종목별 (상위 10)</h3><canvas id="tickerPie" style="max-height:280px;"></canvas></div>
-    </div>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">종목별 (상위 10)</h3><canvas id="tickerPie" style="max-height:320px;"></canvas></div>
 
     
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
@@ -91,9 +88,9 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
 
 <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
   <a href="index.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
-  <a href="scanner_2026-04-10.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
-  <a href="trend_2026-04-10.html" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
-  <a href="backtest_2026-04-10.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">history</span><span class="text-[10px] font-label">Backtest</span></a>
+  <a href="scanner_2026-04-12.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="trend_2026-04-12.html" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="backtest_2026-04-12.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">history</span><span class="text-[10px] font-label">Backtest</span></a>
 </nav>
 
 <script>
@@ -103,7 +100,7 @@ Chart.defaults.color = '#a3aac4';
 Chart.defaults.borderColor = '#40485d';
 Chart.defaults.plugins.legend.labels.color = '#dee5ff';
 
-const trend = [{"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4218, "div_yield": 2.11, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.57, "cost_eok": 8.25, "pnl_eok": 12.32, "pnl_pct": 149.3, "div_annual_man": 4225, "div_yield": 2.05, "vix": 19.23, "yield_30y": 4.914, "usd_krw": 1485.41}];
+const trend = [{"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4218, "div_yield": 2.11, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.57, "cost_eok": 8.25, "pnl_eok": 12.32, "pnl_pct": 149.3, "div_annual_man": 4225, "div_yield": 2.05, "vix": 19.23, "yield_30y": 4.914, "usd_krw": 1485.41}, {"date": "2026-04-12", "total_eok": 20.55, "cost_eok": 8.24, "pnl_eok": 12.31, "pnl_pct": 149.4, "div_annual_man": 4223, "div_yield": 2.05, "vix": 19.23, "yield_30y": 4.914, "usd_krw": 1482.7}];
 const dates = trend.map(d => d.date.slice(5));
 const totalAsset = trend.map(d => d.total_eok);
 const costBasis = trend.map(d => d.cost_eok);
@@ -139,10 +136,7 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'VIX / Yield', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'USD/KRW', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
 
-const catData = [{"name": "Growth", "value": 68.2, "amount_man": 140265}, {"name": "ETF", "value": 22.8, "amount_man": 46892}, {"name": "CASH", "value": 5.9, "amount_man": 12134}, {"name": "Value", "value": 2.2, "amount_man": 4525}, {"name": "Bond", "value": 0.6, "amount_man": 1234}, {"name": "Speculative", "value": 0.2, "amount_man": 411}, {"name": "Metal", "value": 0.1, "amount_man": 206}];
-new Chart(document.getElementById('categoryPie'), { type:'doughnut', data:{ labels:catData.map(d=>{ var a=d.amount_man||0; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:catData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff7166','#ff716c','#6d758c','#fbbf24','#a78bfa','#22d3ee'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=catData[c.dataIndex],a=d.amount_man||0,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
-
-const tickerData = [{"name": "디아이티", "value": 62.5, "amount_man": 128542}, {"name": "VOO", "value": 8.1, "amount_man": 16659}, {"name": "QQQ", "value": 6.1, "amount_man": 12546}, {"name": "BIL", "value": 5.9, "amount_man": 12134}, {"name": "SCHD", "value": 3.3, "amount_man": 6787}, {"name": "AAPL", "value": 1.5, "amount_man": 3085}, {"name": "O", "value": 1.3, "amount_man": 2674}, {"name": "JEPI", "value": 1.1, "amount_man": 2262}, {"name": "SOXX", "value": 0.9, "amount_man": 1851}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1851}, {"name": "기타", "value": 8.3, "amount_man": 17070}];
+const tickerData = [{"name": "디아이티", "value": 62.5, "amount_man": 128466}, {"name": "VOO", "value": 8.0, "amount_man": 16444}, {"name": "QQQ", "value": 6.1, "amount_man": 12538}, {"name": "BIL", "value": 5.9, "amount_man": 12127}, {"name": "SCHD", "value": 3.3, "amount_man": 6783}, {"name": "AAPL", "value": 1.5, "amount_man": 3083}, {"name": "O", "value": 1.3, "amount_man": 2672}, {"name": "JEPI", "value": 1.1, "amount_man": 2261}, {"name": "SOXX", "value": 0.9, "amount_man": 1850}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1850}, {"name": "기타", "value": 8.3, "amount_man": 17060}];
 new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>{ var a=d.amount_man; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff716c','#6d758c','#34d399','#fbbf24','#a78bfa','#22d3ee','#475569','#e51a22','#94a3b8'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
 </script>
 </body>

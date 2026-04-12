@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Scanner — 2026-04-12</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","surface-variant":"#192540","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","on-primary-container":"#004352","secondary":"#00E5BC","secondary-container":"#106e00","on-secondary":"#0b5800","tertiary":"#ff7166","tertiary-container":"#f5282b","on-tertiary":"#4a0003","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c","error-container":"#9f0519"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+</script>
+</head>
+<body class="bg-surface text-on-surface font-body">
+
+<!-- Sidebar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center">
+      <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings:'FILL' 1;">dashboard_customize</span>
+    </div>
+    <div>
+      <h2 class="text-lg font-black text-primary leading-none">Signal Report</h2>
+      <p class="text-[10px] uppercase tracking-widest text-on-surface/40 mt-1">Precision Curator</p>
+    </div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="index.html">
+      <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="scanner_2026-04-12.html">
+      <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="backtest_2026-04-12.html">
+      <span class="material-symbols-outlined">history</span><span>Backtest</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="trend_2026-04-12.html">
+      <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="archive.html">
+      <span class="material-symbols-outlined">inventory_2</span><span>Archive</span>
+    </a>
+  </div>
+  <div class="pt-6 mt-6 border-t border-outline-variant/20 px-4 text-[10px] text-outline leading-relaxed">2026년 4월 12일 (일요일)</div>
+</nav>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<main class="md:ml-64 min-h-screen">
+  <!-- Header -->
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Market Scanner</span>
+      <span class="text-xs text-outline font-label hidden sm:block">S&P 100: 50 / ETF: 10 / KOSPI: 50</span>
+    </div>
+    <div class="text-xs text-outline font-label">2026-04-12 17:05:24</div>
+  </header>
+
+  <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
+    <!-- Summary -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-3xl font-headline font-bold text-on-surface">73</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">Total</div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-3xl font-headline font-bold text-secondary">25</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">S&P 100</div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-3xl font-headline font-bold text-primary">9</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">ETF</div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+        <div class="text-3xl font-headline font-bold text-tertiary">39</div>
+        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">KOSPI</div>
+      </div>
+    </div>
+
+    <!-- S&P 100 -->
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">monitoring</span> S&P 100 (7)</h2>
+    
+    
+    
+    
+    
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+      <table class="w-full text-left border-collapse">
+        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+          <th class="px-5 py-3">#</th><th class="px-5 py-3">Ticker</th><th class="px-5 py-3">Name</th><th class="px-5 py-3 text-right">Price</th><th class="px-5 py-3 text-right">Change%</th><th class="px-5 py-3">Signal</th><th class="px-5 py-3 text-right">RSI</th><th class="px-5 py-3 text-right">ADX</th><th class="px-5 py-3 text-right">52w DD</th><th class="px-5 py-3">Streak</th><th class="px-5 py-3">Note</th>
+        </tr></thead>
+        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">1</td>
+          <td class="px-5 py-3"><a href="details/MSFT.html" class="font-headline font-bold text-primary hover:underline">MSFT</a></td>
+          <td class="px-5 py-3">Microsoft</td>
+          <td class="px-5 py-3 text-right">$370.87</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-0.59%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded border border-secondary/20 font-bold">1st_BUY</span></td>
+          <td class="px-5 py-3 text-right">38.4</td>
+          <td class="px-5 py-3 text-right">29.6</td>
+          <td class="px-5 py-3 text-right">-31.3%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 4일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">2</td>
+          <td class="px-5 py-3"><a href="details/TSLA.html" class="font-headline font-bold text-primary hover:underline">TSLA</a></td>
+          <td class="px-5 py-3">Tesla</td>
+          <td class="px-5 py-3 text-right">$348.95</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.96%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded border border-secondary/20 font-bold">1st_BUY</span></td>
+          <td class="px-5 py-3 text-right">37.1</td>
+          <td class="px-5 py-3 text-right">28.4</td>
+          <td class="px-5 py-3 text-right">-28.8%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">2d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">3</td>
+          <td class="px-5 py-3"><a href="details/QCOM.html" class="font-headline font-bold text-primary hover:underline">QCOM</a></td>
+          <td class="px-5 py-3">Qualcomm</td>
+          <td class="px-5 py-3 text-right">$128.06</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.24%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded border border-secondary/20 font-bold">1st_BUY</span></td>
+          <td class="px-5 py-3 text-right">42.0</td>
+          <td class="px-5 py-3 text-right">30.0</td>
+          <td class="px-5 py-3 text-right">-31.0%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">4</td>
+          <td class="px-5 py-3"><a href="details/AAPL.html" class="font-headline font-bold text-primary hover:underline">AAPL</a></td>
+          <td class="px-5 py-3">Apple</td>
+          <td class="px-5 py-3 text-right">$260.48</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+-0.00%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">55.6</td>
+          <td class="px-5 py-3 text-right">17.2</td>
+          <td class="px-5 py-3 text-right">-8.9%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">5</td>
+          <td class="px-5 py-3"><a href="details/COST.html" class="font-headline font-bold text-primary hover:underline">COST</a></td>
+          <td class="px-5 py-3">Costco</td>
+          <td class="px-5 py-3 text-right">$998.47</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-3.25%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">50.2</td>
+          <td class="px-5 py-3 text-right">17.8</td>
+          <td class="px-5 py-3 text-right">-5.1%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">6</td>
+          <td class="px-5 py-3"><a href="details/MDT.html" class="font-headline font-bold text-primary hover:underline">MDT</a></td>
+          <td class="px-5 py-3">Medtronic</td>
+          <td class="px-5 py-3 text-right">$87.21</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-0.80%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">43.6</td>
+          <td class="px-5 py-3 text-right">34.9</td>
+          <td class="px-5 py-3 text-right">-15.9%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">7</td>
+          <td class="px-5 py-3"><a href="details/AMZN.html" class="font-headline font-bold text-primary hover:underline">AMZN</a></td>
+          <td class="px-5 py-3">Amazon</td>
+          <td class="px-5 py-3 text-right">$238.38</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+2.02%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">71.5</td>
+          <td class="px-5 py-3 text-right">17.2</td>
+          <td class="px-5 py-3 text-right">-6.2%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+
+    <!-- ETF -->
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">donut_small</span> ETF (9)</h2>
+    
+    
+    
+    
+    
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+      <table class="w-full text-left border-collapse">
+        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+          <th class="px-5 py-3">#</th><th class="px-5 py-3">Ticker</th><th class="px-5 py-3">Name</th><th class="px-5 py-3 text-right">Price</th><th class="px-5 py-3 text-right">Change%</th><th class="px-5 py-3">Signal</th><th class="px-5 py-3 text-right">RSI</th><th class="px-5 py-3 text-right">ADX</th><th class="px-5 py-3 text-right">52w DD</th><th class="px-5 py-3">Streak</th><th class="px-5 py-3">Note</th>
+        </tr></thead>
+        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">1</td>
+          <td class="px-5 py-3"><a href="details/GLD.html" class="font-headline font-bold text-primary hover:underline">GLD</a></td>
+          <td class="px-5 py-3">Gold</td>
+          <td class="px-5 py-3 text-right">$437.13</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-0.18%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">50.0</td>
+          <td class="px-5 py-3 text-right">22.1</td>
+          <td class="px-5 py-3 text-right">-11.8%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 4일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">2</td>
+          <td class="px-5 py-3"><a href="details/XLV.html" class="font-headline font-bold text-primary hover:underline">XLV</a></td>
+          <td class="px-5 py-3">Health Care Select</td>
+          <td class="px-5 py-3 text-right">$147.31</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-1.35%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">45.8</td>
+          <td class="px-5 py-3 text-right">25.6</td>
+          <td class="px-5 py-3 text-right">-7.7%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20">[확정 4일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">3</td>
+          <td class="px-5 py-3"><a href="details/EFA.html" class="font-headline font-bold text-primary hover:underline">EFA</a></td>
+          <td class="px-5 py-3">Intl Developed</td>
+          <td class="px-5 py-3 text-right">$102.18</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.23%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">61.4</td>
+          <td class="px-5 py-3 text-right">27.0</td>
+          <td class="px-5 py-3 text-right">-3.3%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">4</td>
+          <td class="px-5 py-3"><a href="details/IWM.html" class="font-headline font-bold text-primary hover:underline">IWM</a></td>
+          <td class="px-5 py-3">Russell 2000</td>
+          <td class="px-5 py-3 text-right">$261.30</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-0.25%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">60.8</td>
+          <td class="px-5 py-3 text-right">26.9</td>
+          <td class="px-5 py-3 text-right">-3.0%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">5</td>
+          <td class="px-5 py-3"><a href="details/EEM.html" class="font-headline font-bold text-primary hover:underline">EEM</a></td>
+          <td class="px-5 py-3">Emerging Markets</td>
+          <td class="px-5 py-3 text-right">$60.56</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.46%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">60.6</td>
+          <td class="px-5 py-3 text-right">16.7</td>
+          <td class="px-5 py-3 text-right">-4.3%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">6</td>
+          <td class="px-5 py-3"><a href="details/XLF.html" class="font-headline font-bold text-primary hover:underline">XLF</a></td>
+          <td class="px-5 py-3">Financial Select</td>
+          <td class="px-5 py-3 text-right">$50.77</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-1.09%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">56.5</td>
+          <td class="px-5 py-3 text-right">23.9</td>
+          <td class="px-5 py-3 text-right">-9.5%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">7</td>
+          <td class="px-5 py-3"><a href="details/XLK.html" class="font-headline font-bold text-primary hover:underline">XLK</a></td>
+          <td class="px-5 py-3">Technology Select</td>
+          <td class="px-5 py-3 text-right">$142.62</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.39%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">60.6</td>
+          <td class="px-5 py-3 text-right">25.9</td>
+          <td class="px-5 py-3 text-right">-6.0%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">8</td>
+          <td class="px-5 py-3"><a href="details/XLI.html" class="font-headline font-bold text-primary hover:underline">XLI</a></td>
+          <td class="px-5 py-3">Industrial Select</td>
+          <td class="px-5 py-3 text-right">$171.52</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-0.39%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">60.0</td>
+          <td class="px-5 py-3 text-right">29.4</td>
+          <td class="px-5 py-3 text-right">-3.9%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">9</td>
+          <td class="px-5 py-3"><a href="details/SOXX.html" class="font-headline font-bold text-primary hover:underline">SOXX</a></td>
+          <td class="px-5 py-3">Semiconductors</td>
+          <td class="px-5 py-3 text-right">$386.60</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+2.10%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">69.6</td>
+          <td class="px-5 py-3 text-right">24.9</td>
+          <td class="px-5 py-3 text-right">—%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스">[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</td>
+        </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+
+    <!-- KOSPI -->
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">flag</span> KOSPI (27)</h2>
+    
+    
+    
+    
+    
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+      <table class="w-full text-left border-collapse">
+        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+          <th class="px-5 py-3">#</th><th class="px-5 py-3">Ticker</th><th class="px-5 py-3">Name</th><th class="px-5 py-3 text-right">Price</th><th class="px-5 py-3 text-right">Change%</th><th class="px-5 py-3">Signal</th><th class="px-5 py-3 text-right">RSI</th><th class="px-5 py-3 text-right">ADX</th><th class="px-5 py-3 text-right">52w DD</th><th class="px-5 py-3">Streak</th><th class="px-5 py-3">Note</th>
+        </tr></thead>
+        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">1</td>
+          <td class="px-5 py-3"><a href="details/329180.html" class="font-headline font-bold text-primary hover:underline">329180</a></td>
+          <td class="px-5 py-3">한국조선해양 <span class="text-[10px] text-outline">49.9조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;475,000</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.96%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded border border-secondary/20 font-bold">1st_BUY</span></td>
+          <td class="px-5 py-3 text-right">40.6</td>
+          <td class="px-5 py-3 text-right">32.9</td>
+          <td class="px-5 py-3 text-right">-26.2%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 4일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">2</td>
+          <td class="px-5 py-3"><a href="details/035420.html" class="font-headline font-bold text-primary hover:underline">035420</a></td>
+          <td class="px-5 py-3">NAVER <span class="text-[10px] text-outline">30.2조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;202,000</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.25%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded border border-secondary/20 font-bold">1st_BUY</span></td>
+          <td class="px-5 py-3 text-right">39.9</td>
+          <td class="px-5 py-3 text-right">30.8</td>
+          <td class="px-5 py-3 text-right">-29.7%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 4일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">3</td>
+          <td class="px-5 py-3"><a href="details/015760.html" class="font-headline font-bold text-primary hover:underline">015760</a></td>
+          <td class="px-5 py-3">한국전력 <span class="text-[10px] text-outline">27.9조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;43,400</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.00%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded border border-secondary/20 font-bold">1st_BUY</span></td>
+          <td class="px-5 py-3 text-right">43.1</td>
+          <td class="px-5 py-3 text-right">26.3</td>
+          <td class="px-5 py-3 text-right">-36.1%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 4일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">4</td>
+          <td class="px-5 py-3"><a href="details/000100.html" class="font-headline font-bold text-primary hover:underline">000100</a></td>
+          <td class="px-5 py-3">유한양행 <span class="text-[10px] text-outline">6.9조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;92,900</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-0.96%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded border border-secondary/20 font-bold">1st_BUY</span></td>
+          <td class="px-5 py-3 text-right">41.7</td>
+          <td class="px-5 py-3 text-right">23.5</td>
+          <td class="px-5 py-3 text-right">-31.2%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가">[확정 3일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">5</td>
+          <td class="px-5 py-3"><a href="details/207940.html" class="font-headline font-bold text-primary hover:underline">207940</a></td>
+          <td class="px-5 py-3">삼성바이오로직스 <span class="text-[10px] text-outline">72.7조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;1,571,000</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-0.57%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">46.6</td>
+          <td class="px-5 py-3 text-right">15.1</td>
+          <td class="px-5 py-3 text-right">-20.1%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">6</td>
+          <td class="px-5 py-3"><a href="details/012330.html" class="font-headline font-bold text-primary hover:underline">012330</a></td>
+          <td class="px-5 py-3">현대모비스 <span class="text-[10px] text-outline">35.9조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;402,500</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.25%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">49.1</td>
+          <td class="px-5 py-3 text-right">11.5</td>
+          <td class="px-5 py-3 text-right">-23.0%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">7</td>
+          <td class="px-5 py-3"><a href="details/066570.html" class="font-headline font-bold text-primary hover:underline">066570</a></td>
+          <td class="px-5 py-3">LG전자 <span class="text-[10px] text-outline">21.3조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;118,400</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+1.02%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">56.0</td>
+          <td class="px-5 py-3 text-right">13.8</td>
+          <td class="px-5 py-3 text-right">-18.7%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 3일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">8</td>
+          <td class="px-5 py-3"><a href="details/011200.html" class="font-headline font-bold text-primary hover:underline">011200</a></td>
+          <td class="px-5 py-3">HMM <span class="text-[10px] text-outline">20.4조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;21,650</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+3.84%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">61.2</td>
+          <td class="px-5 py-3 text-right">14.3</td>
+          <td class="px-5 py-3 text-right">-14.0%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">2d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 2일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 2일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">9</td>
+          <td class="px-5 py-3"><a href="details/000810.html" class="font-headline font-bold text-primary hover:underline">000810</a></td>
+          <td class="px-5 py-3">삼성화재 <span class="text-[10px] text-outline">20.0조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;469,500</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.43%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">52.6</td>
+          <td class="px-5 py-3 text-right">13.7</td>
+          <td class="px-5 py-3 text-right">-22.4%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 4일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">10</td>
+          <td class="px-5 py-3"><a href="details/021240.html" class="font-headline font-bold text-primary hover:underline">021240</a></td>
+          <td class="px-5 py-3">코웨이 <span class="text-[10px] text-outline">5.3조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;75,500</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+1.07%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 font-bold">2nd_BUY</span></td>
+          <td class="px-5 py-3 text-right">53.9</td>
+          <td class="px-5 py-3 text-right">24.6</td>
+          <td class="px-5 py-3 text-right">-31.4%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스">[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">11</td>
+          <td class="px-5 py-3"><a href="details/005930.html" class="font-headline font-bold text-primary hover:underline">005930</a></td>
+          <td class="px-5 py-3">삼성전자 <span class="text-[10px] text-outline">1359.3조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;206,000</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.98%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">58.5</td>
+          <td class="px-5 py-3 text-right">16.2</td>
+          <td class="px-5 py-3 text-right">-5.5%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">12</td>
+          <td class="px-5 py-3"><a href="details/000660.html" class="font-headline font-bold text-primary hover:underline">000660</a></td>
+          <td class="px-5 py-3">SK하이닉스 <span class="text-[10px] text-outline">727.4조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;1,027,000</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+2.91%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">57.6</td>
+          <td class="px-5 py-3 text-right">15.3</td>
+          <td class="px-5 py-3 text-right">-6.5%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">13</td>
+          <td class="px-5 py-3"><a href="details/373220.html" class="font-headline font-bold text-primary hover:underline">373220</a></td>
+          <td class="px-5 py-3">LG에너지솔루션 <span class="text-[10px] text-outline">96.4조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;412,000</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-2.14%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">55.4</td>
+          <td class="px-5 py-3 text-right">12.5</td>
+          <td class="px-5 py-3 text-right">-19.8%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">14</td>
+          <td class="px-5 py-3"><a href="details/009150.html" class="font-headline font-bold text-primary hover:underline">009150</a></td>
+          <td class="px-5 py-3">삼성전기 <span class="text-[10px] text-outline">42.7조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;565,000</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+9.50%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">71.2</td>
+          <td class="px-5 py-3 text-right">20.6</td>
+          <td class="px-5 py-3 text-right">—%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">15</td>
+          <td class="px-5 py-3"><a href="details/006400.html" class="font-headline font-bold text-primary hover:underline">006400</a></td>
+          <td class="px-5 py-3">삼성SDI <span class="text-[10px] text-outline">37.9조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;481,000</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.21%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">69.5</td>
+          <td class="px-5 py-3 text-right">20.6</td>
+          <td class="px-5 py-3 text-right">—%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">16</td>
+          <td class="px-5 py-3"><a href="details/086790.html" class="font-headline font-bold text-primary hover:underline">086790</a></td>
+          <td class="px-5 py-3">하나금융지주 <span class="text-[10px] text-outline">32.7조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;119,500</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+2.05%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">61.4</td>
+          <td class="px-5 py-3 text-right">19.9</td>
+          <td class="px-5 py-3 text-right">-8.0%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">17</td>
+          <td class="px-5 py-3"><a href="details/005490.html" class="font-headline font-bold text-primary hover:underline">005490</a></td>
+          <td class="px-5 py-3">POSCO홀딩스 <span class="text-[10px] text-outline">27.9조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;369,000</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.54%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">59.1</td>
+          <td class="px-5 py-3 text-right">15.1</td>
+          <td class="px-5 py-3 text-right">-10.7%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">18</td>
+          <td class="px-5 py-3"><a href="details/051910.html" class="font-headline font-bold text-primary hover:underline">051910</a></td>
+          <td class="px-5 py-3">LG화학 <span class="text-[10px] text-outline">27.9조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;356,000</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.28%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">61.1</td>
+          <td class="px-5 py-3 text-right">17.2</td>
+          <td class="px-5 py-3 text-right">-14.6%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">19</td>
+          <td class="px-5 py-3"><a href="details/096770.html" class="font-headline font-bold text-primary hover:underline">096770</a></td>
+          <td class="px-5 py-3">SK이노베이션 <span class="text-[10px] text-outline">20.5조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;122,400</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-1.29%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">55.9</td>
+          <td class="px-5 py-3 text-right">14.8</td>
+          <td class="px-5 py-3 text-right">-11.1%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">20</td>
+          <td class="px-5 py-3"><a href="details/000720.html" class="font-headline font-bold text-primary hover:underline">000720</a></td>
+          <td class="px-5 py-3">현대건설 <span class="text-[10px] text-outline">20.2조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;179,500</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-2.13%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">62.2</td>
+          <td class="px-5 py-3 text-right">28.4</td>
+          <td class="px-5 py-3 text-right">-4.9%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">21</td>
+          <td class="px-5 py-3"><a href="details/017670.html" class="font-headline font-bold text-primary hover:underline">017670</a></td>
+          <td class="px-5 py-3">SK텔레콤 <span class="text-[10px] text-outline">19.8조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;93,000</td>
+          <td class="px-5 py-3 text-right font-bold text-tertiary">-0.85%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">70.4</td>
+          <td class="px-5 py-3 text-right">18.9</td>
+          <td class="px-5 py-3 text-right">-0.8%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">4d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">22</td>
+          <td class="px-5 py-3"><a href="details/047810.html" class="font-headline font-bold text-primary hover:underline">047810</a></td>
+          <td class="px-5 py-3">한국항공우주 <span class="text-[10px] text-outline">19.5조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;199,900</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.00%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">60.2</td>
+          <td class="px-5 py-3 text-right">21.2</td>
+          <td class="px-5 py-3 text-right">-0.8%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">23</td>
+          <td class="px-5 py-3"><a href="details/033780.html" class="font-headline font-bold text-primary hover:underline">033780</a></td>
+          <td class="px-5 py-3">KT&G <span class="text-[10px] text-outline">17.3조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;164,300</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.67%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">59.9</td>
+          <td class="px-5 py-3 text-right">14.4</td>
+          <td class="px-5 py-3 text-right">-6.2%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">24</td>
+          <td class="px-5 py-3"><a href="details/030200.html" class="font-headline font-bold text-primary hover:underline">030200</a></td>
+          <td class="px-5 py-3">KT <span class="text-[10px] text-outline">15.0조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;62,100</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+1.80%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">56.7</td>
+          <td class="px-5 py-3 text-right">18.7</td>
+          <td class="px-5 py-3 text-right">-9.1%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">25</td>
+          <td class="px-5 py-3"><a href="details/010950.html" class="font-headline font-bold text-primary hover:underline">010950</a></td>
+          <td class="px-5 py-3">S-Oil <span class="text-[10px] text-outline">14.1조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;120,700</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+0.92%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">57.3</td>
+          <td class="px-5 py-3 text-right">28.3</td>
+          <td class="px-5 py-3 text-right">-14.3%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">26</td>
+          <td class="px-5 py-3"><a href="details/036570.html" class="font-headline font-bold text-primary hover:underline">036570</a></td>
+          <td class="px-5 py-3">엔씨소프트 <span class="text-[10px] text-outline">4.7조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;240,000</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+2.56%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">60.5</td>
+          <td class="px-5 py-3 text-right">14.6</td>
+          <td class="px-5 py-3 text-right">-2.5%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">3d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 3일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">27</td>
+          <td class="px-5 py-3"><a href="details/097950.html" class="font-headline font-bold text-primary hover:underline">097950</a></td>
+          <td class="px-5 py-3">CJ제일제당 <span class="text-[10px] text-outline">3.8조</span></td>
+          <td class="px-5 py-3 text-right">&#8361;238,500</td>
+          <td class="px-5 py-3 text-right font-bold text-secondary">+2.58%</td>
+          <td class="px-5 py-3"><span class="px-2 py-1 bg-tertiary/10 text-tertiary text-xs rounded border border-tertiary/20 font-bold">3rd_BUY</span></td>
+          <td class="px-5 py-3 text-right">66.6</td>
+          <td class="px-5 py-3 text-right">21.1</td>
+          <td class="px-5 py-3 text-right">-9.7%</td>
+          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">5d &#10003;</span></td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x">[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</td>
+        </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+
+    <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10">Generated by Trading Assistant v5.0 | 2026-04-12 | Data: yfinance (2026-04-12 17:05:24)</p>
+  </div>
+</main>
+
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="index.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
+  <a href="scanner_2026-04-12.html" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="trend_2026-04-12.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="backtest_2026-04-12.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">history</span><span class="text-[10px] font-label">Backtest</span></a>
+</nav>
+<script>function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}</script>
+</body>
+</html>
