@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Backtest Dashboard — {{ date }}</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script>
-tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","on-primary-container":"#004352","secondary":"#00E5BC","secondary-container":"#106e00","on-secondary":"#0b5800","tertiary":"#ff7166","tertiary-container":"#f5282b","on-tertiary":"#4a0003","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c","error-container":"#9f0519"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","on-primary-container":"#004352","secondary":"#00E5BC","secondary-container":"#106e00","on-secondary":"#0b5800","tertiary":"#ff7166","tertiary-container":"#f5282b","on-tertiary":"#4a0003","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c","error-container":"#9f0519"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
 </script>
 </head>
 <body class="bg-surface text-on-surface font-body">
@@ -34,168 +34,120 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
   <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
     <div class="flex items-center gap-4">
       <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
-      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Backtest Dashboard</span>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">BACKTEST</span>
+      <span class="text-xs text-outline font-label">{{ total_records }}건 평가</span>
     </div>
-    <div class="text-xs text-outline font-label">{{ total_records }} records analyzed</div>
   </header>
 
-  <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
-    <p class="text-sm text-on-surface-variant font-label">
-      {{ date_ko }} &nbsp;|&nbsp; {% if period %}{{ period.from }} ~ {{ period.to }}{% endif %}
-      {% if data_status == 'accumulating' %} &nbsp;|&nbsp; <span class="text-tertiary">데이터 축적 중 ({{ total_records }}/20건)</span>{% endif %}
-    </p>
+  <div class="p-8 space-y-8 max-w-[1200px] mx-auto">
 
-    <!-- Overview -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-3xl font-headline font-bold text-primary">{{ total_records }}</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">평가 완료</div>
-      </div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-3xl font-headline font-bold {{ 'text-secondary' if overall_buy_wr and overall_buy_wr >= 0.5 else 'text-tertiary' }}">{% if overall_buy_wr is not none %}{{ (overall_buy_wr * 100)|round(0)|int }}%{% else %}—{% endif %}</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">BUY 승률 (5d)</div>
-      </div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-3xl font-headline font-bold text-primary">{% if overall_reach_rate is not none %}{{ (overall_reach_rate * 100)|round(0)|int }}%{% else %}—{% endif %}</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">도달률 (10d)</div>
-        <div class="text-[10px] text-outline mt-1">+{{ win_threshold }}% target</div>
-      </div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
-        <div class="text-3xl font-headline font-bold {{ 'text-secondary' if alpha and alpha >= 0 else 'text-tertiary' }}">{% if alpha is not none %}{{ '+' if alpha >= 0 else '' }}{{ alpha }}%{% else %}—{% endif %}</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">Alpha vs SPY</div>
-      </div>
-    </div>
+    <!-- BUY 시그널 성적표 -->
+    <h2 class="text-lg font-headline font-bold flex items-center gap-2">
+      <span class="material-symbols-outlined text-secondary">shopping_cart</span> BUY 시그널 성적표
+    </h2>
+    <p class="text-xs text-on-surface-variant -mt-4">BUY 발생 후 N거래일 내 +{{ win_threshold }}% 이상 수익 달성 비율</p>
 
-    <!-- Signal Performance -->
     {% if by_signal %}
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">bar_chart</span> 시그널별 성과</h2>
-    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
-      <table class="w-full text-left border-collapse">
-        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
-          <th class="px-5 py-3">시그널</th><th class="px-5 py-3 text-center">샘플</th><th class="px-5 py-3 text-center">3일</th><th class="px-5 py-3 text-center">5일</th><th class="px-5 py-3 text-center">10일</th><th class="px-5 py-3 text-center">도달률</th><th class="px-5 py-3 text-center">평균(5d)</th><th class="px-5 py-3">Best / Worst</th>
-        </tr></thead>
-        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
-        {% for sig_name, s in by_signal.items() %}
-        <tr class="hover:bg-surface-container-high/50">
-          <td class="px-5 py-3"><span class="px-2 py-1 text-xs rounded font-bold {% if 'BUY' in sig_name %}bg-secondary/10 text-secondary border border-secondary/20{% elif sig_name in ['TAKE_PROFIT_1','TAKE_PROFIT_2','TOP_SIGNAL'] %}bg-tertiary/10 text-tertiary border border-tertiary/20{% else %}bg-surface-bright text-on-surface-variant border border-outline-variant/20{% endif %}">{{ sig_name }}</span></td>
-          <td class="px-5 py-3 text-center">{{ s.count }}</td>
-          <td class="px-5 py-3 text-center">{% if s.win_rate_3d is defined %}<span class="{{ 'text-secondary' if s.win_rate_3d >= 0.5 else 'text-tertiary' }} font-bold">{{ (s.win_rate_3d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-center">{% if s.win_rate_5d is defined %}<span class="{{ 'text-secondary' if s.win_rate_5d >= 0.5 else 'text-tertiary' }} font-bold">{{ (s.win_rate_5d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-center">{% if s.win_rate_10d is defined %}<span class="{{ 'text-secondary' if s.win_rate_10d >= 0.5 else 'text-tertiary' }} font-bold">{{ (s.win_rate_10d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-center">{% if s.reach_rate_10d is defined %}<span class="text-primary font-bold">{{ (s.reach_rate_10d * 100)|round(0)|int }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-center">{% if s.avg_return_5d is defined %}<span class="{{ 'text-secondary' if s.avg_return_5d >= 0 else 'text-tertiary' }}">{{ s.avg_return_5d }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-[11px]">{% if s.best is defined %}<span class="text-secondary">&#9650; {{ s.best.ticker }} +{{ s.best.return|round(1) }}%</span>{% endif %}{% if s.worst is defined %}<br><span class="text-tertiary">&#9660; {{ s.worst.ticker }} {{ s.worst.return|round(1) }}%</span>{% endif %}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% endif %}
-
-    <!-- Benchmark -->
-    {% if benchmark %}
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">compare_arrows</span> SPY 벤치마크</h2>
-    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low max-w-2xl">
-      <table class="w-full text-left border-collapse">
-        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
-          <th class="px-5 py-3">기간</th><th class="px-5 py-3 text-center">시그널</th><th class="px-5 py-3 text-center">SPY</th><th class="px-5 py-3 text-center">Alpha</th><th class="px-5 py-3 text-center">샘플</th>
-        </tr></thead>
-        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
-        {% for key, b in benchmark.items() %}
-        <tr class="hover:bg-surface-container-high/50"><td class="px-5 py-3 font-bold">{{ key }}</td><td class="px-5 py-3 text-center {{ 'text-secondary' if b.avg_signal >= 0 else 'text-tertiary' }}">{{ b.avg_signal }}%</td><td class="px-5 py-3 text-center {{ 'text-secondary' if b.avg_spy >= 0 else 'text-tertiary' }}">{{ b.avg_spy }}%</td><td class="px-5 py-3 text-center font-bold {{ 'text-secondary' if b.alpha >= 0 else 'text-tertiary' }}">{{ '+' if b.alpha >= 0 else '' }}{{ b.alpha }}%</td><td class="px-5 py-3 text-center">{{ b.samples }}</td></tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% endif %}
-
-    <!-- Source Breakdown -->
-    {% if by_source %}
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">category</span> 소스별 성과</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {% for src, s in by_source.items() %}
-      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-outline' if src == 'portfolio' else ('border-l-secondary' if src == 'sp100' else ('border-l-primary' if src == 'etf' else 'border-l-tertiary')) }}">
-        <div class="font-headline font-bold text-base mb-3 text-on-surface">{{ src|upper }}</div>
-        <div class="space-y-1 text-xs font-label text-on-surface-variant">
-          <div class="flex justify-between"><span>전체</span><span class="text-on-surface">{{ s.count }}건</span></div>
-          <div class="flex justify-between"><span>BUY</span><span class="text-on-surface">{{ s.buy_count }}건</span></div>
-          <div class="flex justify-between"><span>EXIT</span><span class="text-on-surface">{{ s.exit_count }}건</span></div>
-          {% if s.buy_win_rate_5d is defined %}<div class="flex justify-between"><span>승률(5d)</span><span class="font-bold {{ 'text-secondary' if s.buy_win_rate_5d >= 0.5 else 'text-tertiary' }}">{{ (s.buy_win_rate_5d * 100)|round(0)|int }}%</span></div>{% endif %}
-          {% if s.buy_avg_return_5d is defined %}<div class="flex justify-between"><span>평균(5d)</span><span class="{{ 'text-secondary' if s.buy_avg_return_5d >= 0 else 'text-tertiary' }}">{{ s.buy_avg_return_5d }}%</span></div>{% endif %}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {% for sig_name in ['1st_BUY', '2nd_BUY', '3rd_BUY'] %}
+      {% set s = by_signal.get(sig_name, {}) %}
+      {% if s %}
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">{{ sig_name.replace('_', ' ') }}</span>
+          <span class="text-xs text-outline">{{ s.count }}건</span>
+        </div>
+        <div class="space-y-3">
+          {% set wr5 = ((s.win_rate_5d or 0) * 100)|round(0)|int %}
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold {{ 'text-secondary' if wr5 >= 50 else 'text-tertiary' }} text-base">{{ wr5 }}%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="{{ 'bg-secondary' if wr5 >= 50 else 'bg-tertiary' }} h-2 rounded-full" style="width:{{ wr5 }}%"></div></div>
+          </div>
+          {% set wr10 = ((s.win_rate_10d or 0) * 100)|round(0)|int %}
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold {{ 'text-secondary' if wr10 >= 50 else 'text-tertiary' }} text-base">{{ wr10 }}%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="{{ 'bg-secondary' if wr10 >= 50 else 'bg-tertiary' }} h-2 rounded-full" style="width:{{ wr10 }}%"></div></div>
+          </div>
+          {% set reach = ((s.reach_rate_10d or 0) * 100)|round(0)|int %}
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +{{ win_threshold }}% 터치)</span><span class="font-bold text-primary text-base">{{ reach }}%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:{{ reach }}%"></div></div>
+          </div>
+          <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
+            <span class="text-on-surface-variant">평균 수익 (5일)</span>
+            <span class="{{ 'text-secondary' if (s.avg_return_5d or 0) >= 0 else 'text-tertiary' }} font-bold">{% if s.avg_return_5d is defined %}{{ s.avg_return_5d }}%{% else %}—{% endif %}</span>
+          </div>
         </div>
       </div>
+      {% endif %}
       {% endfor %}
     </div>
     {% endif %}
 
-    <!-- Condition Analysis -->
-    {% if by_condition %}
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">science</span> 조건별 BUY 승률 (5일)</h2>
-    <div class="flex flex-wrap gap-3">
-      {% for cond_name, c in by_condition.items() %}
-      <div class="rounded-xl bg-surface-container p-4 border border-outline-variant/10 min-w-[140px]">
-        <div class="font-bold text-sm text-on-surface mb-1">{{ cond_name }}</div>
-        <span class="font-bold {{ 'text-secondary' if c.win_rate_5d >= 0.5 else 'text-tertiary' }}">{{ (c.win_rate_5d * 100)|round(0)|int }}%</span>
-        <span class="text-outline text-xs ml-1">({{ c.count }})</span>
-        <div class="text-on-surface-variant text-xs">avg {{ c.avg_return_5d }}%</div>
+    <!-- EXIT 시그널 성적표 -->
+    <h2 class="text-lg font-headline font-bold flex items-center gap-2">
+      <span class="material-symbols-outlined text-tertiary">sell</span> EXIT 시그널 성적표
+    </h2>
+    <p class="text-xs text-on-surface-variant -mt-4">익절 후 10일 내 가격이 +{{ win_threshold }}% 넘게 오르지 않으면 성공</p>
+
+    {% if by_signal %}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {% for sig_name in ['TOP_SIGNAL', 'TAKE_PROFIT_2', 'TAKE_PROFIT_1'] %}
+      {% set s = by_signal.get(sig_name, {}) %}
+      {% if s %}
+      {% set wr5 = ((s.win_rate_5d or 0) * 100)|round(0)|int %}
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-3">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">{{ sig_name.replace('_', ' ') }}</span>
+          <span class="text-xs text-outline">{{ s.count }}건</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-bold {{ 'text-secondary' if wr5 >= 50 else 'text-tertiary' }}">{{ wr5 }}%</span>
+          <span class="text-xs text-on-surface-variant">적중</span>
+        </div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="{{ 'text-secondary' if (s.avg_return_5d or 0) <= 0 else 'text-tertiary' }} font-bold">{{ s.avg_return_5d }}%</span> {{ '하락' if (s.avg_return_5d or 0) <= 0 else '상승' }}</div>
       </div>
+      {% endif %}
       {% endfor %}
     </div>
     {% endif %}
 
-    <!-- Records -->
+    <!-- 최근 시그널 결과 -->
     {% if records %}
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">list_alt</span> 개별 시그널 기록</h2>
-    <div class="flex gap-3 mb-4">
-      <select id="filterSignal" onchange="filterRecords()" class="bg-surface-container border border-outline-variant/20 rounded-lg px-3 py-2 text-xs font-label text-on-surface">
-        <option value="">전체 시그널</option><option value="1st_BUY">1st_BUY</option><option value="2nd_BUY">2nd_BUY</option><option value="3rd_BUY">3rd_BUY</option><option value="TAKE_PROFIT_1">TP1</option><option value="TAKE_PROFIT_2">TP2</option><option value="TOP_SIGNAL">TOP</option>
-      </select>
-      <select id="filterSource" onchange="filterRecords()" class="bg-surface-container border border-outline-variant/20 rounded-lg px-3 py-2 text-xs font-label text-on-surface">
-        <option value="">전체 소스</option><option value="portfolio">Portfolio</option><option value="sp100">SP100</option><option value="etf">ETF</option><option value="kospi">KOSPI</option>
-      </select>
+    <h2 class="text-lg font-headline font-bold flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary">format_list_bulleted</span> 최근 시그널 결과
+    </h2>
+
+    <div class="flex gap-2 mb-2">
+      <button onclick="filterBtn('BUY')" class="px-3 py-1.5 text-xs rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface-variant hover:text-secondary hover:border-secondary/30 transition-all">BUY</button>
+      <button onclick="filterBtn('EXIT')" class="px-3 py-1.5 text-xs rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface-variant hover:text-tertiary hover:border-tertiary/30 transition-all">EXIT</button>
+      <button onclick="filterBtn('')" class="px-3 py-1.5 text-xs rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface-variant hover:text-primary hover:border-primary/30 transition-all">ALL</button>
     </div>
+
     <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
       <table class="w-full text-left border-collapse" id="recordsTable">
         <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
-          <th class="px-5 py-3 cursor-pointer" onclick="sortTable(0)">날짜 &#9650;&#9660;</th><th class="px-5 py-3">소스</th><th class="px-5 py-3">종목</th><th class="px-5 py-3">시그널</th><th class="px-5 py-3 text-right">진입가</th><th class="px-5 py-3 text-right">RSI</th><th class="px-5 py-3 text-right">3d</th><th class="px-5 py-3 text-right">5d</th><th class="px-5 py-3 text-right">10d</th><th class="px-5 py-3 text-right">Max&#8593;</th><th class="px-5 py-3 text-right">Max&#8595;</th>
+          <th class="px-4 py-3">날짜</th><th class="px-4 py-3">종목</th><th class="px-4 py-3">시그널</th><th class="px-4 py-3 text-right">5일</th><th class="px-4 py-3 text-right">10일</th><th class="px-4 py-3 text-right">최고/최저</th>
         </tr></thead>
         <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
-        {% for r in records %}
-        <tr data-signal="{{ r.signal }}" data-source="{{ r.source|default('portfolio') }}" class="hover:bg-surface-container-high/50">
-          <td class="px-5 py-3">{{ r.date }}</td>
-          <td class="px-5 py-3"><span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded border border-primary/20 font-bold">{{ r.source|default('portfolio')|upper }}</span></td>
-          <td class="px-5 py-3 font-bold">{{ r.ticker }}</td>
-          <td class="px-5 py-3"><span class="px-2 py-0.5 text-[10px] rounded font-bold {% if 'BUY' in r.signal %}bg-secondary/10 text-secondary border border-secondary/20{% else %}bg-tertiary/10 text-tertiary border border-tertiary/20{% endif %}">{{ r.signal }}</span></td>
-          <td class="px-5 py-3 text-right">{% if r.entry_price %}{{ r.entry_price|round(2) }}{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-right">{% if r.context and r.context.rsi %}{{ r.context.rsi|round(1) }}{% else %}—{% endif %}</td>
-          {% set o = r.outcomes or {} %}
-          <td class="px-5 py-3 text-right">{% if o.get('3d') and o['3d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['3d'].return_pct >= 0 else 'text-tertiary' }}">{{ o['3d'].return_pct }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-right">{% if o.get('5d') and o['5d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['5d'].return_pct >= 0 else 'text-tertiary' }}">{{ o['5d'].return_pct }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-right">{% if o.get('10d') and o['10d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['10d'].return_pct >= 0 else 'text-tertiary' }}">{{ o['10d'].return_pct }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-right">{% if o.max_gain_10d is defined and o.max_gain_10d is not none %}<span class="text-secondary">+{{ o.max_gain_10d }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-5 py-3 text-right">{% if o.max_loss_10d is defined and o.max_loss_10d is not none %}<span class="{{ 'text-secondary' if o.max_loss_10d >= 0 else 'text-tertiary' }}">{{ o.max_loss_10d }}%</span>{% else %}—{% endif %}</td>
+        {% for r in records|sort(attribute='date', reverse=true) %}
+        {% set o = r.outcomes or {} %}
+        <tr data-signal="{{ r.signal }}">
+          <td class="px-4 py-2.5">{{ r.date[5:] }}</td>
+          <td class="px-4 py-2.5 font-bold">{{ r.ticker }}</td>
+          <td class="px-4 py-2.5"><span class="px-2 py-0.5 text-[10px] rounded font-bold {% if 'BUY' in r.signal %}bg-secondary/10 text-secondary border border-secondary/20{% else %}bg-tertiary/10 text-tertiary border border-tertiary/20{% endif %}">{{ r.signal.replace('_', ' ') }}</span></td>
+          <td class="px-4 py-2.5 text-right">{% if o.get('5d') and o['5d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['5d'].return_pct >= 0 else 'text-tertiary' }}">{{ '+' if o['5d'].return_pct >= 0 else '' }}{{ o['5d'].return_pct }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-4 py-2.5 text-right">{% if o.get('10d') and o['10d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['10d'].return_pct >= 0 else 'text-tertiary' }}">{{ '+' if o['10d'].return_pct >= 0 else '' }}{{ o['10d'].return_pct }}%</span>{% else %}—{% endif %}</td>
+          <td class="px-4 py-2.5 text-right text-xs">{% if o.max_gain_10d is defined and o.max_gain_10d is not none %}<span class="text-secondary">+{{ o.max_gain_10d }}%</span>{% endif %}{% if o.max_loss_10d is defined and o.max_loss_10d is not none %} / <span class="{{ 'text-secondary' if o.max_loss_10d >= 0 else 'text-tertiary' }}">{{ o.max_loss_10d }}%</span>{% endif %}</td>
         </tr>
         {% endfor %}
         </tbody>
       </table>
-    </div>
-    {% endif %}
-
-    {% if recommendations %}
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">lightbulb</span> 파라미터 추천</h2>
-    <div class="flex flex-wrap gap-3">
-      {% for rec in recommendations %}
-      <div class="rounded-xl bg-surface-container p-4 border border-outline-variant/10 min-w-[200px] max-w-[320px] border-l-4 {{ 'border-l-tertiary' if rec.status == 'review' else ('border-l-secondary' if rec.status == 'good' else 'border-l-outline') }}">
-        <div class="font-bold text-sm text-on-surface">{{ rec.param }}</div>
-        <div class="text-xs text-on-surface-variant mt-1">{{ rec.reason }}</div>
-        {% if rec.confidence is defined and rec.confidence != 'none' %}<div class="text-[10px] text-outline mt-1">신뢰도: {{ rec.confidence }} ({{ rec.sample_size }}건)</div>{% endif %}
-      </div>
-      {% endfor %}
     </div>
     {% endif %}
 
     <div class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
-      BUY 승리: N거래일 +{{ win_threshold }}% | EXIT 승리: {{ max_eval_days }}거래일 max gain &#8804; +{{ win_threshold }}% | Alpha: BUY avg - SPY avg
+      {% if period %}{{ period.from }} ~ {{ period.to }} | {% endif %}BUY 승리 = N거래일 내 +{{ win_threshold }}% 이상 | EXIT 성공 = {{ max_eval_days }}일 내 +{{ win_threshold }}% 미만 상승
     </div>
   </div>
 </main>
@@ -209,8 +161,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
 
 <script>
 function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
-function filterRecords(){var sig=document.getElementById('filterSignal').value,src=document.getElementById('filterSource').value;document.querySelectorAll('#recordsTable tbody tr').forEach(function(r){r.style.display=(!sig||r.dataset.signal===sig)&&(!src||r.dataset.source===src)?'':'none';});}
-function sortTable(col){var t=document.getElementById('recordsTable'),b=t.querySelector('tbody'),rows=Array.from(b.querySelectorAll('tr')),asc=t.dataset.sortAsc!=='true';t.dataset.sortAsc=asc;rows.sort(function(a,c){return asc?a.cells[col].textContent.trim().localeCompare(c.cells[col].textContent.trim()):c.cells[col].textContent.trim().localeCompare(a.cells[col].textContent.trim());});rows.forEach(function(r){b.appendChild(r);});}
+function filterBtn(type){document.querySelectorAll('#recordsTable tbody tr').forEach(r=>{if(!type)r.style.display='';else{const sig=r.dataset.signal||'';r.style.display=(type==='BUY'?sig.includes('BUY'):!sig.includes('BUY'))?'':'none';}});}
 </script>
 </body>
 </html>

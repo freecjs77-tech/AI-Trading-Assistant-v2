@@ -21,7 +21,7 @@ import pandas as pd
 
 _EVAL_DAYS = [3, 5, 10]  # 거래일 기준 (trading days)
 _WIN_THRESHOLD_PCT = 3.0  # BUY 시그널 승리 기준: N거래일 내 +3% 이상
-_CALENDAR_BUFFER = 2.0  # 거래일 → 캘린더일 변환 계수 (10거래일 ≈ 14캘린더일)
+_CALENDAR_BUFFER = 1.5  # 거래일 → 캘린더일 변환 계수 (10거래일 ≈ 15캘린더일)
 _BUY_SIGNALS = {"1st_BUY", "2nd_BUY", "3rd_BUY"}
 _EXIT_SIGNALS = {"TAKE_PROFIT_1", "TAKE_PROFIT_2", "TOP_SIGNAL"}
 _TRACKABLE_SIGNALS = _BUY_SIGNALS | _EXIT_SIGNALS
