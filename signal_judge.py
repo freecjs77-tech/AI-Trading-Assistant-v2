@@ -871,13 +871,14 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
                    f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden_c3 else '<'} signal {macd_signal:.4f}"))
     else:
         c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
-    vol_13 = volume_ratio is not None and volume_ratio >= 1.3
+    _g3_vol_display = _p("entry_growth.3rd_buy.volume_ratio", 1.5)
+    vol_13 = volume_ratio is not None and volume_ratio >= _g3_vol_display
     if volume_ratio is not None:
         c3.append(("ok" if vol_13 else "no",
-                   "거래량비 >= 1.3x",
+                   f"거래량비 >= {_g3_vol_display}x",
                    f"거래량비 {volume_ratio:.2f}x - {'평소보다 많아요' if vol_13 else '아직 부족해요'}"))
     else:
-        c3.append(("no", "거래량비 >= 1.3x", "거래량 데이터가 없어요"))
+        c3.append(("no", f"거래량비 >= {_g3_vol_display}x", "거래량 데이터가 없어요"))
     rsi_above_55 = rsi is not None and rsi > 55
     if rsi is not None:
         c3.append(("ok" if rsi_above_55 else "no",
@@ -923,13 +924,14 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
                    f"MACD {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f} - {'골든크로스 발생이에요' if macd_golden else '아직 데스크로스예요'}"))
     else:
         c2.append(("no", "MACD 골든크로스", "MACD 데이터가 없어요"))
-    vol_12 = volume_ratio is not None and volume_ratio >= 1.2
+    _g2_vol_display = _p("entry_growth.2nd_buy.volume_ratio", 1.5)
+    vol_12 = volume_ratio is not None and volume_ratio >= _g2_vol_display
     if volume_ratio is not None:
         c2.append(("ok" if vol_12 else "no",
-                   "거래량비 >= 1.2x",
+                   f"거래량비 >= {_g2_vol_display}x",
                    f"거래량비 {volume_ratio:.2f}x - {'충분해요' if vol_12 else '아직 부족해요'}"))
     else:
-        c2.append(("no", "거래량비 >= 1.2x", "거래량 데이터가 없어요"))
+        c2.append(("no", f"거래량비 >= {_g2_vol_display}x", "거래량 데이터가 없어요"))
     sections.append({
         "name": f"2차 매수 조건 - {group_label} v2.2",
         "rule": "4개 모두 충족",

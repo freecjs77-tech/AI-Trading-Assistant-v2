@@ -1,4 +1,4 @@
-# Signal Decision Rules v5.2 — 익절 전용 판정 로직
+# Signal Decision Rules v5.3b — 익절 전용 판정 로직
 
 ## 핵심 원칙
 - 시그널은 순수 기술지표로만 판정
@@ -186,9 +186,9 @@ TOP_SIGNAL은 게이트 없이 항상 발동 (과열은 무조건).
 
 ---
 
-## Entry 판정 — Growth v2.3
+## Entry 판정 — Growth v5.3b
 
-### 대상: NVDA, TSLA, PLTR, AAPL, MSFT, GOOGL, AMZN
+### 대상: NVDA, TSLA, PLTR, AAPL, MSFT, GOOGL, AMZN + KOSPI 성장주
 
 ### 거부 조건
 | 조건 | 적용 범위 |
@@ -198,15 +198,11 @@ TOP_SIGNAL은 게이트 없이 항상 발동 (과열은 무조건).
 
 ### 1st BUY (20%) — 과매도 바닥 진입
 ```
-[필수 3개 ALL]
-  ① RSI ≤ 38         (과매도 확인)
-  ② 가격 < MA20       (조정 확인)
-  ③ MACD hist 2일 증가 (반전 시작)
-
-[선택 2/3]
-  · ADX ≤ 25          (추세 약화 = 반전 가능)
-  · BB 하단 근접       (하단 대비 2% 이내)
-  · 전일 대비 +2% 반등  (반등 확인)
+[필수 4개 ALL]
+  ① RSI ≤ 45          (과매도 확인)
+  ② 가격 < MA20        (조정 확인)
+  ③ MACD hist 2일 증가  (반전 시작)
+  ④ 52주 고점 대비 DD ≤ -15%  (충분한 조정 확인)
 ```
 
 ### 2nd BUY (30%) — 반전 확인
@@ -215,7 +211,7 @@ TOP_SIGNAL은 게이트 없이 항상 발동 (과열은 무조건).
   ① 이중 바닥 확인     (diff ≤ 3% 이내만 유효)
   ② RSI > 35          (과매도 탈출)
   ③ MACD 골든크로스    (MACD > signal 필수, hist 증가만으로 불충분)
-  ④ 거래량 ≥ 1.2x     (매수세 동반)
+  ④ 거래량 ≥ 1.5x     (매수세 동반)
 ```
 
 ### 3rd BUY (50%) — 추세 확정
@@ -223,45 +219,41 @@ TOP_SIGNAL은 게이트 없이 항상 발동 (과열은 무조건).
 [ALL 4개 충족]
   ① 가격 > MA20       (추세 복귀)
   ② MACD > 0 + 골든크로스 (MACD > signal)  (완전 양전환)
-  ③ 거래량 ≥ 1.3x     (강한 매수세)
+  ③ 거래량 ≥ 1.5x     (강한 매수세)
   ④ RSI > 55          (상승 모멘텀 확인)
 
 [추가 거부] RSI > 75 → 과열 구간 진입 금지
 ```
 
 ### WATCH 판정
-- 필수 2개 이상 + 선택 1개 이상
-- 또는 필수 1개 + 선택 2개 이상
+- 1st BUY 필수 4개 조건 중 3개 이상 충족 시 WATCH
 
 ### 단계 간 에스컬레이션 흐름
 ```
-과매도(RSI≤38) + 반전시작(hist↑)
+과매도(RSI≤45) + 조정(DD≤-15%) + 반전시작(hist↑)
     ↓ 1st BUY (20%)
-이중바닥 + 골든크로스 + 거래량
+이중바닥 + 골든크로스 + 거래량 1.5x
     ↓ 2nd BUY (30%)
-MA20 위 + MACD 0선돌파 + RSI>55 + 거래량폭증
+MA20 위 + MACD 0선돌파 + RSI>55 + 거래량 1.5x
     ↓ 3rd BUY (50%)
 ```
 
 ---
 
-## Entry 판정 — ETF v2.4
+## Entry 판정 — ETF v5.3b
 
-### 대상: VOO, QQQ, SCHD, SOXX, JEPI, SPY
+### 대상: VOO, QQQ, SCHD, SOXX, JEPI, SPY + KOSPI ETF
 
 ### 거부 조건
 RSI > 70 → 전 단계 매수 금지
 
 ### 1st BUY (20%) — 확실한 조정에서 진입
 ```
-[필수 2개 ALL]
-  ① RSI ≤ 35          (과매도 확인)
-  ② 52주 고점 대비 DD ≤ -5%  (의미있는 조정)
-
-[선택 1/3]
-  · 가격 < MA20
-  · BB 하단 근접
-  · 하락 모멘텀 둔화 (hist 감소폭 축소)
+[필수 4개 ALL]  ← v5.3b: Growth와 동일 구조로 통합
+  ① RSI ≤ 45          (과매도 확인)
+  ② 가격 < MA20        (조정 확인)
+  ③ MACD hist 2일 증가  (반전 시작)
+  ④ 52주 고점 대비 DD ≤ -15%  (충분한 조정 확인)
 ```
 
 ### 2nd BUY (30%) — Pick 3 of 4
@@ -280,15 +272,15 @@ RSI > 70 → 전 단계 매수 금지
 ```
 
 ### WATCH 판정
-1st 조건의 필수 1개 + 선택 1개 이상 → WATCH
+1st BUY 필수 4개 조건 중 3개 이상 충족 시 WATCH
 
 ---
 
-## Entry 판정 — Value v2.4
+## Entry 판정 — Value v5.3b
 
-### 대상: O (Realty Income), UNH (UnitedHealth)
+### 대상: O (Realty Income), UNH (UnitedHealth), 005380 (현대차)
 
-Growth v2.3과 동일 구조.
+Growth v5.3b와 동일 구조.
 **차이점**: RSI 거부 임계값 55 → **70** (Value 종목은 RSI 변동폭이 작으므로)
 
 ---
@@ -323,9 +315,9 @@ Growth v2.3과 동일 구조.
 
 ## Entry 판정 — Speculative
 
-### 대상: TQQQ, SOXL, ETHU, CRCL, BTDR
+### 대상: QLD, SOXL, ETHU, CRCL, XLE, XLF, NKE
 
-Growth v2.3 로직 동일 적용.
+Growth v5.3b 로직 동일 적용.
 소액 종목($500 미만)은 판정 후 "소액 — 관망" 코멘트 추가.
 
 ---
@@ -342,9 +334,9 @@ Growth v2.3 로직 동일 적용.
 ### 스캐너별 적용 규칙
 | 스캐너 | Entry 규칙 | Exit 체크 | 연속일 |
 |--------|-----------|----------|--------|
-| **SP100** `/scanner` | Growth v2.3 | ✅ | `scanner_sp100_history.json` |
-| **ETF** `/scanner-etf` | ETF v2.4 | ✅ | `scanner_etf_history.json` |
-| **KOSPI** (메인 리포트 내) | Growth v2.3 | ✅ | `scanner_kospi_history.json` |
+| **SP100** `/scanner` | Growth v5.3b | ✅ | `scanner_sp100_history.json` |
+| **ETF** `/scanner-etf` | ETF v5.3b | ✅ | `scanner_etf_history.json` |
+| **KOSPI** (메인 리포트 내) | Growth v5.3b | ✅ | `scanner_kospi_history.json` |
 
 ---
 
@@ -368,6 +360,8 @@ Growth v2.3 로직 동일 적용.
   - 필수 4개 ALL: RSI≤45 + 가격<MA20 + MACD hist 2일증가 + DD_52w≤-15%
   - 선택 조건 면제 (필수 4개로 충분한 필터링)
   - RSI 38→45 완화 (V자 반등 조기 포착), DD_52w≤-15% 게이트로 보상
+- **2nd/3rd BUY 거래량 기준 강화**: 2nd 1.2x→**1.5x**, 3rd 1.3x→**1.5x** (백테스트 검증)
+- **WATCH 판정 통합**: 1st BUY 필수 4개 중 3개 충족 시 WATCH
 
 ### v5.3
 - TOP_SIGNAL 발동 기준 완화: 1개 충족 → **3개 중 2개 충족** (과민 반응 해소)
