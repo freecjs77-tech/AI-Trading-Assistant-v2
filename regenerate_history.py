@@ -25,9 +25,15 @@ from fetch_market_data import (
     calc_rsi, calc_macd, calc_bollinger, calc_adx,
     find_double_bottom, macd_hist_trend, parse_portfolio_md,
 )
-from signal_judge import judge_all
+from signal_judge import judge_all, _check_entry_growth, _check_entry_etf, check_exit_simple, _BUY_SIGNALS
 from history_manager import save_today, save_history
 from portfolio_data import is_kospi_ticker, get_ticker_class, get_ticker_name
+from market_scanner import (
+    SP100_TICKERS, SP100_NAMES,
+    ETF_TICKERS, ETF_NAMES,
+    KOSPI_TICKERS, KOSPI_NAMES,
+    _save_scanner_history, _BUY_SIGNALS as _SCAN_BUY,
+)
 
 # ── 설정 ──
 NUM_TRADING_DAYS = 30
@@ -550,11 +556,118 @@ def main():
         json.dump(portfolio_daily, f, ensure_ascii=False, indent=2)
     print(f"\n  포트폴리오 스냅샷 저장: {len(portfolio_daily)}일 → {PORTFOLIO_DAILY_PATH}")
 
+    # 7) 스캐너 히스토리 재생성 (최근 10거래일)
+    SCANNER_DAYS = 10
+    scanner_dates = trading_dates[-SCANNER_DAYS:]
+
+    scanner_configs = [
+        ("sp100", SP100_TICKERS, _check_entry_growth, False),
+        ("etf", ETF_TICKERS, _check_entry_etf, False),
+        ("kospi", KOSPI_TICKERS, _check_entry_growth, True),
+    ]
+
+    # 스캐너 종목 중 아직 다운로드 안 된 것 추가 다운로드
+    extra_symbols = []
+    for _, scan_tickers_list, _, is_kospi in scanner_configs:
+        for t in scan_tickers_list:
+            yf_sym = t if not is_kospi else t  # KOSPI는 이미 .KS 포함
+            base = t.replace(".KS", "")
+            # 포트폴리오에 없는 종목만
+            mapped = yf_map.get(base, yf_sym)
+            if mapped not in ticker_dfs and yf_sym not in ticker_dfs:
+                extra_symbols.append(yf_sym)
+
+    extra_symbols = list(set(extra_symbols))
+    if extra_symbols:
+        print(f"\n{'='*60}")
+        print(f"  스캐너 추가 종목 다운로드: {len(extra_symbols)}개")
+        print(f"{'='*60}")
+        for idx, sym in enumerate(extra_symbols):
+            print(f"    [{idx+1:2d}/{len(extra_symbols)}] {sym:<12} ... ", end="", flush=True)
+            for attempt in range(3):
+                df = fetch_yahoo_chart(sym)
+                if df is not None:
+                    ticker_dfs[sym] = df
+                    print(f"OK ({len(df)}일)")
+                    break
+                else:
+                    if attempt < 2:
+                        wait = 2 * (attempt + 1)
+                        print(f"재시도 ({wait}s) ", end="", flush=True)
+                        time.sleep(wait)
+                    else:
+                        print("SKIP")
+            time.sleep(TICKER_DELAY)
+        print(f"  추가 다운로드 완료: {sum(1 for s in extra_symbols if s in ticker_dfs)}/{len(extra_symbols)}")
+
+    for scanner_name, scan_tickers_list, check_fn, is_kospi_scan in scanner_configs:
+        print(f"\n{'='*60}")
+        print(f"  스캐너 히스토리 재생성: {scanner_name} ({len(scan_tickers_list)}종목, {SCANNER_DAYS}거래일)")
+        print(f"{'='*60}")
+
+        scanner_history = {}
+
+        for day_idx, target_ts in enumerate(scanner_dates):
+            date_str = target_ts.strftime("%Y-%m-%d")
+            today_entry = {}
+            buy_count = 0
+
+            for ticker in scan_tickers_list:
+                yf_sym = ticker
+                base_ticker = ticker.replace(".KS", "") if is_kospi_scan else ticker
+
+                # 데이터 조회
+                close_s = get_series("Close", yf_sym)
+                high_s = get_series("High", yf_sym)
+                low_s = get_series("Low", yf_sym)
+                vol_s = get_series("Volume", yf_sym)
+
+                if close_s.empty:
+                    continue
+
+                d = build_ticker_data_for_date(close_s, high_s, low_s, vol_s, target_ts)
+                if d is None:
+                    continue
+
+                # Exit 체크 — Exit 시그널이면 Entry 스캔 제외
+                if check_exit_simple(base_ticker, d):
+                    continue
+
+                signal, conditions = check_fn(d)
+
+                # 전일 BUY → 오늘 미발동 시 거래량 면제 재판정
+                if signal not in _BUY_SIGNALS:
+                    prev_dates = sorted([k for k in scanner_history.keys() if k < date_str], reverse=True)
+                    had_prior = False
+                    if prev_dates:
+                        had_prior = scanner_history.get(prev_dates[0], {}).get(base_ticker, {}).get("signal", "") in _BUY_SIGNALS
+                    if had_prior and check_fn != _check_entry_etf:
+                        retry_sig, retry_conds = check_fn(d, skip_volume=True)
+                        if retry_sig in _BUY_SIGNALS:
+                            signal, conditions = retry_sig, retry_conds
+
+                if signal and signal in _BUY_SIGNALS:
+                    today_entry[base_ticker] = {
+                        "signal": signal,
+                        "price": d.get("price"),
+                        "rsi": d.get("rsi14"),
+                        "macd_hist": d.get("macd_hist"),
+                        "drawdown": d.get("drawdown_20d_pct"),
+                    }
+                    buy_count += 1
+
+            scanner_history[date_str] = today_entry
+            print(f"  {date_str}: BUY {buy_count}종목")
+
+        _save_scanner_history(PROJECT_DIR, scanner_name, scanner_history)
+        print(f"  저장 완료: scanner_{scanner_name}_history.json ({len(scanner_history)}일)")
+
     # 최종 요약
     print(f"\n{'='*60}")
     print(f"  완료!")
     print(f"  시그널 히스토리: {len(history)}일 → {HISTORY_PATH}")
     print(f"  포트폴리오 스냅샷: {len(portfolio_daily)}일 → {PORTFOLIO_DAILY_PATH}")
+    print(f"  스캐너 히스토리: {SCANNER_DAYS}일 × 3 (sp100, etf, kospi)")
     print(f"{'='*60}\n")
 
     for dt in sorted(history.keys()):
