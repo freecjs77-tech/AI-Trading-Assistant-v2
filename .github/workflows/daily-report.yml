@@ -18,10 +18,32 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Restore history from gh-pages
+      - name: Restore & merge history from gh-pages
         run: |
+          # master의 history를 백업
+          cp -r history/ /tmp/history_master 2>/dev/null || mkdir -p /tmp/history_master
+          # gh-pages의 history를 복원
           git fetch origin gh-pages --depth=1 2>/dev/null || true
           git checkout origin/gh-pages -- history/ 2>/dev/null || mkdir -p history
+          # JSON 히스토리 파일 병합: gh-pages + master (master 우선)
+          python3 -c "
+          import json, glob, os
+          for f in glob.glob('/tmp/history_master/*.json'):
+              name = os.path.basename(f)
+              target = os.path.join('history', name)
+              try:
+                  master = json.load(open(f, encoding='utf-8'))
+                  deployed = json.load(open(target, encoding='utf-8')) if os.path.exists(target) else {}
+                  if isinstance(master, dict) and isinstance(deployed, dict):
+                      deployed.update(master)  # master 데이터가 우선
+                      json.dump(deployed, open(target, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+                      print(f'  merged {name}: {len(deployed)} keys')
+                  else:
+                      print(f'  skip {name}: not a dict')
+              except Exception as e:
+                  print(f'  error {name}: {e}')
+          "
+          rm -rf /tmp/history_master
 
       - name: Set up Python
         uses: actions/setup-python@v5
