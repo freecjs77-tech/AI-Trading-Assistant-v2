@@ -66,10 +66,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
 
     <!-- Pie Charts -->
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">pie_chart</span> 포트폴리오 비중</h2>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">카테고리별</h3><canvas id="categoryPie" style="max-height:280px;"></canvas></div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">종목별 (상위 10)</h3><canvas id="tickerPie" style="max-height:280px;"></canvas></div>
-    </div>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">종목별 (상위 10)</h3><canvas id="tickerPie" style="max-height:320px;"></canvas></div>
 
     {% if data_days >= 1 %}
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
@@ -140,9 +137,6 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
   { label:'USD/KRW', data:fxData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.05)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, borderDash:[6,3], yAxisID:'y1' }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'VIX / Yield', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'USD/KRW', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 {% endif %}
-
-const catData = {{ category_json }};
-new Chart(document.getElementById('categoryPie'), { type:'doughnut', data:{ labels:catData.map(d=>{ var a=d.amount_man||0; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:catData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff7166','#ff716c','#6d758c','#fbbf24','#a78bfa','#22d3ee'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=catData[c.dataIndex],a=d.amount_man||0,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
 
 const tickerData = {{ ticker_json }};
 new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>{ var a=d.amount_man; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff716c','#6d758c','#34d399','#fbbf24','#a78bfa','#22d3ee','#475569','#e51a22','#94a3b8'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
