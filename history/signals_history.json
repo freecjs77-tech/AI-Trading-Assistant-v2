@@ -531,7 +531,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "458730": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 14285.0,
       "rsi": 57.7239,
       "macd_hist": -54.284,
@@ -540,12 +540,14 @@
       "price_vs_ma20": "above",
       "ma20": 14207.75,
       "bb_pct": 54.2,
-      "buy_streak": 0,
+      "buy_streak": 1,
       "buy_confirmed": false,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확인 대기 1/2일] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "379800": {
       "signal": "WATCH",
@@ -673,7 +675,7 @@
       "master_switch": "GREEN"
     },
     "VOO": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 631.28,
       "rsi": 48.8108,
       "macd_hist": 0.0182,
@@ -682,12 +684,14 @@
       "price_vs_ma20": "below",
       "ma20": 632.1905,
       "bb_pct": 44.8,
-      "buy_streak": 0,
+      "buy_streak": 1,
       "buy_confirmed": false,
       "conditions_met": [
-        "MA20 이탈 2일 + MACD hist 감소"
+        "RSI > 42",
+        "MACD 골든크로스",
+        "Higher Low 형성"
       ],
-      "note": "MA20 이탈 2일 + MACD hist 감소"
+      "note": "[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + Higher Low 형성"
     },
     "BIL": {
       "signal": "CASH",
@@ -778,7 +782,7 @@
       "note": "MA20 이탈 2일 + MACD hist 감소 + MACD 데스크로스 + hist 3일 감소"
     },
     "SPY": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 686.38,
       "rsi": 48.785,
       "macd_hist": 0.0084,
@@ -787,12 +791,14 @@
       "price_vs_ma20": "below",
       "ma20": 687.4015,
       "bb_pct": 44.6,
-      "buy_streak": 0,
+      "buy_streak": 1,
       "buy_confirmed": false,
       "conditions_met": [
-        "MA20 이탈 2일 + MACD hist 감소"
+        "RSI > 42",
+        "MACD 골든크로스",
+        "Higher Low 형성"
       ],
-      "note": "MA20 이탈 2일 + MACD hist 감소"
+      "note": "[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + Higher Low 형성"
     },
     "AAPL": {
       "signal": "TAKE_PROFIT_2",
@@ -1032,7 +1038,7 @@
       "note": "[확인 대기 1/2일] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가"
     },
     "CRCL": {
-      "signal": "TOP_SIGNAL",
+      "signal": "3rd_BUY",
       "price": 96.14,
       "rsi": 72.8357,
       "macd_hist": 4.5423,
@@ -1041,13 +1047,15 @@
       "price_vs_ma20": "above",
       "ma20": 64.695,
       "bb_pct": 113.9,
-      "buy_streak": 0,
+      "buy_streak": 1,
       "buy_confirmed": false,
       "conditions_met": [
-        "BB 상단 2일 연속",
-        "3일 누적 >= +10%"
+        "가격 > MA20",
+        "MACD > 0 + 골든크로스",
+        "거래량비 >= 1.5x",
+        "RSI > 55"
       ],
-      "note": "BB 상단 2일 연속 + 3일 누적 >= +10%"
+      "note": "[확인 대기 1/2일] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x"
     },
     "XLE": {
       "signal": "HOLD",
@@ -1211,7 +1219,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "458730": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 14285.0,
       "rsi": 57.7239,
       "macd_hist": -54.284,
@@ -1220,12 +1228,14 @@
       "price_vs_ma20": "above",
       "ma20": 14207.75,
       "bb_pct": 54.2,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 2,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확정 2일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "379800": {
       "signal": "WATCH",
@@ -1705,7 +1715,7 @@
       "note": "조건 미충족"
     },
     "CRCL": {
-      "signal": "TOP_SIGNAL",
+      "signal": "3rd_BUY",
       "price": 99.63,
       "rsi": 74.4447,
       "macd_hist": 5.022,
@@ -1714,13 +1724,15 @@
       "price_vs_ma20": "above",
       "ma20": 66.7335,
       "bb_pct": 106.8,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 2,
+      "buy_confirmed": true,
       "conditions_met": [
-        "BB 상단 2일 연속",
-        "3일 누적 >= +10%"
+        "가격 > MA20",
+        "MACD > 0 + 골든크로스",
+        "거래량비 >= 1.5x",
+        "RSI > 55"
       ],
-      "note": "BB 상단 2일 연속 + 3일 누적 >= +10%"
+      "note": "[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x"
     },
     "XLE": {
       "signal": "HOLD",
@@ -1890,14 +1902,14 @@
       "price_vs_ma20": "above",
       "ma20": 14275.75,
       "bb_pct": 73.8,
-      "buy_streak": 1,
-      "buy_confirmed": false,
+      "buy_streak": 3,
+      "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
         "가격 > MA20",
         "Higher Low 형성"
       ],
-      "note": "[확인 대기 1/2일] RSI > 42 + 가격 > MA20 + Higher Low 형성"
+      "note": "[확정 3일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "379800": {
       "signal": "2nd_BUY",
@@ -1987,7 +1999,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "466920": {
-      "signal": "TAKE_PROFIT_1",
+      "signal": "2nd_BUY",
       "price": 37345.0,
       "rsi": 50.9387,
       "macd_hist": 96.3804,
@@ -1996,13 +2008,14 @@
       "price_vs_ma20": "above",
       "ma20": 36987.5,
       "bb_pct": 56.1,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 3,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD hist 3일 감소",
-        "RSI 다이버전스"
+        "RSI > 42",
+        "MACD 골든크로스",
+        "가격 > MA20"
       ],
-      "note": "MACD hist 3일 감소 + RSI 다이버전스"
+      "note": "[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     }
   },
   "2026-03-04": {
@@ -2384,7 +2397,7 @@
       "note": "RSI >= 75 + BB 상단 2일 연속 + 3일 누적 >= +10%"
     },
     "XLE": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 56.19,
       "rsi": 68.1442,
       "macd_hist": -0.057,
@@ -2393,12 +2406,14 @@
       "price_vs_ma20": "above",
       "ma20": 54.6625,
       "bb_pct": 80.9,
-      "buy_streak": 0,
+      "buy_streak": 1,
       "buy_confirmed": false,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확인 대기 1/2일] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "XLF": {
       "signal": "HOLD",
@@ -2553,14 +2568,14 @@
       "price_vs_ma20": "above",
       "ma20": 14346.75,
       "bb_pct": 73.7,
-      "buy_streak": 2,
+      "buy_streak": 4,
       "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
         "가격 > MA20",
         "Higher Low 형성"
       ],
-      "note": "[확정 2일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
+      "note": "[확정 4일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "379800": {
       "signal": "2nd_BUY",
@@ -3049,7 +3064,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "XLE": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 56.48,
       "rsi": 69.359,
       "macd_hist": -0.0752,
@@ -3058,12 +3073,14 @@
       "price_vs_ma20": "above",
       "ma20": 54.845,
       "bb_pct": 83.5,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 2,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확정 2일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "XLF": {
       "signal": "WATCH",
@@ -3226,14 +3243,14 @@
       "price_vs_ma20": "above",
       "ma20": 14409.75,
       "bb_pct": 68.6,
-      "buy_streak": 3,
+      "buy_streak": 5,
       "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
         "가격 > MA20",
         "Higher Low 형성"
       ],
-      "note": "[확정 3일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
+      "note": "[확정 5일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "379800": {
       "signal": "2nd_BUY",
@@ -3729,7 +3746,7 @@
       "note": "MACD hist 3일 감소 + RSI 다이버전스"
     },
     "XLE": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 56.57,
       "rsi": 69.7446,
       "macd_hist": -0.0929,
@@ -3738,12 +3755,14 @@
       "price_vs_ma20": "above",
       "ma20": 55.063,
       "bb_pct": 83.9,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 3,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확정 3일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "XLF": {
       "signal": "HOLD",
@@ -3902,14 +3921,14 @@
       "price_vs_ma20": "above",
       "ma20": 14456.75,
       "bb_pct": 67.9,
-      "buy_streak": 4,
+      "buy_streak": 5,
       "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
         "가격 > MA20",
         "Higher Low 형성"
       ],
-      "note": "[확정 4일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
+      "note": "[확정 5일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "379800": {
       "signal": "2nd_BUY",
@@ -4410,7 +4429,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "XLE": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 56.32,
       "rsi": 67.2143,
       "macd_hist": -0.1308,
@@ -4419,12 +4438,14 @@
       "price_vs_ma20": "above",
       "ma20": 55.2165,
       "bb_pct": 76.1,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 4,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확정 4일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "XLF": {
       "signal": "HOLD",
@@ -5257,7 +5278,7 @@
       "note": "MACD 데스크로스 + hist 3일 감소"
     },
     "379800": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 22620.0,
       "rsi": 48.782,
       "macd_hist": 22.5739,
@@ -5266,12 +5287,14 @@
       "price_vs_ma20": "below",
       "ma20": 22629.75,
       "bb_pct": 48.8,
-      "buy_streak": 0,
+      "buy_streak": 1,
       "buy_confirmed": false,
       "conditions_met": [
-        "MA20 이탈 2일 + MACD hist 감소"
+        "RSI > 42",
+        "MACD 골든크로스",
+        "Higher Low 형성"
       ],
-      "note": "MA20 이탈 2일 + MACD hist 감소"
+      "note": "[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + Higher Low 형성"
     },
     "379810": {
       "signal": "2nd_BUY",
@@ -5932,7 +5955,7 @@
       "note": "MA20 이탈 2일 + MACD hist 감소 + MACD 데스크로스 + hist 3일 감소"
     },
     "379800": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 22610.0,
       "rsi": 48.5346,
       "macd_hist": 19.8366,
@@ -5941,12 +5964,14 @@
       "price_vs_ma20": "below",
       "ma20": 22615.75,
       "bb_pct": 49.3,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 2,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MA20 이탈 2일 + MACD hist 감소"
+        "RSI > 42",
+        "MACD 골든크로스",
+        "Higher Low 형성"
       ],
-      "note": "MA20 이탈 2일 + MACD hist 감소"
+      "note": "[확정 2일 연속] RSI > 42 + MACD 골든크로스 + Higher Low 형성"
     },
     "379810": {
       "signal": "2nd_BUY",
@@ -6592,7 +6617,7 @@
       "note": "MA20 이탈 2일 + MACD hist 감소 + MACD 데스크로스 + hist 3일 감소"
     },
     "379800": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 22575.0,
       "rsi": 47.6243,
       "macd_hist": 15.399,
@@ -6601,12 +6626,14 @@
       "price_vs_ma20": "below",
       "ma20": 22614.25,
       "bb_pct": 45.1,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 3,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MA20 이탈 2일 + MACD hist 감소"
+        "RSI > 42",
+        "MACD 골든크로스",
+        "Higher Low 형성"
       ],
-      "note": "MA20 이탈 2일 + MACD hist 감소"
+      "note": "[확정 3일 연속] RSI > 42 + MACD 골든크로스 + Higher Low 형성"
     },
     "379810": {
       "signal": "2nd_BUY",
@@ -6899,7 +6926,7 @@
       "note": "MACD hist 3일 감소 + RSI 다이버전스"
     },
     "MSFT": {
-      "signal": "TAKE_PROFIT_1",
+      "signal": "2nd_BUY",
       "price": 395.55,
       "rsi": 38.7693,
       "macd_hist": 2.1985,
@@ -6908,13 +6935,15 @@
       "price_vs_ma20": "below",
       "ma20": 400.339,
       "bb_pct": 32.1,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD hist 3일 감소",
-        "종가 < MA20"
+        "이중바닥 (차이 <= 3.0%)",
+        "RSI > 35",
+        "MACD 골든크로스",
+        "거래량비 >= 1.5x"
       ],
-      "note": "MACD hist 3일 감소 + 종가 < MA20"
+      "note": "[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스"
     },
     "GOOGL": {
       "signal": "TAKE_PROFIT_2",
@@ -7277,18 +7306,18 @@
       "price_vs_ma20": "above",
       "ma20": 22598.25,
       "bb_pct": 53.6,
-      "buy_streak": 1,
-      "buy_confirmed": false,
+      "buy_streak": 4,
+      "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
         "MACD 골든크로스",
         "가격 > MA20",
         "Higher Low 형성"
       ],
-      "note": "[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
+      "note": "[확정 4일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "379810": {
-      "signal": "TAKE_PROFIT_1",
+      "signal": "2nd_BUY",
       "price": 24330.0,
       "rsi": 51.9264,
       "macd_hist": 69.0351,
@@ -7297,13 +7326,14 @@
       "price_vs_ma20": "above",
       "ma20": 24078.0,
       "bb_pct": 72.6,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD hist 3일 감소",
-        "RSI 다이버전스"
+        "RSI > 42",
+        "MACD 골든크로스",
+        "가격 > MA20"
       ],
-      "note": "MACD hist 3일 감소 + RSI 다이버전스"
+      "note": "[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "396500": {
       "signal": "HOLD",
@@ -7560,7 +7590,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "MSFT": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 399.95,
       "rsi": 42.7179,
       "macd_hist": 1.941,
@@ -7569,12 +7599,15 @@
       "price_vs_ma20": "below",
       "ma20": 400.2705,
       "bb_pct": 48.8,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MA20 이탈 2일 + MACD hist 감소"
+        "이중바닥 (차이 <= 3.0%)",
+        "RSI > 35",
+        "MACD 골든크로스",
+        "거래량비 >= 1.5x"
       ],
-      "note": "MA20 이탈 2일 + MACD hist 감소"
+      "note": "[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스"
     },
     "GOOGL": {
       "signal": "HOLD",
@@ -7926,7 +7959,7 @@
       "price_vs_ma20": "above",
       "ma20": 22580.5,
       "bb_pct": 60.8,
-      "buy_streak": 2,
+      "buy_streak": 5,
       "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
@@ -7934,7 +7967,7 @@
         "가격 > MA20",
         "Higher Low 형성"
       ],
-      "note": "[확정 2일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
+      "note": "[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "379810": {
       "signal": "2nd_BUY",
@@ -7946,14 +7979,14 @@
       "price_vs_ma20": "above",
       "ma20": 24076.0,
       "bb_pct": 77.5,
-      "buy_streak": 1,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
         "MACD 골든크로스",
         "가격 > MA20"
       ],
-      "note": "[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
+      "note": "[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "396500": {
       "signal": "2nd_BUY",
@@ -8221,7 +8254,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "MSFT": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 399.41,
       "rsi": 42.3569,
       "macd_hist": 1.7165,
@@ -8230,12 +8263,15 @@
       "price_vs_ma20": "below",
       "ma20": 400.398,
       "bb_pct": 46.3,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MA20 이탈 2일 + MACD hist 감소"
+        "이중바닥 (차이 <= 3.0%)",
+        "RSI > 35",
+        "MACD 골든크로스",
+        "거래량비 >= 1.5x"
       ],
-      "note": "MA20 이탈 2일 + MACD hist 감소"
+      "note": "[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스"
     },
     "GOOGL": {
       "signal": "HOLD",
@@ -8592,7 +8628,7 @@
       "price_vs_ma20": "above",
       "ma20": 22567.25,
       "bb_pct": 53.9,
-      "buy_streak": 3,
+      "buy_streak": 5,
       "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
@@ -8600,10 +8636,10 @@
         "가격 > MA20",
         "Higher Low 형성"
       ],
-      "note": "[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
+      "note": "[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "379810": {
-      "signal": "TAKE_PROFIT_1",
+      "signal": "2nd_BUY",
       "price": 24325.0,
       "rsi": 51.6529,
       "macd_hist": 58.1648,
@@ -8612,13 +8648,14 @@
       "price_vs_ma20": "above",
       "ma20": 24080.0,
       "bb_pct": 71.9,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD hist 3일 감소",
-        "RSI 다이버전스"
+        "RSI > 42",
+        "MACD 골든크로스",
+        "가격 > MA20"
       ],
-      "note": "MACD hist 3일 감소 + RSI 다이버전스"
+      "note": "[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "396500": {
       "signal": "2nd_BUY",
@@ -8879,7 +8916,7 @@
       "note": "MACD hist 3일 감소 + RSI 다이버전스"
     },
     "MSFT": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 391.79,
       "rsi": 37.5362,
       "macd_hist": 1.0685,
@@ -8888,12 +8925,15 @@
       "price_vs_ma20": "below",
       "ma20": 400.0075,
       "bb_pct": 20.2,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MA20 이탈 2일 + MACD hist 감소"
+        "이중바닥 (차이 <= 3.0%)",
+        "RSI > 35",
+        "MACD 골든크로스",
+        "거래량비 >= 1.5x"
       ],
-      "note": "MA20 이탈 2일 + MACD hist 감소"
+      "note": "[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스"
     },
     "GOOGL": {
       "signal": "HOLD",
@@ -9252,7 +9292,7 @@
       "price_vs_ma20": "above",
       "ma20": 22567.25,
       "bb_pct": 75.9,
-      "buy_streak": 4,
+      "buy_streak": 5,
       "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
@@ -9260,7 +9300,7 @@
         "가격 > MA20",
         "Higher Low 형성"
       ],
-      "note": "[확정 4일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
+      "note": "[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "379810": {
       "signal": "3rd_BUY",
@@ -9272,14 +9312,14 @@
       "price_vs_ma20": "above",
       "ma20": 24102.5,
       "bb_pct": 89.6,
-      "buy_streak": 1,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
         "가격 > MA20",
         "RSI > 55",
         "MACD > 0 + 골든크로스"
       ],
-      "note": "[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스"
+      "note": "[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스"
     },
     "396500": {
       "signal": "2nd_BUY",
@@ -9546,7 +9586,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "MSFT": {
-      "signal": "WATCH",
+      "signal": "2nd_BUY",
       "price": 389.02,
       "rsi": 35.9351,
       "macd_hist": 0.4963,
@@ -9555,14 +9595,15 @@
       "price_vs_ma20": "below",
       "ma20": 399.5355,
       "bb_pct": 14.1,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "[필수] RSI <= 45",
-        "[필수] 가격 < MA20",
-        "[필수] 52주 고점 대비 <= -15.0%"
+        "이중바닥 (차이 <= 3.0%)",
+        "RSI > 35",
+        "MACD 골든크로스",
+        "거래량비 >= 1.5x"
       ],
-      "note": "[필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] 52주 고점 대비 <= -15.0%"
+      "note": "[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스"
     },
     "GOOGL": {
       "signal": "HOLD",
@@ -9940,14 +9981,14 @@
       "price_vs_ma20": "above",
       "ma20": 24136.25,
       "bb_pct": 64.1,
-      "buy_streak": 2,
+      "buy_streak": 5,
       "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
         "MACD 골든크로스",
         "가격 > MA20"
       ],
-      "note": "[확정 2일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
+      "note": "[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "396500": {
       "signal": "2nd_BUY",
@@ -10228,7 +10269,7 @@
       "note": "[필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] 52주 고점 대비 <= -15.0%"
     },
     "GOOGL": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 301.0,
       "rsi": 41.3099,
       "macd_hist": 0.5815,
@@ -10237,12 +10278,15 @@
       "price_vs_ma20": "below",
       "ma20": 306.3645,
       "bb_pct": 16.9,
-      "buy_streak": 0,
+      "buy_streak": 1,
       "buy_confirmed": false,
       "conditions_met": [
-        "Higher Low 하향 돌파"
+        "이중바닥 (차이 <= 3.0%)",
+        "RSI > 35",
+        "MACD 골든크로스",
+        "거래량비 >= 1.5x"
       ],
-      "note": "Higher Low 하향 돌파"
+      "note": "[확인 대기 1/2일] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스"
     },
     "AMZN": {
       "signal": "WATCH",
@@ -10567,7 +10611,7 @@
       "note": "[확정 3일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "458730": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 14560.0,
       "rsi": 57.6038,
       "macd_hist": -36.2844,
@@ -10576,12 +10620,14 @@
       "price_vs_ma20": "above",
       "ma20": 14518.75,
       "bb_pct": 58.1,
-      "buy_streak": 0,
+      "buy_streak": 1,
       "buy_confirmed": false,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확인 대기 1/2일] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "379800": {
       "signal": "TAKE_PROFIT_2",
@@ -10610,14 +10656,14 @@
       "price_vs_ma20": "above",
       "ma20": 24152.0,
       "bb_pct": 59.2,
-      "buy_streak": 3,
+      "buy_streak": 5,
       "buy_confirmed": true,
       "conditions_met": [
         "RSI > 42",
         "MACD 골든크로스",
         "가격 > MA20"
       ],
-      "note": "[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
+      "note": "[확정 5일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "396500": {
       "signal": "2nd_BUY",
@@ -10906,7 +10952,7 @@
       "note": "[필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] 52주 고점 대비 <= -15.0%"
     },
     "GOOGL": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 302.06,
       "rsi": 42.6579,
       "macd_hist": 0.3887,
@@ -10915,13 +10961,15 @@
       "price_vs_ma20": "below",
       "ma20": 305.893,
       "bb_pct": 25.9,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 2,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MA20 이탈 2일 + MACD hist 감소",
-        "Higher Low 하향 돌파"
+        "이중바닥 (차이 <= 3.0%)",
+        "RSI > 35",
+        "MACD 골든크로스",
+        "거래량비 >= 1.5x"
       ],
-      "note": "MA20 이탈 2일 + MACD hist 감소 + Higher Low 하향 돌파"
+      "note": "[확정 2일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스"
     },
     "AMZN": {
       "signal": "HOLD",
@@ -17178,7 +17226,7 @@
       "note": "[확인 대기 1/2일] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가"
     },
     "XLE": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 59.68,
       "rsi": 57.4196,
       "macd_hist": -0.2884,
@@ -17187,12 +17235,14 @@
       "price_vs_ma20": "above",
       "ma20": 59.193,
       "bb_pct": 56.5,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 2,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확정 2일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "XLF": {
       "signal": "2nd_BUY",
@@ -17362,7 +17412,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "458730": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 14640.0,
       "rsi": 54.3326,
       "macd_hist": -21.0317,
@@ -17371,12 +17421,14 @@
       "price_vs_ma20": "above",
       "ma20": 14601.75,
       "bb_pct": 57.8,
-      "buy_streak": 0,
+      "buy_streak": 1,
       "buy_confirmed": false,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확인 대기 1/2일] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "379800": {
       "signal": "2nd_BUY",
@@ -17884,7 +17936,7 @@
       "note": "[필수] 가격 < MA20 + [필수] MACD hist 2일 증가 + [필수] 52주 고점 대비 <= -15.0%"
     },
     "XLE": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 60.16,
       "rsi": 59.6721,
       "macd_hist": -0.2961,
@@ -17893,12 +17945,14 @@
       "price_vs_ma20": "above",
       "ma20": 59.385,
       "bb_pct": 60.9,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 3,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확정 3일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "XLF": {
       "signal": "2nd_BUY",
@@ -18067,7 +18121,7 @@
       "note": "Exit/Entry 조건 미충족"
     },
     "458730": {
-      "signal": "TAKE_PROFIT_2",
+      "signal": "2nd_BUY",
       "price": 14625.0,
       "rsi": 53.6138,
       "macd_hist": -24.1834,
@@ -18076,12 +18130,14 @@
       "price_vs_ma20": "above",
       "ma20": 14609.75,
       "bb_pct": 53.2,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 2,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD 데스크로스 + hist 3일 감소"
+        "RSI > 42",
+        "가격 > MA20",
+        "Higher Low 형성"
       ],
-      "note": "MACD 데스크로스 + hist 3일 감소"
+      "note": "[확정 2일 연속] RSI > 42 + 가격 > MA20 + Higher Low 형성"
     },
     "379800": {
       "signal": "2nd_BUY",
@@ -18726,7 +18782,7 @@
       "note": "[확정 4일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x"
     },
     "373220": {
-      "signal": "TAKE_PROFIT_1",
+      "signal": "2nd_BUY",
       "price": 406000.0,
       "rsi": 54.3963,
       "macd_hist": 2911.5851,
@@ -18735,13 +18791,15 @@
       "price_vs_ma20": "above",
       "ma20": 389625.0,
       "bb_pct": 75.0,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "MACD hist 3일 감소",
-        "RSI 다이버전스"
+        "이중바닥 (차이 <= 3.0%)",
+        "RSI > 35",
+        "MACD 골든크로스",
+        "거래량비 >= 1.5x"
       ],
-      "note": "MACD hist 3일 감소 + RSI 다이버전스"
+      "note": "[확정 5일 연속] 이중바닥 (차이 <= 3.0%) + RSI > 35 + MACD 골든크로스"
     },
     "102110": {
       "signal": "3rd_BUY",
@@ -18991,7 +19049,7 @@
       "note": "[확정 2일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "SOXX": {
-      "signal": "TOP_SIGNAL",
+      "signal": "3rd_BUY",
       "price": 378.63,
       "rsi": 67.2159,
       "macd_hist": 5.0972,
@@ -19000,13 +19058,14 @@
       "price_vs_ma20": "above",
       "ma20": 339.1635,
       "bb_pct": 116.4,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "BB 상단 2일 연속",
-        "3일 누적 >= +10%"
+        "가격 > MA20",
+        "RSI > 55",
+        "MACD > 0 + 골든크로스"
       ],
-      "note": "BB 상단 2일 연속 + 3일 누적 >= +10%"
+      "note": "[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스"
     },
     "SPY": {
       "signal": "2nd_BUY",
@@ -19436,15 +19495,15 @@
       "price_vs_ma20": "above",
       "ma20": 391475.0,
       "bb_pct": 91.7,
-      "buy_streak": 1,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
         "가격 > MA20",
         "MACD > 0 + 골든크로스",
         "거래량비 >= 1.5x",
         "RSI > 55"
       ],
-      "note": "[확인 대기 1/2일] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x"
+      "note": "[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x"
     },
     "102110": {
       "signal": "3rd_BUY",
@@ -19701,7 +19760,7 @@
       "note": "[확정 3일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20"
     },
     "SOXX": {
-      "signal": "TOP_SIGNAL",
+      "signal": "3rd_BUY",
       "price": 386.6,
       "rsi": 69.5619,
       "macd_hist": 6.2806,
@@ -19710,13 +19769,14 @@
       "price_vs_ma20": "above",
       "ma20": 341.984,
       "bb_pct": 111.7,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 5,
+      "buy_confirmed": true,
       "conditions_met": [
-        "BB 상단 2일 연속",
-        "3일 누적 >= +10%"
+        "가격 > MA20",
+        "RSI > 55",
+        "MACD > 0 + 골든크로스"
       ],
-      "note": "BB 상단 2일 연속 + 3일 누적 >= +10%"
+      "note": "[확정 5일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스"
     },
     "SPY": {
       "signal": "2nd_BUY",
@@ -19847,7 +19907,7 @@
       "note": "조건 미충족"
     },
     "AMZN": {
-      "signal": "TOP_SIGNAL",
+      "signal": "3rd_BUY",
       "price": 238.38,
       "rsi": 71.4566,
       "macd_hist": 3.5578,
@@ -19856,13 +19916,15 @@
       "price_vs_ma20": "above",
       "ma20": 212.199,
       "bb_pct": 119.4,
-      "buy_streak": 0,
-      "buy_confirmed": false,
+      "buy_streak": 2,
+      "buy_confirmed": true,
       "conditions_met": [
-        "BB 상단 2일 연속",
-        "3일 누적 >= +10%"
+        "가격 > MA20",
+        "MACD > 0 + 골든크로스",
+        "거래량비 >= 1.5x",
+        "RSI > 55"
       ],
-      "note": "BB 상단 2일 연속 + 3일 누적 >= +10%"
+      "note": "[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x"
     },
     "O": {
       "signal": "HOLD",
@@ -20151,7 +20213,7 @@
       "price_vs_ma20": "above",
       "ma20": 393625.0,
       "bb_pct": 76.3,
-      "buy_streak": 2,
+      "buy_streak": 5,
       "buy_confirmed": true,
       "conditions_met": [
         "가격 > MA20",
@@ -20159,7 +20221,7 @@
         "거래량비 >= 1.5x",
         "RSI > 55"
       ],
-      "note": "[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x"
+      "note": "[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x"
     },
     "102110": {
       "signal": "3rd_BUY",
