@@ -27,19 +27,13 @@ from signal_judge import (
 )
 from portfolio_data import TICKER_META
 
-# ── S&P 100 종목 리스트 (OEX 구성종목, 2026년 기준) ─────
+# ── S&P 100 시총 상위 50 종목 (노이즈 감소, 대형주 집중) ─────
 SP100_TICKERS = [
-    "AAPL", "ABBV", "ABT", "ACN", "ADBE", "AIG", "AMD", "AMGN", "AMZN", "AVGO",
-    "AXP", "BA", "BAC", "BK", "BKNG", "BLK", "BMY", "BRK-B", "C", "CAT",
-    "CHTR", "CL", "CMCSA", "COF", "COP", "COST", "CRM", "CSCO", "CVS", "CVX",
-    "DE", "DHR", "DIS", "DOW", "DUK", "EMR", "EXC", "F", "FDX", "GD",
-    "GE", "GILD", "GM", "GOOG", "GOOGL", "GS", "HD", "HON", "IBM", "INTC",
-    "INTU", "JNJ", "JPM", "KHC", "KO", "LIN", "LLY", "LMT", "LOW", "MA",
-    "MCD", "MDLZ", "MDT", "MET", "META", "MMM", "MO", "MRK", "MS", "MSFT",
-    "NEE", "NFLX", "NKE", "NVDA", "ORCL", "PEP", "PFE", "PG", "PM", "PYPL",
-    "QCOM", "RTX", "SBUX", "SCHW", "SO", "SPG", "T", "TGT", "TMO", "TMUS",
-    "TSLA", "TXN", "UNH", "UNP", "UPS", "USB", "V", "VZ", "WFC", "WMT",
-    "XOM",
+    "AAPL", "ABBV", "AMZN", "AVGO", "BAC", "BRK-B", "COP", "COST", "CRM", "CSCO",
+    "CVX", "DHR", "DIS", "GE", "GILD", "GOOG", "GOOGL", "GS", "HD", "HON",
+    "IBM", "INTC", "INTU", "JNJ", "JPM", "KO", "LIN", "LLY", "LMT", "LOW",
+    "MA", "MCD", "MDT", "META", "MRK", "MS", "MSFT", "NEE", "NFLX", "NVDA",
+    "ORCL", "PEP", "PG", "QCOM", "RTX", "TMO", "TSLA", "UNH", "V", "WMT",
 ]
 
 # 종목 이름 (스캐너 표시용)
@@ -549,38 +543,24 @@ def _make_note(conditions: list) -> str:
 # ═══════════════════════════════════════════════════════
 
 ETF_TICKERS = [
-    # 섹터 ETF (Select Sector SPDRs)
+    # 주요 섹터 ETF (10개, 노이즈 감소)
     "XLK",   # Technology
     "XLF",   # Financials
     "XLE",   # Energy
     "XLV",   # Health Care
     "XLI",   # Industrials
-    "XLY",   # Consumer Discretionary
-    "XLP",   # Consumer Staples
-    "XLU",   # Utilities
-    "XLRE",  # Real Estate
-    "XLB",   # Materials
-    "XLC",   # Communication Services
-    # 테마 ETF
     "SOXX",  # Semiconductors
-    "ARKK",  # Innovation
-    "TAN",   # Solar
-    "KWEB",  # China Internet
     "IWM",   # Russell 2000 (Small Cap)
     "EFA",   # International Developed
     "EEM",   # Emerging Markets
     "GLD",   # Gold
-    "HYG",   # High Yield Bonds
 ]
 
 ETF_NAMES = {
     "XLK": "Technology Select", "XLF": "Financial Select", "XLE": "Energy Select",
-    "XLV": "Health Care Select", "XLI": "Industrial Select", "XLY": "Consumer Disc.",
-    "XLP": "Consumer Staples", "XLU": "Utilities Select", "XLRE": "Real Estate Select",
-    "XLB": "Materials Select", "XLC": "Communication Svc",
-    "SOXX": "Semiconductors", "ARKK": "ARK Innovation", "TAN": "Solar",
-    "KWEB": "China Internet", "IWM": "Russell 2000", "EFA": "Intl Developed",
-    "EEM": "Emerging Markets", "GLD": "Gold", "HYG": "High Yield Bond",
+    "XLV": "Health Care Select", "XLI": "Industrial Select",
+    "SOXX": "Semiconductors", "IWM": "Russell 2000", "EFA": "Intl Developed",
+    "EEM": "Emerging Markets", "GLD": "Gold",
 }
 
 
@@ -704,7 +684,7 @@ def scan_etf(project_dir: str) -> dict:
 
 
 # ═══════════════════════════════════════════════════════
-#  KOSPI Scanner — 코스피 시총 상위 100종목
+#  KOSPI Scanner — 코스피 시총 상위 50종목 (대형주 집중)
 # ═══════════════════════════════════════════════════════
 
 KOSPI_TICKERS = [
@@ -712,38 +692,24 @@ KOSPI_TICKERS = [
     "005930.KS",  # 삼성전자
     "000660.KS",  # SK하이닉스
     "009150.KS",  # 삼성전기
-    "018260.KS",  # 삼성SDS
     "066570.KS",  # LG전자
     "017670.KS",  # SK텔레콤
     "030200.KS",  # KT
     "035420.KS",  # NAVER
     "035720.KS",  # 카카오
-    "036570.KS",  # 엔씨소프트
-    "251270.KS",  # 넷마블
     "083790.KS",  # 크래프톤
     # 배터리/에너지
     "373220.KS",  # LG에너지솔루션
     "006400.KS",  # 삼성SDI
     "051910.KS",  # LG화학
     "096770.KS",  # SK이노베이션
-    "009830.KS",  # 한화솔루션
-    "112610.KS",  # 씨에스윈드
-    "241560.KS",  # 두산퓨얼셀
     # 자동차
     "005380.KS",  # 현대자동차
     "000270.KS",  # 기아
     "012330.KS",  # 현대모비스
-    "018880.KS",  # 한온시스템
-    "064350.KS",  # 현대로템
     # 철강/소재
     "005490.KS",  # POSCO홀딩스
-    "004020.KS",  # 현대제철
     "010130.KS",  # 고려아연
-    "002380.KS",  # KCC
-    "011170.KS",  # 롯데케미칼
-    "298040.KS",  # 효성티앤씨
-    "004800.KS",  # 효성
-    "006260.KS",  # LS Corp
     # 금융
     "105560.KS",  # KB금융
     "055550.KS",  # 신한지주
@@ -751,63 +717,38 @@ KOSPI_TICKERS = [
     "316140.KS",  # 우리금융지주
     "032830.KS",  # 삼성생명
     "000810.KS",  # 삼성화재
-    "088350.KS",  # 한화생명
-    "005940.KS",  # NH투자증권
-    "006800.KS",  # 미래에셋증권
-    "071050.KS",  # 한국금융지주
     "024110.KS",  # 기업은행
     # 바이오/제약
     "207940.KS",  # 삼성바이오로직스
     "068270.KS",  # 셀트리온
-    "068760.KS",  # 셀트리온제약
-    "128940.KS",  # 한미약품
-    "000100.KS",  # 유한양행
-    "326030.KS",  # SK바이오사이언스
-    "140490.KS",  # 휴젤
-    "069620.KS",  # 대웅제약
-    "096530.KS",  # 씨젠
     # 건설/조선/중공업
-    "000720.KS",  # 현대건설
     "034020.KS",  # 두산에너빌리티
-    "329180.KS",  # 한국조선해양
-    "010620.KS",  # 현대미포조선
+    "329180.KS",  # HD한국조선해양
     "042660.KS",  # 한화오션
-    "010140.KS",  # 삼성중공업
     "047810.KS",  # 한국항공우주
-    "006360.KS",  # GS건설
-    "000150.KS",  # 두산
-    "042670.KS",  # 두산밥캣
-    # 유통/소비재/식품
-    "139480.KS",  # 이마트
-    "023530.KS",  # 롯데쇼핑
-    "027410.KS",  # BGF리테일
-    "007070.KS",  # GS리테일
+    # 유통/소비재
     "097950.KS",  # CJ제일제당
-    "271560.KS",  # 오리온
-    "000080.KS",  # 하이트진로
     "033780.KS",  # KT&G
-    "007310.KS",  # 오뚜기
-    "009240.KS",  # 한샘
-    "000120.KS",  # CJ대한통운
     # 지주/복합기업
     "003550.KS",  # LG
     "034730.KS",  # SK
     "028260.KS",  # 삼성물산
-    "001040.KS",  # CJ
-    "078930.KS",  # GS
-    "004990.KS",  # 롯데지주
-    "090430.KS",  # 아모레퍼시픽
-    "002790.KS",  # 아모레G
-    "021240.KS",  # 코웨이
-    "030000.KS",  # 제일기획
-    "035250.KS",  # 강원랜드
-    "010060.KS",  # OCI홀딩스
     # 에너지/유틸리티/운송
     "010950.KS",  # S-Oil
     "015760.KS",  # 한국전력
     "003490.KS",  # 대한항공
     "011200.KS",  # HMM
+    # 기타 대형주
+    "036570.KS",  # 엔씨소프트
+    "128940.KS",  # 한미약품
+    "271560.KS",  # 오리온
+    "000720.KS",  # 현대건설
+    "090430.KS",  # 아모레퍼시픽
+    "021240.KS",  # 코웨이
     "047050.KS",  # 포스코인터내셔널
+    "010140.KS",  # 삼성중공업
+    "000100.KS",  # 유한양행
+    "010620.KS",  # 현대미포조선
 ]
 
 KOSPI_NAMES = {

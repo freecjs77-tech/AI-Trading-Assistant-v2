@@ -58,7 +58,9 @@ python app.py
 - L1_WARNING 삭제 (RSI≥60 과민 발동 해소)
 - L3 MACD 데스크로스 강화: MACD < 0 실제 하회 + hist 3일감소 필요
 - L2 RSI 다이버전스 구현 (전일 RSI 비교), 이중천장 조건 삭제 → 3개 중 2개
-- Growth 거부 RSI>55 (기존 50), 2nd/3rd BUY ALL 유지, 거래량 1.3x/1.2x 유지
+- Growth 거부 RSI>55 (기존 50), 2nd/3rd BUY ALL 유지
+- **v5.3c 노이즈 감소**: 2nd_BUY volume 1.2x→1.5x, 3rd_BUY volume 1.3x→1.5x (백테스트 검증)
+- **스캐너 종목 축소**: SP100 101→50, ETF 20→10, KOSPI 101→50 (대형주 집중)
 - Value Entry 독립화 (거부 RSI>70)
 - **1st BUY 통합 (v5.3b)**: Growth/ETF 동일 — 필수 4개 ALL(RSI≤45 + 가격<MA20 + MACD hist 2일증가 + DD_52w≤-15%), 선택 면제
 - 스캐너(SP100/ETF)에 Exit 판정 추가 → 포트폴리오와 판정 일관성 확보
