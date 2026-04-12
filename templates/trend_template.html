@@ -41,32 +41,53 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
   </header>
 
   <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
-    <!-- Summary -->
+    <!-- Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Total Assets</span>
+          <span class="material-symbols-outlined text-secondary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">account_balance</span>
+        </div>
         <div class="text-2xl font-headline font-bold text-secondary">&#8361;{{ latest.total_eok }}억</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">총 자산</div>
-        <div class="text-xs mt-1 {{ 'text-secondary' if latest.pnl_krw >= 0 else 'text-tertiary' }}">{{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
+        <div class="text-xs mt-2 {{ 'text-secondary' if latest.pnl_krw >= 0 else 'text-tertiary' }}">&#8599; {{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
       </div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-primary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Investment Principal</span>
+          <span class="material-symbols-outlined text-primary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">savings</span>
+        </div>
         <div class="text-2xl font-headline font-bold text-primary">&#8361;{{ latest.cost_eok }}억</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">투자 원금</div>
+        <div class="text-xs mt-2 text-outline">투자 원금</div>
       </div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-tertiary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Est. Annual Dividend</span>
+          <span class="material-symbols-outlined text-tertiary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">payments</span>
+        </div>
         <div class="text-2xl font-headline font-bold text-tertiary">&#8361;{{ latest.div_annual_man }}만</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">예상 연 배당</div>
-        <div class="text-xs text-outline mt-1">수익률 {{ latest.div_yield }}%</div>
+        <div class="text-xs mt-2 text-secondary">Yield: {{ latest.div_yield }}%</div>
       </div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-outline">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Cash Liquidity</span>
+          <span class="material-symbols-outlined text-outline" style="font-size:22px;font-variation-settings:'FILL' 1;">currency_exchange</span>
+        </div>
         <div class="text-2xl font-headline font-bold text-on-surface">&#8361;{{ latest.cash_eok }}억</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">현금 (BIL)</div>
-        <div class="text-xs text-outline mt-1">{{ latest.cash_pct }}%</div>
+        <div class="text-xs mt-2 text-tertiary">&#9679; {{ latest.cash_pct }}% Allocation</div>
       </div>
     </div>
 
-    <!-- Pie Charts -->
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">pie_chart</span> 포트폴리오 비중</h2>
-    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">종목별 (상위 10)</h3><canvas id="tickerPie" style="max-height:320px;"></canvas></div>
+    <!-- Asset Allocation -->
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
+      <h2 class="text-lg font-headline font-bold mb-6">Asset Allocation</h2>
+      <div class="flex flex-col lg:flex-row items-center gap-8">
+        <div class="relative" style="width:260px;height:260px;flex-shrink:0;">
+          <canvas id="tickerPie"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" id="pieCenter"></div>
+        </div>
+        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full" id="tickerCards"></div>
+      </div>
+    </div>
 
     {% if data_days >= 1 %}
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
@@ -131,7 +152,14 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
 {% endif %}
 
 const tickerData = {{ ticker_json }};
-new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>{ var a=d.amount_man; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff716c','#6d758c','#34d399','#fbbf24','#a78bfa','#22d3ee','#475569','#e51a22','#94a3b8'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
+const tColors = ['#00E5BC','#6dddff','#ff716c','#fbbf24','#34d399','#a78bfa','#22d3ee','#475569','#e51a22','#f97316','#94a3b8'];
+new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>d.name), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:tColors, borderWidth:0, spacing:2 }]}, options:{ responsive:true, cutout:'72%', plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
+// 도넛 중앙: 1위 종목
+if(tickerData.length>0){var topT=tickerData[0]; document.getElementById('pieCenter').innerHTML='<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">'+topT.name+'</span><span class="text-3xl font-headline font-bold text-on-surface">'+Math.round(topT.value)+'%</span>';}
+// 종목 카드 동적 생성
+var cardsHtml='';
+tickerData.forEach(function(d,i){var a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc';var c=tColors[i%tColors.length];cardsHtml+='<div class="rounded-lg bg-surface-container-high p-4" style="border-left:4px solid '+c+'"><div class="flex justify-between items-center"><span class="font-bold text-sm text-on-surface">'+d.name+'</span><div class="text-right"><div class="font-bold text-sm text-on-surface">'+s+'</div><div class="text-[10px] text-outline">'+d.value.toFixed(1)+'%</div></div></div></div>';});
+document.getElementById('tickerCards').innerHTML=cardsHtml;
 </script>
 </body>
 </html>
