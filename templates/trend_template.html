@@ -72,9 +72,6 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="assetTrendChart" style="max-height:320px;"></canvas></div>
 
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">insights</span> 수익금 / 수익률 추이</h2>
-    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="pnlTrendChart" style="max-height:320px;"></canvas></div>
-
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">payments</span> 예상 연 배당금 추이</h2>
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="divTrendChart" style="max-height:320px;"></canvas></div>
 
@@ -120,11 +117,6 @@ new Chart(document.getElementById('assetTrendChart'), { type:'line', data:{ labe
   { label:'총 자산 (억원)', data:totalAsset, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2 },
   { label:'투자 원금 (억원)', data:costBasis, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, borderDash:[5,5], tension:0.3, pointRadius:0 }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'억원', color:'#a3aac4' }}}}});
-
-new Chart(document.getElementById('pnlTrendChart'), { type:'line', data:{ labels:dates, datasets:[
-  { label:'수익금 (억원)', data:pnlAmount, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
-  { label:'수익률 (%)', data:pnlPct, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
-]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'억원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
 new Chart(document.getElementById('divTrendChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'예상 연 배당 (만원)', data:divData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
