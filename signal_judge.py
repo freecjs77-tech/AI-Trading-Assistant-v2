@@ -1223,25 +1223,7 @@ def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None, skip_
     # 판정 근거 전체 섹션 수집 (모든 Exit/Entry 레벨 독립 평가)
     all_sections = build_judgment_sections(ticker, d, macro, prev_day)
 
-    # ── Exit(익절) 체크 (TOP → TP2 → TP1)  [v5.2: 익절 전용 재설계] ──
-    top_hit, top_conds = _check_top_signal(d, prev_day)
-    if top_hit:
-        return {"signal": "TOP_SIGNAL", "note": _make_note(top_conds), "conditions": top_conds,
-                "judgment_sections": all_sections}
-
-    # 고점 영역 게이트: DD > -5% 일 때만 TP 시그널 허용
-    if _is_profit_zone(d):
-        tp2_hit, tp2_conds = _check_take_profit_2(d, prev_day)
-        if tp2_hit:
-            return {"signal": "TAKE_PROFIT_2", "note": _make_note(tp2_conds), "conditions": tp2_conds,
-                    "judgment_sections": all_sections}
-
-        tp1_hit, tp1_conds = _check_take_profit_1(d, prev_day)
-        if tp1_hit:
-            return {"signal": "TAKE_PROFIT_1", "note": _make_note(tp1_conds), "conditions": tp1_conds,
-                    "judgment_sections": all_sections}
-
-    # ── Entry 체크 (카테고리별) ──
+    # ── [v5.4] Entry 우선 체크 (BUY 시그널이 Exit보다 우선) ──
     if group == "growth":
         signal, conds = _check_entry_growth(d, skip_volume=skip_volume)
     elif group == "etf":
@@ -1255,6 +1237,28 @@ def judge_ticker(ticker: str, d: dict, macro: dict, prev_day: dict | None, skip_
     else:
         signal, conds = None, []
 
+    if signal and signal in _BUY_SIGNALS:
+        return {"signal": signal, "note": _make_note(conds), "conditions": conds,
+                "judgment_sections": all_sections}
+
+    # ── Exit(익절) 체크 (BUY 미발동 시에만) ──
+    top_hit, top_conds = _check_top_signal(d, prev_day)
+    if top_hit:
+        return {"signal": "TOP_SIGNAL", "note": _make_note(top_conds), "conditions": top_conds,
+                "judgment_sections": all_sections}
+
+    if _is_profit_zone(d):
+        tp2_hit, tp2_conds = _check_take_profit_2(d, prev_day)
+        if tp2_hit:
+            return {"signal": "TAKE_PROFIT_2", "note": _make_note(tp2_conds), "conditions": tp2_conds,
+                    "judgment_sections": all_sections}
+
+        tp1_hit, tp1_conds = _check_take_profit_1(d, prev_day)
+        if tp1_hit:
+            return {"signal": "TAKE_PROFIT_1", "note": _make_note(tp1_conds), "conditions": tp1_conds,
+                    "judgment_sections": all_sections}
+
+    # ── Entry의 WATCH도 여기서 반환 ──
     if signal:
         return {"signal": signal, "note": _make_note(conds), "conditions": conds,
                 "judgment_sections": all_sections}

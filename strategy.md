@@ -39,11 +39,13 @@
 ## 판정 우선순위
 
 ```
-1. TOP_SIGNAL 체크 — 3개 중 2개 충족 시 발동
-2. 고점 영역 게이트 (DD > -5%) — 통과 시에만 TP 체크
-   2a. TAKE_PROFIT_2 체크
-   2b. TAKE_PROFIT_1 체크
-3. Entry 체크 (3rd → 2nd → 1st → WATCH)
+1. Entry 체크 (3rd → 2nd → 1st) — BUY 발동 시 즉시 리턴 (Exit보다 우선)
+2. Exit 체크 (BUY 미발동 시에만)
+   2a. TOP_SIGNAL — 3개 중 2개 충족 시 발동
+   2b. 고점 영역 게이트 (DD > -5%) 통과 시:
+       - TAKE_PROFIT_2 체크
+       - TAKE_PROFIT_1 체크
+3. WATCH (Entry 조건 일부 충족)
 4. 해당 없으면 HOLD
 ```
 
@@ -136,22 +138,24 @@ TOP_SIGNAL은 게이트 없이 항상 발동 (과열은 무조건).
 > Exit 시그널은 고점에서 익절용으로만 사용한다.
 > 시장 필터는 사용자가 참고하는 용도이며, 판정에 개입하지 않는다.
 
-### 전체 흐름
+### 전체 흐름 (v5.4: BUY 우선)
 ```
-① TOP_SIGNAL 체크 → 3개 중 2개 충족 시 발동 (게이트/가드 없음)
+① Entry 체크 (3rd → 2nd → 1st) → BUY 발동 시 즉시 리턴
+   ↓ BUY 미발동
+② TOP_SIGNAL 체크 → 3개 중 2개 충족 시 발동 (게이트/가드 없음)
    ↓ 미발동
-② 고점 영역 게이트: DD > -5% 인가?
+③ 고점 영역 게이트: DD > -5% 인가?
    ↓ No → HOLD (이미 하락 중, 바닥에서 안 팜)
    ↓ Yes
-③ MACD 가드: hist 회복 중(increasing) 또는 MACD bullish 인가?
+④ MACD 가드: hist 회복 중(increasing) 또는 MACD bullish 인가?
    ↓ Yes → HOLD (반등 중, 안 팜)
    ↓ No
-④ TAKE_PROFIT_2 조건 체크 (1개라도 충족 → 대량 익절 50%)
+⑤ TAKE_PROFIT_2 조건 체크 (1개라도 충족 → 대량 익절 50%)
    ↓ 미발동
-⑤ TAKE_PROFIT_1 조건 체크 (2/3 충족 → 1차 익절 30%)
+⑥ TAKE_PROFIT_1 조건 체크 (2/3 충족 → 1차 익절 30%)
    ↓ 미발동
-⑥ Entry 체크 (3rd → 2nd → 1st → WATCH)
-⑦ 해당 없으면 HOLD
+⑦ WATCH (Entry 조건 일부 충족)
+⑧ 해당 없으면 HOLD
 ```
 
 ### TOP_SIGNAL — 강한 과열 [3개 중 2개 충족]
@@ -355,7 +359,13 @@ Growth v5.3b 로직 동일 적용.
 
 ## 변경 이력
 
-### v5.3b (현재)
+### v5.4 (현재)
+- **BUY 우선 판정**: Entry(BUY) → Exit(TOP/TP2/TP1) → WATCH → HOLD
+  - BUY 조건 충족 시 Exit 체크 없이 즉시 BUY 발동
+  - BUY 미발동 시에만 Exit 체크 (기존: Exit 먼저 체크)
+  - 추세 반전 시 BUY 조건이 먼저 무너지므로 Exit은 자연스럽게 발동
+
+### v5.3b
 - **1st BUY 조건 통합 개편** (Growth/ETF 동일):
   - 필수 4개 ALL: RSI≤45 + 가격<MA20 + MACD hist 2일증가 + DD_52w≤-15%
   - 선택 조건 면제 (필수 4개로 충분한 필터링)
