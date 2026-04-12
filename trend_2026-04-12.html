@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html class="dark" lang="ko">
+<html lang="ko">
 <head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Asset Trend Dashboard — 2026-04-12</title>
@@ -9,25 +10,50 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script>
-tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","on-primary-container":"#004352","secondary":"#00E5BC","secondary-container":"#106e00","on-secondary":"#0b5800","tertiary":"#ff7166","tertiary-container":"#f5282b","on-tertiary":"#4a0003","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c"},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+tailwind.config={darkMode:"class",theme:{extend:{colors:{
+"surface-container":"rgb(var(--c-surface-container)/<alpha-value>)","surface-container-highest":"rgb(var(--c-surface-container-highest)/<alpha-value>)",
+"surface-dim":"rgb(var(--c-surface-dim)/<alpha-value>)","surface":"rgb(var(--c-surface)/<alpha-value>)",
+"surface-container-high":"rgb(var(--c-surface-container-high)/<alpha-value>)","surface-container-low":"rgb(var(--c-surface-container-low)/<alpha-value>)",
+"surface-bright":"rgb(var(--c-surface-bright)/<alpha-value>)","surface-variant":"rgb(var(--c-surface-variant)/<alpha-value>)",
+"background":"rgb(var(--c-background)/<alpha-value>)",
+"primary":"rgb(var(--c-primary)/<alpha-value>)","primary-dim":"rgb(var(--c-primary-dim)/<alpha-value>)",
+"primary-container":"rgb(var(--c-primary-container)/<alpha-value>)","on-primary":"rgb(var(--c-on-primary)/<alpha-value>)",
+"on-primary-container":"rgb(var(--c-on-primary-container)/<alpha-value>)",
+"secondary":"rgb(var(--c-secondary)/<alpha-value>)","secondary-dim":"rgb(var(--c-secondary-dim)/<alpha-value>)",
+"secondary-container":"rgb(var(--c-secondary-container)/<alpha-value>)","on-secondary":"rgb(var(--c-on-secondary)/<alpha-value>)",
+"tertiary":"rgb(var(--c-tertiary)/<alpha-value>)","tertiary-dim":"rgb(var(--c-tertiary-dim)/<alpha-value>)",
+"tertiary-container":"rgb(var(--c-tertiary-container)/<alpha-value>)","on-tertiary":"rgb(var(--c-on-tertiary)/<alpha-value>)",
+"on-surface":"rgb(var(--c-on-surface)/<alpha-value>)","on-surface-variant":"rgb(var(--c-on-surface-variant)/<alpha-value>)",
+"on-background":"rgb(var(--c-on-background)/<alpha-value>)",
+"outline":"rgb(var(--c-outline)/<alpha-value>)","outline-variant":"rgb(var(--c-outline-variant)/<alpha-value>)",
+"error":"rgb(var(--c-error)/<alpha-value>)","error-container":"rgb(var(--c-error-container)/<alpha-value>)",
+"inverse-surface":"rgb(var(--c-inverse-surface)/<alpha-value>)"
+},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
 </script>
+<style>
+html.dark{--c-surface-container:15 25 48;--c-surface-container-highest:25 37 64;--c-surface-dim:6 14 32;--c-surface:6 14 32;--c-surface-container-high:20 31 56;--c-surface-container-low:9 19 40;--c-surface-bright:31 43 73;--c-surface-variant:25 37 64;--c-background:6 14 32;--c-primary:109 221 255;--c-primary-dim:0 195 235;--c-primary-container:0 210 253;--c-on-primary:0 76 94;--c-on-primary-container:0 67 82;--c-secondary:0 229 188;--c-secondary-dim:0 201 165;--c-secondary-container:16 110 0;--c-on-secondary:11 88 0;--c-tertiary:255 113 102;--c-tertiary-dim:229 26 34;--c-tertiary-container:245 40 43;--c-on-tertiary:74 0 3;--c-on-surface:222 229 255;--c-on-surface-variant:163 170 196;--c-on-background:222 229 255;--c-outline:109 117 140;--c-outline-variant:64 72 93;--c-error:255 113 108;--c-error-container:159 5 25;--c-inverse-surface:250 248 255}
+html.light{--c-surface-container:248 250 252;--c-surface-container-highest:226 232 240;--c-surface-dim:241 245 249;--c-surface:255 255 255;--c-surface-container-high:241 245 249;--c-surface-container-low:248 250 252;--c-surface-bright:255 255 255;--c-surface-variant:241 245 249;--c-background:255 255 255;--c-primary:0 212 255;--c-primary-dim:0 180 216;--c-primary-container:224 242 254;--c-on-primary:255 255 255;--c-on-primary-container:3 105 161;--c-secondary:0 195 158;--c-secondary-dim:0 229 188;--c-secondary-container:204 252 242;--c-on-secondary:0 0 0;--c-tertiary:229 26 34;--c-tertiary-dim:229 26 34;--c-tertiary-container:254 226 226;--c-on-tertiary:255 255 255;--c-on-surface:15 23 42;--c-on-surface-variant:100 116 139;--c-on-background:15 23 42;--c-outline:148 163 184;--c-outline-variant:203 213 225;--c-error:255 113 108;--c-error-container:254 226 226;--c-inverse-surface:15 23 42}
+</style>
 </head>
 <body class="bg-surface text-on-surface font-body">
 
 <!-- Sidebar -->
-<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 md:flex hidden" id="sidebar">
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 md:flex hidden" id="sidebar">
   <div class="flex items-center gap-3 mb-10">
-    <div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings:'FILL' 1;">dashboard_customize</span></div>
-    <div><h2 class="text-lg font-black text-primary leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-on-surface/40 mt-1">Precision Curator</p></div>
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center"><span class="material-symbols-outlined text-[#004352]" style="font-variation-settings:'FILL' 1;">dashboard_customize</span></div>
+    <div><h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p></div>
   </div>
   <div class="space-y-2 flex-grow">
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="index.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="scanner_2026-04-12.html"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="backtest_2026-04-12.html"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="trend_2026-04-12.html"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="index.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-04-12.html"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="backtest_2026-04-12.html"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="trend_2026-04-12.html"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
   </div>
-  <div class="pt-6 mt-6 border-t border-outline-variant/20 px-4 text-[10px] text-outline leading-relaxed">2026년 4월 12일 (일요일)</div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <button onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left" id="themeToggle"><span class="material-symbols-outlined">light_mode</span><span>Light Mode</span></button>
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">2026년 4월 12일 (일요일)</div>
+  </div>
 </nav>
 <div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
@@ -38,35 +64,57 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
       <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Asset Trend</span>
       <span class="text-xs text-outline font-label hidden sm:block">31일 추이</span>
     </div>
+    <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme"><span class="material-symbols-outlined">light_mode</span></button>
   </header>
 
   <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
-    <!-- Summary -->
+    <!-- Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Total Assets</span>
+          <span class="material-symbols-outlined text-secondary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">account_balance</span>
+        </div>
         <div class="text-2xl font-headline font-bold text-secondary">&#8361;20.55억</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">총 자산</div>
-        <div class="text-xs mt-1 text-secondary">+&#8361;12.31억 (+149.4%)</div>
+        <div class="text-xs mt-2 text-secondary">&#8599; +&#8361;12.31억 (+149.4%)</div>
       </div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-primary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Investment Principal</span>
+          <span class="material-symbols-outlined text-primary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">savings</span>
+        </div>
         <div class="text-2xl font-headline font-bold text-primary">&#8361;8.24억</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">투자 원금</div>
+        <div class="text-xs mt-2 text-outline">투자 원금</div>
       </div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-tertiary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Est. Annual Dividend</span>
+          <span class="material-symbols-outlined text-tertiary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">payments</span>
+        </div>
         <div class="text-2xl font-headline font-bold text-tertiary">&#8361;4,223만</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">예상 연 배당</div>
-        <div class="text-xs text-outline mt-1">수익률 2.05%</div>
+        <div class="text-xs mt-2 text-secondary">Yield: 2.05%</div>
       </div>
-      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 text-center">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-outline">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Cash Liquidity</span>
+          <span class="material-symbols-outlined text-outline" style="font-size:22px;font-variation-settings:'FILL' 1;">currency_exchange</span>
+        </div>
         <div class="text-2xl font-headline font-bold text-on-surface">&#8361;1.22억</div>
-        <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mt-2">현금 (BIL)</div>
-        <div class="text-xs text-outline mt-1">5.9%</div>
+        <div class="text-xs mt-2 text-tertiary">&#9679; 5.9% Allocation</div>
       </div>
     </div>
 
-    <!-- Pie Charts -->
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">pie_chart</span> 포트폴리오 비중</h2>
-    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><h3 class="font-headline font-bold mb-4">종목별 (상위 10)</h3><canvas id="tickerPie" style="max-height:320px;"></canvas></div>
+    <!-- Asset Allocation -->
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
+      <h2 class="text-lg font-headline font-bold mb-6">Asset Allocation</h2>
+      <div class="flex flex-col lg:flex-row items-center gap-8">
+        <div class="relative" style="width:260px;height:260px;flex-shrink:0;">
+          <canvas id="tickerPie"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" id="pieCenter"></div>
+        </div>
+        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full" id="tickerCards"></div>
+      </div>
+    </div>
 
     
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
@@ -92,10 +140,14 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
 
 <script>
 function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
+function toggleTheme(){const h=document.documentElement,d=h.classList.contains('dark');h.classList.remove('dark','light');const t=d?'light':'dark';h.classList.add(t);localStorage.setItem('theme',t);updateThemeIcons(t);}
+function updateThemeIcons(t){const i=t==='dark'?'light_mode':'dark_mode',l=t==='dark'?'Light Mode':'Dark Mode';const hb=document.getElementById('themeToggleHeader'),sb=document.getElementById('themeToggle');if(hb)hb.querySelector('.material-symbols-outlined').textContent=i;if(sb){sb.querySelector('.material-symbols-outlined').textContent=i;const ss=sb.querySelectorAll('span');if(ss.length>1)ss[1].textContent=l;}}
+document.addEventListener('DOMContentLoaded',function(){updateThemeIcons(document.documentElement.classList.contains('dark')?'dark':'light');});
 
-Chart.defaults.color = '#a3aac4';
-Chart.defaults.borderColor = '#40485d';
-Chart.defaults.plugins.legend.labels.color = '#dee5ff';
+const isDark = document.documentElement.classList.contains('dark');
+Chart.defaults.color = isDark ? '#a3aac4' : '#64748b';
+Chart.defaults.borderColor = isDark ? '#40485d' : '#cbd5e1';
+Chart.defaults.plugins.legend.labels.color = isDark ? '#dee5ff' : '#0f172a';
 
 const trend = [{"date": "2026-02-27", "total_eok": 22.14, "cost_eok": 8.05, "pnl_eok": 14.09, "pnl_pct": 175.0, "div_annual_man": 4082, "div_yield": 2.08, "vix": 19.86, "yield_30y": 4.633, "usd_krw": 1432.32}, {"date": "2026-03-02", "total_eok": 22.18, "cost_eok": 8.07, "pnl_eok": 14.11, "pnl_pct": 174.7, "div_annual_man": 4099, "div_yield": 2.08, "vix": 21.44, "yield_30y": 4.698, "usd_krw": 1438.5}, {"date": "2026-03-03", "total_eok": 21.39, "cost_eok": 8.13, "pnl_eok": 13.26, "pnl_pct": 163.2, "div_annual_man": 4138, "div_yield": 2.08, "vix": 23.57, "yield_30y": 4.702, "usd_krw": 1452.27}, {"date": "2026-03-04", "total_eok": 19.74, "cost_eok": 8.24, "pnl_eok": 11.5, "pnl_pct": 139.5, "div_annual_man": 4226, "div_yield": 2.08, "vix": 21.15, "yield_30y": 4.716, "usd_krw": 1483.07}, {"date": "2026-03-05", "total_eok": 20.91, "cost_eok": 8.16, "pnl_eok": 12.75, "pnl_pct": 156.3, "div_annual_man": 4163, "div_yield": 2.08, "vix": 23.75, "yield_30y": 4.752, "usd_krw": 1460.75}, {"date": "2026-03-06", "total_eok": 23.22, "cost_eok": 8.23, "pnl_eok": 14.99, "pnl_pct": 182.2, "div_annual_man": 4216, "div_yield": 2.08, "vix": 29.49, "yield_30y": 4.755, "usd_krw": 1479.51}, {"date": "2026-03-09", "total_eok": 21.23, "cost_eok": 8.24, "pnl_eok": 12.99, "pnl_pct": 157.5, "div_annual_man": 4229, "div_yield": 2.08, "vix": 25.5, "yield_30y": 4.74, "usd_krw": 1483.89}, {"date": "2026-03-10", "total_eok": 21.72, "cost_eok": 8.17, "pnl_eok": 13.55, "pnl_pct": 165.8, "div_annual_man": 4173, "div_yield": 2.08, "vix": 24.93, "yield_30y": 4.771, "usd_krw": 1464.47}, {"date": "2026-03-11", "total_eok": 22.02, "cost_eok": 8.2, "pnl_eok": 13.81, "pnl_pct": 168.4, "div_annual_man": 4197, "div_yield": 2.08, "vix": 24.23, "yield_30y": 4.857, "usd_krw": 1472.78}, {"date": "2026-03-12", "total_eok": 21.98, "cost_eok": 8.21, "pnl_eok": 13.77, "pnl_pct": 167.6, "div_annual_man": 4204, "div_yield": 2.08, "vix": 27.29, "yield_30y": 4.885, "usd_krw": 1475.34}, {"date": "2026-03-13", "total_eok": 21.79, "cost_eok": 8.2, "pnl_eok": 13.59, "pnl_pct": 165.8, "div_annual_man": 4191, "div_yield": 2.08, "vix": 27.19, "yield_30y": 4.908, "usd_krw": 1470.58}, {"date": "2026-03-16", "total_eok": 22.62, "cost_eok": 8.31, "pnl_eok": 14.31, "pnl_pct": 172.2, "div_annual_man": 4279, "div_yield": 2.08, "vix": 23.51, "yield_30y": 4.859, "usd_krw": 1501.75}, {"date": "2026-03-17", "total_eok": 22.09, "cost_eok": 8.26, "pnl_eok": 13.82, "pnl_pct": 167.3, "div_annual_man": 4243, "div_yield": 2.08, "vix": 22.37, "yield_30y": 4.852, "usd_krw": 1488.91}, {"date": "2026-03-18", "total_eok": 22.0, "cost_eok": 8.25, "pnl_eok": 13.75, "pnl_pct": 166.7, "div_annual_man": 4231, "div_yield": 2.08, "vix": 25.09, "yield_30y": 4.881, "usd_krw": 1484.87}, {"date": "2026-03-19", "total_eok": 21.48, "cost_eok": 8.33, "pnl_eok": 13.15, "pnl_pct": 158.0, "div_annual_man": 4289, "div_yield": 2.08, "vix": 24.06, "yield_30y": 4.852, "usd_krw": 1505.25}, {"date": "2026-03-20", "total_eok": 21.29, "cost_eok": 8.27, "pnl_eok": 13.02, "pnl_pct": 157.5, "div_annual_man": 4245, "div_yield": 2.08, "vix": 26.78, "yield_30y": 4.96, "usd_krw": 1489.84}, {"date": "2026-03-23", "total_eok": 20.25, "cost_eok": 8.32, "pnl_eok": 11.93, "pnl_pct": 143.4, "div_annual_man": 4286, "div_yield": 2.08, "vix": 26.15, "yield_30y": 4.912, "usd_krw": 1504.21}, {"date": "2026-03-24", "total_eok": 20.43, "cost_eok": 8.25, "pnl_eok": 12.18, "pnl_pct": 147.6, "div_annual_man": 4233, "div_yield": 2.08, "vix": 26.95, "yield_30y": 4.941, "usd_krw": 1485.36}, {"date": "2026-03-25", "total_eok": 20.89, "cost_eok": 8.3, "pnl_eok": 12.6, "pnl_pct": 151.8, "div_annual_man": 4267, "div_yield": 2.08, "vix": 25.33, "yield_30y": 4.897, "usd_krw": 1497.31}, {"date": "2026-03-26", "total_eok": 20.0, "cost_eok": 8.31, "pnl_eok": 11.69, "pnl_pct": 140.7, "div_annual_man": 4277, "div_yield": 2.08, "vix": 27.44, "yield_30y": 4.936, "usd_krw": 1500.97}, {"date": "2026-03-27", "total_eok": 19.98, "cost_eok": 8.34, "pnl_eok": 11.64, "pnl_pct": 139.7, "div_annual_man": 4298, "div_yield": 2.08, "vix": 31.05, "yield_30y": 4.982, "usd_krw": 1508.36}, {"date": "2026-03-30", "total_eok": 19.46, "cost_eok": 8.33, "pnl_eok": 11.13, "pnl_pct": 133.6, "div_annual_man": 4294, "div_yield": 2.08, "vix": 30.61, "yield_30y": 4.905, "usd_krw": 1507.02}, {"date": "2026-03-31", "total_eok": 19.21, "cost_eok": 8.37, "pnl_eok": 10.85, "pnl_pct": 129.7, "div_annual_man": 4320, "div_yield": 2.08, "vix": 25.25, "yield_30y": 4.891, "usd_krw": 1516.13}, {"date": "2026-04-01", "total_eok": 19.89, "cost_eok": 8.32, "pnl_eok": 11.58, "pnl_pct": 139.2, "div_annual_man": 4284, "div_yield": 2.08, "vix": 24.54, "yield_30y": 4.9, "usd_krw": 1503.33}, {"date": "2026-04-02", "total_eok": 19.05, "cost_eok": 8.35, "pnl_eok": 10.7, "pnl_pct": 128.1, "div_annual_man": 4309, "div_yield": 2.08, "vix": 23.87, "yield_30y": 4.89, "usd_krw": 1512.09}, {"date": "2026-04-06", "total_eok": 19.33, "cost_eok": 8.34, "pnl_eok": 10.99, "pnl_pct": 131.7, "div_annual_man": 4301, "div_yield": 2.08, "vix": 24.17, "yield_30y": 4.891, "usd_krw": 1509.26}, {"date": "2026-04-07", "total_eok": 19.6, "cost_eok": 8.33, "pnl_eok": 11.26, "pnl_pct": 135.1, "div_annual_man": 4297, "div_yield": 2.08, "vix": 25.78, "yield_30y": 4.921, "usd_krw": 1507.85}, {"date": "2026-04-08", "total_eok": 20.48, "cost_eok": 8.3, "pnl_eok": 12.18, "pnl_pct": 146.7, "div_annual_man": 4272, "div_yield": 2.08, "vix": 21.04, "yield_30y": 4.887, "usd_krw": 1499.13}, {"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.7, "div_annual_man": 4211, "div_yield": 2.08, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.51, "cost_eok": 8.21, "pnl_eok": 12.31, "pnl_pct": 150.0, "div_annual_man": 4198, "div_yield": 2.08, "vix": 19.23, "yield_30y": 4.914, "usd_krw": 1473.28}, {"date": "2026-04-12", "total_eok": 20.55, "cost_eok": 8.24, "pnl_eok": 12.31, "pnl_pct": 149.4, "div_annual_man": 4223, "div_yield": 2.05, "vix": 19.23, "yield_30y": 4.914, "usd_krw": 1482.7}];
 const dates = trend.map(d => d.date.slice(5));
@@ -108,7 +160,7 @@ const divYieldData = trend.map(d => d.div_yield);
 const vixData = trend.map(d => d.vix);
 const yieldData = trend.map(d => d.yield_30y);
 const fxData = trend.map(d => d.usd_krw);
-const dso = { ticks: { color: '#a3aac4' }, grid: { color: 'rgba(64,72,93,0.3)' } };
+const dso = { ticks: { color: isDark?'#a3aac4':'#64748b' }, grid: { color: isDark?'rgba(64,72,93,0.3)':'rgba(203,213,225,0.5)' } };
 
 
 new Chart(document.getElementById('assetTrendChart'), { type:'line', data:{ labels:dates, datasets:[
@@ -129,7 +181,14 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
 
 
 const tickerData = [{"name": "디아이티", "value": 62.5, "amount_man": 128466}, {"name": "VOO", "value": 8.0, "amount_man": 16444}, {"name": "QQQ", "value": 6.1, "amount_man": 12538}, {"name": "BIL", "value": 5.9, "amount_man": 12127}, {"name": "SCHD", "value": 3.3, "amount_man": 6783}, {"name": "AAPL", "value": 1.5, "amount_man": 3083}, {"name": "O", "value": 1.3, "amount_man": 2672}, {"name": "JEPI", "value": 1.1, "amount_man": 2261}, {"name": "SOXX", "value": 0.9, "amount_man": 1850}, {"name": "TIGER 200", "value": 0.9, "amount_man": 1850}, {"name": "기타", "value": 8.3, "amount_man": 17060}];
-new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>{ var a=d.amount_man; if(a>=10000) return d.name+' \u20a9'+(a/10000).toFixed(1)+'\uc5b5'; return d.name+' \u20a9'+a.toLocaleString()+'\ub9cc'; }), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:['#00E5BC','#6dddff','#ff716c','#6d758c','#34d399','#fbbf24','#a78bfa','#22d3ee','#475569','#e51a22','#94a3b8'] }]}, options:{ responsive:true, plugins:{ legend:{ position:'right', labels:{ color:'#dee5ff' }}, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
+const tColors = ['#00E5BC','#6dddff','#ff716c','#fbbf24','#34d399','#a78bfa','#22d3ee','#475569','#e51a22','#f97316','#94a3b8'];
+new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>d.name), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:tColors, borderWidth:0, spacing:2 }]}, options:{ responsive:true, cutout:'72%', plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
+// 도넛 중앙: 1위 종목
+if(tickerData.length>0){var topT=tickerData[0]; document.getElementById('pieCenter').innerHTML='<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">'+topT.name+'</span><span class="text-3xl font-headline font-bold text-on-surface">'+Math.round(topT.value)+'%</span>';}
+// 종목 카드 동적 생성
+var cardsHtml='';
+tickerData.forEach(function(d,i){var a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc';var c=tColors[i%tColors.length];cardsHtml+='<div class="rounded-lg bg-surface-container-high p-4" style="border-left:4px solid '+c+'"><div class="flex justify-between items-center"><span class="font-bold text-sm text-on-surface">'+d.name+'</span><div class="text-right"><div class="font-bold text-sm text-on-surface">'+s+'</div><div class="text-[10px] text-outline">'+d.value.toFixed(1)+'%</div></div></div></div>';});
+document.getElementById('tickerCards').innerHTML=cardsHtml;
 </script>
 </body>
 </html>

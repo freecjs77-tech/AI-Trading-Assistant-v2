@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>015760 — Detail</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #060e20;
-    --panel: #091328;
-    --panel2: #0f1930;
-    --accent: #6dddff;
-    --text: #dee5ff;
-    --text-dim: #a3aac4;
-    --sub: #6d758c;
-    --border: #40485d;
-    --green: #00E5BC;
-    --green-bg: #052E16;
-    --red: #ff7166;
-    --red-bg: #2A0A0A;
-    --orange: #fbbf24;
-    --orange-bg: #292524;
-    --cyan: #6dddff;
-    --purple: #a78bfa;
+  html.dark {
+    --bg: #060e20; --panel: #091328; --panel2: #0f1930;
+    --accent: #6dddff; --text: #dee5ff; --text-dim: #a3aac4; --sub: #6d758c; --border: #40485d;
+    --green: #00E5BC; --green-bg: #052E16; --red: #ff7166; --red-bg: #2A0A0A;
+    --orange: #fbbf24; --orange-bg: #292524; --cyan: #6dddff; --purple: #a78bfa;
+    --range-bg: #1E293B; --cond-bg: rgba(13,27,44,0.4); --cond-border: rgba(26,48,80,0.5);
+    --row-alt: rgba(13,27,44,0.3); --toggle-icon: 'light_mode'; --toggle-label: 'Light Mode';
+  }
+  html.light {
+    --bg: #ffffff; --panel: #f8fafc; --panel2: #f1f5f9;
+    --accent: #00D4FF; --text: #0f172a; --text-dim: #64748b; --sub: #94a3b8; --border: #cbd5e1;
+    --green: #00C39E; --green-bg: #ccfcf2; --red: #e51a22; --red-bg: #fee2e2;
+    --orange: #f59e0b; --orange-bg: #fef3c7; --cyan: #00D4FF; --purple: #a78bfa;
+    --range-bg: #e2e8f0; --cond-bg: rgba(241,245,249,0.8); --cond-border: rgba(203,213,225,0.5);
+    --row-alt: rgba(241,245,249,0.5); --toggle-icon: 'dark_mode'; --toggle-label: 'Dark Mode';
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
@@ -67,7 +66,7 @@
   .range-section { background: var(--panel); border-radius: 10px; padding: 16px 24px; margin-bottom: 16px; border: 1px solid var(--border); }
   .range-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--sub); margin-bottom: 8px; }
   .range-labels .current { color: var(--accent); font-weight: 700; }
-  .range-bar { position: relative; height: 8px; background: #1E293B; border-radius: 4px; }
+  .range-bar { position: relative; height: 8px; background: var(--range-bg); border-radius: 4px; }
   .range-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--red), var(--orange), var(--green)); }
   .range-marker { position: absolute; top: -4px; width: 16px; height: 16px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translateX(-50%); }
 
@@ -107,7 +106,7 @@
   .judge-group .condition-list { margin: 0; }
   .judge-group .condition-list li { padding: 5px 0; font-size: 12px; }
   /* Card-style condition items (3-tuple) */
-  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: rgba(13,27,44,0.4); border-radius: 8px; border: 1px solid rgba(26,48,80,0.5); }
+  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: var(--cond-bg); border-radius: 8px; border: 1px solid var(--cond-border); }
   .cond-card:last-child { margin-bottom: 0; }
   .cond-card .cond-icon { margin-top: 2px; }
   .cond-card-body { flex: 1; min-width: 0; }
@@ -122,7 +121,7 @@
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .history-table th { text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--sub); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
   .history-table td { padding: 7px 10px; border-bottom: 1px solid rgba(26,48,80,0.4); }
-  .history-table tr:nth-child(even) td { background: rgba(13,27,44,0.3); }
+  .history-table tr:nth-child(even) td { background: var(--row-alt); }
   .history-table .sig-buy { color: var(--green); font-weight: 700; }
   .history-table .sig-watch { color: var(--orange); font-weight: 600; }
   .history-table .sig-hold { color: var(--text-dim); }
@@ -145,7 +144,10 @@
 <div class="container">
 
   <!-- Back Navigation -->
-  <a href="../index.html" class="back-link">&#8592; Signal Report</a>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <a href="../index.html" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
+    <button onclick="toggleTheme()" id="themeToggle" style="background:var(--panel);border:1px solid var(--border);color:var(--accent);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">Light Mode</button>
+  </div>
 
   <!-- Header -->
   <div class="detail-header">
@@ -525,5 +527,9 @@
   </div>
 
 </div>
+<script>
+function toggleTheme(){var h=document.documentElement,d=h.classList.contains('dark'),t=d?'light':'dark';h.classList.remove('dark','light');h.classList.add(t);localStorage.setItem('theme',t);var b=document.getElementById('themeToggle');if(b)b.textContent=t==='dark'?'Light Mode':'Dark Mode';}
+document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('themeToggle');if(b)b.textContent=document.documentElement.classList.contains('dark')?'Light Mode':'Dark Mode';});
+</script>
 </body>
 </html>

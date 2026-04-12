@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SOXX — Detail</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #060e20;
-    --panel: #091328;
-    --panel2: #0f1930;
-    --accent: #6dddff;
-    --text: #dee5ff;
-    --text-dim: #a3aac4;
-    --sub: #6d758c;
-    --border: #40485d;
-    --green: #00E5BC;
-    --green-bg: #052E16;
-    --red: #ff7166;
-    --red-bg: #2A0A0A;
-    --orange: #fbbf24;
-    --orange-bg: #292524;
-    --cyan: #6dddff;
-    --purple: #a78bfa;
+  html.dark {
+    --bg: #060e20; --panel: #091328; --panel2: #0f1930;
+    --accent: #6dddff; --text: #dee5ff; --text-dim: #a3aac4; --sub: #6d758c; --border: #40485d;
+    --green: #00E5BC; --green-bg: #052E16; --red: #ff7166; --red-bg: #2A0A0A;
+    --orange: #fbbf24; --orange-bg: #292524; --cyan: #6dddff; --purple: #a78bfa;
+    --range-bg: #1E293B; --cond-bg: rgba(13,27,44,0.4); --cond-border: rgba(26,48,80,0.5);
+    --row-alt: rgba(13,27,44,0.3); --toggle-icon: 'light_mode'; --toggle-label: 'Light Mode';
+  }
+  html.light {
+    --bg: #ffffff; --panel: #f8fafc; --panel2: #f1f5f9;
+    --accent: #00D4FF; --text: #0f172a; --text-dim: #64748b; --sub: #94a3b8; --border: #cbd5e1;
+    --green: #00C39E; --green-bg: #ccfcf2; --red: #e51a22; --red-bg: #fee2e2;
+    --orange: #f59e0b; --orange-bg: #fef3c7; --cyan: #00D4FF; --purple: #a78bfa;
+    --range-bg: #e2e8f0; --cond-bg: rgba(241,245,249,0.8); --cond-border: rgba(203,213,225,0.5);
+    --row-alt: rgba(241,245,249,0.5); --toggle-icon: 'dark_mode'; --toggle-label: 'Dark Mode';
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
@@ -67,7 +66,7 @@
   .range-section { background: var(--panel); border-radius: 10px; padding: 16px 24px; margin-bottom: 16px; border: 1px solid var(--border); }
   .range-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--sub); margin-bottom: 8px; }
   .range-labels .current { color: var(--accent); font-weight: 700; }
-  .range-bar { position: relative; height: 8px; background: #1E293B; border-radius: 4px; }
+  .range-bar { position: relative; height: 8px; background: var(--range-bg); border-radius: 4px; }
   .range-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--red), var(--orange), var(--green)); }
   .range-marker { position: absolute; top: -4px; width: 16px; height: 16px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translateX(-50%); }
 
@@ -107,7 +106,7 @@
   .judge-group .condition-list { margin: 0; }
   .judge-group .condition-list li { padding: 5px 0; font-size: 12px; }
   /* Card-style condition items (3-tuple) */
-  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: rgba(13,27,44,0.4); border-radius: 8px; border: 1px solid rgba(26,48,80,0.5); }
+  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: var(--cond-bg); border-radius: 8px; border: 1px solid var(--cond-border); }
   .cond-card:last-child { margin-bottom: 0; }
   .cond-card .cond-icon { margin-top: 2px; }
   .cond-card-body { flex: 1; min-width: 0; }
@@ -122,7 +121,7 @@
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .history-table th { text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--sub); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
   .history-table td { padding: 7px 10px; border-bottom: 1px solid rgba(26,48,80,0.4); }
-  .history-table tr:nth-child(even) td { background: rgba(13,27,44,0.3); }
+  .history-table tr:nth-child(even) td { background: var(--row-alt); }
   .history-table .sig-buy { color: var(--green); font-weight: 700; }
   .history-table .sig-watch { color: var(--orange); font-weight: 600; }
   .history-table .sig-hold { color: var(--text-dim); }
@@ -145,7 +144,10 @@
 <div class="container">
 
   <!-- Back Navigation -->
-  <a href="../index.html" class="back-link">&#8592; Signal Report</a>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <a href="../index.html" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
+    <button onclick="toggleTheme()" id="themeToggle" style="background:var(--panel);border:1px solid var(--border);color:var(--accent);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">Light Mode</button>
+  </div>
 
   <!-- Header -->
   <div class="detail-header">
@@ -277,7 +279,7 @@
     <div class="judge-group exit-group">
       <div class="judge-group-header">
         <span class="group-name">TOP_SIGNAL — 과열 경보 (3개 중 2개 충족 시 발동)</span>
-        <span class="group-count cnt-partial">2/3 충족</span>
+        <span class="group-count cnt-partial">1/3 충족</span>
       </div>
       
       <div class="condition-card-list">
@@ -297,13 +299,13 @@
         
         
         
-        <div class="cond-card cond-card-ok">
+        <div class="cond-card cond-card-no">
           
-          <span class="cond-icon cond-ok">&#10003;</span>
+          <span class="cond-icon cond-no">&#10007;</span>
           
           <div class="cond-card-body">
             <div class="cond-card-title">BB 상단 2일 연속</div>
-            <div class="cond-card-desc">오늘 111.7%, 전일 111.7% — 연속 돌파했어요</div>
+            <div class="cond-card-desc">오늘 111.7% — 전일 이력이 없어요</div>
           </div>
         </div>
         
@@ -580,7 +582,7 @@
   <!-- Signal History -->
   
   <div class="signal-section">
-    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 30&#51068;)</div>
+    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 24&#51068;)</div>
     <table class="history-table">
       <thead>
         <tr><th>&#45216;&#51676;</th><th>&#49884;&#44536;&#45328;</th><th>&#44032;&#44201;</th><th>RSI</th><th>MACD Hist</th><th>DD</th></tr>
@@ -589,10 +591,10 @@
         
         <tr>
           <td>2026-04-12</td>
-          <td class="sig-buy">3rd_BUY</td>
-          <td>$386.60</td>
-          <td>69.6</td>
-          <td>6.2746</td>
+          <td class="sig-hold">ERROR</td>
+          <td>$None</td>
+          <td>-</td>
+          <td>-</td>
           <td>-</td>
         </tr>
         
@@ -803,60 +805,6 @@
           <td>-10.0%</td>
         </tr>
         
-        <tr>
-          <td>2026-03-12</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$330.19</td>
-          <td>42.6</td>
-          <td>-2.8309</td>
-          <td>-10.3%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-11</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$342.09</td>
-          <td>48.6</td>
-          <td>-2.6747</td>
-          <td>-7.0%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-10</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$338.81</td>
-          <td>46.7</td>
-          <td>-3.4260</td>
-          <td>-7.9%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-09</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$336.37</td>
-          <td>45.2</td>
-          <td>-4.0264</td>
-          <td>-8.6%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-06</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$323.51</td>
-          <td>36.9</td>
-          <td>-4.4338</td>
-          <td>-12.1%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-05</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$337.76</td>
-          <td>43.8</td>
-          <td>-3.4529</td>
-          <td>-8.2%</td>
-        </tr>
-        
       </tbody>
     </table>
   </div>
@@ -868,5 +816,9 @@
   </div>
 
 </div>
+<script>
+function toggleTheme(){var h=document.documentElement,d=h.classList.contains('dark'),t=d?'light':'dark';h.classList.remove('dark','light');h.classList.add(t);localStorage.setItem('theme',t);var b=document.getElementById('themeToggle');if(b)b.textContent=t==='dark'?'Light Mode':'Dark Mode';}
+document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('themeToggle');if(b)b.textContent=document.documentElement.classList.contains('dark')?'Light Mode':'Dark Mode';});
+</script>
 </body>
 </html>
