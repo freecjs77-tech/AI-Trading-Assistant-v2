@@ -4,7 +4,7 @@
 <script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Backtest Dashboard — {{ date }}</title>
+<title>Backtest Dashboard — 2026-04-12</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -43,15 +43,15 @@ html.light{--c-surface-container:248 250 252;--c-surface-container-highest:226 2
     <div><h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p></div>
   </div>
   <div class="space-y-2 flex-grow">
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_portfolio }}"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_scanner }}"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="{{ nav_backtest }}"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_trend }}"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="index.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-04-12.html"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="backtest_2026-04-12.html"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="trend_2026-04-12.html"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
   </div>
   <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
     <button onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left" id="themeToggle"><span class="material-symbols-outlined">light_mode</span><span>Light Mode</span></button>
-    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">{{ date_ko }}</div>
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">2026년 4월 12일 (일요일)</div>
   </div>
 </nav>
 <div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -61,7 +61,7 @@ html.light{--c-surface-container:248 250 252;--c-surface-container-highest:226 2
     <div class="flex items-center gap-4">
       <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
       <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">BACKTEST</span>
-      <span class="text-xs text-outline font-label">{{ total_records }}건 평가</span>
+      <span class="text-xs text-outline font-label">257건 평가</span>
     </div>
     <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme"><span class="material-symbols-outlined">light_mode</span></button>
   </header>
@@ -72,84 +72,178 @@ html.light{--c-surface-container:248 250 252;--c-surface-container-highest:226 2
     <h2 class="text-lg font-headline font-bold flex items-center gap-2">
       <span class="material-symbols-outlined text-secondary">shopping_cart</span> BUY 시그널 성적표
     </h2>
-    <p class="text-xs text-on-surface-variant -mt-4">BUY 발생 후 N거래일 내 +{{ win_threshold }}% 이상 수익 달성 비율</p>
+    <p class="text-xs text-on-surface-variant -mt-4">BUY 발생 후 N거래일 내 +3.0% 이상 수익 달성 비율</p>
 
-    {% if by_signal %}
+    
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {% for sig_name in ['1st_BUY', '2nd_BUY', '3rd_BUY'] %}
-      {% set s = by_signal.get(sig_name, {}) %}
-      {% if s %}
+      
+      
+      
       <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
         <div class="flex justify-between items-start mb-4">
-          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">{{ sig_name.replace('_', ' ') }}</span>
-          <span class="text-xs text-outline">{{ s.count }}건</span>
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">1st BUY</span>
+          <span class="text-xs text-outline">38건</span>
         </div>
         <div class="space-y-3">
-          {% set wr5 = ((s.win_rate_5d or 0) * 100)|round(0)|int %}
+          
           <div>
-            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold {{ 'text-secondary' if wr5 >= 50 else 'text-tertiary' }} text-base">{{ wr5 }}%</span></div>
-            <div class="w-full bg-surface-bright rounded-full h-2"><div class="{{ 'bg-secondary' if wr5 >= 50 else 'bg-tertiary' }} h-2 rounded-full" style="width:{{ wr5 }}%"></div></div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold text-tertiary text-base">18%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:18%"></div></div>
           </div>
-          {% set wr10 = ((s.win_rate_10d or 0) * 100)|round(0)|int %}
+          
           <div>
-            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold {{ 'text-secondary' if wr10 >= 50 else 'text-tertiary' }} text-base">{{ wr10 }}%</span></div>
-            <div class="w-full bg-surface-bright rounded-full h-2"><div class="{{ 'bg-secondary' if wr10 >= 50 else 'bg-tertiary' }} h-2 rounded-full" style="width:{{ wr10 }}%"></div></div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold text-tertiary text-base">37%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:37%"></div></div>
           </div>
-          {% set reach = ((s.reach_rate_10d or 0) * 100)|round(0)|int %}
+          
           <div>
-            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +{{ win_threshold }}% 터치)</span><span class="font-bold text-primary text-base">{{ reach }}%</span></div>
-            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:{{ reach }}%"></div></div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +3.0% 터치)</span><span class="font-bold text-primary text-base">50%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:50%"></div></div>
           </div>
           <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
             <span class="text-on-surface-variant">평균 수익 (5일)</span>
-            <span class="{{ 'text-secondary' if (s.avg_return_5d or 0) >= 0 else 'text-tertiary' }} font-bold">{% if s.avg_return_5d is defined %}{{ s.avg_return_5d }}%{% else %}—{% endif %}</span>
+            <span class="text-tertiary font-bold">-1.24%</span>
           </div>
         </div>
       </div>
-      {% endif %}
-      {% endfor %}
+      
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">2nd BUY</span>
+          <span class="text-xs text-outline">77건</span>
+        </div>
+        <div class="space-y-3">
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold text-tertiary text-base">5%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:5%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold text-tertiary text-base">9%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:9%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +3.0% 터치)</span><span class="font-bold text-primary text-base">18%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:18%"></div></div>
+          </div>
+          <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
+            <span class="text-on-surface-variant">평균 수익 (5일)</span>
+            <span class="text-tertiary font-bold">-1.75%</span>
+          </div>
+        </div>
+      </div>
+      
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">3rd BUY</span>
+          <span class="text-xs text-outline">14건</span>
+        </div>
+        <div class="space-y-3">
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold text-tertiary text-base">0%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:0%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold text-tertiary text-base">0%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:0%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +3.0% 터치)</span><span class="font-bold text-primary text-base">7%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:7%"></div></div>
+          </div>
+          <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
+            <span class="text-on-surface-variant">평균 수익 (5일)</span>
+            <span class="text-tertiary font-bold">-3.55%</span>
+          </div>
+        </div>
+      </div>
+      
+      
     </div>
-    {% endif %}
+    
 
     <!-- EXIT 시그널 성적표 -->
     <h2 class="text-lg font-headline font-bold flex items-center gap-2">
       <span class="material-symbols-outlined text-tertiary">sell</span> EXIT 시그널 성적표
     </h2>
-    <p class="text-xs text-on-surface-variant -mt-4">익절 후 10일 내 가격이 +{{ win_threshold }}% 넘게 오르지 않으면 성공</p>
+    <p class="text-xs text-on-surface-variant -mt-4">익절 후 10일 내 가격이 +3.0% 넘게 오르지 않으면 성공</p>
 
-    {% if by_signal %}
+    
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {% for sig_name in ['TOP_SIGNAL', 'TAKE_PROFIT_2', 'TAKE_PROFIT_1'] %}
-      {% set s = by_signal.get(sig_name, {}) %}
-      {% if s %}
-      {% set wr5 = ((s.win_rate_5d or 0) * 100)|round(0)|int %}
+      
+      
+      
+      
       <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
         <div class="flex justify-between items-start mb-3">
-          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">{{ sig_name.replace('_', ' ') }}</span>
-          <span class="text-xs text-outline">{{ s.count }}건</span>
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TOP SIGNAL</span>
+          <span class="text-xs text-outline">14건</span>
         </div>
         <div class="flex items-baseline gap-2">
-          <span class="text-3xl font-headline font-bold {{ 'text-secondary' if wr5 >= 50 else 'text-tertiary' }}">{{ wr5 }}%</span>
+          <span class="text-3xl font-headline font-bold text-secondary">64%</span>
           <span class="text-xs text-on-surface-variant">적중</span>
         </div>
-        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="{{ 'text-secondary' if (s.avg_return_5d or 0) <= 0 else 'text-tertiary' }} font-bold">{{ s.avg_return_5d }}%</span> {{ '하락' if (s.avg_return_5d or 0) <= 0 else '상승' }}</div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="text-secondary font-bold">-7.36%</span> 하락</div>
       </div>
-      {% endif %}
-      {% endfor %}
+      
+      
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-3">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TAKE PROFIT 2</span>
+          <span class="text-xs text-outline">102건</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-bold text-secondary">93%</span>
+          <span class="text-xs text-on-surface-variant">적중</span>
+        </div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="text-secondary font-bold">-0.72%</span> 하락</div>
+      </div>
+      
+      
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-3">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TAKE PROFIT 1</span>
+          <span class="text-xs text-outline">12건</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-bold text-secondary">67%</span>
+          <span class="text-xs text-on-surface-variant">적중</span>
+        </div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="text-secondary font-bold">-1.06%</span> 하락</div>
+      </div>
+      
+      
     </div>
-    {% endif %}
+    
 
     <div class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
-      {% if period %}{{ period.from }} ~ {{ period.to }} | {% endif %}BUY 승리 = N거래일 내 +{{ win_threshold }}% 이상 | EXIT 성공 = {{ max_eval_days }}일 내 +{{ win_threshold }}% 미만 상승
+      2026-02-27 ~ 2026-03-27 | BUY 승리 = N거래일 내 +3.0% 이상 | EXIT 성공 = 10일 내 +3.0% 미만 상승
     </div>
   </div>
 </main>
 
 <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
-  <a href="{{ nav_portfolio }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
-  <a href="{{ nav_scanner }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
-  <a href="{{ nav_trend }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
-  <a href="{{ nav_backtest }}" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">history</span><span class="text-[10px] font-label">Backtest</span></a>
+  <a href="index.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
+  <a href="scanner_2026-04-12.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="trend_2026-04-12.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="backtest_2026-04-12.html" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">history</span><span class="text-[10px] font-label">Backtest</span></a>
 </nav>
 
 <script>

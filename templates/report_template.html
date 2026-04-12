@@ -7,8 +7,9 @@
     v4.0: Kinetic Ledger 다크 테마 리디자인
     v3.0: Jinja2 템플릿 변환, 통화 토글(USD/KRW)
 -->
-<html class="dark" lang="ko">
+<html lang="ko">
 <head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Signal Report — {{ date }}</title>
@@ -21,44 +22,44 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        "surface-container": "#0f1930",
-        "surface-container-highest": "#192540",
-        "surface-dim": "#060e20",
-        "surface": "#060e20",
-        "surface-container-high": "#141f38",
-        "surface-container-low": "#091328",
-        "surface-container-lowest": "#000000",
-        "surface-bright": "#1f2b49",
-        "surface-variant": "#192540",
-        "surface-tint": "#6dddff",
-        "background": "#060e20",
-        "primary": "#6dddff",
-        "primary-dim": "#00c3eb",
-        "primary-container": "#00d2fd",
-        "on-primary": "#004c5e",
-        "on-primary-container": "#004352",
-        "secondary": "#00E5BC",
-        "secondary-dim": "#00C9A5",
-        "secondary-container": "#106e00",
-        "on-secondary": "#0b5800",
-        "on-secondary-container": "#e7ffd9",
-        "tertiary": "#ff7166",
-        "tertiary-dim": "#e51a22",
-        "tertiary-container": "#f5282b",
-        "on-tertiary": "#4a0003",
-        "on-tertiary-container": "#000000",
-        "on-surface": "#dee5ff",
-        "on-surface-variant": "#a3aac4",
-        "on-background": "#dee5ff",
-        "outline": "#6d758c",
-        "outline-variant": "#40485d",
-        "error": "#ff716c",
-        "error-container": "#9f0519",
-        "on-error": "#490006",
-        "on-error-container": "#ffa8a3",
-        "inverse-surface": "#faf8ff",
-        "inverse-primary": "#00687e",
-        "inverse-on-surface": "#4d556b",
+        "surface-container": "rgb(var(--c-surface-container) / <alpha-value>)",
+        "surface-container-highest": "rgb(var(--c-surface-container-highest) / <alpha-value>)",
+        "surface-dim": "rgb(var(--c-surface-dim) / <alpha-value>)",
+        "surface": "rgb(var(--c-surface) / <alpha-value>)",
+        "surface-container-high": "rgb(var(--c-surface-container-high) / <alpha-value>)",
+        "surface-container-low": "rgb(var(--c-surface-container-low) / <alpha-value>)",
+        "surface-container-lowest": "rgb(var(--c-surface-container-lowest) / <alpha-value>)",
+        "surface-bright": "rgb(var(--c-surface-bright) / <alpha-value>)",
+        "surface-variant": "rgb(var(--c-surface-variant) / <alpha-value>)",
+        "surface-tint": "rgb(var(--c-surface-tint) / <alpha-value>)",
+        "background": "rgb(var(--c-background) / <alpha-value>)",
+        "primary": "rgb(var(--c-primary) / <alpha-value>)",
+        "primary-dim": "rgb(var(--c-primary-dim) / <alpha-value>)",
+        "primary-container": "rgb(var(--c-primary-container) / <alpha-value>)",
+        "on-primary": "rgb(var(--c-on-primary) / <alpha-value>)",
+        "on-primary-container": "rgb(var(--c-on-primary-container) / <alpha-value>)",
+        "secondary": "rgb(var(--c-secondary) / <alpha-value>)",
+        "secondary-dim": "rgb(var(--c-secondary-dim) / <alpha-value>)",
+        "secondary-container": "rgb(var(--c-secondary-container) / <alpha-value>)",
+        "on-secondary": "rgb(var(--c-on-secondary) / <alpha-value>)",
+        "on-secondary-container": "rgb(var(--c-on-secondary-container) / <alpha-value>)",
+        "tertiary": "rgb(var(--c-tertiary) / <alpha-value>)",
+        "tertiary-dim": "rgb(var(--c-tertiary-dim) / <alpha-value>)",
+        "tertiary-container": "rgb(var(--c-tertiary-container) / <alpha-value>)",
+        "on-tertiary": "rgb(var(--c-on-tertiary) / <alpha-value>)",
+        "on-tertiary-container": "rgb(var(--c-on-tertiary-container) / <alpha-value>)",
+        "on-surface": "rgb(var(--c-on-surface) / <alpha-value>)",
+        "on-surface-variant": "rgb(var(--c-on-surface-variant) / <alpha-value>)",
+        "on-background": "rgb(var(--c-on-background) / <alpha-value>)",
+        "outline": "rgb(var(--c-outline) / <alpha-value>)",
+        "outline-variant": "rgb(var(--c-outline-variant) / <alpha-value>)",
+        "error": "rgb(var(--c-error) / <alpha-value>)",
+        "error-container": "rgb(var(--c-error-container) / <alpha-value>)",
+        "on-error": "rgb(var(--c-on-error) / <alpha-value>)",
+        "on-error-container": "rgb(var(--c-on-error-container) / <alpha-value>)",
+        "inverse-surface": "rgb(var(--c-inverse-surface) / <alpha-value>)",
+        "inverse-primary": "rgb(var(--c-inverse-primary) / <alpha-value>)",
+        "inverse-on-surface": "rgb(var(--c-inverse-on-surface) / <alpha-value>)",
       },
       borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" },
       fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
@@ -67,10 +68,62 @@ tailwind.config = {
 }
 </script>
 <style>
+  /* ── Dark Theme ── */
+  html.dark {
+    --c-surface-container: 15 25 48; --c-surface-container-highest: 25 37 64;
+    --c-surface-dim: 6 14 32; --c-surface: 6 14 32;
+    --c-surface-container-high: 20 31 56; --c-surface-container-low: 9 19 40;
+    --c-surface-container-lowest: 0 0 0; --c-surface-bright: 31 43 73;
+    --c-surface-variant: 25 37 64; --c-surface-tint: 109 221 255;
+    --c-background: 6 14 32;
+    --c-primary: 109 221 255; --c-primary-dim: 0 195 235;
+    --c-primary-container: 0 210 253; --c-on-primary: 0 76 94;
+    --c-on-primary-container: 0 67 82;
+    --c-secondary: 0 229 188; --c-secondary-dim: 0 201 165;
+    --c-secondary-container: 16 110 0; --c-on-secondary: 11 88 0;
+    --c-on-secondary-container: 231 255 217;
+    --c-tertiary: 255 113 102; --c-tertiary-dim: 229 26 34;
+    --c-tertiary-container: 245 40 43; --c-on-tertiary: 74 0 3;
+    --c-on-tertiary-container: 0 0 0;
+    --c-on-surface: 222 229 255; --c-on-surface-variant: 163 170 196;
+    --c-on-background: 222 229 255;
+    --c-outline: 109 117 140; --c-outline-variant: 64 72 93;
+    --c-error: 255 113 108; --c-error-container: 159 5 25;
+    --c-on-error: 73 0 6; --c-on-error-container: 255 168 163;
+    --c-inverse-surface: 250 248 255; --c-inverse-primary: 0 104 126;
+    --c-inverse-on-surface: 77 85 107;
+    --grad-start: #6dddff; --grad-end: #00d2fd;
+  }
+  /* ── Light Theme ── */
+  html.light {
+    --c-surface-container: 248 250 252; --c-surface-container-highest: 226 232 240;
+    --c-surface-dim: 241 245 249; --c-surface: 255 255 255;
+    --c-surface-container-high: 241 245 249; --c-surface-container-low: 248 250 252;
+    --c-surface-container-lowest: 255 255 255; --c-surface-bright: 255 255 255;
+    --c-surface-variant: 241 245 249; --c-surface-tint: 0 210 253;
+    --c-background: 255 255 255;
+    --c-primary: 0 212 255; --c-primary-dim: 0 180 216;
+    --c-primary-container: 224 242 254; --c-on-primary: 255 255 255;
+    --c-on-primary-container: 3 105 161;
+    --c-secondary: 0 195 158; --c-secondary-dim: 0 229 188;
+    --c-secondary-container: 204 252 242; --c-on-secondary: 0 0 0;
+    --c-on-secondary-container: 0 56 45;
+    --c-tertiary: 229 26 34; --c-tertiary-dim: 229 26 34;
+    --c-tertiary-container: 254 226 226; --c-on-tertiary: 255 255 255;
+    --c-on-tertiary-container: 74 0 3;
+    --c-on-surface: 15 23 42; --c-on-surface-variant: 100 116 139;
+    --c-on-background: 15 23 42;
+    --c-outline: 148 163 184; --c-outline-variant: 203 213 225;
+    --c-error: 255 113 108; --c-error-container: 254 226 226;
+    --c-on-error: 255 255 255; --c-on-error-container: 159 5 25;
+    --c-inverse-surface: 15 23 42; --c-inverse-primary: 0 104 126;
+    --c-inverse-on-surface: 248 250 252;
+    --grad-start: #00D4FF; --grad-end: #00b4d8;
+  }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .gradient-text {
-    background: linear-gradient(135deg, #6dddff 0%, #00d2fd 100%);
+    background: linear-gradient(135deg, var(--grad-start) 0%, var(--grad-end) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -79,47 +132,50 @@ tailwind.config = {
 <body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="{{ usd_krw_raw }}">
 
 <!-- ── Sidebar ── -->
-<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
   <div class="flex items-center gap-3 mb-10">
-    <div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center">
-      <span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">dashboard_customize</span>
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center">
+      <span class="material-symbols-outlined text-[#004352]" style="font-variation-settings: 'FILL' 1;">dashboard_customize</span>
     </div>
     <div>
-      <h2 class="text-lg font-black text-primary leading-none">Signal Report</h2>
-      <p class="text-[10px] uppercase tracking-widest text-on-surface/40 mt-1">Precision Curator</p>
+      <h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2>
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p>
     </div>
   </div>
   <div class="space-y-2 flex-grow">
-    <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)] transition-all" href="index.html">
+    <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)] transition-all" href="index.html">
       <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
     </a>
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_scanner }}">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_scanner }}">
       <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
     </a>
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_backtest }}">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_backtest }}">
       <span class="material-symbols-outlined">history</span><span>Backtest</span>
     </a>
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{{ nav_trend }}">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_trend }}">
       <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
     </a>
-    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="archive.html">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html">
       <span class="material-symbols-outlined">inventory_2</span><span>Archive</span>
     </a>
   </div>
-  <div class="pt-6 mt-6 border-t border-outline-variant/20 space-y-2">
-    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" class="flex items-center gap-3 px-4 py-3 w-full text-left bg-primary/10 text-primary hover:bg-primary/20 rounded-md transition-all font-bold text-sm">
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" class="flex items-center gap-3 px-4 py-3 w-full text-left bg-[#6dddff]/10 text-[#6dddff] hover:bg-[#6dddff]/20 rounded-md transition-all font-bold text-sm">
       <span class="material-symbols-outlined">rocket_launch</span><span>Run Workflow</span>
     </a>
-    <button id="currencyToggle" onclick="toggleCurrency()" class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all w-full text-left">
+    <button id="themeToggle" onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
+      <span class="material-symbols-outlined">light_mode</span><span>Light Mode</span>
+    </button>
+    <button id="currencyToggle" onclick="toggleCurrency()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
       <span class="material-symbols-outlined">currency_exchange</span><span>USD / KRW</span>
     </button>
-    <div class="px-4 py-2 text-[10px] text-outline leading-relaxed">
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">
       {{ date_ko }}<br>
       {% if market_status %}
         {% if market_status.US == 'open' or market_status.KRX == 'open' %}
-          <span class="text-tertiary">LIVE</span> US:{{ market_status.US }} / KRX:{{ market_status.KRX }}
+          <span class="text-[#ff7166]">LIVE</span> US:{{ market_status.US }} / KRX:{{ market_status.KRX }}
         {% else %}
-          <span class="text-secondary">CLOSED</span>
+          <span class="text-[#00E5BC]">CLOSED</span>
         {% endif %}
       {% endif %}
     </div>
@@ -157,6 +213,9 @@ tailwind.config = {
     </div>
     <div class="flex items-center gap-4">
       <div class="text-xs text-outline font-label hidden sm:block">{{ fetched_at }}</div>
+      <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme">
+        <span class="material-symbols-outlined">light_mode</span>
+      </button>
       <button class="p-2 text-on-surface/60 hover:text-primary transition-colors">
         <span class="material-symbols-outlined">notifications</span>
       </button>
@@ -537,7 +596,32 @@ function toggleSidebar() {
   sb.classList.toggle('hidden'); sb.classList.toggle('flex');
   ov.classList.toggle('hidden');
 }
-document.addEventListener('DOMContentLoaded', function() { isKRW = false; toggleCurrency(); });
+// ── Theme Toggle ──
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.classList.contains('dark');
+  const newTheme = isDark ? 'light' : 'dark';
+  html.classList.remove('dark', 'light');
+  html.classList.add(newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateThemeIcons(newTheme);
+}
+function updateThemeIcons(theme) {
+  const icon = theme === 'dark' ? 'light_mode' : 'dark_mode';
+  const label = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+  const headerBtn = document.getElementById('themeToggleHeader');
+  const sideBtn = document.getElementById('themeToggle');
+  if (headerBtn) headerBtn.querySelector('.material-symbols-outlined').textContent = icon;
+  if (sideBtn) {
+    sideBtn.querySelector('.material-symbols-outlined').textContent = icon;
+    const spans = sideBtn.querySelectorAll('span');
+    if (spans.length > 1) spans[1].textContent = label;
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  isKRW = false; toggleCurrency();
+  updateThemeIcons(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+});
 </script>
 </body>
 </html>
