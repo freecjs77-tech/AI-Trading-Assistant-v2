@@ -127,6 +127,30 @@ tailwind.config = {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+  /* ── Signal Badges ── */
+  .sig { display:inline-block; padding:2px 10px; font-size:11px; font-weight:700; border-radius:4px; border:1px solid transparent; }
+  /* Dark theme badges */
+  html.dark .sig-tp1 { background:rgba(255,113,102,0.15); color:#ff7166; border-color:rgba(255,113,102,0.3); }
+  html.dark .sig-tp2 { background:rgba(245,40,43,0.3); color:#ff7166; border-color:rgba(245,40,43,0.4); }
+  html.dark .sig-top { background:rgba(245,40,43,0.5); color:#fff; }
+  html.dark .sig-buy1 { background:rgba(0,229,188,0.12); color:#00E5BC; border-color:rgba(0,229,188,0.3); }
+  html.dark .sig-buy2 { background:rgba(0,229,188,0.22); color:#00E5BC; border-color:rgba(0,229,188,0.4); }
+  html.dark .sig-buy3 { background:rgba(0,229,188,0.35); color:#00E5BC; border-color:rgba(0,229,188,0.5); }
+  html.dark .sig-watch { background:rgba(251,191,36,0.12); color:#fbbf24; border-color:rgba(251,191,36,0.3); }
+  html.dark .sig-hold { background:rgba(109,221,255,0.08); color:#6dddff; border-color:rgba(109,221,255,0.2); }
+  html.dark .sig-cash { background:rgba(163,170,196,0.12); color:#a3aac4; border-color:rgba(163,170,196,0.25); }
+  html.dark .sig-bond { background:rgba(167,139,250,0.12); color:#a78bfa; border-color:rgba(167,139,250,0.25); }
+  /* Light theme badges */
+  html.light .sig-tp1 { background:#fce4ec; color:#c62828; }
+  html.light .sig-tp2 { background:#ef5350; color:#fff; }
+  html.light .sig-top { background:#7f1d1d; color:#fff; }
+  html.light .sig-buy1 { background:#e0f7fa; color:#00897b; }
+  html.light .sig-buy2 { background:#1976d2; color:#fff; }
+  html.light .sig-buy3 { background:#1a237e; color:#fff; }
+  html.light .sig-watch { background:#fff8e1; color:#f57f17; }
+  html.light .sig-hold { background:#fff3e0; color:#e65100; }
+  html.light .sig-cash { background:#e8f5e9; color:#2e7d32; }
+  html.light .sig-bond { background:#e8eaf6; color:#3f51b5; }
 </style>
 </head>
 <body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="{{ usd_krw_raw }}">
@@ -357,18 +381,26 @@ tailwind.config = {
                 <td class="px-6 py-4 font-bold {{ 'text-secondary' if h.pnl_pct >= 0 else 'text-tertiary' }}">{{ h.pnl_pct|sign_pct }}</td>
                 <td class="px-6 py-4 text-on-surface">${{ h.div_annual|comma }}</td>
                 <td class="px-6 py-4">
-                  {% if 'TAKE_PROFIT_2' in h.signal or 'TOP' in h.signal %}
-                  <span class="px-2 py-1 bg-tertiary-container/20 text-xs rounded text-tertiary border border-tertiary/30">{{ h.signal }}</span>
+                  {% if 'TOP' in h.signal %}
+                  <span class="sig sig-top">{{ h.signal }}</span>
+                  {% elif 'TAKE_PROFIT_2' in h.signal %}
+                  <span class="sig sig-tp2">{{ h.signal }}</span>
                   {% elif 'TAKE_PROFIT_1' in h.signal %}
-                  <span class="px-2 py-1 bg-tertiary/10 text-xs rounded text-tertiary border border-tertiary/20">{{ h.signal }}</span>
+                  <span class="sig sig-tp1">{{ h.signal }}</span>
+                  {% elif '3rd_BUY' in h.signal %}
+                  <span class="sig sig-buy3">{{ h.signal }}</span>
+                  {% elif '2nd_BUY' in h.signal %}
+                  <span class="sig sig-buy2">{{ h.signal }}</span>
                   {% elif 'BUY' in h.signal %}
-                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">{{ h.signal }}</span>
+                  <span class="sig sig-buy1">{{ h.signal }}</span>
                   {% elif 'WATCH' in h.signal %}
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface-variant border border-outline-variant/30">WATCH</span>
-                  {% elif 'CASH' in h.signal or 'BOND' in h.signal %}
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface border border-outline-variant/30 uppercase">{{ h.signal }}</span>
+                  <span class="sig sig-watch">WATCH</span>
+                  {% elif 'CASH' in h.signal %}
+                  <span class="sig sig-cash">CASH</span>
+                  {% elif 'BOND' in h.signal %}
+                  <span class="sig sig-bond">BOND</span>
                   {% else %}
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   {% endif %}
                   {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
                   <span class="text-[10px] text-outline ml-1">({{ prev_signal_map[h.ticker] }})</span>
@@ -411,18 +443,26 @@ tailwind.config = {
                 <td class="px-6 py-4 font-bold {{ 'text-secondary' if h.pnl_pct >= 0 else 'text-tertiary' }}">{{ h.pnl_pct|sign_pct }}</td>
                 <td class="px-6 py-4 text-on-surface">&#8361;{{ h.div_annual_krw|comma }}</td>
                 <td class="px-6 py-4">
-                  {% if 'TAKE_PROFIT_2' in h.signal or 'TOP' in h.signal %}
-                  <span class="px-2 py-1 bg-tertiary-container/20 text-xs rounded text-tertiary border border-tertiary/30">{{ h.signal }}</span>
+                  {% if 'TOP' in h.signal %}
+                  <span class="sig sig-top">{{ h.signal }}</span>
+                  {% elif 'TAKE_PROFIT_2' in h.signal %}
+                  <span class="sig sig-tp2">{{ h.signal }}</span>
                   {% elif 'TAKE_PROFIT_1' in h.signal %}
-                  <span class="px-2 py-1 bg-tertiary/10 text-xs rounded text-tertiary border border-tertiary/20">{{ h.signal }}</span>
+                  <span class="sig sig-tp1">{{ h.signal }}</span>
+                  {% elif '3rd_BUY' in h.signal %}
+                  <span class="sig sig-buy3">{{ h.signal }}</span>
+                  {% elif '2nd_BUY' in h.signal %}
+                  <span class="sig sig-buy2">{{ h.signal }}</span>
                   {% elif 'BUY' in h.signal %}
-                  <span class="px-2 py-1 bg-secondary-container/20 text-xs rounded text-secondary border border-secondary/30">{{ h.signal }}</span>
+                  <span class="sig sig-buy1">{{ h.signal }}</span>
                   {% elif 'WATCH' in h.signal %}
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface-variant border border-outline-variant/30">WATCH</span>
-                  {% elif 'CASH' in h.signal or 'BOND' in h.signal %}
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-on-surface border border-outline-variant/30 uppercase">{{ h.signal }}</span>
+                  <span class="sig sig-watch">WATCH</span>
+                  {% elif 'CASH' in h.signal %}
+                  <span class="sig sig-cash">CASH</span>
+                  {% elif 'BOND' in h.signal %}
+                  <span class="sig sig-bond">BOND</span>
                   {% else %}
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   {% endif %}
                   {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
                   <span class="text-[10px] text-outline ml-1">({{ prev_signal_map[h.ticker] }})</span>
@@ -466,7 +506,7 @@ tailwind.config = {
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">{{ h.name if h.is_kospi else h.ticker }}</h4>
                 </div>
-                <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">{{ h.signal | replace('_', ' ') }}</span>
+                <span class="sig {% if 'TOP' in h.signal %}sig-top{% else %}sig-tp2{% endif %}">{{ h.signal | replace('_', ' ') }}</span>
               </div>
               <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
             </div>
@@ -478,7 +518,7 @@ tailwind.config = {
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">{{ h.name if h.is_kospi else h.ticker }}</h4>
                 </div>
-                <span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-2 py-1 rounded border border-tertiary/20">{{ h.signal | replace('_', ' ') }}</span>
+                <span class="sig sig-tp1">{{ h.signal | replace('_', ' ') }}</span>
               </div>
               <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
             </div>
@@ -490,7 +530,7 @@ tailwind.config = {
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">{{ h.name if h.is_kospi else h.ticker }}</h4>
                 </div>
-                <span class="bg-secondary/10 text-secondary text-[10px] font-bold px-2 py-1 rounded border border-secondary/20">{{ h.signal | replace('_', ' ') }}</span>
+                <span class="sig {% if '3rd_BUY' in h.signal %}sig-buy3{% elif '2nd_BUY' in h.signal %}sig-buy2{% else %}sig-buy1{% endif %}">{{ h.signal | replace('_', ' ') }}</span>
               </div>
               <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
             </div>

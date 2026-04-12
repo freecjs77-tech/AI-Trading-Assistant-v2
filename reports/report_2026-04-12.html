@@ -127,6 +127,30 @@ tailwind.config = {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+  /* ── Signal Badges ── */
+  .sig { display:inline-block; padding:2px 10px; font-size:11px; font-weight:700; border-radius:4px; border:1px solid transparent; }
+  /* Dark theme badges */
+  html.dark .sig-tp1 { background:rgba(255,113,102,0.15); color:#ff7166; border-color:rgba(255,113,102,0.3); }
+  html.dark .sig-tp2 { background:rgba(245,40,43,0.3); color:#ff7166; border-color:rgba(245,40,43,0.4); }
+  html.dark .sig-top { background:rgba(245,40,43,0.5); color:#fff; }
+  html.dark .sig-buy1 { background:rgba(0,229,188,0.12); color:#00E5BC; border-color:rgba(0,229,188,0.3); }
+  html.dark .sig-buy2 { background:rgba(0,229,188,0.22); color:#00E5BC; border-color:rgba(0,229,188,0.4); }
+  html.dark .sig-buy3 { background:rgba(0,229,188,0.35); color:#00E5BC; border-color:rgba(0,229,188,0.5); }
+  html.dark .sig-watch { background:rgba(251,191,36,0.12); color:#fbbf24; border-color:rgba(251,191,36,0.3); }
+  html.dark .sig-hold { background:rgba(109,221,255,0.08); color:#6dddff; border-color:rgba(109,221,255,0.2); }
+  html.dark .sig-cash { background:rgba(163,170,196,0.12); color:#a3aac4; border-color:rgba(163,170,196,0.25); }
+  html.dark .sig-bond { background:rgba(167,139,250,0.12); color:#a78bfa; border-color:rgba(167,139,250,0.25); }
+  /* Light theme badges */
+  html.light .sig-tp1 { background:#fce4ec; color:#c62828; }
+  html.light .sig-tp2 { background:#ef5350; color:#fff; }
+  html.light .sig-top { background:#7f1d1d; color:#fff; }
+  html.light .sig-buy1 { background:#e0f7fa; color:#00897b; }
+  html.light .sig-buy2 { background:#1976d2; color:#fff; }
+  html.light .sig-buy3 { background:#1a237e; color:#fff; }
+  html.light .sig-watch { background:#fff8e1; color:#f57f17; }
+  html.light .sig-hold { background:#fff3e0; color:#e65100; }
+  html.light .sig-cash { background:#e8f5e9; color:#2e7d32; }
+  html.light .sig-bond { background:#e8eaf6; color:#3f51b5; }
 </style>
 </head>
 <body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="0">
@@ -349,7 +373,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
@@ -372,7 +396,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(CASH)</span>
@@ -395,7 +419,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
@@ -418,7 +442,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
@@ -441,7 +465,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
@@ -464,7 +488,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -487,7 +511,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
@@ -510,7 +534,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
@@ -533,7 +557,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(1st_BUY)</span>
@@ -556,7 +580,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(WATCH)</span>
@@ -579,7 +603,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(WATCH)</span>
@@ -602,7 +626,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(1st_BUY)</span>
@@ -625,7 +649,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(WATCH)</span>
@@ -648,7 +672,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -671,7 +695,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(HOLD)</span>
@@ -694,7 +718,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(HOLD)</span>
@@ -717,7 +741,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(BOND_WATCH)</span>
@@ -740,7 +764,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(HOLD)</span>
@@ -763,7 +787,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(WATCH)</span>
@@ -786,7 +810,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(TOP_SIGNAL)</span>
@@ -809,7 +833,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(HOLD)</span>
@@ -832,7 +856,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(WATCH)</span>
@@ -855,7 +879,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(HOLD)</span>
@@ -878,7 +902,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
@@ -901,7 +925,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(1st_BUY)</span>
@@ -945,7 +969,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(HOLD)</span>
@@ -968,7 +992,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -991,7 +1015,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(WATCH)</span>
@@ -1014,7 +1038,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -1037,7 +1061,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -1060,7 +1084,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -1083,7 +1107,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -1106,7 +1130,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(HOLD)</span>
@@ -1129,7 +1153,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -1152,7 +1176,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -1175,7 +1199,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -1198,7 +1222,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
@@ -1221,7 +1245,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(HOLD)</span>
@@ -1244,7 +1268,7 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="px-2 py-1 bg-surface-bright text-xs rounded text-primary border border-primary/20">HOLD</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
                   <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
