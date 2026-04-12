@@ -112,40 +112,6 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
     </div>
     {% endif %}
 
-    <!-- 최근 시그널 결과 -->
-    {% if records %}
-    <h2 class="text-lg font-headline font-bold flex items-center gap-2">
-      <span class="material-symbols-outlined text-primary">format_list_bulleted</span> 최근 시그널 결과
-    </h2>
-
-    <div class="flex gap-2 mb-2">
-      <button onclick="filterBtn('BUY')" class="px-3 py-1.5 text-xs rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface-variant hover:text-secondary hover:border-secondary/30 transition-all">BUY</button>
-      <button onclick="filterBtn('EXIT')" class="px-3 py-1.5 text-xs rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface-variant hover:text-tertiary hover:border-tertiary/30 transition-all">EXIT</button>
-      <button onclick="filterBtn('')" class="px-3 py-1.5 text-xs rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface-variant hover:text-primary hover:border-primary/30 transition-all">ALL</button>
-    </div>
-
-    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
-      <table class="w-full text-left border-collapse" id="recordsTable">
-        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
-          <th class="px-4 py-3">날짜</th><th class="px-4 py-3">종목</th><th class="px-4 py-3">시그널</th><th class="px-4 py-3 text-right">5일</th><th class="px-4 py-3 text-right">10일</th><th class="px-4 py-3 text-right">최고/최저</th>
-        </tr></thead>
-        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
-        {% for r in records|sort(attribute='date', reverse=true) %}
-        {% set o = r.outcomes or {} %}
-        <tr data-signal="{{ r.signal }}">
-          <td class="px-4 py-2.5">{{ r.date[5:] }}</td>
-          <td class="px-4 py-2.5 font-bold">{{ r.ticker }}</td>
-          <td class="px-4 py-2.5"><span class="px-2 py-0.5 text-[10px] rounded font-bold {% if 'BUY' in r.signal %}bg-secondary/10 text-secondary border border-secondary/20{% else %}bg-tertiary/10 text-tertiary border border-tertiary/20{% endif %}">{{ r.signal.replace('_', ' ') }}</span></td>
-          <td class="px-4 py-2.5 text-right">{% if o.get('5d') and o['5d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['5d'].return_pct >= 0 else 'text-tertiary' }}">{{ '+' if o['5d'].return_pct >= 0 else '' }}{{ o['5d'].return_pct }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-4 py-2.5 text-right">{% if o.get('10d') and o['10d'].return_pct is defined %}<span class="{{ 'text-secondary' if o['10d'].return_pct >= 0 else 'text-tertiary' }}">{{ '+' if o['10d'].return_pct >= 0 else '' }}{{ o['10d'].return_pct }}%</span>{% else %}—{% endif %}</td>
-          <td class="px-4 py-2.5 text-right text-xs">{% if o.max_gain_10d is defined and o.max_gain_10d is not none %}<span class="text-secondary">+{{ o.max_gain_10d }}%</span>{% endif %}{% if o.max_loss_10d is defined and o.max_loss_10d is not none %} / <span class="{{ 'text-secondary' if o.max_loss_10d >= 0 else 'text-tertiary' }}">{{ o.max_loss_10d }}%</span>{% endif %}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% endif %}
-
     <div class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
       {% if period %}{{ period.from }} ~ {{ period.to }} | {% endif %}BUY 승리 = N거래일 내 +{{ win_threshold }}% 이상 | EXIT 성공 = {{ max_eval_days }}일 내 +{{ win_threshold }}% 미만 상승
     </div>
@@ -161,7 +127,6 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0
 
 <script>
 function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
-function filterBtn(type){document.querySelectorAll('#recordsTable tbody tr').forEach(r=>{if(!type)r.style.display='';else{const sig=r.dataset.signal||'';r.style.display=(type==='BUY'?sig.includes('BUY'):!sig.includes('BUY'))?'':'none';}});}
 </script>
 </body>
 </html>
