@@ -4,7 +4,7 @@
 <script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Backtest Dashboard — 2026-04-10</title>
+<title>Backtest Dashboard — 2026-04-13</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -31,7 +31,10 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{
 </script>
 <style>
 html.dark{--c-surface-container:15 25 48;--c-surface-container-highest:25 37 64;--c-surface-dim:6 14 32;--c-surface:6 14 32;--c-surface-container-high:20 31 56;--c-surface-container-low:9 19 40;--c-surface-bright:31 43 73;--c-surface-variant:25 37 64;--c-background:6 14 32;--c-primary:109 221 255;--c-primary-dim:0 195 235;--c-primary-container:0 210 253;--c-on-primary:0 76 94;--c-on-primary-container:0 67 82;--c-secondary:0 229 188;--c-secondary-dim:0 201 165;--c-secondary-container:16 110 0;--c-on-secondary:11 88 0;--c-tertiary:255 113 102;--c-tertiary-dim:229 26 34;--c-tertiary-container:245 40 43;--c-on-tertiary:74 0 3;--c-on-surface:222 229 255;--c-on-surface-variant:163 170 196;--c-on-background:222 229 255;--c-outline:109 117 140;--c-outline-variant:64 72 93;--c-error:255 113 108;--c-error-container:159 5 25;--c-inverse-surface:250 248 255}
-html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 232 240;--c-surface-dim:226 232 240;--c-surface:241 245 249;--c-surface-container-high:248 250 252;--c-surface-container-low:255 255 255;--c-surface-bright:248 250 252;--c-surface-variant:241 245 249;--c-background:241 245 249;--c-primary:2 132 199;--c-primary-dim:3 105 161;--c-primary-container:224 242 254;--c-on-primary:255 255 255;--c-on-primary-container:3 105 161;--c-secondary:5 150 105;--c-secondary-dim:4 120 87;--c-secondary-container:167 243 208;--c-on-secondary:255 255 255;--c-tertiary:220 38 38;--c-tertiary-dim:185 28 28;--c-tertiary-container:254 202 202;--c-on-tertiary:255 255 255;--c-on-surface:15 23 42;--c-on-surface-variant:71 85 105;--c-on-background:15 23 42;--c-outline:100 116 139;--c-outline-variant:148 163 184;--c-error:220 38 38;--c-error-container:254 226 226;--c-inverse-surface:15 23 42}
+html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 232 240;--c-surface-dim:226 232 240;--c-surface:241 243 245;--c-surface-container-high:248 250 252;--c-surface-container-low:255 255 255;--c-surface-bright:248 250 252;--c-surface-variant:241 245 249;--c-background:241 243 245;--c-primary:37 99 235;--c-primary-dim:30 64 175;--c-primary-container:219 234 254;--c-on-primary:255 255 255;--c-on-primary-container:30 64 175;--c-secondary:59 130 246;--c-secondary-dim:29 78 216;--c-secondary-container:219 234 254;--c-on-secondary:255 255 255;--c-on-secondary-container:30 64 175;--c-tertiary:225 29 72;--c-tertiary-dim:190 18 60;--c-tertiary-container:255 241 242;--c-on-tertiary:255 255 255;--c-on-tertiary-container:136 19 55;--c-on-surface:15 23 42;--c-on-surface-variant:71 85 105;--c-on-background:15 23 42;--c-outline:100 116 139;--c-outline-variant:148 163 184;--c-error:225 29 72;--c-error-container:255 241 242;--c-on-error-container:136 19 55;--c-surface-tint:37 99 235;--c-inverse-surface:15 23 42;--grad-start:#2563EB;--grad-end:#1E40AF}
+.sig-buy,.sig-buy1,.sig-buy2,.sig-buy3{background:#2563eb;color:#fff;}.sig-buy::before,.sig-buy1::before,.sig-buy2::before,.sig-buy3::before{content:"\25B2 ";}
+.sig-exit,.sig-tp,.sig-tp1,.sig-tp2{background:#e11d48;color:#fff;}.sig-exit::before,.sig-tp::before,.sig-tp1::before,.sig-tp2::before{content:"\25BC ";}
+.sig-watch,.sig-hold,.sig-cash,.sig-bond{background:#d97706;color:#fff;}.sig-watch::before,.sig-hold::before,.sig-cash::before,.sig-bond::before{content:"\25CF ";}
 </style>
 </head>
 <body class="bg-surface text-on-surface font-body">
@@ -44,14 +47,14 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
   </div>
   <div class="space-y-2 flex-grow">
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="index.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-04-10.html"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="backtest_2026-04-10.html"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="trend_2026-04-10.html"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-04-13.html"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="backtest_2026-04-13.html"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="trend_2026-04-13.html"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
   </div>
   <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
     <button onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left" id="themeToggle"><span class="material-symbols-outlined">light_mode</span><span>Light Mode</span></button>
-    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">2026년 4월 10일 (금요일)</div>
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">2026년 4월 13일 (월요일)</div>
   </div>
 </nav>
 <div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -241,9 +244,9 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
 
 <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
   <a href="index.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
-  <a href="scanner_2026-04-10.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
-  <a href="trend_2026-04-10.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
-  <a href="backtest_2026-04-10.html" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">history</span><span class="text-[10px] font-label">Backtest</span></a>
+  <a href="scanner_2026-04-13.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="trend_2026-04-13.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="backtest_2026-04-13.html" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">history</span><span class="text-[10px] font-label">Backtest</span></a>
 </nav>
 
 <script>
