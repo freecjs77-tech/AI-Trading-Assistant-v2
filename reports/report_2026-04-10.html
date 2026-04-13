@@ -12,7 +12,7 @@
 <script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Signal Report — 2026-04-13</title>
+<title>Signal Report — 2026-04-10</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -94,31 +94,31 @@ tailwind.config = {
     --c-inverse-on-surface: 77 85 107;
     --grad-start: #6dddff; --grad-end: #00d2fd;
   }
-  /* ── Light Theme ── */
+  /* ── Light Theme (Blue Tone) ── */
   html.light {
     --c-surface-container: 255 255 255; --c-surface-container-highest: 226 232 240;
-    --c-surface-dim: 226 232 240; --c-surface: 241 245 249;
-    --c-surface-container-high: 248 250 252; --c-surface-container-low: 255 255 255;
-    --c-surface-container-lowest: 255 255 255; --c-surface-bright: 248 250 252;
-    --c-surface-variant: 241 245 249; --c-surface-tint: 0 210 253;
-    --c-background: 241 245 249;
-    --c-primary: 2 132 199; --c-primary-dim: 3 105 161;
-    --c-primary-container: 224 242 254; --c-on-primary: 255 255 255;
-    --c-on-primary-container: 3 105 161;
-    --c-secondary: 5 150 105; --c-secondary-dim: 4 120 87;
-    --c-secondary-container: 167 243 208; --c-on-secondary: 255 255 255;
-    --c-on-secondary-container: 6 78 59;
-    --c-tertiary: 220 38 38; --c-tertiary-dim: 185 28 28;
-    --c-tertiary-container: 254 202 202; --c-on-tertiary: 255 255 255;
-    --c-on-tertiary-container: 127 29 29;
+    --c-surface-dim: 241 245 249; --c-surface: 241 243 245;
+    --c-surface-container-high: 255 255 255; --c-surface-container-low: 248 250 252;
+    --c-surface-container-lowest: 255 255 255; --c-surface-bright: 255 255 255;
+    --c-surface-variant: 248 250 252; --c-surface-tint: 37 99 235;
+    --c-background: 241 243 245;
+    --c-primary: 37 99 235; --c-primary-dim: 30 64 175;
+    --c-primary-container: 219 234 254; --c-on-primary: 255 255 255;
+    --c-on-primary-container: 30 64 175;
+    --c-secondary: 59 130 246; --c-secondary-dim: 29 78 216;
+    --c-secondary-container: 219 234 254; --c-on-secondary: 255 255 255;
+    --c-on-secondary-container: 30 64 175;
+    --c-tertiary: 225 29 72; --c-tertiary-dim: 190 18 60;
+    --c-tertiary-container: 255 241 242; --c-on-tertiary: 255 255 255;
+    --c-on-tertiary-container: 136 19 55;
     --c-on-surface: 15 23 42; --c-on-surface-variant: 71 85 105;
     --c-on-background: 15 23 42;
     --c-outline: 100 116 139; --c-outline-variant: 148 163 184;
-    --c-error: 220 38 38; --c-error-container: 254 202 202;
-    --c-on-error: 255 255 255; --c-on-error-container: 127 29 29;
-    --c-inverse-surface: 15 23 42; --c-inverse-primary: 0 104 126;
+    --c-error: 225 29 72; --c-error-container: 255 241 242;
+    --c-on-error: 255 255 255; --c-on-error-container: 136 19 55;
+    --c-inverse-surface: 15 23 42; --c-inverse-primary: 29 78 216;
     --c-inverse-on-surface: 248 250 252;
-    --grad-start: #0284C7; --grad-end: #0369A1;
+    --grad-start: #2563EB; --grad-end: #1E40AF;
   }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -128,7 +128,7 @@ tailwind.config = {
     -webkit-text-fill-color: transparent;
   }
   /* ── Signal Badges ── */
-  .sig { display:inline-block; padding:2px 10px; font-size:11px; font-weight:700; border-radius:4px; border:1px solid transparent; }
+  .sig { display:inline-block; padding:2px 10px; font-size:11px; font-weight:700; border-radius:4px; border:1px solid transparent; min-width:90px; text-align:center; }
   /* Dark theme badges */
   html.dark .sig-tp1 { background:rgba(255,113,102,0.15); color:#ff7166; border-color:rgba(255,113,102,0.3); }
   html.dark .sig-tp2 { background:rgba(245,40,43,0.3); color:#ff7166; border-color:rgba(245,40,43,0.4); }
@@ -140,20 +140,20 @@ tailwind.config = {
   html.dark .sig-hold { background:rgba(109,221,255,0.08); color:#6dddff; border-color:rgba(109,221,255,0.2); }
   html.dark .sig-cash { background:rgba(163,170,196,0.12); color:#a3aac4; border-color:rgba(163,170,196,0.25); }
   html.dark .sig-bond { background:rgba(167,139,250,0.12); color:#a78bfa; border-color:rgba(167,139,250,0.25); }
-  /* Light theme badges */
-  html.light .sig-tp1 { background:#fce4ec; color:#c62828; }
-  html.light .sig-tp2 { background:#ef5350; color:#fff; }
-  html.light .sig-top { background:#7f1d1d; color:#fff; }
-  html.light .sig-buy1 { background:#e0f7fa; color:#00897b; }
-  html.light .sig-buy2 { background:#1976d2; color:#fff; }
-  html.light .sig-buy3 { background:#1a237e; color:#fff; }
-  html.light .sig-watch { background:#fff8e1; color:#f57f17; }
-  html.light .sig-hold { background:#fff3e0; color:#e65100; }
-  html.light .sig-cash { background:#e8f5e9; color:#2e7d32; }
-  html.light .sig-bond { background:#e8eaf6; color:#3f51b5; }
+  /* Light theme badges (Blue Tone) */
+  html.light .sig-tp1 { background:#fff1f2; color:#e11d48; border-color:rgba(225,29,72,0.2); }
+  html.light .sig-tp2 { background:#e11d48; color:#fff; }
+  html.light .sig-top { background:#881337; color:#fff; }
+  html.light .sig-buy1 { background:#dcfce7; color:#16a34a; border-color:rgba(22,163,74,0.2); }
+  html.light .sig-buy2 { background:#2563eb; color:#fff; }
+  html.light .sig-buy3 { background:#1e40af; color:#fff; }
+  html.light .sig-watch { background:#fef3c7; color:#d97706; border-color:rgba(217,119,6,0.2); }
+  html.light .sig-hold { background:#f1f5f9; color:#64748b; border-color:rgba(100,116,139,0.2); }
+  html.light .sig-cash { background:#dbeafe; color:#2563eb; border-color:rgba(37,99,235,0.2); }
+  html.light .sig-bond { background:#ede9fe; color:#7c3aed; border-color:rgba(124,58,237,0.2); }
 </style>
 </head>
-<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="1493.38">
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="1487.88">
 
 <!-- ── Sidebar ── -->
 <nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
@@ -170,13 +170,13 @@ tailwind.config = {
     <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)] transition-all" href="index.html">
       <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
     </a>
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-04-13.html">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-04-10.html">
       <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
     </a>
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="backtest_2026-04-13.html">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="backtest_2026-04-10.html">
       <span class="material-symbols-outlined">history</span><span>Backtest</span>
     </a>
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="trend_2026-04-13.html">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="trend_2026-04-10.html">
       <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
     </a>
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html">
@@ -194,7 +194,7 @@ tailwind.config = {
       <span class="material-symbols-outlined">currency_exchange</span><span>USD / KRW</span>
     </button>
     <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">
-      2026년 4월 13일 (월요일)<br>
+      2026년 4월 10일 (금요일)<br>
       
         
           <span class="text-[#ff7166]">LIVE</span> US:closed / KRX:open
@@ -229,12 +229,12 @@ tailwind.config = {
         </div>
         <div class="flex items-center gap-2">
           <span class="text-on-surface/60 text-xs">USD/KRW</span>
-          <span class="text-primary font-bold">1,493.38</span>
+          <span class="text-primary font-bold">1,487.88</span>
         </div>
       </nav>
     </div>
     <div class="flex items-center gap-4">
-      <div class="text-xs text-outline font-label hidden sm:block">2026-04-13 09:36:46</div>
+      <div class="text-xs text-outline font-label hidden sm:block">2026-04-13 13:05:03</div>
       <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme">
         <span class="material-symbols-outlined">light_mode</span>
       </button>
@@ -261,20 +261,20 @@ tailwind.config = {
         <div class="relative z-10 flex flex-col h-full justify-between gap-8">
           <div>
             <p class="text-on-surface-variant font-label text-sm uppercase tracking-widest mb-2">Total Equity Value</p>
-            <h1 class="text-5xl md:text-6xl font-headline font-bold gradient-text money" data-usd="1378797.3787830984" data-krw="2059068429.527104">$1,378,797</h1>
+            <h1 class="text-5xl md:text-6xl font-headline font-bold gradient-text money" data-usd="1382250.8825615018" data-krw="2056623443.1456075">$1,382,251</h1>
           </div>
           <div class="flex flex-wrap gap-12">
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Unrealized P&amp;L</p>
               <p class="text-2xl font-headline font-semibold text-secondary">
-                <span class="money" data-usd="824309.9870264123" data-krw="1231008048.4255037" data-signed="1">+$824,310</span>
+                <span class="money" data-usd="827101.3746431213" data-krw="1230627593.3040075" data-signed="1">+$827,101</span>
               </p>
-              <p class="text-xs font-label text-secondary/60">&#9650; +148.7% vs Principal</p>
+              <p class="text-xs font-label text-secondary/60">&#9650; +149.0% vs Principal</p>
             </div>
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Cash Reserve</p>
               <p class="text-2xl font-headline font-semibold text-on-surface">
-                <span class="money" data-usd="82341.0" data-krw="122966402.58000001">$82,341</span>
+                <span class="money" data-usd="82341.0" data-krw="122513527.08000001">$82,341</span>
               </p>
               <p class="text-on-surface-variant/60 text-xs font-label">6.0% of portfolio</p>
             </div>
@@ -291,13 +291,13 @@ tailwind.config = {
           <div class="space-y-6">
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Annual Total</p>
-              <p class="text-3xl font-headline font-bold text-on-surface money" data-usd="28345.29" data-krw="42330289.1802">$28,345</p>
+              <p class="text-3xl font-headline font-bold text-on-surface money" data-usd="28415.07" data-krw="42278214.351600006">$28,415</p>
               <p class="text-primary text-xs font-label mt-1">Yield 2.06%</p>
             </div>
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Monthly Average</p>
-              <p class="text-2xl font-headline font-bold text-on-surface money" data-usd="2362.11" data-krw="3527527.8318000003">$2,362</p>
-              <p class="text-on-surface-variant/60 text-[10px] font-label mt-1">110990 $1487/mo · BIL $271/mo · SCHD $133/mo</p>
+              <p class="text-2xl font-headline font-bold text-on-surface money" data-usd="2367.92" data-krw="3523180.8096000003">$2,368</p>
+              <p class="text-on-surface-variant/60 text-[10px] font-label mt-1">110990 $1493/mo · BIL $271/mo · SCHD $133/mo</p>
             </div>
           </div>
         </div>
@@ -310,11 +310,11 @@ tailwind.config = {
         </h3>
         <div class="grid grid-cols-2 gap-4 flex-grow">
           <div class="p-4 rounded bg-tertiary-container/10 border border-tertiary-container/20 flex flex-col justify-center items-center">
-            <span class="text-tertiary text-2xl font-headline font-bold">00</span>
+            <span class="text-tertiary text-2xl font-headline font-bold">03</span>
             <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Exit</span>
           </div>
           <div class="p-4 rounded bg-surface-bright border border-outline-variant/10 flex flex-col justify-center items-center">
-            <span class="text-on-surface text-2xl font-headline font-bold">00</span>
+            <span class="text-on-surface text-2xl font-headline font-bold">01</span>
             <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Trim</span>
           </div>
           <div class="p-4 rounded bg-secondary-container/10 border border-secondary-container/20 flex flex-col justify-center items-center">
@@ -322,12 +322,12 @@ tailwind.config = {
             <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Buy</span>
           </div>
           <div class="p-4 rounded bg-primary/10 border border-primary/20 flex flex-col justify-center items-center">
-            <span class="text-primary text-2xl font-headline font-bold">11</span>
+            <span class="text-primary text-2xl font-headline font-bold">8</span>
             <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Watch</span>
           </div>
         </div>
         <div class="mt-4 p-3 bg-surface-dim rounded text-center">
-          <span class="text-on-surface-variant text-sm font-label">Hold: <span class="text-on-surface font-bold">13</span> &nbsp;|&nbsp;
+          <span class="text-on-surface-variant text-sm font-label">Hold: <span class="text-on-surface font-bold">12</span> &nbsp;|&nbsp;
           <span class="text-secondary font-bold">Bullish</span>
           
           </span>
@@ -377,8 +377,6 @@ tailwind.config = {
                   <span class="sig sig-buy2">2nd_BUY</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -400,7 +398,7 @@ tailwind.config = {
                   <span class="sig sig-buy3">3rd_BUY</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
                   
                 </td>
               </tr>
@@ -423,8 +421,6 @@ tailwind.config = {
                   <span class="sig sig-cash">CASH</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -438,15 +434,13 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">$24.47 avg</span>
                 </td>
                 <td class="px-6 py-4 money" data-usd="46267.25596784">$46,267</td>
-                <td class="px-6 py-4">3.4%</td>
+                <td class="px-6 py-4">3.3%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+24.9%</td>
                 <td class="px-6 py-4 text-on-surface">$1,597</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-buy2">2nd_BUY</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -469,7 +463,7 @@ tailwind.config = {
                   <span class="sig sig-watch">WATCH</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
                   
                 </td>
               </tr>
@@ -492,8 +486,6 @@ tailwind.config = {
                   <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -514,8 +506,6 @@ tailwind.config = {
                   
                   <span class="sig sig-buy2">2nd_BUY</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -538,8 +528,6 @@ tailwind.config = {
                   <span class="sig sig-buy3">3rd_BUY</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -561,7 +549,7 @@ tailwind.config = {
                   <span class="sig sig-buy1">1st_BUY</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(WATCH)</span>
                   
                 </td>
               </tr>
@@ -584,8 +572,6 @@ tailwind.config = {
                   <span class="sig sig-watch">WATCH</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -607,7 +593,7 @@ tailwind.config = {
                   <span class="sig sig-watch">WATCH</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(HOLD)</span>
                   
                 </td>
               </tr>
@@ -630,8 +616,6 @@ tailwind.config = {
                   <span class="sig sig-watch">WATCH</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -652,8 +636,6 @@ tailwind.config = {
                   
                   <span class="sig sig-buy2">2nd_BUY</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -676,8 +658,6 @@ tailwind.config = {
                   <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -698,8 +678,6 @@ tailwind.config = {
                   
                   <span class="sig sig-buy1">1st_BUY</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -722,8 +700,6 @@ tailwind.config = {
                   <span class="sig sig-watch">WATCH</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -742,10 +718,10 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="sig sig-watch">WATCH</span>
+                  <span class="sig sig-top">TOP_SIGNAL</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
                   
                 </td>
               </tr>
@@ -768,8 +744,6 @@ tailwind.config = {
                   <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -791,8 +765,6 @@ tailwind.config = {
                   <span class="sig sig-watch">WATCH</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -811,10 +783,8 @@ tailwind.config = {
                 <td class="px-6 py-4 text-on-surface">$0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="sig sig-watch">WATCH</span>
+                  <span class="sig sig-top">TOP_SIGNAL</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -837,8 +807,6 @@ tailwind.config = {
                   <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -859,8 +827,6 @@ tailwind.config = {
                   
                   <span class="sig sig-watch">WATCH</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -883,8 +849,6 @@ tailwind.config = {
                   <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
-                  
                 </td>
               </tr>
               
@@ -906,7 +870,7 @@ tailwind.config = {
                   <span class="sig sig-buy3">3rd_BUY</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
                   
                 </td>
               </tr>
@@ -928,8 +892,6 @@ tailwind.config = {
                   
                   <span class="sig sig-buy1">1st_BUY</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -965,15 +927,15 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">&#8361;2,667 avg</span>
                 </td>
                 <td class="px-6 py-4">&#8361;1,285,146,000</td>
-                <td class="px-6 py-4">62.4%</td>
+                <td class="px-6 py-4">62.5%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+659.2%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;26,654,877</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;26,654,879</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(WATCH)</span>
                   
                 </td>
               </tr>
@@ -984,19 +946,17 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">TIGER 200</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;87,175</span>
+                  <span class="block">&#8361;87,625</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;79,392 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;17,609,350</td>
+                <td class="px-6 py-4">&#8361;17,700,250</td>
                 <td class="px-6 py-4">0.9%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+9.8%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+10.4%</td>
                 <td class="px-6 py-4 text-on-surface">&#8361;177,757</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-buy3">3rd_BUY</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -1007,19 +967,17 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">TIGER 미국배당다우존스</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;14,480</span>
+                  <span class="block">&#8361;14,445</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;11,807 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;12,308,000</td>
+                <td class="px-6 py-4">&#8361;12,278,250</td>
                 <td class="px-6 py-4">0.6%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+22.6%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;353,603</td>
+                <td class="px-6 py-4 font-bold text-secondary">+22.3%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;353,595</td>
                 <td class="px-6 py-4">
                   
-                  <span class="sig sig-hold">HOLD</span>
+                  <span class="sig sig-tp2">TAKE_PROFIT_2</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -1036,13 +994,13 @@ tailwind.config = {
                 <td class="px-6 py-4">&#8361;12,030,000</td>
                 <td class="px-6 py-4">0.6%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+5.4%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;78,178</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;78,173</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
                   
                 </td>
               </tr>
@@ -1053,19 +1011,19 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">SK하이닉스</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;1,014,000</span>
+                  <span class="block">&#8361;1,032,000</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;899,700 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;10,140,000</td>
+                <td class="px-6 py-4">&#8361;10,320,000</td>
                 <td class="px-6 py-4">0.5%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+12.7%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;30,002</td>
+                <td class="px-6 py-4 font-bold text-secondary">+14.7%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;29,996</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-watch">WATCH</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
                   
                 </td>
               </tr>
@@ -1076,19 +1034,19 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">현대차</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;481,000</span>
+                  <span class="block">&#8361;479,000</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;564,250 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;9,620,000</td>
+                <td class="px-6 py-4">&#8361;9,580,000</td>
                 <td class="px-6 py-4">0.5%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-14.8%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;199,993</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-15.1%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;200,001</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(WATCH)</span>
                   
                 </td>
               </tr>
@@ -1099,19 +1057,19 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">KODEX 미국S&P500</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;22,900</span>
+                  <span class="block">&#8361;22,855</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;20,131 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;9,160,000</td>
+                <td class="px-6 py-4">&#8361;9,142,000</td>
                 <td class="px-6 py-4">0.4%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+13.8%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;155,595</td>
+                <td class="px-6 py-4 font-bold text-secondary">+13.5%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;155,602</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-buy3">3rd_BUY</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(2nd_BUY)</span>
                   
                 </td>
               </tr>
@@ -1122,19 +1080,17 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">TIGER 반도체TOP10</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;33,645</span>
+                  <span class="block">&#8361;33,710</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;33,527 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;7,738,350</td>
+                <td class="px-6 py-4">&#8361;7,753,300</td>
                 <td class="px-6 py-4">0.4%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+0.4%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;17,249</td>
+                <td class="px-6 py-4 font-bold text-secondary">+0.5%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;17,245</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-buy3">3rd_BUY</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -1145,19 +1101,17 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">KODEX 미국나스닥100</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;24,660</span>
+                  <span class="block">&#8361;24,620</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;18,783 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;7,398,000</td>
+                <td class="px-6 py-4">&#8361;7,386,000</td>
                 <td class="px-6 py-4">0.4%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+31.3%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;66,903</td>
+                <td class="px-6 py-4 font-bold text-secondary">+31.1%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;66,895</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-buy3">3rd_BUY</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -1168,19 +1122,19 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">삼성SDI</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;482,000</span>
+                  <span class="block">&#8361;475,500</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;504,821 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;6,748,000</td>
+                <td class="px-6 py-4">&#8361;6,657,000</td>
                 <td class="px-6 py-4">0.3%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-4.5%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-5.8%</td>
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
                   
                 </td>
               </tr>
@@ -1191,19 +1145,17 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">KODEX 주주환원고배당주</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;12,865</span>
+                  <span class="block">&#8361;12,905</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;12,983 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;5,146,000</td>
-                <td class="px-6 py-4">0.2%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-0.9%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;452,793</td>
+                <td class="px-6 py-4">&#8361;5,162,000</td>
+                <td class="px-6 py-4">0.3%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-0.6%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;452,807</td>
                 <td class="px-6 py-4">
                   
-                  <span class="sig sig-buy2">2nd_BUY</span>
+                  <span class="sig sig-buy3">3rd_BUY</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -1214,19 +1166,19 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">LG에너지솔루션</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;409,500</span>
+                  <span class="block">&#8361;400,500</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;503,650 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;4,095,000</td>
+                <td class="px-6 py-4">&#8361;4,005,000</td>
                 <td class="px-6 py-4">0.2%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-18.7%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-20.5%</td>
                 <td class="px-6 py-4 text-on-surface">&#8361;0</td>
                 <td class="px-6 py-4">
                   
-                  <span class="sig sig-hold">HOLD</span>
+                  <span class="sig sig-tp1">TAKE_PROFIT_1</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(3rd_BUY)</span>
                   
                 </td>
               </tr>
@@ -1237,19 +1189,17 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">TIGER 코스닥150</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;18,715</span>
+                  <span class="block">&#8361;18,890</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;21,080 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;935,750</td>
+                <td class="px-6 py-4">&#8361;944,500</td>
                 <td class="px-6 py-4">0.0%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-11.2%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;1,747</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-10.4%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;1,756</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-hold">HOLD</span>
                   
-                  
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
                   
                 </td>
               </tr>
@@ -1260,19 +1210,19 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">SOL 조선TOP3플러스</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;33,685</span>
+                  <span class="block">&#8361;33,380</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;34,596 avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;673,700</td>
+                <td class="px-6 py-4">&#8361;667,600</td>
                 <td class="px-6 py-4">0.0%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-2.6%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;836</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-3.5%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;833</td>
                 <td class="px-6 py-4">
                   
-                  <span class="sig sig-watch">WATCH</span>
+                  <span class="sig sig-hold">HOLD</span>
                   
                   
-                  <span class="text-[10px] text-outline ml-1">(ERROR)</span>
+                  <span class="text-[10px] text-outline ml-1">(WATCH)</span>
                   
                 </td>
               </tr>
@@ -1291,9 +1241,9 @@ tailwind.config = {
             </thead>
             <tbody class="divide-y divide-outline-variant/10 text-on-surface-variant">
               <tr><td class="px-6 py-2">Portfolio</td><td class="px-6 py-2">portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolio.md)</td><td class="px-6 py-2">Screenshot date</td></tr>
-              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-13 09:36:46</td></tr>
-              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-13 09:36:46</td></tr>
-              <tr><td class="px-6 py-2">Dividends (TTM)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-13 09:36:46</td></tr>
+              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-13 13:05:03</td></tr>
+              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-13 13:05:03</td></tr>
+              <tr><td class="px-6 py-2">Dividends (TTM)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-13 13:05:03</td></tr>
             </tbody>
           </table>
         </div>
@@ -1307,6 +1257,50 @@ tailwind.config = {
         <div class="space-y-4">
           
             
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-tertiary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">TIGER 미국배당다우존스</h4>
+                </div>
+                <span class="sig sig-tp2">TAKE PROFIT 2</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">Higher Low 하향 돌파</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-tertiary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">AMZN</h4>
+                </div>
+                <span class="sig sig-top">TOP SIGNAL</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">BB 상단 2일 연속 + 3일 누적 >= +10%</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-tertiary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">SOXL</h4>
+                </div>
+                <span class="sig sig-top">TOP SIGNAL</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">BB 상단 2일 연속 + 3일 누적 >= +10%</p>
+            </div>
+            
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-tertiary-dim shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">LG에너지솔루션</h4>
+                </div>
+                <span class="sig sig-tp1">TAKE PROFIT 1</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">MACD hist 3일 감소 + RSI 다이버전스</p>
+            </div>
             
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1317,7 +1311,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy3">3rd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1328,7 +1322,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy3">3rd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1339,7 +1333,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy3">3rd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1350,7 +1344,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy3">3rd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1359,9 +1353,9 @@ tailwind.config = {
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">KODEX 주주환원고배당주</h4>
                 </div>
-                <span class="sig sig-buy2">2nd BUY</span>
+                <span class="sig sig-buy3">3rd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1372,7 +1366,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy2">2nd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1383,7 +1377,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy3">3rd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1394,7 +1388,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy2">2nd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1405,7 +1399,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy2">2nd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1416,7 +1410,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy3">3rd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1427,7 +1421,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy1">1st BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1438,7 +1432,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy2">2nd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1449,7 +1443,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy1">1st BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1460,7 +1454,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy3">3rd BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
             </div>
             
             <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
@@ -1471,7 +1465,7 @@ tailwind.config = {
                 </div>
                 <span class="sig sig-buy1">1st BUY</span>
               </div>
-              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</p>
+              <p class="text-sm text-on-surface/80 mb-4">[확정 2일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</p>
             </div>
             
           
@@ -1493,7 +1487,7 @@ tailwind.config = {
     <!-- Footer -->
     <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
       This report is for personal reference only. Trading signals are generated from technical indicators (RSI, MACD, MA, BB, ADX, Volume) and do not constitute investment advice.<br>
-      Generated by Trading Assistant v5.0 | 2026-04-13 | Data: yfinance (2026-04-13 09:36:46) | Portfolio: portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolio.md)
+      Generated by Trading Assistant v5.0 | 2026-04-10 | Data: yfinance (2026-04-13 13:05:03) | Portfolio: portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolio.md)
     </p>
   </div>
 </main>
@@ -1504,15 +1498,15 @@ tailwind.config = {
     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
     <span class="text-[10px] font-label">Home</span>
   </a>
-  <a href="scanner_2026-04-13.html" class="text-on-surface-variant flex flex-col items-center gap-1">
+  <a href="scanner_2026-04-10.html" class="text-on-surface-variant flex flex-col items-center gap-1">
     <span class="material-symbols-outlined">analytics</span>
     <span class="text-[10px] font-label">Scan</span>
   </a>
-  <a href="trend_2026-04-13.html" class="text-on-surface-variant flex flex-col items-center gap-1">
+  <a href="trend_2026-04-10.html" class="text-on-surface-variant flex flex-col items-center gap-1">
     <span class="material-symbols-outlined">trending_up</span>
     <span class="text-[10px] font-label">Trend</span>
   </a>
-  <a href="backtest_2026-04-13.html" class="text-on-surface-variant flex flex-col items-center gap-1">
+  <a href="backtest_2026-04-10.html" class="text-on-surface-variant flex flex-col items-center gap-1">
     <span class="material-symbols-outlined">history</span>
     <span class="text-[10px] font-label">Backtest</span>
   </a>
