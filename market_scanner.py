@@ -532,7 +532,7 @@ def scan_sp100(project_dir: str) -> dict:
         "buy_2nd": buy_2nd,
         "buy_3rd": buy_3rd,
         "watch_signals": watch_signals,
-        "total_signals": len(buy_1st) + len(buy_2nd) + len(buy_3rd) + len(watch_signals),
+        "total_signals": len(buy_1st) + len(buy_2nd) + len(buy_3rd),
     }
 
     print(f"[Scanner] Complete: {result['total_signals']} signals found "
@@ -690,7 +690,7 @@ def scan_etf(project_dir: str) -> dict:
         "buy_2nd": buy_2nd,
         "buy_3rd": buy_3rd,
         "watch_signals": watch_signals,
-        "total_signals": len(buy_1st) + len(buy_2nd) + len(buy_3rd) + len(watch_signals),
+        "total_signals": len(buy_1st) + len(buy_2nd) + len(buy_3rd),
     }
 
     print(f"[ETF Scanner] Complete: {result['total_signals']} signals "
@@ -913,7 +913,7 @@ def scan_kospi(project_dir: str) -> dict:
         "buy_2nd": buy_2nd,
         "buy_3rd": buy_3rd,
         "watch_signals": watch_signals,
-        "total_signals": len(buy_1st) + len(buy_2nd) + len(buy_3rd) + len(watch_signals),
+        "total_signals": len(buy_1st) + len(buy_2nd) + len(buy_3rd),
     }
 
     print(f"[KOSPI Scanner] Complete: {result['total_signals']} signals "

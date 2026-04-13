@@ -492,7 +492,7 @@ tailwind.config = {
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">{{ h.name if h.is_kospi else h.ticker }}</h4>
                 </div>
-                <span class="sig {% if 'TOP' in h.signal %}sig-top{% else %}sig-tp2{% endif %}">{{ h.signal | replace('TAKE_PROFIT_', 'PROFIT_') | replace('_', ' ') }}</span>
+                {% if 'TOP' in h.signal %}<span class="sig sig-top">TOP</span>{% else %}<span class="sig sig-tp2">{{ h.signal | replace("TAKE_PROFIT_", "PROFIT_") }}</span>{% endif %}
               </div>
               <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
             </div>
@@ -504,7 +504,7 @@ tailwind.config = {
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">{{ h.name if h.is_kospi else h.ticker }}</h4>
                 </div>
-                <span class="sig sig-tp1">{{ h.signal | replace('TAKE_PROFIT_', 'PROFIT_') | replace('_', ' ') }}</span>
+                <span class="sig sig-tp1">{{ h.signal | replace("TAKE_PROFIT_", "PROFIT_") }}</span>
               </div>
               <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
             </div>
@@ -516,7 +516,7 @@ tailwind.config = {
                   <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
                   <h4 class="text-xl font-headline font-bold">{{ h.name if h.is_kospi else h.ticker }}</h4>
                 </div>
-                <span class="sig {% if '3rd_BUY' in h.signal %}sig-buy3{% elif '2nd_BUY' in h.signal %}sig-buy2{% else %}sig-buy1{% endif %}">{{ h.signal | replace('TAKE_PROFIT_', 'PROFIT_') | replace('_', ' ') }}</span>
+                {% if '3rd_BUY' in h.signal %}<span class="sig sig-buy3">{{ h.signal }}</span>{% elif '2nd_BUY' in h.signal %}<span class="sig sig-buy2">{{ h.signal }}</span>{% else %}<span class="sig sig-buy1">{{ h.signal }}</span>{% endif %}
               </div>
               <p class="text-sm text-on-surface/80 mb-4">{{ h.note }}</p>
             </div>
