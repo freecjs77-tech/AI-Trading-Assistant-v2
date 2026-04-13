@@ -33,9 +33,10 @@ def _calc_macd(close: pd.Series):
     return macd_line, signal_line, histogram
 
 
-def generate_chart(symbol: str, output_path: str, days: int = 120) -> bool:
+def generate_chart(symbol: str, output_path: str, days: int = 120, theme: str = "dark") -> bool:
     """
     종목 차트를 PNG로 생성.
+    theme: "dark" 또는 "light"
     반환: 성공 여부
     """
     try:
@@ -66,32 +67,65 @@ def generate_chart(symbol: str, output_path: str, days: int = 120) -> bool:
         # MACD
         macd_line, signal_line, macd_hist = _calc_macd(df["Close"])
 
-        # MACD 히스토그램 색상 (양수=green, 음수=red)
-        macd_colors = ["#10B981" if v >= 0 else "#EF4444" for v in macd_hist.fillna(0)]
-
-        # 다크 테마 (상세 페이지 배경과 맞춤)
-        dark_style = mpf.make_mpf_style(
-            base_mpf_style="nightclouds",
-            marketcolors=mpf.make_marketcolors(
-                up="#10B981", down="#EF4444",
-                edge={"up": "#10B981", "down": "#EF4444"},
-                wick={"up": "#10B981", "down": "#EF4444"},
-                volume={"up": "#10B98180", "down": "#EF444480"},
-            ),
-            facecolor="#0A1525",
-            edgecolor="#1A3050",
-            figcolor="#060D18",
-            gridcolor="#1A3050",
-            gridstyle="--",
-            gridaxis="both",
-            y_on_right=True,
-            rc={
-                "axes.labelcolor": "#94A3B8",
-                "xtick.color": "#64748B",
-                "ytick.color": "#64748B",
-                "font.size": 9,
-            },
-        )
+        # 테마별 스타일
+        if theme == "light":
+            # MACD 히스토그램 색상 (라이트: 블루/레드)
+            macd_colors = ["#2563EB" if v >= 0 else "#E11D48" for v in macd_hist.fillna(0)]
+            chart_style = mpf.make_mpf_style(
+                base_mpf_style="charles",
+                marketcolors=mpf.make_marketcolors(
+                    up="#2563EB", down="#E11D48",
+                    edge={"up": "#2563EB", "down": "#E11D48"},
+                    wick={"up": "#2563EB", "down": "#E11D48"},
+                    volume={"up": "#2563EB80", "down": "#E11D4880"},
+                ),
+                facecolor="#FFFFFF",
+                edgecolor="#E2E8F0",
+                figcolor="#F8FAFC",
+                gridcolor="#E2E8F0",
+                gridstyle="--",
+                gridaxis="both",
+                y_on_right=True,
+                rc={
+                    "axes.labelcolor": "#334155",
+                    "xtick.color": "#64748B",
+                    "ytick.color": "#64748B",
+                    "font.size": 9,
+                },
+            )
+            legend_face = "#FFFFFF"
+            legend_edge = "#E2E8F0"
+            legend_label = "#334155"
+            fig_save_color = "#F8FAFC"
+        else:
+            chart_style = mpf.make_mpf_style(
+                base_mpf_style="nightclouds",
+                marketcolors=mpf.make_marketcolors(
+                    up="#10B981", down="#EF4444",
+                    edge={"up": "#10B981", "down": "#EF4444"},
+                    wick={"up": "#10B981", "down": "#EF4444"},
+                    volume={"up": "#10B98180", "down": "#EF444480"},
+                ),
+                facecolor="#0A1525",
+                edgecolor="#1A3050",
+                figcolor="#060D18",
+                gridcolor="#1A3050",
+                gridstyle="--",
+                gridaxis="both",
+                y_on_right=True,
+                rc={
+                    "axes.labelcolor": "#94A3B8",
+                    "xtick.color": "#64748B",
+                    "ytick.color": "#64748B",
+                    "font.size": 9,
+                },
+            )
+            # MACD 히스토그램 색상 (다크: 그린/레드)
+            macd_colors = ["#10B981" if v >= 0 else "#EF4444" for v in macd_hist.fillna(0)]
+            legend_face = "#0A1525"
+            legend_edge = "#1A3050"
+            legend_label = "#94A3B8"
+            fig_save_color = "#060D18"
 
         # 추가 플롯 구성
         add_plots = [
@@ -114,7 +148,7 @@ def generate_chart(symbol: str, output_path: str, days: int = 120) -> bool:
         fig, axes = mpf.plot(
             df,
             type="candle",
-            style=dark_style,
+            style=chart_style,
             addplot=add_plots,
             volume=True,
             volume_panel=1,
@@ -136,19 +170,26 @@ def generate_chart(symbol: str, output_path: str, days: int = 120) -> bool:
         macd_ax = axes[6]  # panel 3
         macd_ax.axhline(y=0, color="#64748B", linewidth=0.5, linestyle="-", alpha=0.5)
 
-        # 범례 (메인 차트)
+        # 범례 (메인 차트) — Line2D 프록시로 색상 정확 매칭
+        from matplotlib.lines import Line2D
+        legend_items = [
+            Line2D([0], [0], color="#06B6D4", linewidth=1.5, label="MA20"),
+            Line2D([0], [0], color="#F59E0B", linewidth=1.5, label="MA50"),
+            Line2D([0], [0], color="#8B5CF6", linewidth=1.0, linestyle="--", label="BB Upper"),
+            Line2D([0], [0], color="#8B5CF6", linewidth=1.0, linestyle="--", label="BB Lower"),
+        ]
         main_ax = axes[0]
         main_ax.legend(
-            ["MA20", "MA50", "BB Upper", "BB Lower"],
+            handles=legend_items,
             loc="upper left",
             fontsize=8,
-            framealpha=0.3,
-            facecolor="#0A1525",
-            edgecolor="#1A3050",
-            labelcolor="#94A3B8",
+            framealpha=0.5,
+            facecolor=legend_face,
+            edgecolor=legend_edge,
+            labelcolor=legend_label,
         )
 
-        fig.savefig(output_path, dpi=150, bbox_inches="tight", facecolor="#060D18")
+        fig.savefig(output_path, dpi=150, bbox_inches="tight", facecolor=fig_save_color)
         matplotlib.pyplot.close(fig)
         return True
 
@@ -159,22 +200,26 @@ def generate_chart(symbol: str, output_path: str, days: int = 120) -> bool:
 
 def generate_all_charts(tickers: list[str], output_dir: str) -> dict:
     """
-    전체 종목 차트 배치 생성.
-    반환: {ticker: output_path} (성공한 것만)
+    전체 종목 차트 배치 생성 (dark + light 2벌).
+    반환: {ticker: output_path} (dark 기준, 성공한 것만)
     """
     os.makedirs(output_dir, exist_ok=True)
     results = {}
     for ticker in tickers:
-        out = os.path.join(output_dir, f"{ticker}.png")
-        ok = generate_chart(ticker, out)
+        out_dark = os.path.join(output_dir, f"{ticker}.png")
+        out_light = os.path.join(output_dir, f"{ticker}_light.png")
+        ok = generate_chart(ticker, out_dark, theme="dark")
         if ok:
-            results[ticker] = out
+            results[ticker] = out_dark
+            generate_chart(ticker, out_light, theme="light")
     return results
 
 
 if __name__ == "__main__":
-    # 테스트: 단일 종목
+    # 테스트: 단일 종목 (dark + light)
     symbol = sys.argv[1] if len(sys.argv) > 1 else "NVDA"
-    out = f"reports/details/charts/{symbol}.png"
-    ok = generate_chart(symbol, out)
-    print(f"{'OK' if ok else 'FAIL'}: {out}")
+    out_dark = f"reports/details/charts/{symbol}.png"
+    out_light = f"reports/details/charts/{symbol}_light.png"
+    ok1 = generate_chart(symbol, out_dark, theme="dark")
+    ok2 = generate_chart(symbol, out_light, theme="light")
+    print(f"dark: {'OK' if ok1 else 'FAIL'} | light: {'OK' if ok2 else 'FAIL'}")
