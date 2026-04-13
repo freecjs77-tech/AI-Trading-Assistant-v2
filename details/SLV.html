@@ -23,6 +23,11 @@
     --range-bg: #e2e8f0; --cond-bg: rgba(248,250,252,0.9); --cond-border: rgba(148,163,184,0.5);
     --row-alt: rgba(241,245,249,0.6); --toggle-icon: 'dark_mode'; --toggle-label: 'Dark Mode';
   }
+  /* 테마별 차트 이미지 전환 */
+  html.dark .chart-light { display: none; }
+  html.dark .chart-dark  { display: block; }
+  html.light .chart-dark  { display: none; }
+  html.light .chart-light { display: block; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
   .container { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
@@ -244,7 +249,8 @@
   
   <div style="background: var(--panel); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border);">
     <div class="section-title" style="font-size: 13px; font-weight: 700; color: var(--text-dim); margin-bottom: 12px;">Technical Chart &middot; 120 Days</div>
-    <img src="charts/SLV.png" alt="SLV chart" style="width: 100%; border-radius: 6px;">
+    <img src="charts/SLV.png" alt="SLV chart" class="chart-dark" style="width: 100%; border-radius: 6px;">
+    <img src="charts/SLV_light.png" alt="SLV chart" class="chart-light" style="width: 100%; border-radius: 6px;">
   </div>
   
 

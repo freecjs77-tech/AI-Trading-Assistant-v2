@@ -23,6 +23,11 @@
     --range-bg: #e2e8f0; --cond-bg: rgba(248,250,252,0.9); --cond-border: rgba(148,163,184,0.5);
     --row-alt: rgba(241,245,249,0.6); --toggle-icon: 'dark_mode'; --toggle-label: 'Dark Mode';
   }
+  /* 테마별 차트 이미지 전환 */
+  html.dark .chart-light { display: none; }
+  html.dark .chart-dark  { display: block; }
+  html.light .chart-dark  { display: none; }
+  html.light .chart-light { display: block; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
   .container { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
@@ -161,7 +166,7 @@
         <div class="ticker-meta">₩94조 &middot; 2026년 4월 10일 (금요일) &middot; Data: yfinance</div>
       </div>
       <div class="price-block">
-        <div class="price">₩400,750</div>
+        <div class="price">₩401,000</div>
         <div class="change dn">&#9660; -2.7%</div>
       </div>
     </div>
@@ -175,7 +180,7 @@
     <div class="portfolio-info">
       <span class="item">&#48372;&#50976;: 10.000&#51452;</span>
       <span class="item">&#54217;&#44512;&#45800;&#44032;: ₩503,650</span>
-      <span class="item">&#54217;&#44032;&#44552;&#50529;: ₩4,007,500</span>
+      <span class="item">&#54217;&#44032;&#44552;&#50529;: ₩4,010,000</span>
       <span class="item pnl-neg">P&amp;L: -20.4%</span>
     </div>
     
@@ -200,12 +205,12 @@
   <div class="metric-grid">
     <div class="metric-card">
       <div class="label">RSI (14)</div>
-      <div class="value v-text">51.2</div>
+      <div class="value v-text">51.3</div>
       <div class="desc">&#51473;&#47549;</div>
     </div>
     <div class="metric-card">
       <div class="label">MACD Hist</div>
-      <div class="value v-green">1639.8362</div>
+      <div class="value v-green">1655.7906</div>
       <div class="desc">중립</div>
     </div>
     <div class="metric-card">
@@ -215,12 +220,12 @@
     </div>
     <div class="metric-card">
       <div class="label">BB%</div>
-      <div class="value v-text">58.3%</div>
+      <div class="value v-text">58.7%</div>
       <div class="desc">&#48180;&#46300; &#51473;&#44036;</div>
     </div>
     <div class="metric-card">
       <div class="label">&#44144;&#47000;&#47049; &#48708;&#50984;</div>
-      <div class="value v-cyan">0.41x</div>
+      <div class="value v-cyan">0.43x</div>
       <div class="desc">20&#51068; &#54217;&#44512; &#45824;&#48708;</div>
     </div>
     <div class="metric-card">
@@ -230,12 +235,12 @@
     </div>
     <div class="metric-card">
       <div class="label">MA20</div>
-      <div class="value v-green">₩395,362</div>
+      <div class="value v-green">₩395,375</div>
       <div class="desc">&#9650; &#44032;&#44201; &#49345;&#54924;</div>
     </div>
     <div class="metric-card">
       <div class="label">MA200</div>
-      <div class="value v-green">₩387,204</div>
+      <div class="value v-green">₩387,205</div>
       <div class="desc">&#9650; &#44032;&#44201; &#49345;&#54924;</div>
     </div>
   </div>
@@ -244,7 +249,8 @@
   
   <div style="background: var(--panel); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border);">
     <div class="section-title" style="font-size: 13px; font-weight: 700; color: var(--text-dim); margin-bottom: 12px;">Technical Chart &middot; 120 Days</div>
-    <img src="charts/373220.png" alt="373220 chart" style="width: 100%; border-radius: 6px;">
+    <img src="charts/373220.png" alt="373220 chart" class="chart-dark" style="width: 100%; border-radius: 6px;">
+    <img src="charts/373220_light.png" alt="373220 chart" class="chart-light" style="width: 100%; border-radius: 6px;">
   </div>
   
 
@@ -273,7 +279,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">RSI >= 75</div>
-            <div class="cond-card-desc">RSI 51.2 — 아직 75 미만이에요</div>
+            <div class="cond-card-desc">RSI 51.3 — 아직 75 미만이에요</div>
           </div>
         </div>
         
@@ -286,7 +292,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">BB 상단 2일 연속</div>
-            <div class="cond-card-desc">오늘 58.3%, 전일 70.7% — 2일 연속이 아니에요</div>
+            <div class="cond-card-desc">오늘 58.7%, 전일 70.7% — 2일 연속이 아니에요</div>
           </div>
         </div>
         
@@ -299,7 +305,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">3일 누적 >= +10%</div>
-            <div class="cond-card-desc">3일 변동 -1.3% — 10% 미만이에요</div>
+            <div class="cond-card-desc">3일 변동 -1.2% — 10% 미만이에요</div>
           </div>
         </div>
         
@@ -349,7 +355,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">MACD 데스크로스 + hist 3일 감소</div>
-            <div class="cond-card-desc">MACD 6260.2859 > signal 4620.4498 — 조건 미충족이에요</div>
+            <div class="cond-card-desc">MACD 6280.2289 > signal 4624.4384 — 조건 미충족이에요</div>
           </div>
         </div>
         
@@ -386,7 +392,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">RSI 다이버전스</div>
-            <div class="cond-card-desc">전일 54.4 → 오늘 51.2 — 고점에서 하락 중이에요</div>
+            <div class="cond-card-desc">전일 54.4 → 오늘 51.3 — 고점에서 하락 중이에요</div>
           </div>
         </div>
         
@@ -436,7 +442,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">MACD > 0 + 골든크로스</div>
-            <div class="cond-card-desc">MACD 6260.2859 > 0, > signal 4620.4498</div>
+            <div class="cond-card-desc">MACD 6280.2289 > 0, > signal 4624.4384</div>
           </div>
         </div>
         
@@ -449,7 +455,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">거래량비 >= 1.5x</div>
-            <div class="cond-card-desc">거래량비 0.41x - 아직 부족해요</div>
+            <div class="cond-card-desc">거래량비 0.43x - 아직 부족해요</div>
           </div>
         </div>
         
@@ -462,7 +468,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">RSI > 55</div>
-            <div class="cond-card-desc">RSI 51.2 - 아직 55 이하예요</div>
+            <div class="cond-card-desc">RSI 51.3 - 아직 55 이하예요</div>
           </div>
         </div>
         
@@ -499,7 +505,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">RSI > 35</div>
-            <div class="cond-card-desc">RSI 51.2 - 과매도를 벗어났어요</div>
+            <div class="cond-card-desc">RSI 51.3 - 과매도를 벗어났어요</div>
           </div>
         </div>
         
@@ -512,7 +518,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">MACD 골든크로스</div>
-            <div class="cond-card-desc">MACD 6260.2859 > signal 4620.4498 - 골든크로스 발생이에요</div>
+            <div class="cond-card-desc">MACD 6280.2289 > signal 4624.4384 - 골든크로스 발생이에요</div>
           </div>
         </div>
         
@@ -525,7 +531,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">거래량비 >= 1.5x</div>
-            <div class="cond-card-desc">거래량비 0.41x - 아직 부족해요</div>
+            <div class="cond-card-desc">거래량비 0.43x - 아직 부족해요</div>
           </div>
         </div>
         
@@ -549,7 +555,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">[필수] RSI <= 45</div>
-            <div class="cond-card-desc">RSI 51.2 - 아직 45 이하가 아니에요</div>
+            <div class="cond-card-desc">RSI 51.3 - 아직 45 이하가 아니에요</div>
           </div>
         </div>
         
