@@ -104,7 +104,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         else:
             print("[Step 1] OCR skipped (using existing portfolio.md)")
 
-        # Step 2: fetch_market_data
+        # Step 2: fetch_market_data (--output 미지정 → 거래일 기준 파일명 자동 결정)
         if not skip_fetch or not os.path.exists(json_path):
             print("[Step 2] Fetching market data...")
             fetch_script = os.path.join(project_dir, "fetch_market_data.py")
@@ -113,7 +113,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             env = os.environ.copy()
             env["PYTHONIOENCODING"] = "utf-8"
             result = subprocess.run(
-                [python_exe, fetch_script, "--output", json_path, "--add", "SPY"],
+                [python_exe, fetch_script, "--add", "SPY"],
                 cwd=project_dir,
                 capture_output=True,
                 text=True,
@@ -124,6 +124,11 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             )
             if result.returncode != 0:
                 return {"status": "error", "error": f"fetch_market_data failed: {result.stderr[:200]}"}
+            # fetch 결과에서 실제 저장된 파일 경로 탐색 (비거래일이면 직전 거래일 파일명)
+            import glob
+            candidates = sorted(glob.glob(os.path.join(screenshots_dir, "market_data_*.json")))
+            if candidates:
+                json_path = candidates[-1]
             print(f"  OK data saved -> {json_path}")
         else:
             print(f"[Step 2] Using existing JSON ({json_path})")
@@ -131,6 +136,12 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         # Step 4: Signal judgment
         print("[Step 4] Signal judgment...")
         market_data = _load_market_data(json_path)
+        meta = market_data.get("_meta", {})
+        is_trading_day = meta.get("is_trading_day", True)
+        data_date = meta.get("date", today)
+        if not is_trading_day:
+            print(f"  *** 비거래일 (실행일: {today}) → 직전 거래일({data_date}) 데이터 사용, 히스토리 업데이트 스킵 ***")
+            today = data_date
         history = load_history(history_path)
         signals = judge_all(market_data, history)
 
@@ -351,14 +362,16 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             _tb2.print_exc()
             print(f"  WARN trend page failed: {e} (pipeline continues)")
 
-        # Step 6: History update
-        print("[Step 6] Updating history...")
-        meta = market_data.get("_meta", {})
-        history = save_today(history, today, signals, market_data, meta.get("ticker_source", "portfolio.md"))
-        backfill_prices(history, today, include_today=auto)
-        history = prune_old(history)
-        save_history(history, history_path)
-        print("  OK signals_history.json updated")
+        # Step 6: History update (비거래일 스킵)
+        if is_trading_day:
+            print("[Step 6] Updating history...")
+            history = save_today(history, today, signals, market_data, meta.get("ticker_source", "portfolio.md"))
+            backfill_prices(history, today, include_today=auto)
+            history = prune_old(history)
+            save_history(history, history_path)
+            print("  OK signals_history.json updated")
+        else:
+            print("[Step 6] 비거래일 → 히스토리 업데이트 스킵")
 
         # Step 6b: Backtest evaluation (portfolio + scanner histories)
         print("[Step 6b] Backtest evaluation...")

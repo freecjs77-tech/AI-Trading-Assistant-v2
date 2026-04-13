@@ -420,10 +420,10 @@ _REF_SP100 = """
 <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: S&P 100 대형주. 바닥 확인 후 분할매수 전략.</p>
 <table class="ref-table"><thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead><tbody>
 <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 4개 ALL]</b> RSI≤45 + 가격&lt;MA20 + MACD hist 2일↑ + DD_52w≤-15%<br><b>[거부]</b> RSI&gt;55 / 당일-5%급락</td></tr>
-<tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>4개 ALL</b>: 이중바닥(≤3%) + RSI&gt;35 + MACD골든크로스 + 거래량≥1.2x</td></tr>
-<tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>4개 ALL</b>: 가격&gt;MA20 + MACD&gt;0&amp;Signal + 거래량≥1.3x + RSI&gt;55<br><b>[거부]</b> RSI&gt;75</td></tr>
+<tr><td><span class="badge" style="background:#2563eb;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>4개 ALL</b>: 이중바닥(≤3%) + RSI&gt;35 + MACD골든크로스 + 거래량≥1.2x</td></tr>
+<tr><td><span class="badge" style="background:#1e40af;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>4개 ALL</b>: 가격&gt;MA20 + MACD&gt;0&amp;Signal + 거래량≥1.3x + RSI&gt;55<br><b>[거부]</b> RSI&gt;75</td></tr>
 </tbody></table>
-<p style="font-size:11px;color:#999;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다.</p>
+<p style="font-size:11px;color:#94a3b8;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다.</p>
 </div>"""
 
 _REF_ETF = """
@@ -432,10 +432,10 @@ _REF_ETF = """
 <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 섹터/테마 ETF. v5.3b 통합 규칙 적용.</p>
 <table class="ref-table"><thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead><tbody>
 <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 4개 ALL]</b> RSI≤45 + 가격&lt;MA20 + MACD hist 2일↑ + DD_52w≤-15%<br><b>[거부]</b> RSI&gt;70</td></tr>
-<tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>Pick 3/4</b>: RSI&gt;42 + MACD골든크로스 + 가격&gt;MA20 + Higher Low</td></tr>
-<tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>3개 ALL</b>: 가격&gt;MA20 + RSI&gt;55 + MACD&gt;0&amp;Signal</td></tr>
+<tr><td><span class="badge" style="background:#2563eb;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>Pick 3/4</b>: RSI&gt;42 + MACD골든크로스 + 가격&gt;MA20 + Higher Low</td></tr>
+<tr><td><span class="badge" style="background:#1e40af;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>3개 ALL</b>: 가격&gt;MA20 + RSI&gt;55 + MACD&gt;0&amp;Signal</td></tr>
 </tbody></table>
-<p style="font-size:11px;color:#999;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다.</p>
+<p style="font-size:11px;color:#94a3b8;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다.</p>
 </div>"""
 
 _REF_KOSPI = """
@@ -444,10 +444,10 @@ _REF_KOSPI = """
 <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 코스피 시총 상위 100. S&P 100과 동일한 규칙. 가격 KRW 기준.</p>
 <table class="ref-table"><thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead><tbody>
 <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b></td><td><b>[필수 4개 ALL]</b> RSI≤45 + 가격&lt;MA20 + MACD hist 2일↑ + DD_52w≤-15%<br><b>[거부]</b> RSI&gt;55 / 당일-5%급락</td></tr>
-<tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>4개 ALL</b>: 이중바닥(≤3%) + RSI&gt;35 + MACD골든크로스 + 거래량≥1.2x</td></tr>
-<tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>4개 ALL</b>: 가격&gt;MA20 + MACD&gt;0&amp;Signal + 거래량≥1.3x + RSI&gt;55<br><b>[거부]</b> RSI&gt;75</td></tr>
+<tr><td><span class="badge" style="background:#2563eb;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b></td><td><b>4개 ALL</b>: 이중바닥(≤3%) + RSI&gt;35 + MACD골든크로스 + 거래량≥1.2x</td></tr>
+<tr><td><span class="badge" style="background:#1e40af;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b></td><td><b>4개 ALL</b>: 가격&gt;MA20 + MACD&gt;0&amp;Signal + 거래량≥1.3x + RSI&gt;55<br><b>[거부]</b> RSI&gt;75</td></tr>
 </tbody></table>
-<p style="font-size:11px;color:#999;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다.</p>
+<p style="font-size:11px;color:#94a3b8;margin-top:8px;">※ BUY 시그널은 2일 연속 발생 시 확정됩니다.</p>
 </div>"""
 
 

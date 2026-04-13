@@ -359,6 +359,7 @@ def fetch_ticker(symbol: str) -> dict:
             # 배당 (TTM — 최근 12개월 합산)
             "div_ttm":           div_ttm,       # 연간 배당/주 ($)
             "div_yield_ttm":     div_yield_ttm, # 배당수익률 (%)
+            "_last_date":        df.index[-1].strftime("%Y-%m-%d"),  # 마지막 거래일
         }
 
     except Exception as e:
@@ -537,13 +538,24 @@ def main():
                     f"추세={trend_icon}{data['macd_hist_trend']}"
                 )
 
-    # ── 저장 ──
+    # ── 거래일 판별 ──
     today = date.today().strftime("%Y-%m-%d")
+    last_trading_date = today
+    for _sym in ("SPY", "QQQ"):
+        if _sym in results and "error" not in results[_sym]:
+            _ltd = results[_sym].get("_last_date")
+            if _ltd:
+                last_trading_date = _ltd
+                break
+    is_trading_day = (last_trading_date == today)
+    data_date = last_trading_date if not is_trading_day else today
+
+    # ── 저장 ──
     if args.output:
         output_path = args.output
     else:
         _script_dir = os.path.dirname(os.path.abspath(__file__))
-        output_path = os.path.join(_script_dir, "screenshots", f"market_data_{today}.json")
+        output_path = os.path.join(_script_dir, "screenshots", f"market_data_{data_date}.json")
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
@@ -604,7 +616,9 @@ def main():
     mkt_status = get_market_status()
     payload = {
         "_meta": {
-            "date": today,
+            "date": data_date,
+            "run_date": today,
+            "is_trading_day": is_trading_day,
             "generated_at": datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S"),
             "source": "yfinance",
             "ticker_source": source,
@@ -623,6 +637,8 @@ def main():
 
     if not args.quiet:
         print(f"\n{'━'*60}")
+        if not is_trading_day:
+            print(f"  ⚠️  비거래일 (오늘: {today}) → 직전 거래일({data_date}) 데이터 사용")
         print(f"  ✅ 저장 완료  →  {output_path}")
         print(f"  종목 수집: 성공 {success}개  |  실패 {fail}개")
         print(f"  매크로: VIX={macro_data.get('VIX','N/A')}  "

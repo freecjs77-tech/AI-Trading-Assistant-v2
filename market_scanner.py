@@ -435,6 +435,13 @@ def scan_sp100(project_dir: str) -> dict:
     data = market_data.get("data", {})
     elapsed = (datetime.now() - start_time).total_seconds()
 
+    # 비거래일 판별
+    _sp_meta = market_data.get("_meta", {})
+    is_trading_day = _sp_meta.get("is_trading_day", True)
+    data_date = _sp_meta.get("date", today)
+    if not is_trading_day:
+        today = data_date
+
     # 실제 데이터가 있는 종목만 스캔 (캐시와 scan_tickers가 다를 수 있음)
     available_tickers = [t for t in scan_tickers if t in data] or list(data.keys())
 
@@ -512,7 +519,8 @@ def scan_sp100(project_dir: str) -> dict:
     # v5.1b: BUY 연속일 계산
     for lst in [buy_1st, buy_2nd, buy_3rd]:
         _apply_streak_to_entries(lst, history, today)
-    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "sp100", project_dir, history, today)
+    if is_trading_day:
+        _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "sp100", project_dir, history, today)
 
     result = {
         "status": "ok",
@@ -595,6 +603,13 @@ def scan_etf(project_dir: str) -> dict:
     data = market_data.get("data", {})
     elapsed = (datetime.now() - start_time).total_seconds()
 
+    # 비거래일 판별
+    _etf_meta = market_data.get("_meta", {})
+    is_trading_day = _etf_meta.get("is_trading_day", True)
+    data_date = _etf_meta.get("date", today)
+    if not is_trading_day:
+        today = data_date
+
     # ETF v2.4 Entry 판정
     available_etfs = [t for t in scan_tickers if t in data] or list(data.keys())
 
@@ -662,7 +677,8 @@ def scan_etf(project_dir: str) -> dict:
     prev_hist_etf = _load_scanner_history(project_dir, "etf")
     for lst in [buy_1st, buy_2nd, buy_3rd]:
         _apply_streak_to_entries(lst, prev_hist_etf, today)
-    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "etf", project_dir, prev_hist_etf, today)
+    if is_trading_day:
+        _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "etf", project_dir, prev_hist_etf, today)
 
     result = {
         "status": "ok",
@@ -797,6 +813,13 @@ def scan_kospi(project_dir: str) -> dict:
     data = market_data.get("data", {})
     elapsed = (datetime.now() - start_time).total_seconds()
 
+    # 비거래일 판별
+    _kospi_meta = market_data.get("_meta", {})
+    is_trading_day = _kospi_meta.get("is_trading_day", True)
+    data_date = _kospi_meta.get("date", today)
+    if not is_trading_day:
+        today = data_date
+
     available_tickers = [t for t in scan_tickers if t in data] or list(data.keys())
 
     buy_1st = []
@@ -877,7 +900,8 @@ def scan_kospi(project_dir: str) -> dict:
     # v5.1b: BUY 연속일 계산
     for lst in [buy_1st, buy_2nd, buy_3rd]:
         _apply_streak_to_entries(lst, kospi_history, today)
-    _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "kospi", project_dir, kospi_history, today)
+    if is_trading_day:
+        _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "kospi", project_dir, kospi_history, today)
 
     result = {
         "status": "ok",
