@@ -109,7 +109,8 @@ def main():
     print(f"  Yahoo Finance 다운로드: {len(tickers_needed)}개 종목")
     ticker_dfs = {}
     for idx, t in enumerate(tickers_needed):
-        yf_sym = f"{t}.KS" if (t.isdigit() and len(t) == 6) else t
+        from portfolio_data import to_yfinance_symbol
+        yf_sym = to_yfinance_symbol(t)
         print(f"    [{idx+1:2d}/{len(tickers_needed)}] {yf_sym:<12} ... ", end="", flush=True)
         for attempt in range(3):
             df = fetch_yahoo_chart(session, yf_sym, crumb)

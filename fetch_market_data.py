@@ -525,8 +525,9 @@ def main():
     success, fail = 0, 0
 
     for i, sym in enumerate(tickers, 1):
-        # KOSPI 종목 (숫자만): yfinance에 .KS 접미사 필요
-        yf_sym = f"{sym}.KS" if sym.isdigit() else sym
+        # 한국 종목 (숫자만): yfinance에 .KS/.KQ 접미사 필요
+        from portfolio_data import to_yfinance_symbol
+        yf_sym = to_yfinance_symbol(sym)
         display_sym = sym  # 결과 키는 원래 심볼 유지
 
         if not args.quiet:

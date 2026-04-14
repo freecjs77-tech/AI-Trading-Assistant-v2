@@ -40,8 +40,9 @@ def generate_chart(symbol: str, output_path: str, days: int = 120, theme: str = 
     반환: 성공 여부
     """
     try:
-        # KOSPI 종목(숫자 ticker) → .KS 접미사 추가 (yfinance 호환)
-        yf_symbol = f"{symbol}.KS" if symbol.isdigit() else symbol.replace("_KS", ".KS")
+        # 한국 종목(숫자 ticker) → .KS/.KQ 접미사 추가 (yfinance 호환)
+        from portfolio_data import to_yfinance_symbol
+        yf_symbol = to_yfinance_symbol(symbol) if symbol.isdigit() else symbol.replace("_KS", ".KS").replace("_KQ", ".KQ")
         ticker = yf.Ticker(yf_symbol)
         df = ticker.history(period="1y", interval="1d", auto_adjust=True)
 

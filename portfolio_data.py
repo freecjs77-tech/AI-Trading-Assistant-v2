@@ -108,10 +108,25 @@ STRATEGY_GROUP = {
     "cash":   ["BIL"],
 }
 
-def is_kospi_ticker(ticker: str) -> bool:
-    """KOSPI 종목 여부 판별 (숫자 6자리 또는 .KS 접미사)"""
-    base = ticker.replace(".KS", "")
+# ── 코스닥(KOSDAQ) 종목 코드 목록 ──────────────────────────
+# yfinance에서 .KQ 접미사 사용 (코스피는 .KS)
+KOSDAQ_TICKERS = {
+    "110990",  # 디아이티
+}
+
+def is_korean_ticker(ticker: str) -> bool:
+    """한국 종목 여부 판별 (숫자 6자리 또는 .KS/.KQ 접미사)"""
+    base = ticker.replace(".KS", "").replace(".KQ", "")
     return base.isdigit() and len(base) == 6
+
+# 하위호환 유지
+is_kospi_ticker = is_korean_ticker
+
+def to_yfinance_symbol(ticker: str) -> str:
+    """Ticker를 yfinance 심볼로 변환 (코스닥→.KQ, 코스피→.KS)"""
+    if ticker.isdigit() and len(ticker) == 6:
+        return f"{ticker}.KQ" if ticker in KOSDAQ_TICKERS else f"{ticker}.KS"
+    return ticker
 
 
 # ── KOSPI 종목 추가 가이드 ──────────────────────────────

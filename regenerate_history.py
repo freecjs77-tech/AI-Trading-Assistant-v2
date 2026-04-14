@@ -204,7 +204,8 @@ def main():
     # yfinance 심볼 매핑
     yf_map = {}
     for t in tickers:
-        yf_map[t] = f"{t}.KS" if (t.isdigit() and len(t) == 6) else t
+        from portfolio_data import to_yfinance_symbol
+        yf_map[t] = to_yfinance_symbol(t)
 
     all_yf_symbols = list(yf_map.values())
 
