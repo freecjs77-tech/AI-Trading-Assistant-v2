@@ -244,19 +244,31 @@ def fetch_div_ttm(ticker: "yf.Ticker", current_price: float) -> tuple[float, flo
     TTM(최근 12개월) 배당/주 및 배당수익률 계산.
     반환: (div_ttm, div_yield_pct)  — 실패 시 (0.0, 0.0)
     """
+    # 방법 1: ticker.dividends (배당 히스토리에서 직접 합산)
     try:
         divs = ticker.dividends
-        if divs is None or len(divs) == 0:
-            return 0.0, 0.0
-        # timezone 제거 후 TTM 필터
-        idx = divs.index.tz_localize(None) if divs.index.tzinfo else divs.index
-        cutoff = pd.Timestamp.now() - pd.DateOffset(years=1)
-        ttm = divs[idx >= cutoff]
-        div_ttm = round(float(ttm.sum()), 4) if len(ttm) > 0 else 0.0
-        div_yield = round(div_ttm / current_price * 100, 4) if current_price > 0 else 0.0
-        return div_ttm, div_yield
+        if divs is not None and len(divs) > 0:
+            idx = divs.index.tz_localize(None) if divs.index.tzinfo else divs.index
+            cutoff = pd.Timestamp.now() - pd.DateOffset(years=1)
+            ttm = divs[idx >= cutoff]
+            if len(ttm) > 0:
+                div_ttm = round(float(ttm.sum()), 4)
+                div_yield = round(div_ttm / current_price * 100, 4) if current_price > 0 else 0.0
+                return div_ttm, div_yield
     except Exception:
-        return 0.0, 0.0
+        pass
+
+    # 방법 2: ticker.info fallback (yfinance 버전 호환성)
+    try:
+        info = ticker.info or {}
+        div_ttm = info.get("trailingAnnualDividendRate") or info.get("dividendRate") or 0.0
+        if div_ttm and div_ttm > 0:
+            div_yield = round(float(div_ttm) / current_price * 100, 4) if current_price > 0 else 0.0
+            return round(float(div_ttm), 4), div_yield
+    except Exception:
+        pass
+
+    return 0.0, 0.0
 
 
 def fetch_ticker(symbol: str) -> dict:
