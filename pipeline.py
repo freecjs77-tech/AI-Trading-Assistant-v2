@@ -435,6 +435,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     scanner_sp100=scanner_sp100_result,
                     scanner_etf=scanner_etf_result,
                     scanner_kospi=scanner_kospi_result,
+                    nav_portfolio=f"report_{today}.html",
+                    active_nav=_owner,
                 )
                 _sz = os.path.getsize(_owner_report)
                 print(f"  OK {_owner} report -> {_owner_report} ({_sz:,} bytes)")

@@ -251,6 +251,8 @@ def generate_report(
     scanner_etf: dict | None = None,
     scanner_kospi: dict | None = None,
     backtest_analysis: dict | None = None,
+    nav_portfolio: str | None = None,
+    active_nav: str = "portfolio",
 ) -> str:
     """
     Jinja2 템플릿으로 HTML 리포트 생성.
@@ -282,6 +284,10 @@ def generate_report(
     macro = market_data.get("_macro", {})
     dividends = market_data.get("_dividends", {})
     date_str = meta.get("date", datetime.now().strftime("%Y-%m-%d"))
+
+    # nav_portfolio 기본값: 오늘 날짜의 me 리포트 (로컬/원격 모두 동작)
+    if nav_portfolio is None:
+        nav_portfolio = f"report_{date_str}.html"
 
     holdings = _build_holdings(portfolio, market_data, signals)
 
@@ -418,6 +424,8 @@ def generate_report(
         "badge_class": _badge_class,
         "card_class": _card_class,
         # 네비게이션 링크
+        "nav_portfolio": nav_portfolio,
+        "active_nav": active_nav,
         "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
@@ -500,7 +508,7 @@ def generate_scanner_pages(
     fetched_at = meta.get("generated_at", "")
 
     nav = {
-        "nav_portfolio": "index.html",
+        "nav_portfolio": f"report_{date_str}.html",
         "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
@@ -564,8 +572,92 @@ def _series_from_daily(daily: dict) -> list:
             "cost_eok": round(snap.get("cost_basis_krw", 0) / 1e8, 2),
             "pnl_eok": round(snap.get("pnl_krw", 0) / 1e8, 2),
             "pnl_pct": snap.get("pnl_pct", 0),
+            "div_annual_man": round(snap.get("div_annual_krw", 0) / 1e4),
+            "div_yield": snap.get("div_yield", 0),
         })
     return out
+
+
+def _build_owner_payload(daily: dict) -> dict:
+    """단일 포트 daily 스냅샷 → {latest, trend, ticker} 페이로드 (트렌드 페이지용)."""
+    sorted_dates = sorted([k for k in daily.keys() if not k.startswith("_")])
+    latest_snap = daily.get(sorted_dates[-1], {}) if sorted_dates else {}
+    latest_total = latest_snap.get("total_value_krw", 0) or 0
+    latest_cost = latest_snap.get("cost_basis_krw", 0) or 0
+    latest_pnl = latest_snap.get("pnl_krw", 0) or 0
+    latest = {
+        "total_eok": f"{latest_total / 1e8:.2f}",
+        "cost_eok": f"{latest_cost / 1e8:.2f}",
+        "pnl_krw": latest_pnl,
+        "pnl_eok": f"{latest_pnl / 1e8:.2f}",
+        "pnl_pct": latest_snap.get("pnl_pct", 0),
+        "cash_eok": f"{(latest_snap.get('cash_value_krw', 0) or 0) / 1e8:.2f}",
+        "cash_pct": latest_snap.get("cash_pct", 0),
+        "div_annual_man": f"{(latest_snap.get('div_annual_krw', 0) or 0) / 1e4:,.0f}",
+        "div_yield": latest_snap.get("div_yield", 0),
+    }
+    ticker_weights = latest_snap.get("weights_by_ticker", {}) or {}
+    sorted_tickers = sorted(ticker_weights.items(), key=lambda x: -x[1])
+    ticker_data = []
+    others = 0
+    others_krw = 0
+    for i, (name, weight) in enumerate(sorted_tickers):
+        amt_krw = round(latest_total * weight / 100)
+        if i < 10:
+            ticker_data.append({"name": name, "value": round(weight, 1), "amount_man": round(amt_krw / 1e4)})
+        else:
+            others += weight
+            others_krw += amt_krw
+    if others > 0:
+        ticker_data.append({"name": "기타", "value": round(others, 1), "amount_man": round(others_krw / 1e4)})
+    return {"latest": latest, "trend": _series_from_daily(daily), "ticker": ticker_data}
+
+
+def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
+    """me + 타 owner의 daily를 date-union 합산하여 combined 페이로드 생성."""
+    all_daily = [me_daily] + list((others_daily or {}).values())
+    all_dates = set()
+    for d in all_daily:
+        all_dates.update(k for k in d.keys() if not k.startswith("_"))
+    sorted_dates = sorted(all_dates)
+    # 날짜별 합산 스냅샷 구성
+    combined_daily = {}
+    for date in sorted_dates:
+        tot = 0.0
+        cost = 0.0
+        pnl = 0.0
+        cash = 0.0
+        div_annual = 0.0
+        # 티커별 krw 누적
+        ticker_krw = {}
+        for d in all_daily:
+            snap = d.get(date)
+            if not snap:
+                continue
+            t = snap.get("total_value_krw", 0) or 0
+            tot += t
+            cost += snap.get("cost_basis_krw", 0) or 0
+            pnl += snap.get("pnl_krw", 0) or 0
+            cash += snap.get("cash_value_krw", 0) or 0
+            div_annual += snap.get("div_annual_krw", 0) or 0
+            for name, w in (snap.get("weights_by_ticker", {}) or {}).items():
+                ticker_krw[name] = ticker_krw.get(name, 0) + t * w / 100
+        weights_by_ticker = {name: (v / tot * 100) for name, v in ticker_krw.items()} if tot > 0 else {}
+        pnl_pct = round((pnl / cost * 100), 2) if cost > 0 else 0
+        div_yield = round((div_annual / tot * 100), 2) if tot > 0 else 0
+        cash_pct = round((cash / tot * 100), 1) if tot > 0 else 0
+        combined_daily[date] = {
+            "total_value_krw": tot,
+            "cost_basis_krw": cost,
+            "pnl_krw": pnl,
+            "pnl_pct": pnl_pct,
+            "cash_value_krw": cash,
+            "cash_pct": cash_pct,
+            "div_annual_krw": div_annual,
+            "div_yield": div_yield,
+            "weights_by_ticker": weights_by_ticker,
+        }
+    return _build_owner_payload(combined_daily)
 
 
 def generate_trend_page(
@@ -654,7 +746,7 @@ def generate_trend_page(
 
     context = {
         # Nav
-        "nav_portfolio": "index.html",
+        "nav_portfolio": f"report_{date_str}.html",
         "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
@@ -674,6 +766,18 @@ def generate_trend_page(
             {
                 owner: _series_from_daily(d)
                 for owner, d in (owner_daily or {}).items()
+            },
+            ensure_ascii=False,
+        ),
+        # Owner별 풀 페이로드 (latest/trend/ticker) — JS가 토글 시 전체 페이지 갱신
+        "owners_payload_json": _json.dumps(
+            {
+                "me": _build_owner_payload(portfolio_daily),
+                **{owner: _build_owner_payload(d) for owner, d in (owner_daily or {}).items()},
+                **(
+                    {"combined": _build_combined_payload(portfolio_daily, owner_daily)}
+                    if owner_daily else {}
+                ),
             },
             ensure_ascii=False,
         ),
@@ -739,7 +843,7 @@ def generate_backtest_page(
 
     context = {
         # Nav
-        "nav_portfolio": "index.html",
+        "nav_portfolio": f"report_{date_str}.html",
         "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",

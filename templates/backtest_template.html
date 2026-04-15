@@ -46,7 +46,10 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
     <div><h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p></div>
   </div>
   <div class="space-y-2 flex-grow">
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_portfolio }}"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_portfolio }}"><span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span></a>
+    {% if nav_wife %}
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_wife }}"><span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span></a>
+    {% endif %}
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_scanner }}"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
     <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="{{ nav_backtest }}"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_trend }}"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>

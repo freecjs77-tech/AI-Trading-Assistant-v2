@@ -44,7 +44,10 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
     <div><h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p></div>
   </div>
   <div class="space-y-2 flex-grow">
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_portfolio }}"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_portfolio }}"><span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span></a>
+    {% if nav_wife %}
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_wife }}"><span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span></a>
+    {% endif %}
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_scanner }}"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_backtest }}"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
     <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="{{ nav_trend }}"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
@@ -68,6 +71,16 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
   </header>
 
   <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
+    {% if has_multi_owner %}
+    <!-- Owner 선택 토글 (최상단) -->
+    <div class="flex gap-2 items-center" id="ownerToggle" role="tablist">
+      <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-2">포트 선택</span>
+      <button data-owner="me" class="owner-btn px-4 py-2 rounded-md text-sm font-bold bg-primary/20 text-primary border border-primary/30">내 포트</button>
+      <button data-owner="wife" class="owner-btn px-4 py-2 rounded-md text-sm font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">와이프</button>
+      <button data-owner="combined" class="owner-btn px-4 py-2 rounded-md text-sm font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">합산</button>
+    </div>
+    {% endif %}
+
     <!-- Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary">
@@ -75,15 +88,15 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
           <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Total Assets</span>
           <span class="material-symbols-outlined text-secondary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">account_balance</span>
         </div>
-        <div class="text-2xl font-headline font-bold text-secondary">&#8361;{{ latest.total_eok }}억</div>
-        <div class="text-xs mt-2 {{ 'text-secondary' if latest.pnl_krw >= 0 else 'text-tertiary' }}">&#8599; {{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
+        <div class="text-2xl font-headline font-bold text-secondary" id="sumTotal">&#8361;{{ latest.total_eok }}억</div>
+        <div class="text-xs mt-2 {{ 'text-secondary' if latest.pnl_krw >= 0 else 'text-tertiary' }}" id="sumPnl">&#8599; {{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
       </div>
       <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-primary">
         <div class="flex justify-between items-start mb-3">
           <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Investment Principal</span>
           <span class="material-symbols-outlined text-primary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">savings</span>
         </div>
-        <div class="text-2xl font-headline font-bold text-primary">&#8361;{{ latest.cost_eok }}억</div>
+        <div class="text-2xl font-headline font-bold text-primary" id="sumCost">&#8361;{{ latest.cost_eok }}억</div>
         <div class="text-xs mt-2 text-outline">투자 원금</div>
       </div>
       <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-tertiary">
@@ -91,22 +104,22 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
           <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Est. Annual Dividend</span>
           <span class="material-symbols-outlined text-tertiary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">payments</span>
         </div>
-        <div class="text-2xl font-headline font-bold text-tertiary">&#8361;{{ latest.div_annual_man }}만</div>
-        <div class="text-xs mt-2 text-secondary">Yield: {{ latest.div_yield }}%</div>
+        <div class="text-2xl font-headline font-bold text-tertiary" id="sumDivAnnual">&#8361;{{ latest.div_annual_man }}만</div>
+        <div class="text-xs mt-2 text-secondary" id="sumDivYield">Yield: {{ latest.div_yield }}%</div>
       </div>
       <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-outline">
         <div class="flex justify-between items-start mb-3">
           <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Cash Liquidity</span>
           <span class="material-symbols-outlined text-outline" style="font-size:22px;font-variation-settings:'FILL' 1;">currency_exchange</span>
         </div>
-        <div class="text-2xl font-headline font-bold text-on-surface">&#8361;{{ latest.cash_eok }}억</div>
-        <div class="text-xs mt-2 text-tertiary">&#9679; {{ latest.cash_pct }}% Allocation</div>
+        <div class="text-2xl font-headline font-bold text-on-surface" id="sumCash">&#8361;{{ latest.cash_eok }}억</div>
+        <div class="text-xs mt-2 text-tertiary" id="sumCashPct">&#9679; {{ latest.cash_pct }}% Allocation</div>
       </div>
     </div>
 
     <!-- Asset Allocation -->
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
-      <h2 class="text-lg font-headline font-bold mb-6">Asset Allocation</h2>
+      <h2 class="text-lg font-headline font-bold mb-6" id="allocTitle">Asset Allocation</h2>
       <div class="flex flex-col lg:flex-row items-center gap-8">
         <div class="relative" style="width:260px;height:260px;flex-shrink:0;">
           <canvas id="tickerPie"></canvas>
@@ -118,13 +131,6 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
 
     {% if data_days >= 1 %}
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
-    {% if has_multi_owner %}
-    <div class="flex gap-2 mb-2" id="ownerToggle" role="tablist">
-      <button data-owner="me" class="owner-btn px-3 py-1.5 rounded-md text-xs font-bold bg-primary/20 text-primary border border-primary/30">내 포트</button>
-      <button data-owner="wife" class="owner-btn px-3 py-1.5 rounded-md text-xs font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">와이프</button>
-      <button data-owner="combined" class="owner-btn px-3 py-1.5 rounded-md text-xs font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">합산</button>
-    </div>
-    {% endif %}
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="assetTrendChart" style="max-height:320px;"></canvas></div>
 
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">payments</span> 예상 연 배당금 추이</h2>
@@ -172,43 +178,54 @@ const fxData = trend.map(d => d.usd_krw);
 const dso = { ticks: { color: isDark?'#a3aac4':'#64748b' }, grid: { color: isDark?'rgba(64,72,93,0.3)':'rgba(203,213,225,0.5)' } };
 
 {% if data_days >= 1 %}
-// ── 3-way 토글 지원: owner별 시계열 데이터 ──
-const ownerSeries = {{ owner_series_json|default('{}') }};
-const meSeries = trend.map(d => ({ date: d.date, total_eok: d.total_eok, cost_eok: d.cost_eok }));
-// 합산: 날짜 union → 각 date별 owner 값 합산 (없으면 0)
-function _buildCombined(){
-  const allDates = new Set(meSeries.map(d=>d.date));
-  Object.values(ownerSeries).forEach(s => s.forEach(d => allDates.add(d.date)));
-  const sortedDates = [...allDates].sort();
-  const idx = (arr) => Object.fromEntries(arr.map(d => [d.date, d]));
-  const meIdx = idx(meSeries);
-  const othersIdx = Object.fromEntries(Object.entries(ownerSeries).map(([k,v]) => [k, idx(v)]));
-  return sortedDates.map(date => {
-    let tot = meIdx[date]?.total_eok || 0;
-    let cost = meIdx[date]?.cost_eok || 0;
-    Object.values(othersIdx).forEach(m => { tot += m[date]?.total_eok || 0; cost += m[date]?.cost_eok || 0; });
-    return { date, total_eok: +tot.toFixed(2), cost_eok: +cost.toFixed(2) };
-  });
-}
-const combinedSeries = _buildCombined();
-function _seriesFor(owner){
-  if(owner === 'combined') return combinedSeries;
-  if(owner === 'me') return meSeries;
-  return ownerSeries[owner] || [];
-}
+// ── 3-way 토글 지원: owner별 풀 페이로드 ──
+const ownersPayload = {{ owners_payload_json|default('{}') }};
+const ownerLabel = (o) => o==='combined' ? '합산' : (o==='me' ? '내 포트' : (o==='wife' ? '와이프' : o));
+
 let _assetChart = new Chart(document.getElementById('assetTrendChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'총 자산 (억원)', data:totalAsset, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2 },
   { label:'투자 원금 (억원)', data:costBasis, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, borderDash:[5,5], tension:0.3, pointRadius:0 }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'억원', color:'#a3aac4' }}}}});
-function _updateAssetChart(owner){
-  const s = _seriesFor(owner);
+
+let _divChart = new Chart(document.getElementById('divTrendChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'예상 연 배당 (만원)', data:divData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
+  { label:'배당수익률 (%)', data:divYieldData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'만원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
+
+function _applyOwner(owner){
+  const p = ownersPayload[owner];
+  if(!p) return;
+  // Summary cards
+  const l = p.latest;
+  document.getElementById('sumTotal').innerHTML = '\u20a9' + l.total_eok + '억';
+  const pnlSign = l.pnl_krw >= 0 ? '+' : '';
+  const pctSign = l.pnl_pct >= 0 ? '+' : '';
+  const pnlEl = document.getElementById('sumPnl');
+  pnlEl.innerHTML = '\u2197 ' + pnlSign + '\u20a9' + l.pnl_eok + '억 (' + pctSign + l.pnl_pct + '%)';
+  pnlEl.classList.remove('text-secondary','text-tertiary');
+  pnlEl.classList.add(l.pnl_krw >= 0 ? 'text-secondary' : 'text-tertiary');
+  document.getElementById('sumCost').innerHTML = '\u20a9' + l.cost_eok + '억';
+  document.getElementById('sumDivAnnual').innerHTML = '\u20a9' + l.div_annual_man + '만';
+  document.getElementById('sumDivYield').innerHTML = 'Yield: ' + l.div_yield + '%';
+  document.getElementById('sumCash').innerHTML = '\u20a9' + l.cash_eok + '억';
+  document.getElementById('sumCashPct').innerHTML = '\u25cf ' + l.cash_pct + '% Allocation';
+  // Asset Allocation title
+  document.getElementById('allocTitle').textContent = ownerLabel(owner) + ' — Asset Allocation';
+  // Ticker pie + cards 재렌더
+  _renderTicker(p.ticker);
+  // Asset chart
+  const s = p.trend;
   _assetChart.data.labels = s.map(d => d.date.slice(5));
   _assetChart.data.datasets[0].data = s.map(d => d.total_eok);
   _assetChart.data.datasets[1].data = s.map(d => d.cost_eok);
-  const label = owner==='combined' ? '합산' : (owner==='me' ? '내' : (owner==='wife' ? '와이프' : owner));
-  _assetChart.data.datasets[0].label = `${label} 총 자산 (억원)`;
-  _assetChart.data.datasets[1].label = `${label} 투자 원금 (억원)`;
+  _assetChart.data.datasets[0].label = ownerLabel(owner) + ' 총 자산 (억원)';
+  _assetChart.data.datasets[1].label = ownerLabel(owner) + ' 투자 원금 (억원)';
   _assetChart.update();
+  // Div chart
+  _divChart.data.labels = s.map(d => d.date.slice(5));
+  _divChart.data.datasets[0].data = s.map(d => d.div_annual_man);
+  _divChart.data.datasets[1].data = s.map(d => d.div_yield);
+  _divChart.update();
 }
 document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -218,14 +235,9 @@ document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
     });
     btn.classList.add('bg-primary/20','text-primary','border-primary/30');
     btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
-    _updateAssetChart(btn.dataset.owner);
+    _applyOwner(btn.dataset.owner);
   });
 });
-
-new Chart(document.getElementById('divTrendChart'), { type:'line', data:{ labels:dates, datasets:[
-  { label:'예상 연 배당 (만원)', data:divData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
-  { label:'배당수익률 (%)', data:divYieldData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
-]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'만원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
 new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'VIX', data:vixData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,108,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, yAxisID:'y' },
@@ -236,13 +248,19 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
 
 const tickerData = {{ ticker_json }};
 const tColors = ['#00E5BC','#6dddff','#ff716c','#fbbf24','#34d399','#a78bfa','#22d3ee','#475569','#e51a22','#f97316','#94a3b8'];
-new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>d.name), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:tColors, borderWidth:0, spacing:2 }]}, options:{ responsive:true, cutout:'72%', plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ var d=tickerData[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
-// 도넛 중앙: 1위 종목
-if(tickerData.length>0){var topT=tickerData[0]; document.getElementById('pieCenter').innerHTML='<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">'+topT.name+'</span><span class="text-3xl font-headline font-bold text-on-surface">'+Math.round(topT.value)+'%</span>';}
-// 종목 카드 동적 생성
-var cardsHtml='';
-tickerData.forEach(function(d,i){var a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc';var c=tColors[i%tColors.length];cardsHtml+='<div class="rounded-lg bg-surface-container-high p-4" style="border-left:4px solid '+c+'"><div class="flex justify-between items-center"><span class="font-bold text-sm text-on-surface">'+d.name+'</span><div class="text-right"><div class="font-bold text-sm text-on-surface">'+s+'</div><div class="text-[10px] text-outline">'+d.value.toFixed(1)+'%</div></div></div></div>';});
-document.getElementById('tickerCards').innerHTML=cardsHtml;
+let _currentTicker = tickerData;
+let _tickerPie = new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>d.name), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:tColors, borderWidth:0, spacing:2 }]}, options:{ responsive:true, cutout:'72%', plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ var d=_currentTicker[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
+function _renderTicker(data){
+  _currentTicker = data;
+  _tickerPie.data.labels = data.map(d=>d.name);
+  _tickerPie.data.datasets[0].data = data.map(d=>d.value);
+  _tickerPie.update();
+  if(data.length>0){var topT=data[0]; document.getElementById('pieCenter').innerHTML='<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">'+topT.name+'</span><span class="text-3xl font-headline font-bold text-on-surface">'+Math.round(topT.value)+'%</span>';} else { document.getElementById('pieCenter').innerHTML=''; }
+  var cardsHtml='';
+  data.forEach(function(d,i){var a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc';var c=tColors[i%tColors.length];cardsHtml+='<div class="rounded-lg bg-surface-container-high p-4" style="border-left:4px solid '+c+'"><div class="flex justify-between items-center"><span class="font-bold text-sm text-on-surface">'+d.name+'</span><div class="text-right"><div class="font-bold text-sm text-on-surface">'+s+'</div><div class="text-[10px] text-outline">'+d.value.toFixed(1)+'%</div></div></div></div>';});
+  document.getElementById('tickerCards').innerHTML=cardsHtml;
+}
+_renderTicker(tickerData);
 </script>
 </body>
 </html>

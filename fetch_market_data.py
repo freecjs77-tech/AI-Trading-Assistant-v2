@@ -603,7 +603,8 @@ def main():
                 annual_inc = round(div_ttm * sh, 2)
                 port_val   = round(cur_price * sh, 2)
                 # KOSPI 종목(6자리 숫자): KRW → USD 변환
-                is_kospi = sym.isdigit() and len(sym) == 6
+                from portfolio_data import is_korean_ticker as _is_kr
+                is_kospi = _is_kr(sym)
                 if is_kospi and krw_rate > 1:
                     annual_inc = round(annual_inc / krw_rate, 2)
                     port_val   = round(port_val / krw_rate, 2)

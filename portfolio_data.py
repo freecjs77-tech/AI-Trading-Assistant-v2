@@ -4,6 +4,8 @@ AI Trading Assistant v3.0
 """
 from __future__ import annotations
 
+import re
+
 # ── 종목별 고정 메타데이터 ──────────────────────────────
 TICKER_META = {
     "VOO":   {"name": "Vanguard S&P 500 ETF",           "cls": "ETF",    "cls_tag": "cls-etf"},
@@ -49,6 +51,19 @@ TICKER_META = {
     "0153K0": {"name": "KODEX 주주환원고배당주", "cls": "ETF",    "cls_tag": "cls-etf"},
     "232080": {"name": "TIGER 코스닥150",       "cls": "ETF",    "cls_tag": "cls-etf"},
     "466920": {"name": "SOL 조선TOP3플러스",    "cls": "ETF",    "cls_tag": "cls-etf"},
+    # Wife 포트 전용 종목
+    "005935": {"name": "삼성전자우",           "cls": "Growth", "cls_tag": "cls-growth"},
+    "011170": {"name": "롯데케미칼",           "cls": "Value",  "cls_tag": "cls-value"},
+    "012330": {"name": "현대모비스",           "cls": "Value",  "cls_tag": "cls-value"},
+    "014820": {"name": "동원시스템즈",         "cls": "Value",  "cls_tag": "cls-value"},
+    "003475": {"name": "유안타증권우",         "cls": "Value",  "cls_tag": "cls-value"},
+    "446720": {"name": "SOL 미국배당다우존스", "cls": "ETF",    "cls_tag": "cls-etf"},
+    "133690": {"name": "TIGER 미국나스닥100",  "cls": "ETF",    "cls_tag": "cls-etf"},
+    "360750": {"name": "TIGER 미국S&P500",     "cls": "ETF",    "cls_tag": "cls-etf"},
+    "069500": {"name": "KODEX 200",            "cls": "ETF",    "cls_tag": "cls-etf"},
+    "381170": {"name": "TIGER 미국테크TOP10",  "cls": "ETF",    "cls_tag": "cls-etf"},
+    "229200": {"name": "KODEX 코스닥150",      "cls": "ETF",    "cls_tag": "cls-etf"},
+    "0154F0": {"name": "WON 초대형IB&금융지주", "cls": "ETF",    "cls_tag": "cls-etf"},
 }
 
 # ── 한국어 종목명 → Ticker 변환맵 (스크린샷 OCR용) ──────
@@ -101,8 +116,10 @@ STRATEGY_GROUP = {
                "QLD", "SOXL", "ETHU", "CRCL", "BTDR",
                "110990", "005930", "000660", "006400", "373220"],
     "etf":    ["VOO", "QQQ", "SCHD", "SOXX", "JEPI", "SPY", "XLE", "XLF",
-               "102110", "458730", "379800", "379810", "396500", "0153K0", "232080", "466920"],
-    "value":  ["O", "UNH", "005380"],
+               "102110", "458730", "379800", "379810", "396500", "0153K0", "232080", "466920",
+               "446720", "133690", "360750", "069500", "381170", "229200", "0154F0"],
+    "growth_kr_extra": ["005935"],  # 삼성전자우 — growth로 분류
+    "value":  ["O", "UNH", "005380", "011170", "012330", "014820", "003475"],
     "bond":   ["TLT"],
     "metal":  ["SLV"],
     "cash":   ["BIL"],
@@ -114,17 +131,23 @@ KOSDAQ_TICKERS = {
     "110990",  # 디아이티
 }
 
+# 한국 종목 코드 패턴: 6자리, 숫자로 시작, [0-9A-Z]만 허용
+# (예: 005930, 110990, 0153K0, 0154F0)
+_KR_TICKER_RE = re.compile(r"^[0-9][0-9A-Z]{5}$")
+
+
 def is_korean_ticker(ticker: str) -> bool:
-    """한국 종목 여부 판별 (숫자 6자리 또는 .KS/.KQ 접미사)"""
+    """한국 종목 여부 판별 (6자리 영숫자, 숫자 시작, 또는 .KS/.KQ 접미사)"""
     base = ticker.replace(".KS", "").replace(".KQ", "")
-    return base.isdigit() and len(base) == 6
+    return bool(_KR_TICKER_RE.match(base))
 
 # 하위호환 유지
 is_kospi_ticker = is_korean_ticker
 
+
 def to_yfinance_symbol(ticker: str) -> str:
     """Ticker를 yfinance 심볼로 변환 (코스닥→.KQ, 코스피→.KS)"""
-    if ticker.isdigit() and len(ticker) == 6:
+    if _KR_TICKER_RE.match(ticker):
         return f"{ticker}.KQ" if ticker in KOSDAQ_TICKERS else f"{ticker}.KS"
     return ticker
 
