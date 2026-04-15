@@ -639,6 +639,15 @@ def main():
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
+    # ── 전체 실패 가드: 네트워크 실패로 모든 티커가 에러면 기존 파일 보존 ──
+    if success == 0 and fail > 0:
+        import glob as _glob
+        _existing = sorted(_glob.glob(os.path.join(os.path.dirname(output_path) or ".", "market_data_*.json")))
+        if _existing:
+            print(f"\n⚠️  네트워크 장애로 전 종목 실패 — 기존 파일 유지: {_existing[-1]}")
+            print(f"    (새 파일 저장 생략, 파이프라인은 기존 데이터로 계속)")
+            return
+
     # Master switch 계산 (QQQ, SPY 데이터가 있을 때만)
     master = "UNKNOWN"
     if "QQQ" in results and "error" not in results["QQQ"] and "SPY" in results and "error" not in results["SPY"]:
@@ -722,9 +731,11 @@ def main():
             print(f"  ⚠️  비거래일 (오늘: {today}) → 직전 거래일({data_date}) 데이터 사용")
         print(f"  ✅ 저장 완료  →  {output_path}")
         print(f"  종목 수집: 성공 {success}개  |  실패 {fail}개")
+        _usd_krw = macro_data.get('USD_KRW')
+        _usd_krw_str = f"{_usd_krw:.0f}" if isinstance(_usd_krw, (int, float)) else "N/A"
         print(f"  매크로: VIX={macro_data.get('VIX','N/A')}  "
               f"30Y={macro_data.get('yield_30Y','N/A')}%  "
-              f"USD/KRW={macro_data.get('USD_KRW','N/A'):.0f}  "
+              f"USD/KRW={_usd_krw_str}  "
               f"Master={macro_data.get('master_switch','N/A')}")
         if dividends_summary:
             print(f"  배당 집계: 연 ${dividends_summary['total_annual']:,.0f}  "
