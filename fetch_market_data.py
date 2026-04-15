@@ -271,11 +271,15 @@ def fetch_div_ttm(ticker: "yf.Ticker", current_price: float) -> tuple[float, flo
     return 0.0, 0.0
 
 
-def fetch_ticker(symbol: str) -> dict:
-    """yfinance로 종목 데이터 수집 후 기술지표 계산 (배당 포함)"""
+def fetch_ticker(symbol: str, cached_df=None, cached_divs=None) -> dict:
+    """yfinance로 종목 데이터 수집 후 기술지표 계산 (배당 포함).
+    cached_df/cached_divs가 주어지면 네트워크 호출 없이 재사용 (레이트리밋 회피)."""
     try:
-        ticker = yf.Ticker(symbol)
-        df = ticker.history(period="1y", interval="1d", auto_adjust=True)
+        if cached_df is not None:
+            df = cached_df
+        else:
+            ticker = yf.Ticker(symbol)
+            df = ticker.history(period="1y", interval="1d", auto_adjust=True)
 
         if df is None or df.empty:
             return {"error": "데이터 없음 (상장폐지 또는 심볼 오류)"}
@@ -310,14 +314,26 @@ def fetch_ticker(symbol: str) -> dict:
         # 이중 바닥 패턴 탐지
         dbl_bottom = find_double_bottom(close)
 
-        # 시가총액
-        try:
-            market_cap = ticker.info.get("marketCap", 0) or 0
-        except Exception:
-            market_cap = 0
+        # 시가총액 — cached 모드에서는 info 호출 생략 (레이트리밋 회피)
+        market_cap = 0
+        if cached_df is None:
+            try:
+                market_cap = ticker.info.get("marketCap", 0) or 0
+            except Exception:
+                market_cap = 0
 
-        # 배당 수집 (TTM)
-        div_ttm, div_yield_ttm = fetch_div_ttm(ticker, last_close)
+        # 배당 수집 (TTM) — cached 배당이 있으면 직접 계산, 없으면 fetch_div_ttm 호출
+        if cached_divs is not None:
+            try:
+                idx = cached_divs.index.tz_localize(None) if getattr(cached_divs.index, "tzinfo", None) else cached_divs.index
+                cutoff = pd.Timestamp.now() - pd.DateOffset(years=1)
+                ttm = cached_divs[idx >= cutoff] if len(cached_divs) > 0 else cached_divs
+                div_ttm = round(float(ttm.sum()), 4) if len(ttm) > 0 else 0.0
+                div_yield_ttm = round(div_ttm / last_close * 100, 4) if (div_ttm > 0 and last_close > 0) else 0.0
+            except Exception:
+                div_ttm, div_yield_ttm = 0.0, 0.0
+        else:
+            div_ttm, div_yield_ttm = fetch_div_ttm(ticker, last_close)
 
         def safe(series, idx=-1):
             v = series.iloc[idx]
@@ -521,20 +537,70 @@ def main():
         krw_str = f"₩{macro_data.get('USD_KRW', 'N/A'):.0f}" if macro_data.get('USD_KRW') else "N/A"
         print(f"✅  VIX={vix_str}  30Y={y30_str}  USD/KRW={krw_str}")
 
-    # ── 데이터 수집 ──
+    # ── 일괄 다운로드 (레이트리밋 회피: 종목당 3번→0번 HTTP 호출) ──
+    from portfolio_data import to_yfinance_symbol
+    yf_symbols = [to_yfinance_symbol(s) for s in tickers]
+    bulk_df = None
+    bulk_divs: dict = {}
+    try:
+        if not args.quiet:
+            print(f"  📦 일괄 다운로드 중 ({len(yf_symbols)}개 티커, 1y, actions=True) ... ", end="", flush=True)
+        bulk_df = yf.download(
+            tickers=yf_symbols,
+            period="1y",
+            interval="1d",
+            auto_adjust=True,
+            actions=True,
+            group_by="ticker",
+            progress=False,
+            threads=True,
+        )
+        if not args.quiet:
+            print(f"✅  shape={getattr(bulk_df,'shape',None)}")
+        # 배당 시계열 분리 추출 (actions=True 덕분에 Dividends 컬럼 존재)
+        if bulk_df is not None and not bulk_df.empty:
+            for yf_sym in yf_symbols:
+                try:
+                    if isinstance(bulk_df.columns, pd.MultiIndex):
+                        sub = bulk_df[yf_sym] if yf_sym in bulk_df.columns.get_level_values(0) else None
+                    else:
+                        sub = bulk_df
+                    if sub is not None and "Dividends" in sub.columns:
+                        divs = sub["Dividends"].dropna()
+                        bulk_divs[yf_sym] = divs[divs > 0]
+                except Exception:
+                    pass
+    except Exception as _bulk_e:
+        if not args.quiet:
+            print(f"⚠️  일괄 다운로드 실패 ({_bulk_e}) — 종목별 폴백 사용")
+        bulk_df = None
+
+    # ── 데이터 수집 (캐시 우선, 폴백 시 종목별 네트워크 호출) ──
     results = {}
     success, fail = 0, 0
 
     for i, sym in enumerate(tickers, 1):
-        # 한국 종목 (숫자만): yfinance에 .KS/.KQ 접미사 필요
-        from portfolio_data import to_yfinance_symbol
         yf_sym = to_yfinance_symbol(sym)
         display_sym = sym  # 결과 키는 원래 심볼 유지
 
         if not args.quiet:
             print(f"  [{i:2d}/{len(tickers)}] {display_sym:<6} ... ", end="", flush=True)
 
-        data = fetch_ticker(yf_sym)
+        # 캐시에서 OHLCV 추출
+        cached_df = None
+        cached_divs = None
+        if bulk_df is not None and not bulk_df.empty:
+            try:
+                if isinstance(bulk_df.columns, pd.MultiIndex):
+                    if yf_sym in bulk_df.columns.get_level_values(0):
+                        cached_df = bulk_df[yf_sym][["Open","High","Low","Close","Volume"]].dropna(how="all")
+                else:
+                    cached_df = bulk_df[["Open","High","Low","Close","Volume"]].dropna(how="all")
+                cached_divs = bulk_divs.get(yf_sym)
+            except Exception:
+                cached_df = None
+
+        data = fetch_ticker(yf_sym, cached_df=cached_df, cached_divs=cached_divs)
         results[display_sym] = data
 
         if "error" in data:
