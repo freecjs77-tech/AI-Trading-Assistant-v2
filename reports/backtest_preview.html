@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtest Preview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","secondary":"#00E5BC","tertiary":"#ff7166","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+</script>
+</head>
+<body class="bg-surface text-on-surface font-body">
+
+<!-- Sidebar (동일) -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-surface-container-low font-body font-medium w-64 md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center"><span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings:'FILL' 1;">dashboard_customize</span></div>
+    <div><h2 class="text-lg font-black text-primary leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-on-surface/40 mt-1">Precision Curator</p></div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="#"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+  </div>
+</nav>
+
+<main class="md:ml-64 min-h-screen">
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">BACKTEST</span>
+      <span class="text-xs text-outline font-label">257건 평가</span>
+    </div>
+  </header>
+
+  <div class="p-8 space-y-8 max-w-[1200px] mx-auto">
+
+    <!-- Section 1: BUY 시그널 성적표 -->
+    <h2 class="text-lg font-headline font-bold flex items-center gap-2">
+      <span class="material-symbols-outlined text-secondary">shopping_cart</span> BUY 시그널 성적표
+    </h2>
+    <p class="text-xs text-on-surface-variant -mt-4">BUY 발생 후 N거래일 내 +3% 이상 수익 달성 비율</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- 1st BUY -->
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">1st BUY</span>
+          <span class="text-xs text-outline">38건</span>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold text-tertiary text-base">18%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:18%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold text-tertiary text-base">37%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:37%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +3% 터치)</span><span class="font-bold text-primary text-base">50%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:50%"></div></div>
+          </div>
+          <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
+            <span class="text-on-surface-variant">평균 수익</span>
+            <span class="text-tertiary font-bold">-1.24%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2nd BUY -->
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">2nd BUY</span>
+          <span class="text-xs text-outline">77건</span>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold text-tertiary text-base">5%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:5%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold text-tertiary text-base">9%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:9%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +3% 터치)</span><span class="font-bold text-primary text-base">18%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:18%"></div></div>
+          </div>
+          <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
+            <span class="text-on-surface-variant">평균 수익</span>
+            <span class="text-tertiary font-bold">-1.75%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3rd BUY -->
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">3rd BUY</span>
+          <span class="text-xs text-outline">14건</span>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold text-tertiary text-base">0%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:0%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold text-tertiary text-base">0%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:0%"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +3% 터치)</span><span class="font-bold text-primary text-base">7%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:7%"></div></div>
+          </div>
+          <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
+            <span class="text-on-surface-variant">평균 수익</span>
+            <span class="text-tertiary font-bold">-3.55%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: EXIT 시그널 성적표 -->
+    <h2 class="text-lg font-headline font-bold flex items-center gap-2">
+      <span class="material-symbols-outlined text-tertiary">sell</span> EXIT 시그널 성적표
+    </h2>
+    <p class="text-xs text-on-surface-variant -mt-4">익절 후 10일 내 가격이 +3% 넘게 오르지 않으면 성공</p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-3">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TOP SIGNAL</span>
+          <span class="text-xs text-outline">14건</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-bold text-secondary">64%</span>
+          <span class="text-xs text-on-surface-variant">적중</span>
+        </div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="text-secondary font-bold">-7.36%</span> 하락</div>
+      </div>
+
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-3">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TAKE PROFIT 2</span>
+          <span class="text-xs text-outline">102건</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-bold text-secondary">93%</span>
+          <span class="text-xs text-on-surface-variant">적중</span>
+        </div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="text-secondary font-bold">-0.72%</span> 하락</div>
+      </div>
+
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-3">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TAKE PROFIT 1</span>
+          <span class="text-xs text-outline">12건</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-bold text-secondary">67%</span>
+          <span class="text-xs text-on-surface-variant">적중</span>
+        </div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="text-secondary font-bold">-1.06%</span> 하락</div>
+      </div>
+    </div>
+
+    <!-- Section 3: 최근 시그널 -->
+    <h2 class="text-lg font-headline font-bold flex items-center gap-2">
+      <span class="material-symbols-outlined text-primary">format_list_bulleted</span> 최근 시그널 결과
+    </h2>
+
+    <div class="flex gap-2 mb-2">
+      <button onclick="filterBtn(this,'BUY')" class="px-3 py-1.5 text-xs rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface-variant hover:text-secondary hover:border-secondary/30 transition-all">BUY</button>
+      <button onclick="filterBtn(this,'EXIT')" class="px-3 py-1.5 text-xs rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface-variant hover:text-tertiary hover:border-tertiary/30 transition-all">EXIT</button>
+      <button onclick="filterBtn(this,'')" class="px-3 py-1.5 text-xs rounded-lg bg-surface-container border border-outline-variant/20 text-on-surface-variant hover:text-primary hover:border-primary/30 transition-all">ALL</button>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+      <table class="w-full text-left border-collapse">
+        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+          <th class="px-4 py-3">날짜</th><th class="px-4 py-3">종목</th><th class="px-4 py-3">시그널</th><th class="px-4 py-3 text-right">5일</th><th class="px-4 py-3 text-right">10일</th><th class="px-4 py-3 text-right">최고/최저</th>
+        </tr></thead>
+        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+          <tr><td class="px-4 py-2.5">03-30</td><td class="px-4 py-2.5 font-bold">JEPI</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 text-[10px] rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">1st BUY</span></td><td class="px-4 py-2.5 text-right text-secondary">+2.64%</td><td class="px-4 py-2.5 text-right text-secondary">+3.82%</td><td class="px-4 py-2.5 text-right"><span class="text-secondary">+4.3%</span> / <span class="text-tertiary">-1.1%</span></td></tr>
+          <tr><td class="px-4 py-2.5">03-30</td><td class="px-4 py-2.5 font-bold">VOO</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 text-[10px] rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TP2</span></td><td class="px-4 py-2.5 text-right text-secondary">+4.26%</td><td class="px-4 py-2.5 text-right text-secondary">+6.96%</td><td class="px-4 py-2.5 text-right"><span class="text-secondary">+7.0%</span> / <span class="text-secondary">+2.9%</span></td></tr>
+          <tr><td class="px-4 py-2.5">03-02</td><td class="px-4 py-2.5 font-bold">AAPL</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 text-[10px] rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">2nd BUY</span></td><td class="px-4 py-2.5 text-right text-tertiary">-2.31%</td><td class="px-4 py-2.5 text-right text-tertiary">-4.12%</td><td class="px-4 py-2.5 text-right"><span class="text-secondary">+1.2%</span> / <span class="text-tertiary">-5.3%</span></td></tr>
+          <tr><td class="px-4 py-2.5">03-02</td><td class="px-4 py-2.5 font-bold">MSFT</td><td class="px-4 py-2.5"><span class="px-2 py-0.5 text-[10px] rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TOP</span></td><td class="px-4 py-2.5 text-right text-tertiary">-8.40%</td><td class="px-4 py-2.5 text-right text-tertiary">-12.5%</td><td class="px-4 py-2.5 text-right"><span class="text-secondary">+0.5%</span> / <span class="text-tertiary">-14.2%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
+      2026-02-27 ~ 2026-04-10 | BUY 승리 = N거래일 내 +3% 이상 | EXIT 성공 = 10일 내 +3% 미만 상승
+    </div>
+  </div>
+</main>
+
+<!-- Mobile Nav -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="#" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
+  <a href="#" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="#" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="#" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">history</span><span class="text-[10px] font-label">Backtest</span></a>
+</nav>
+
+<script>
+function toggleSidebar(){const s=document.getElementById('sidebar');s.classList.toggle('hidden');s.classList.toggle('flex');}
+function filterBtn(btn,type){document.querySelectorAll('tbody tr').forEach(r=>{if(!type)r.style.display='';else{const sig=r.querySelector('span[class*="rounded"]');if(sig){const t=sig.textContent;r.style.display=(type==='BUY'?t.includes('BUY'):!t.includes('BUY'))?'':'none';}}})}
+</script>
+</body>
+</html>

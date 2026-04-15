@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trend Preview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container":"#0f1930","surface-container-highest":"#192540","surface-dim":"#060e20","surface":"#060e20","surface-container-high":"#141f38","surface-container-low":"#091328","surface-bright":"#1f2b49","background":"#060e20","primary":"#6dddff","primary-container":"#00d2fd","on-primary":"#004c5e","secondary":"#00E5BC","tertiary":"#ff7166","on-surface":"#dee5ff","on-surface-variant":"#a3aac4","outline":"#6d758c","outline-variant":"#40485d","error":"#ff716c"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+</script>
+</head>
+<body class="bg-surface text-on-surface font-body">
+
+<main class="min-h-screen">
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl sticky top-0">
+    <span class="text-xl font-bold uppercase font-headline tracking-tight">ASSET TREND</span>
+    <span class="text-xs text-outline font-label">Preview</span>
+  </header>
+
+  <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total Assets -->
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Total Assets</span>
+          <span class="material-symbols-outlined text-secondary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">account_balance</span>
+        </div>
+        <div class="text-2xl font-headline font-bold text-secondary">&#8361;20.55억</div>
+        <div class="text-xs mt-2 text-secondary">&#8599; +&#8361;12.31억 (+149.4%)</div>
+      </div>
+      <!-- Investment Principal -->
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-primary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Investment Principal</span>
+          <span class="material-symbols-outlined text-primary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">savings</span>
+        </div>
+        <div class="text-2xl font-headline font-bold text-primary">&#8361;8.24억</div>
+        <div class="text-xs mt-2 text-outline">투자 원금</div>
+      </div>
+      <!-- Est. Annual Dividend -->
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-tertiary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Est. Annual Dividend</span>
+          <span class="material-symbols-outlined text-tertiary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">payments</span>
+        </div>
+        <div class="text-2xl font-headline font-bold text-tertiary">&#8361;4,223만</div>
+        <div class="text-xs mt-2 text-secondary">Yield: 2.05%</div>
+      </div>
+      <!-- Cash Liquidity -->
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-outline">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Cash Liquidity</span>
+          <span class="material-symbols-outlined text-outline" style="font-size:22px;font-variation-settings:'FILL' 1;">currency_exchange</span>
+        </div>
+        <div class="text-2xl font-headline font-bold text-on-surface">&#8361;1.22억</div>
+        <div class="text-xs mt-2 text-tertiary">&#9679; 5.9% Allocation</div>
+      </div>
+    </div>
+
+    <!-- Asset Allocation -->
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-lg font-headline font-bold">Asset Allocation</h2>
+      </div>
+      <div class="flex flex-col lg:flex-row items-center gap-8">
+        <!-- Donut Chart -->
+        <div class="relative" style="width:260px;height:260px;">
+          <canvas id="allocationChart"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Growth</span>
+            <span class="text-3xl font-headline font-bold text-on-surface">68%</span>
+          </div>
+        </div>
+        <!-- Category Cards -->
+        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+          <div class="rounded-lg bg-surface-container-high p-4 border-l-4 border-l-[#00E5BC]">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-sm text-on-surface">Growth</span>
+              <div class="text-right">
+                <div class="font-bold text-sm text-on-surface">&#8361;14.0억</div>
+                <div class="text-[10px] text-outline">68.5%</div>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-lg bg-surface-container-high p-4 border-l-4 border-l-[#6dddff]">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-sm text-on-surface">ETF</span>
+              <div class="text-right">
+                <div class="font-bold text-sm text-on-surface">&#8361;4.6억</div>
+                <div class="text-[10px] text-outline">22.5%</div>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-lg bg-surface-container-high p-4 border-l-4 border-l-[#ff7166]">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-sm text-on-surface">Value</span>
+              <div class="text-right">
+                <div class="font-bold text-sm text-on-surface">&#8361;4,513만</div>
+                <div class="text-[10px] text-outline">2.2%</div>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-lg bg-surface-container-high p-4 border-l-4 border-l-[#fbbf24]">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-sm text-on-surface">Bond</span>
+              <div class="text-right">
+                <div class="font-bold text-sm text-on-surface">&#8361;1,231만</div>
+                <div class="text-[10px] text-outline">0.6%</div>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-lg bg-surface-container-high p-4 border-l-4 border-l-[#a78bfa]">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-sm text-on-surface">Speculative</span>
+              <div class="text-right">
+                <div class="font-bold text-sm text-on-surface">&#8361;410만</div>
+                <div class="text-[10px] text-outline">0.1%</div>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-lg bg-surface-container-high p-4 border-l-4 border-l-[#64748B]">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-sm text-on-surface">CASH</span>
+              <div class="text-right">
+                <div class="font-bold text-sm text-on-surface">&#8361;1.2억</div>
+                <div class="text-[10px] text-outline">6.0%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+new Chart(document.getElementById('allocationChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Growth', 'ETF', 'CASH', 'Value', 'Bond', 'Speculative', 'Metal'],
+    datasets: [{
+      data: [68.5, 22.5, 6.0, 2.2, 0.6, 0.1, 0.1],
+      backgroundColor: ['#00E5BC', '#6dddff', '#64748B', '#ff7166', '#fbbf24', '#a78bfa', '#22d3ee'],
+      borderWidth: 0,
+      spacing: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '72%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(c) { return c.label + ': ' + c.parsed.toFixed(1) + '%'; }
+        }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
