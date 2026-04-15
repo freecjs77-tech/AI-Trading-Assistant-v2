@@ -46,7 +46,7 @@ TICKER_META = {
     "379800": {"name": "KODEX 미국S&P500",      "cls": "ETF",    "cls_tag": "cls-etf"},
     "379810": {"name": "KODEX 미국나스닥100",    "cls": "ETF",    "cls_tag": "cls-etf"},
     "396500": {"name": "TIGER 반도체TOP10",     "cls": "ETF",    "cls_tag": "cls-etf"},
-    "441640": {"name": "KODEX 주주환원고배당주", "cls": "ETF",    "cls_tag": "cls-etf"},
+    "0153K0": {"name": "KODEX 주주환원고배당주", "cls": "ETF",    "cls_tag": "cls-etf"},
     "232080": {"name": "TIGER 코스닥150",       "cls": "ETF",    "cls_tag": "cls-etf"},
     "466920": {"name": "SOL 조선TOP3플러스",    "cls": "ETF",    "cls_tag": "cls-etf"},
 }
@@ -101,7 +101,7 @@ STRATEGY_GROUP = {
                "QLD", "SOXL", "ETHU", "CRCL", "BTDR",
                "110990", "005930", "000660", "006400", "373220"],
     "etf":    ["VOO", "QQQ", "SCHD", "SOXX", "JEPI", "SPY", "XLE", "XLF",
-               "102110", "458730", "379800", "379810", "396500", "441640", "232080", "466920"],
+               "102110", "458730", "379800", "379810", "396500", "0153K0", "232080", "466920"],
     "value":  ["O", "UNH", "005380"],
     "bond":   ["TLT"],
     "metal":  ["SLV"],
