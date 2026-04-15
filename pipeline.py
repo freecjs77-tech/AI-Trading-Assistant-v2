@@ -87,7 +87,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
     screenshots_dir = os.path.join(project_dir, "screenshots")
     reports_dir = os.path.join(project_dir, "reports")
     history_path = os.path.join(project_dir, "history", "signals_history.json")
-    portfolio_path = os.path.join(project_dir, "portfolio.md")
+    from portfolio_paths import primary_portfolio_path
+    portfolio_path = primary_portfolio_path(project_dir)
     json_path = os.path.join(screenshots_dir, f"market_data_{today}.json")
 
     try:
@@ -112,12 +113,34 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             # --add SPY: master switch 판정에 필요 (포트폴리오에 없어도 항상 수집)
             env = os.environ.copy()
             env["PYTHONIOENCODING"] = "utf-8"
+            # 다른 포트폴리오(와이프 등)의 전용 티커도 --add 로 포함 → 단일 market_data.json 공유
+            from portfolio_paths import discover_portfolios, PRIMARY_OWNER
+            from fetch_market_data import parse_portfolio_md as _parse_pmd
+            _all_ports = discover_portfolios(project_dir)
+            _me_tickers = set()
+            _extra_tickers: list[str] = []
+            for _owner, _ppath in _all_ports:
+                _t, _ = _parse_pmd(_ppath)
+                if _owner == PRIMARY_OWNER:
+                    _me_tickers.update(_t)
+            for _owner, _ppath in _all_ports:
+                if _owner == PRIMARY_OWNER:
+                    continue
+                _t, _ = _parse_pmd(_ppath)
+                for _sym in _t:
+                    if _sym not in _me_tickers and _sym not in _extra_tickers:
+                        _extra_tickers.append(_sym)
+            _add_args = ["--add", "SPY"]
+            for _sym in _extra_tickers:
+                _add_args += ["--add", _sym]
+            if _extra_tickers:
+                print(f"  (포함: 타 포트폴리오 전용 티커 {len(_extra_tickers)}개 추가)")
             result = subprocess.run(
-                [python_exe, fetch_script, "--add", "SPY"],
+                [python_exe, fetch_script, *_add_args],
                 cwd=project_dir,
                 capture_output=True,
                 text=True,
-                timeout=120,
+                timeout=180,
                 env=env,
                 encoding="utf-8",
                 errors="replace",
@@ -151,12 +174,13 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             sig_counts[sig] = sig_counts.get(sig, 0) + 1
         print(f"  OK {len(signals)} tickers judged: {sig_counts}")
 
-        # Step 4b: Scanner (S&P 100 + ETF + KOSPI)
+        # Step 4b: Scanner (S&P 100 + ETF + KOSPI + Watchlist)
         print("[Step 4b] Running scanners...")
-        from market_scanner import scan_sp100, scan_etf, scan_kospi
+        from market_scanner import scan_sp100, scan_etf, scan_kospi, scan_watchlist
         scanner_sp100_result = None
         scanner_etf_result = None
         scanner_kospi_result = None
+        scanner_watchlist_result = None
         try:
             scanner_sp100_result = scan_sp100(project_dir)
             if scanner_sp100_result.get("status") != "ok":
@@ -175,10 +199,17 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 scanner_kospi_result = None
         except Exception as e:
             print(f"  WARN KOSPI scanner failed: {e}")
+        try:
+            scanner_watchlist_result = scan_watchlist(project_dir)
+            if scanner_watchlist_result.get("status") != "ok":
+                scanner_watchlist_result = None
+        except Exception as e:
+            print(f"  WARN Watchlist scanner failed: {e}")
         sp_count = (scanner_sp100_result or {}).get("total_signals", 0)
         etf_count = (scanner_etf_result or {}).get("total_signals", 0)
         kospi_count = (scanner_kospi_result or {}).get("total_signals", 0)
-        print(f"  OK scanners: S&P100={sp_count}, ETF={etf_count}, KOSPI={kospi_count} signals")
+        watch_count = (scanner_watchlist_result or {}).get("total_signals", 0)
+        print(f"  OK scanners: S&P100={sp_count}, ETF={etf_count}, KOSPI={kospi_count}, Watch={watch_count} signals")
 
         # Step 5: Report generation
         print("[Step 5] Generating report...")
@@ -206,6 +237,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_sp100=scanner_sp100_result,
             scanner_etf=scanner_etf_result,
             scanner_kospi=scanner_kospi_result,
+            scanner_watchlist=scanner_watchlist_result,
             output_dir=reports_dir,
         )
         print(f"  OK {len(scanner_files)} scanner pages generated")
@@ -278,89 +310,148 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             usd_krw = macro.get("USD_KRW", 0)
             rate = usd_krw if usd_krw else 1
 
-            # USD/KRW 분리 계산
-            us_value = us_cost = 0
-            kospi_value = kospi_cost = 0
-            for p in portfolio:
-                t = p["ticker"]
-                price = data.get(t, {}).get("price", 0)
-                val = p["shares"] * price if price else p.get("value", 0)
-                cost = p["shares"] * p["avg_cost"]
-                if is_kospi_ticker(t):
-                    kospi_value += val
-                    kospi_cost += cost
-                else:
-                    us_value += val
-                    us_cost += cost
+            def _save_owner_snapshot(owner: str, owner_portfolio: list) -> dict:
+                """주어진 owner의 보유종목을 KRW 통일 환산 → portfolio_daily_{owner}.json 저장."""
+                us_v = us_c = 0.0
+                ko_v = ko_c = 0.0
+                for p in owner_portfolio:
+                    t = p["ticker"]
+                    price = data.get(t, {}).get("price", 0)
+                    val = p["shares"] * price if price else p.get("value", 0)
+                    cost = p["shares"] * p["avg_cost"]
+                    if is_kospi_ticker(t):
+                        ko_v += val; ko_c += cost
+                    else:
+                        us_v += val; us_c += cost
+                total_krw = us_v * rate + ko_v
+                cost_krw = us_c * rate + ko_c
+                bil_p = next((p for p in owner_portfolio if p["ticker"] == "BIL"), None)
+                bil_price = data.get("BIL", {}).get("price", 0)
+                cash_v = bil_p["shares"] * bil_price if bil_p and bil_price else 0
+                cash_k = cash_v * rate
+                denom = us_v + ko_v / rate
+                c_pct = (cash_v / denom * 100) if denom > 0 else 0
+                # 배당/비중은 me 전용(메인) — 다른 owner는 총액·비중만 기록
+                w_cat, w_tick = {}, {}
+                for p in owner_portfolio:
+                    t = p["ticker"]
+                    price = data.get(t, {}).get("price", 0)
+                    val = p["shares"] * price if price else p.get("value", 0)
+                    val_k = val if is_kospi_ticker(t) else val * rate
+                    w = (val_k / total_krw * 100) if total_krw > 0 else 0
+                    nm = (get_ticker_name(t) or t) if is_kospi_ticker(t) else t
+                    w_tick[nm] = round(w, 1)
+                    cls = get_ticker_class(t) or "Other"
+                    w_cat[cls] = w_cat.get(cls, 0) + w
+                w_cat = {k: round(v, 1) for k, v in w_cat.items()}
+                # 파일명: me는 기존 portfolio_daily.json, 그 외는 portfolio_daily_{owner}.json
+                fname = "portfolio_daily.json" if owner == "me" else f"portfolio_daily_{owner}.json"
+                path = os.path.join(project_dir, "history", fname)
+                # me만 배당 계산 — 시장 데이터의 _dividends는 me 포트 기준
+                _div_ann = dividends.get("total_annual", 0) if owner == "me" else 0
+                _div_yield = dividends.get("portfolio_yield", 0) if owner == "me" else 0
+                return save_portfolio_snapshot(
+                    path=path,
+                    date_str=today,
+                    total_value_krw=total_krw,
+                    cost_basis_krw=cost_krw,
+                    cash_value_krw=cash_k,
+                    cash_pct=c_pct,
+                    div_annual_krw=_div_ann * rate,
+                    div_yield=_div_yield,
+                    usd_krw=usd_krw,
+                    vix=macro.get("VIX"),
+                    yield_30y=macro.get("yield_30Y"),
+                    master_switch=macro.get("master_switch", "UNKNOWN"),
+                    holdings_count=len(owner_portfolio),
+                    weights_by_category=w_cat,
+                    weights_by_ticker=w_tick,
+                )
 
-            total_value_krw = us_value * rate + kospi_value
-            cost_basis_krw = us_cost * rate + kospi_cost
-
-            bil = next((p for p in portfolio if p["ticker"] == "BIL"), None)
-            bil_price = data.get("BIL", {}).get("price", 0)
-            cash_val = bil["shares"] * bil_price if bil and bil_price else 0
-            cash_krw = cash_val * rate
-            cash_pct = (cash_val / (us_value + kospi_value / rate) * 100) if (us_value + kospi_value / rate) > 0 else 0
-
-            div_annual = dividends.get("total_annual", 0)
-            div_annual_krw = div_annual * rate
-            div_yield = dividends.get("portfolio_yield", 0)
-
-            # 비중 계산
-            weights_cat = {}
-            weights_ticker = {}
-            for p in portfolio:
-                t = p["ticker"]
-                price = data.get(t, {}).get("price", 0)
-                val = p["shares"] * price if price else p.get("value", 0)
-                if is_kospi_ticker(t):
-                    val_krw = val
-                else:
-                    val_krw = val * rate
-                w = (val_krw / total_value_krw * 100) if total_value_krw > 0 else 0
-
-                # 종목명 (KOSPI는 한글명, 미국은 티커)
-                if is_kospi_ticker(t):
-                    display_name = get_ticker_name(t) or t
-                else:
-                    display_name = t
-                weights_ticker[display_name] = round(w, 1)
-
-                cls = get_ticker_class(t) or "Other"
-                weights_cat[cls] = weights_cat.get(cls, 0) + w
-
-            weights_cat = {k: round(v, 1) for k, v in weights_cat.items()}
-
-            portfolio_daily_path = os.path.join(project_dir, "history", "portfolio_daily.json")
-            pd_data = save_portfolio_snapshot(
-                path=portfolio_daily_path,
-                date_str=today,
-                total_value_krw=total_value_krw,
-                cost_basis_krw=cost_basis_krw,
-                cash_value_krw=cash_krw,
-                cash_pct=cash_pct,
-                div_annual_krw=div_annual_krw,
-                div_yield=div_yield,
-                usd_krw=usd_krw,
-                vix=macro.get("VIX"),
-                yield_30y=macro.get("yield_30Y"),
-                master_switch=macro.get("master_switch", "UNKNOWN"),
-                holdings_count=len(portfolio),
-                weights_by_category=weights_cat,
-                weights_by_ticker=weights_ticker,
-            )
+            # me (기본) 스냅샷
+            pd_data = _save_owner_snapshot("me", portfolio)
             print(f"  OK portfolio_daily.json ({len(pd_data)} days)")
+
+            # 타 owner (wife 등) 스냅샷
+            owner_daily_map = {}
+            try:
+                from portfolio_paths import discover_portfolios, PRIMARY_OWNER
+                for _owner, _opath in discover_portfolios(project_dir):
+                    if _owner == PRIMARY_OWNER:
+                        continue
+                    _owner_port = _parse_portfolio_for_report(_opath)
+                    _odaily = _save_owner_snapshot(_owner, _owner_port)
+                    owner_daily_map[_owner] = _odaily
+                    print(f"  OK portfolio_daily_{_owner}.json ({len(_odaily)} days)")
+            except Exception as _se:
+                import traceback as _tbo
+                _tbo.print_exc()
+                print(f"  WARN owner snapshots failed: {_se}")
 
             trend_path = generate_trend_page(
                 portfolio_daily=pd_data,
                 output_dir=reports_dir,
                 date_str=today,
+                owner_daily=owner_daily_map,
             )
             print(f"  OK trend page -> {trend_path}")
         except Exception as e:
             import traceback as _tb2
             _tb2.print_exc()
             print(f"  WARN trend page failed: {e} (pipeline continues)")
+
+        # Step 5d: 다른 포트폴리오 (wife 등) 리포트 생성
+        print("[Step 5d] Generating secondary portfolio reports...")
+        try:
+            from portfolio_paths import discover_portfolios, PRIMARY_OWNER
+            from fetch_market_data import parse_portfolio_md as _parse_pmd_all
+            _owners = [(o, p) for o, p in discover_portfolios(project_dir) if o != PRIMARY_OWNER]
+            for _owner, _opath in _owners:
+                _owner_tickers, _ = _parse_pmd_all(_opath)
+                _owner_tickers_set = set(_owner_tickers)
+                # market_data 필터 (data만 owner 보유 티커로 한정, _macro/_meta/_dividends는 그대로)
+                _filtered_data = {
+                    k: v for k, v in market_data.get("data", {}).items()
+                    if k in _owner_tickers_set
+                }
+                _owner_market = {**market_data, "data": _filtered_data}
+                _owner_history_path = os.path.join(
+                    project_dir, "history", f"signals_history_{_owner}.json"
+                )
+                _owner_history = load_history(_owner_history_path)
+                _owner_signals = judge_all(_owner_market, _owner_history)
+                _owner_portfolio = _parse_portfolio_for_report(_opath)
+                _owner_prev = get_previous_signals(_owner_history, today)
+                _owner_report = os.path.join(
+                    reports_dir, f"report_{_owner}_{today}.html"
+                )
+                generate_report(
+                    market_data=_owner_market,
+                    portfolio=_owner_portfolio,
+                    signals=_owner_signals,
+                    history=_owner_history,
+                    prev_signals=_owner_prev,
+                    output_path=_owner_report,
+                    scanner_sp100=scanner_sp100_result,
+                    scanner_etf=scanner_etf_result,
+                    scanner_kospi=scanner_kospi_result,
+                )
+                _sz = os.path.getsize(_owner_report)
+                print(f"  OK {_owner} report -> {_owner_report} ({_sz:,} bytes)")
+                # Owner 히스토리 업데이트 (거래일에만)
+                if is_trading_day:
+                    _owner_history = save_today(
+                        _owner_history, today, _owner_signals, _owner_market,
+                        f"portfolios/{_owner}.md",
+                    )
+                    backfill_prices(_owner_history, today, include_today=auto)
+                    _owner_history = prune_old(_owner_history)
+                    save_history(_owner_history, _owner_history_path)
+                    print(f"  OK signals_history_{_owner}.json updated")
+        except Exception as e:
+            import traceback as _tb_sec
+            _tb_sec.print_exc()
+            print(f"  WARN secondary portfolio reports failed: {e} (pipeline continues)")
 
         # Step 6: History update (비거래일 스킵)
         if is_trading_day:

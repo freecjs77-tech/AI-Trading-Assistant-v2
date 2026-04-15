@@ -178,7 +178,8 @@ def check_scanner_detail_history(details_dir: str, project_dir: str, today: str 
 
     # 포트폴리오 종목 (스캐너 전용 상세 페이지만 검사)
     portfolio_tickers = set()
-    portfolio_path = os.path.join(project_dir, "portfolio.md")
+    from portfolio_paths import primary_portfolio_path
+    portfolio_path = primary_portfolio_path(project_dir)
     if os.path.exists(portfolio_path):
         with open(portfolio_path, "r", encoding="utf-8") as f:
             for line in f:

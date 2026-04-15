@@ -97,8 +97,8 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
           <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Total BUY</span>
           <span class="material-symbols-outlined text-on-surface/60" style="font-size:22px;font-variation-settings:'FILL' 1;">shopping_cart</span>
         </div>
-        <div class="text-3xl font-headline font-bold text-on-surface">{{ sp100_total + etf_total + kospi_total }}</div>
-        <div class="text-xs mt-2 text-outline">S&P {{ sp100_total }} + ETF {{ etf_total }} + KOSPI {{ kospi_total }}</div>
+        <div class="text-3xl font-headline font-bold text-on-surface">{{ sp100_total + etf_total + kospi_total + (watchlist_total or 0) }}</div>
+        <div class="text-xs mt-2 text-outline">S&P {{ sp100_total }} + ETF {{ etf_total }} + KOSPI {{ kospi_total }}{% if watchlist_total is defined and watchlist_total %} + Watch {{ watchlist_total }}{% endif %}</div>
       </div>
       <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary">
         <div class="flex justify-between items-start mb-3">
@@ -124,6 +124,16 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
         <div class="text-3xl font-headline font-bold text-tertiary">{{ kospi_total }}</div>
         <div class="text-xs mt-2 text-outline">{{ kospi_scanned }}종목 스캔</div>
       </div>
+      {% if watchlist_scanned is defined and watchlist_scanned %}
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary">
+        <div class="flex justify-between items-start mb-3">
+          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Watchlist</span>
+          <span class="material-symbols-outlined text-secondary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">bookmark_star</span>
+        </div>
+        <div class="text-3xl font-headline font-bold text-secondary">{{ watchlist_total }}</div>
+        <div class="text-xs mt-2 text-outline">{{ watchlist_scanned }}종목 관심</div>
+      </div>
+      {% endif %}
     </div>
 
     <!-- S&P 100 -->
@@ -224,6 +234,101 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
       </table>
     </div>
     {% else %}<div class="rounded-xl bg-surface-container border border-outline-variant/10 p-8 text-center text-on-surface-variant text-sm">No KOSPI signals</div>{% endif %}
+
+    {% if watchlist_scanned is defined and watchlist_scanned %}
+    <!-- Watchlist -->
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">bookmark_star</span> Watchlist ({{ (watchlist_buy_1st|length) + (watchlist_buy_2nd|length) + (watchlist_buy_3rd|length) }})</h2>
+
+    <!-- Watchlist 편집 UI (로컬 Flask 전용, GH Pages에선 web editor 링크) -->
+    <div id="watchlistEditor" class="rounded-xl bg-surface-container border border-outline-variant/10 p-4 mb-4">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center">
+        <input id="wlTicker" type="text" placeholder="TICKER (e.g. NVDA)"
+               class="flex-1 px-4 py-2 rounded-md bg-surface-container-high border border-outline-variant/20 text-on-surface font-mono uppercase text-sm outline-none focus:border-primary" maxlength="10">
+        <input id="wlComment" type="text" placeholder="메모 (선택)"
+               class="flex-1 px-4 py-2 rounded-md bg-surface-container-high border border-outline-variant/20 text-on-surface text-sm outline-none focus:border-primary">
+        <button onclick="wlAdd()" class="px-4 py-2 bg-primary/20 text-primary border border-primary/30 rounded-md hover:bg-primary/30 font-label text-sm font-bold">+ 추가</button>
+        <a id="wlEditLink" href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/edit/master/watchlist.md" target="_blank"
+           class="px-4 py-2 bg-surface-container-high text-on-surface-variant border border-outline-variant/20 rounded-md hover:bg-surface-container font-label text-sm hidden">📝 GitHub 편집</a>
+      </div>
+      <div id="wlStatus" class="text-xs text-on-surface-variant mt-2"></div>
+      <div id="wlCurrentList" class="flex flex-wrap gap-2 mt-3"></div>
+    </div>
+    <script>
+      (function(){
+        const isLocal = ['localhost','127.0.0.1'].includes(location.hostname);
+        if(!isLocal){
+          document.getElementById('wlTicker').disabled = true;
+          document.getElementById('wlComment').disabled = true;
+          document.querySelector('#watchlistEditor button').style.display = 'none';
+          document.getElementById('wlEditLink').classList.remove('hidden');
+          document.getElementById('wlStatus').textContent = 'GitHub Pages에서는 직접 편집 불가 → "GitHub 편집" 버튼으로 이동하세요.';
+        }
+        window.wlLoad = async function(){
+          try{
+            const r = await fetch('/api/watchlist');
+            const j = await r.json();
+            const el = document.getElementById('wlCurrentList');
+            el.innerHTML = '';
+            (j.entries||[]).forEach(e => {
+              const chip = document.createElement('span');
+              chip.className = 'inline-flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full text-xs font-mono border border-outline-variant/10';
+              chip.innerHTML = `<b>${e.ticker}</b>` + (e.comment?` <span class="text-outline">${e.comment}</span>`:'') +
+                ` <button title="삭제" onclick="wlRemove('${e.ticker}')" class="text-tertiary hover:text-on-tertiary-container ml-1">×</button>`;
+              el.appendChild(chip);
+            });
+          }catch(err){ /* GH Pages or API unavailable */ }
+        };
+        window.wlAdd = async function(){
+          const t = document.getElementById('wlTicker').value.trim().toUpperCase();
+          const c = document.getElementById('wlComment').value.trim();
+          if(!t){ document.getElementById('wlStatus').textContent='티커를 입력하세요.'; return; }
+          const r = await fetch('/api/watchlist/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticker:t,comment:c})});
+          const j = await r.json();
+          document.getElementById('wlStatus').textContent = j.message || j.error || '완료';
+          if(j.status==='ok'){ document.getElementById('wlTicker').value=''; document.getElementById('wlComment').value=''; wlLoad(); }
+        };
+        window.wlRemove = async function(t){
+          if(!confirm(`${t} 를 관심종목에서 삭제하시겠습니까?`)) return;
+          const r = await fetch('/api/watchlist/remove',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ticker:t})});
+          const j = await r.json();
+          document.getElementById('wlStatus').textContent = j.message || j.error || '완료';
+          if(j.status==='ok') wlLoad();
+        };
+        if(isLocal) wlLoad();
+      })();
+    </script>
+
+    {% set watch_all = [] %}
+    {% for e in watchlist_buy_1st %}{% if watch_all.append({"entry": e, "stage": "1st_BUY", "cls": "secondary"}) %}{% endif %}{% endfor %}
+    {% for e in watchlist_buy_2nd %}{% if watch_all.append({"entry": e, "stage": "2nd_BUY", "cls": "primary"}) %}{% endif %}{% endfor %}
+    {% for e in watchlist_buy_3rd %}{% if watch_all.append({"entry": e, "stage": "3rd_BUY", "cls": "tertiary"}) %}{% endif %}{% endfor %}
+    {% if watch_all %}
+    <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+      <table class="w-full text-left border-collapse">
+        <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+          <th class="px-5 py-3">#</th><th class="px-5 py-3">Ticker</th><th class="px-5 py-3">Name</th><th class="px-5 py-3 text-right">Price</th><th class="px-5 py-3 text-right">Change%</th><th class="px-5 py-3">Signal</th><th class="px-5 py-3 text-right">RSI</th><th class="px-5 py-3 text-right">ADX</th><th class="px-5 py-3 text-right">52w DD</th><th class="px-5 py-3">Streak</th><th class="px-5 py-3">Note</th>
+        </tr></thead>
+        <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+        {% for item in watch_all %}{% set e = item.entry %}
+        <tr class="hover:bg-surface-container-high/50 transition-colors">
+          <td class="px-5 py-3 text-on-surface-variant">{{ loop.index }}</td>
+          <td class="px-5 py-3"><a href="details/{{ e.ticker }}.html" class="font-headline font-bold text-primary hover:underline">{{ e.ticker }}</a></td>
+          <td class="px-5 py-3">{{ e.name }}{% if e.market_cap_fmt %} <span class="text-[10px] text-outline">{{ e.market_cap_fmt }}</span>{% endif %}</td>
+          <td class="px-5 py-3 text-right">${{ e.price|f2 }}</td>
+          <td class="px-5 py-3 text-right font-bold {{ 'text-secondary' if e.change_pct >= 0 else 'text-tertiary' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
+          <td class="px-5 py-3"><span class="sig {% if '1st' in item.stage %}sig-buy1{% elif '2nd' in item.stage %}sig-buy2{% elif '3rd' in item.stage %}sig-buy3{% endif %}">{{ item.stage }}</span></td>
+          <td class="px-5 py-3 text-right">{{ e.rsi|f1 if e.rsi else '—' }}</td>
+          <td class="px-5 py-3 text-right">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td>
+          <td class="px-5 py-3 text-right">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td>
+          <td class="px-5 py-3">{% if e.buy_confirmed %}<span class="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] rounded border border-secondary/20 font-bold">{{ e.buy_streak }}d &#10003;</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span class="px-2 py-0.5 bg-tertiary/10 text-tertiary text-[10px] rounded border border-tertiary/20 font-bold">{{ e.buy_streak }}/2d</span>{% else %}—{% endif %}</td>
+          <td class="px-5 py-3 text-[11px] text-outline max-w-[200px] truncate" title="{{ e.note }}">{{ e.note }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<div class="rounded-xl bg-surface-container border border-outline-variant/10 p-8 text-center text-on-surface-variant text-sm">No watchlist signals</div>{% endif %}
+    {% endif %}
 
     <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10">Generated by Trading Assistant v5.0 | {{ date }} | Data: yfinance ({{ fetched_at }})</p>
   </div>

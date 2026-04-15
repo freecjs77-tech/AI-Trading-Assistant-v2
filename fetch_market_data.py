@@ -463,9 +463,10 @@ def main():
         "--add", "-a", action="append", default=[], metavar="TICKER",
         help="portfolio.md 종목에 추가할 종목 (여러 번 사용 가능)"
     )
-    # 기본 portfolio.md 경로 = 스크립트 파일과 같은 폴더
+    # 기본 portfolio 경로 = portfolios/me.md (없으면 레거시 portfolio.md로 폴백)
     _script_dir = os.path.dirname(os.path.abspath(__file__))
-    _default_portfolio = os.path.join(_script_dir, "portfolio.md")
+    from portfolio_paths import primary_portfolio_path
+    _default_portfolio = primary_portfolio_path(_script_dir)
 
     parser.add_argument(
         "--portfolio", "-p", default=_default_portfolio,

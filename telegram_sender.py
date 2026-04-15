@@ -166,7 +166,8 @@ if __name__ == "__main__":
     history_path = os.path.join(project_dir, "history", "signals_history.json")
     history = load_history(history_path)
     signals = judge_all(market_data, history)
-    portfolio = _parse_portfolio_for_report(os.path.join(project_dir, "portfolio.md"))
+    from portfolio_paths import primary_portfolio_path
+    portfolio = _parse_portfolio_for_report(primary_portfolio_path(project_dir))
 
     # 미리보기
     print(_build_message(signals, market_data, portfolio))

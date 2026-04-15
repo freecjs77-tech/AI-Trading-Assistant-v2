@@ -14,11 +14,12 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-from flask import Flask, send_file, jsonify, send_from_directory, render_template
+from flask import Flask, send_file, jsonify, send_from_directory, render_template, request
 from jinja2 import Environment, FileSystemLoader
 
 from pipeline import run_pipeline
-from market_scanner import scan_sp100, scan_etf, scan_kospi
+from market_scanner import scan_sp100, scan_etf, scan_kospi, scan_watchlist
+from watchlist_store import load_watchlist, add_ticker as wl_add, remove_ticker as wl_remove
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPORTS_DIR = os.path.join(PROJECT_DIR, "reports")
@@ -160,6 +161,55 @@ def api_scan_kospi():
 def serve_report(filename):
     """과거 리포트 조회"""
     return send_from_directory(REPORTS_DIR, filename)
+
+
+# ── Watchlist API (관심종목 추가/삭제/조회) ──
+@app.route("/api/watchlist", methods=["GET"])
+def api_watchlist_list():
+    """현재 watchlist.md 내용 반환"""
+    entries = load_watchlist(PROJECT_DIR)
+    return jsonify({"status": "ok", "entries": [
+        {"ticker": t, "comment": c} for t, c in entries
+    ]})
+
+
+@app.route("/api/watchlist/add", methods=["POST"])
+def api_watchlist_add():
+    """관심종목 추가. body: {ticker, comment?}"""
+    try:
+        data = request.get_json(silent=True) or {}
+        ticker = (data.get("ticker") or "").strip()
+        comment = (data.get("comment") or "").strip()
+        if not ticker:
+            return jsonify({"status": "error", "error": "ticker required"}), 400
+        ok, msg = wl_add(PROJECT_DIR, ticker, comment)
+        return jsonify({"status": "ok" if ok else "error", "message": msg})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
+@app.route("/api/watchlist/remove", methods=["POST", "DELETE"])
+def api_watchlist_remove():
+    """관심종목 삭제. body: {ticker}"""
+    try:
+        data = request.get_json(silent=True) or {}
+        ticker = (data.get("ticker") or "").strip()
+        if not ticker:
+            return jsonify({"status": "error", "error": "ticker required"}), 400
+        ok, msg = wl_remove(PROJECT_DIR, ticker)
+        return jsonify({"status": "ok" if ok else "error", "message": msg})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
+@app.route("/api/scan-watchlist", methods=["POST"])
+def api_scan_watchlist():
+    """Watchlist 즉시 재스캔"""
+    try:
+        result = scan_watchlist(PROJECT_DIR)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
 
 
 if __name__ == "__main__":

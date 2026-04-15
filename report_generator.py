@@ -17,6 +17,26 @@ from portfolio_data import (
 )
 
 
+# ── Owner(와이프 등) 네비게이션 링크 빌더 ──────────────
+def _owner_nav_links(date_str: str, project_dir: str | None = None) -> dict:
+    """
+    portfolios/ 에 존재하는 non-me 포트별 report_{owner}_{date}.html 링크를 만든다.
+    현재는 wife만 지원하지만 owner가 늘어나도 자동 확장.
+    """
+    if project_dir is None:
+        project_dir = os.path.dirname(os.path.abspath(__file__))
+    links: dict = {"nav_wife": ""}
+    try:
+        from portfolio_paths import discover_portfolios, PRIMARY_OWNER
+        for owner, _ in discover_portfolios(project_dir):
+            if owner == PRIMARY_OWNER:
+                continue
+            links[f"nav_{owner}"] = f"report_{owner}_{date_str}.html"
+    except Exception:
+        pass
+    return links
+
+
 # ── 요일 한국어 변환 ──────────────────────────────────
 WEEKDAYS_KO = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
 
@@ -401,6 +421,7 @@ def generate_report(
         "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
+        **_owner_nav_links(date_str),
     }
 
     html = template.render(**context)
@@ -458,6 +479,7 @@ def generate_scanner_pages(
     scanner_kospi: dict | None,
     output_dir: str,
     template_dir: str | None = None,
+    scanner_watchlist: dict | None = None,
 ) -> list:
     """스캐너별 독립 HTML 페이지 생성. 반환: 생성된 파일 경로 리스트"""
     if template_dir is None:
@@ -482,11 +504,13 @@ def generate_scanner_pages(
         "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
+        **_owner_nav_links(date_str),
     }
 
     sp100 = scanner_sp100 or {}
     etf = scanner_etf or {}
     kospi = scanner_kospi or {}
+    watchlist = scanner_watchlist or {}
 
     context = {
         **nav,
@@ -511,6 +535,12 @@ def generate_scanner_pages(
         "kospi_buy_3rd": kospi.get("buy_3rd", []),
         "kospi_scanned": kospi.get("scanned", 0),
         "kospi_total": kospi.get("total_signals", 0),
+        # Watchlist (관심종목)
+        "watchlist_buy_1st": watchlist.get("buy_1st", []),
+        "watchlist_buy_2nd": watchlist.get("buy_2nd", []),
+        "watchlist_buy_3rd": watchlist.get("buy_3rd", []),
+        "watchlist_scanned": watchlist.get("scanned", 0),
+        "watchlist_total": watchlist.get("total_signals", 0),
     }
 
     html = template.render(**context)
@@ -523,11 +553,27 @@ def generate_scanner_pages(
     return [out_path]
 
 
+def _series_from_daily(daily: dict) -> list:
+    """portfolio_daily 스냅샷 → 트렌드 시계열 dict 리스트 (date/total_eok/pnl_eok 등)."""
+    out = []
+    for d in sorted([k for k in daily.keys() if not k.startswith("_")]):
+        snap = daily[d]
+        out.append({
+            "date": d,
+            "total_eok": round(snap.get("total_value_krw", 0) / 1e8, 2),
+            "cost_eok": round(snap.get("cost_basis_krw", 0) / 1e8, 2),
+            "pnl_eok": round(snap.get("pnl_krw", 0) / 1e8, 2),
+            "pnl_pct": snap.get("pnl_pct", 0),
+        })
+    return out
+
+
 def generate_trend_page(
     portfolio_daily: dict,
     output_dir: str,
     template_dir: str | None = None,
     date_str: str | None = None,
+    owner_daily: dict | None = None,
 ) -> str:
     """자산 트렌드 대시보드 HTML 페이지 생성. 반환: 저장된 파일 경로"""
     import json as _json
@@ -612,6 +658,7 @@ def generate_trend_page(
         "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
+        **_owner_nav_links(date_str),
         # Meta
         "date": date_str,
         "date_ko": _date_ko(date_str),
@@ -622,6 +669,15 @@ def generate_trend_page(
         "trend_json": _json.dumps(trend_data, ensure_ascii=False),
         "category_json": _json.dumps(category_data, ensure_ascii=False),
         "ticker_json": _json.dumps(ticker_data, ensure_ascii=False),
+        # Owner 시계열 (me는 trend_json에 이미 있음, 여기선 wife 등 non-me만)
+        "owner_series_json": _json.dumps(
+            {
+                owner: _series_from_daily(d)
+                for owner, d in (owner_daily or {}).items()
+            },
+            ensure_ascii=False,
+        ),
+        "has_multi_owner": bool(owner_daily),
     }
 
     html = template.render(**context)
@@ -687,6 +743,7 @@ def generate_backtest_page(
         "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
+        **_owner_nav_links(date_str),
         # Meta
         "date": date_str,
         "date_ko": _date_ko(date_str),

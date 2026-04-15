@@ -354,7 +354,8 @@ def _update_scanner_history(buy_lists: list, scanner_name: str, project_dir: str
 def _load_portfolio_tickers(project_dir: str) -> set:
     """현재 보유 종목 리스트 로드 (스캐너에서 제외용)"""
     import re
-    portfolio_path = os.path.join(project_dir, "portfolio.md")
+    from portfolio_paths import primary_portfolio_path
+    portfolio_path = primary_portfolio_path(project_dir)
     tickers = set()
     try:
         with open(portfolio_path, "r", encoding="utf-8") as f:
@@ -917,6 +918,174 @@ def scan_kospi(project_dir: str) -> dict:
     }
 
     print(f"[KOSPI Scanner] Complete: {result['total_signals']} signals "
+          f"(1st:{len(buy_1st)} 2nd:{len(buy_2nd)} 3rd:{len(buy_3rd)} watch:{len(watch_signals)})")
+
+    return result
+
+
+# ═══════════════════════════════════════════════════════
+#  Watchlist Scanner — 사용자 관심종목 (보유 X, 진입 후보)
+# ═══════════════════════════════════════════════════════
+# v1: ticker 리스트 하드코딩으로 동작 검증 (Step 4에서 watchlist.md 외부화)
+WATCHLIST_TICKERS = [
+    "META",   # Meta Platforms — Growth 카테고리 예시
+    "AMD",    # AMD
+    "AVGO",   # Broadcom
+    "XLK",    # Technology ETF 예시
+    "COIN",   # Coinbase
+]
+
+WATCHLIST_NAMES = {
+    "META": "Meta Platforms", "AMD": "AMD", "AVGO": "Broadcom",
+    "XLK": "Technology Select", "COIN": "Coinbase",
+}
+
+
+def _pick_entry_checker(ticker: str):
+    """
+    관심종목 티커의 전략 그룹을 판별해 적절한 Entry 판정 함수를 선택.
+    - STRATEGY_GROUP.etf → ETF 규칙
+    - 그 외 → Growth 규칙 (기본)
+    Value/Bond/Metal은 관심종목 맥락에서 모두 Growth로 취급(진입 타이밍 보기).
+    """
+    from portfolio_data import get_strategy_group
+    group = get_strategy_group(ticker) or "growth"
+    if group == "etf":
+        return _check_entry_etf, _build_entry_sections_etf
+    return _check_entry_growth, _build_entry_sections_growth
+
+
+def scan_watchlist(project_dir: str, tickers: list | None = None) -> dict:
+    """
+    관심종목 스캔. 보유하지 않은 진입 후보 종목을 모니터링.
+    Exit 시그널은 의미 없음(보유 X) → Entry만 판정. 히스토리는 별도 파일.
+    티커 소스:
+      1) 명시적 인자(tickers) 우선
+      2) watchlist.md 파싱
+      3) 둘 다 없으면 WATCHLIST_TICKERS 하드코딩 폴백
+    """
+    today = date.today().strftime("%Y-%m-%d")
+    if tickers is not None:
+        scan_tickers = list(tickers)
+    else:
+        try:
+            from watchlist_store import load_tickers as _load_wl
+            _loaded = _load_wl(project_dir)
+        except Exception:
+            _loaded = []
+        scan_tickers = _loaded if _loaded else WATCHLIST_TICKERS[:]
+    if not scan_tickers:
+        return {"status": "ok", "scan_date": today, "scanned": 0,
+                "buy_1st": [], "buy_2nd": [], "buy_3rd": [], "watch_signals": [],
+                "total_signals": 0, "elapsed_sec": 0}
+
+    print(f"[Watchlist Scanner] Scanning {len(scan_tickers)} tickers...")
+    start_time = datetime.now()
+
+    # 데이터 수집 (당일 캐시 공유)
+    cache_name = "scanner_watchlist"
+    cache_path = os.path.join(project_dir, "screenshots", f"{cache_name}_{today}.json")
+    market_data = {}
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, "rb") as f:
+                raw = f.read()
+            market_data = json.loads(raw.rstrip(b" \t\n\r\x00").decode("utf-8"))
+        except Exception:
+            market_data = {}
+    if market_data.get("data"):
+        print(f"[Watchlist Scanner] Using cached data: {cache_path}")
+    else:
+        market_data = _fetch_scanner_data(project_dir, scan_tickers, cache_name)
+        if "error" in market_data:
+            return {"status": "error", "error": market_data["error"]}
+
+    data = market_data.get("data", {})
+    elapsed = (datetime.now() - start_time).total_seconds()
+
+    _meta = market_data.get("_meta", {})
+    is_trading_day = _meta.get("is_trading_day", True)
+    data_date = _meta.get("date", today)
+    if not is_trading_day:
+        today = data_date
+
+    available = [t for t in scan_tickers if t in data] or list(data.keys())
+
+    buy_1st, buy_2nd, buy_3rd, watch_signals = [], [], [], []
+    for ticker in available:
+        d = data.get(ticker)
+        if not d or "error" in d:
+            continue
+
+        # 관심종목은 보유 X → Exit 판정 생략 (Entry 전용)
+        entry_fn, sections_fn = _pick_entry_checker(ticker)
+        signal, conditions = entry_fn(d)
+        if not signal:
+            continue
+
+        market_cap = d.get("market_cap", 0) or 0
+        entry = {
+            "ticker": ticker,
+            "name": WATCHLIST_NAMES.get(ticker, ticker),
+            "signal": signal,
+            "price": d.get("price"),
+            "change_pct": d.get("change_pct", 0),
+            "rsi": d.get("rsi14"),
+            "macd_hist": d.get("macd_hist"),
+            "macd_hist_trend": d.get("macd_hist_trend"),
+            "adx": d.get("adx"),
+            "bb_pct": d.get("bb_pct"),
+            "drawdown": d.get("drawdown_20d_pct"),
+            "drawdown_52w": d.get("drawdown_52w_pct"),
+            "volume_ratio": d.get("volume_ratio"),
+            "market_cap": market_cap,
+            "ma20": d.get("ma20"),
+            "ma50": d.get("ma50"),
+            "ma200": d.get("ma200"),
+            "high_52w": d.get("high_52w"),
+            "low_52w": d.get("low_52w"),
+            "macd": d.get("macd"),
+            "macd_signal": d.get("macd_signal"),
+            "change_3d_pct": d.get("change_3d_pct"),
+            "note": _make_note(conditions),
+            "conditions": conditions,
+            "judgment_sections": sections_fn(d),
+        }
+
+        if signal == "1st_BUY":
+            buy_1st.append(entry)
+        elif signal == "2nd_BUY":
+            buy_2nd.append(entry)
+        elif signal == "3rd_BUY":
+            buy_3rd.append(entry)
+        elif signal == "WATCH":
+            watch_signals.append(entry)
+
+    # 시가총액 내림차순
+    for lst in (buy_1st, buy_2nd, buy_3rd, watch_signals):
+        lst.sort(key=lambda x: -(x.get("market_cap") or 0))
+
+    # BUY 연속일 계산 (별도 히스토리)
+    prev_hist = _load_scanner_history(project_dir, "watchlist")
+    for lst in (buy_1st, buy_2nd, buy_3rd):
+        _apply_streak_to_entries(lst, prev_hist, today)
+    if is_trading_day:
+        _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "watchlist", project_dir, prev_hist, today)
+
+    result = {
+        "status": "ok",
+        "scan_date": today,
+        "scan_time": datetime.now(_KST).strftime("%Y-%m-%d %H:%M"),
+        "scanned": len(scan_tickers),
+        "elapsed_sec": round(elapsed, 1),
+        "buy_1st": buy_1st,
+        "buy_2nd": buy_2nd,
+        "buy_3rd": buy_3rd,
+        "watch_signals": watch_signals,
+        "total_signals": len(buy_1st) + len(buy_2nd) + len(buy_3rd),
+    }
+
+    print(f"[Watchlist Scanner] Complete: {result['total_signals']} signals "
           f"(1st:{len(buy_1st)} 2nd:{len(buy_2nd)} 3rd:{len(buy_3rd)} watch:{len(watch_signals)})")
 
     return result

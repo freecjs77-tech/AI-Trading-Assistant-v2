@@ -40,7 +40,8 @@ NUM_TRADING_DAYS = 30
 HISTORY_PATH = os.path.join(PROJECT_DIR, "history", "signals_history.json")
 PORTFOLIO_DAILY_PATH = os.path.join(PROJECT_DIR, "history", "portfolio_daily.json")
 SCREENSHOTS_DIR = os.path.join(PROJECT_DIR, "screenshots")
-PORTFOLIO_PATH = os.path.join(PROJECT_DIR, "portfolio.md")
+from portfolio_paths import primary_portfolio_path as _primary_portfolio_path
+PORTFOLIO_PATH = _primary_portfolio_path(PROJECT_DIR)
 
 MACRO_SYMBOLS = {
     "VIX": "^VIX",
