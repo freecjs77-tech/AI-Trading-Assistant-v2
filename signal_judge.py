@@ -633,7 +633,7 @@ def _check_entry_metal(d: dict, macro: dict) -> tuple[str | None, list]:
     """Metal(SLV) Entry 판정. Pick 2 of 4."""
     rsi = d.get("rsi14")
     price_vs_ma20 = d.get("price_vs_ma20", "")
-    vix = macro.get("VIX", 0)
+    vix = macro.get("VIX") or 0  # None → 0 (VIX 데이터 누락 시)
     bb_lower = d.get("bb_lower")
     price = d.get("price", 0)
     _m_rsi = _p("entry_metal.rsi_max", 40)
@@ -1140,7 +1140,7 @@ def _build_entry_sections_metal(d: dict, macro: dict) -> list:
     """Metal Entry 섹션 수집."""
     rsi = d.get("rsi14")
     price_vs_ma20 = d.get("price_vs_ma20", "")
-    vix = macro.get("VIX", 0)
+    vix = macro.get("VIX") or 0
     bb_lower = d.get("bb_lower")
     price = d.get("price", 0)
     c = []
@@ -1158,7 +1158,7 @@ def _build_entry_sections_metal(d: dict, macro: dict) -> list:
     vix_ok = vix > 25
     c.append(("ok" if vix_ok else "no",
               "VIX > 25",
-              f"VIX {vix:.1f} - {'공포 구간이에요' if vix_ok else '아직 안정적이에요'}"))
+              f"VIX {vix:.1f} - {'공포 구간이에요' if vix_ok else '아직 안정적이에요'}" if vix else "VIX 데이터 없음"))
     if bb_lower and price > 0:
         bb_dist = (price - bb_lower) / bb_lower * 100
         bb_near = bb_dist <= 5
