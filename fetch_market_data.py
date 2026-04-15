@@ -537,35 +537,53 @@ def main():
         krw_str = f"₩{macro_data.get('USD_KRW', 'N/A'):.0f}" if macro_data.get('USD_KRW') else "N/A"
         print(f"✅  VIX={vix_str}  30Y={y30_str}  USD/KRW={krw_str}")
 
-    # ── 일괄 다운로드 (레이트리밋 회피: 종목당 3번→0번 HTTP 호출) ──
+    # ── 청크 단위 일괄 다운로드 (레이트리밋 회피: 종목당 3번→0번 HTTP 호출) ──
     from portfolio_data import to_yfinance_symbol
     yf_symbols = [to_yfinance_symbol(s) for s in tickers]
     bulk_df = None
     bulk_divs: dict = {}
+    CHUNK = 20
+    chunk_frames = []
     try:
         if not args.quiet:
-            print(f"  📦 일괄 다운로드 중 ({len(yf_symbols)}개 티커, 1y, actions=True) ... ", end="", flush=True)
-        bulk_df = yf.download(
-            tickers=yf_symbols,
-            period="1y",
-            interval="1d",
-            auto_adjust=True,
-            actions=True,
-            group_by="ticker",
-            progress=False,
-            threads=True,
-        )
-        if not args.quiet:
-            print(f"✅  shape={getattr(bulk_df,'shape',None)}")
+            print(f"  📦 청크 다운로드 시작: {len(yf_symbols)}종목을 {CHUNK}개씩 분할")
+        for ci in range(0, len(yf_symbols), CHUNK):
+            chunk = yf_symbols[ci:ci + CHUNK]
+            if not args.quiet:
+                print(f"    [청크 {ci // CHUNK + 1}/{(len(yf_symbols) + CHUNK - 1) // CHUNK}] {len(chunk)}종목 ... ", end="", flush=True)
+            try:
+                cdf = yf.download(
+                    tickers=chunk,
+                    period="1y",
+                    interval="1d",
+                    auto_adjust=True,
+                    actions=True,
+                    group_by="ticker",
+                    progress=False,
+                    threads=False,  # 직렬 (레이트리밋 안정)
+                )
+                chunk_frames.append(cdf)
+                if not args.quiet:
+                    print(f"✅")
+            except Exception as _ce:
+                if not args.quiet:
+                    print(f"⚠️ {type(_ce).__name__}")
+        if chunk_frames:
+            try:
+                bulk_df = pd.concat(chunk_frames, axis=1)
+            except Exception:
+                bulk_df = chunk_frames[0]
         # 배당 시계열 분리 추출 (actions=True 덕분에 Dividends 컬럼 존재)
         if bulk_df is not None and not bulk_df.empty:
             for yf_sym in yf_symbols:
                 try:
                     if isinstance(bulk_df.columns, pd.MultiIndex):
-                        sub = bulk_df[yf_sym] if yf_sym in bulk_df.columns.get_level_values(0) else None
+                        if yf_sym not in bulk_df.columns.get_level_values(0):
+                            continue
+                        sub = bulk_df[yf_sym]
                     else:
                         sub = bulk_df
-                    if sub is not None and "Dividends" in sub.columns:
+                    if "Dividends" in sub.columns:
                         divs = sub["Dividends"].dropna()
                         bulk_divs[yf_sym] = divs[divs > 0]
                 except Exception:
