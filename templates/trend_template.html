@@ -177,20 +177,38 @@ const yieldData = trend.map(d => d.yield_30y);
 const fxData = trend.map(d => d.usd_krw);
 const dso = { ticks: { color: isDark?'#a3aac4':'#64748b' }, grid: { color: isDark?'rgba(64,72,93,0.3)':'rgba(203,213,225,0.5)' } };
 
+// 현재값 기준 ±20% Y축 범위 (latest=0 또는 누락 시 데이터 범위 + 10% 패딩으로 폴백)
+function rangeFor(latest, data, pct){
+  pct = pct || 0.2;
+  if(latest && latest > 0){
+    return { min: +(latest * (1 - pct)).toFixed(2), max: +(latest * (1 + pct)).toFixed(2) };
+  }
+  const valid = (data || []).filter(v => v != null && !isNaN(v));
+  if(!valid.length) return {};
+  const lo = Math.min.apply(null, valid), hi = Math.max.apply(null, valid);
+  const pad = (hi - lo) * 0.1 || hi * 0.1 || 1;
+  return { min: +(lo - pad).toFixed(2), max: +(hi + pad).toFixed(2) };
+}
+function applyRange(scale, r){ scale.min = r.min; scale.max = r.max; }
+
 {% if data_days >= 1 %}
 // ── 3-way 토글 지원: owner별 풀 페이로드 ──
 const ownersPayload = {{ owners_payload_json|default('{}') }};
 const ownerLabel = (o) => o==='combined' ? '합산' : (o==='me' ? '내 포트' : (o==='wife' ? '와이프' : o));
 
+const _initAssetRange = rangeFor(totalAsset[totalAsset.length-1], totalAsset);
+const _initDivRange = rangeFor(divData[divData.length-1], divData);
+const _initYieldRange = rangeFor(divYieldData[divYieldData.length-1], divYieldData);
+
 let _assetChart = new Chart(document.getElementById('assetTrendChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'총 자산 (억원)', data:totalAsset, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2 },
-  { label:'투자 원금 (억원)', data:costBasis, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, borderDash:[5,5], tension:0.3, pointRadius:0 }
-]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'억원', color:'#a3aac4' }}}}});
+  { label:'투자 원금 (억원)', data:costBasis, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:false, borderDash:[5,5], tension:0.3, pointRadius:0 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'억원', color:'#a3aac4' }, min: _initAssetRange.min, max: _initAssetRange.max }}}});
 
 let _divChart = new Chart(document.getElementById('divTrendChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'예상 연 배당 (만원)', data:divData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
   { label:'배당수익률 (%)', data:divYieldData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
-]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'만원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'만원', color:'#a3aac4' }, min: _initDivRange.min, max: _initDivRange.max }, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }, min: _initYieldRange.min, max: _initYieldRange.max }}}});
 
 function _applyOwner(owner){
   const p = ownersPayload[owner];
@@ -215,16 +233,23 @@ function _applyOwner(owner){
   _renderTicker(p.ticker);
   // Asset chart
   const s = p.trend;
+  const totalSeries = s.map(d => d.total_eok);
+  const costSeries = s.map(d => d.cost_eok);
   _assetChart.data.labels = s.map(d => d.date.slice(5));
-  _assetChart.data.datasets[0].data = s.map(d => d.total_eok);
-  _assetChart.data.datasets[1].data = s.map(d => d.cost_eok);
+  _assetChart.data.datasets[0].data = totalSeries;
+  _assetChart.data.datasets[1].data = costSeries;
   _assetChart.data.datasets[0].label = ownerLabel(owner) + ' 총 자산 (억원)';
   _assetChart.data.datasets[1].label = ownerLabel(owner) + ' 투자 원금 (억원)';
+  applyRange(_assetChart.options.scales.y, rangeFor(totalSeries[totalSeries.length-1], totalSeries));
   _assetChart.update();
   // Div chart
+  const divSeries = s.map(d => d.div_annual_man);
+  const yieldSeries = s.map(d => d.div_yield);
   _divChart.data.labels = s.map(d => d.date.slice(5));
-  _divChart.data.datasets[0].data = s.map(d => d.div_annual_man);
-  _divChart.data.datasets[1].data = s.map(d => d.div_yield);
+  _divChart.data.datasets[0].data = divSeries;
+  _divChart.data.datasets[1].data = yieldSeries;
+  applyRange(_divChart.options.scales.y, rangeFor(divSeries[divSeries.length-1], divSeries));
+  applyRange(_divChart.options.scales.y1, rangeFor(yieldSeries[yieldSeries.length-1], yieldSeries));
   _divChart.update();
 }
 document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
