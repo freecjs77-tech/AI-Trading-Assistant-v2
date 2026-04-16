@@ -83,37 +83,37 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
 
     <!-- Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary">
-        <div class="flex justify-between items-start mb-3">
-          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Total Assets</span>
-          <span class="material-symbols-outlined text-secondary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">account_balance</span>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary flex items-center gap-4">
+        <span class="material-symbols-outlined text-secondary/60 flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">account_balance</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Total Assets</span>
+          <div class="text-2xl font-headline font-bold text-secondary" id="sumTotal">&#8361;{{ latest.total_eok }}억</div>
+          <div class="text-xs mt-2 {{ 'text-secondary' if latest.pnl_krw >= 0 else 'text-tertiary' }}" id="sumPnl">&#8599; {{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
         </div>
-        <div class="text-2xl font-headline font-bold text-secondary" id="sumTotal">&#8361;{{ latest.total_eok }}억</div>
-        <div class="text-xs mt-2 {{ 'text-secondary' if latest.pnl_krw >= 0 else 'text-tertiary' }}" id="sumPnl">&#8599; {{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
       </div>
-      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-primary">
-        <div class="flex justify-between items-start mb-3">
-          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Investment Principal</span>
-          <span class="material-symbols-outlined text-primary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">savings</span>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-primary flex items-center gap-4">
+        <span class="material-symbols-outlined text-primary/60 flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">savings</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Investment Principal</span>
+          <div class="text-2xl font-headline font-bold text-primary" id="sumCost">&#8361;{{ latest.cost_eok }}억</div>
+          <div class="text-xs mt-2 text-outline">투자 원금</div>
         </div>
-        <div class="text-2xl font-headline font-bold text-primary" id="sumCost">&#8361;{{ latest.cost_eok }}억</div>
-        <div class="text-xs mt-2 text-outline">투자 원금</div>
       </div>
-      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-tertiary">
-        <div class="flex justify-between items-start mb-3">
-          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Est. Annual Dividend</span>
-          <span class="material-symbols-outlined text-tertiary/60" style="font-size:22px;font-variation-settings:'FILL' 1;">payments</span>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-tertiary flex items-center gap-4">
+        <span class="material-symbols-outlined text-tertiary/60 flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">payments</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Est. Annual Dividend</span>
+          <div class="text-2xl font-headline font-bold text-tertiary" id="sumDivAnnual">&#8361;{{ latest.div_annual_man }}만</div>
+          <div class="text-xs mt-2 text-secondary" id="sumDivYield">Yield: {{ latest.div_yield }}%</div>
         </div>
-        <div class="text-2xl font-headline font-bold text-tertiary" id="sumDivAnnual">&#8361;{{ latest.div_annual_man }}만</div>
-        <div class="text-xs mt-2 text-secondary" id="sumDivYield">Yield: {{ latest.div_yield }}%</div>
       </div>
-      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-outline">
-        <div class="flex justify-between items-start mb-3">
-          <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Cash Liquidity</span>
-          <span class="material-symbols-outlined text-outline" style="font-size:22px;font-variation-settings:'FILL' 1;">currency_exchange</span>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-outline flex items-center gap-4">
+        <span class="material-symbols-outlined text-outline flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">currency_exchange</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Cash Liquidity</span>
+          <div class="text-2xl font-headline font-bold text-on-surface" id="sumCash">&#8361;{{ latest.cash_eok }}억</div>
+          <div class="text-xs mt-2 text-tertiary" id="sumCashPct">&#9679; {{ latest.cash_pct }}% Allocation</div>
         </div>
-        <div class="text-2xl font-headline font-bold text-on-surface" id="sumCash">&#8361;{{ latest.cash_eok }}억</div>
-        <div class="text-xs mt-2 text-tertiary" id="sumCashPct">&#9679; {{ latest.cash_pct }}% Allocation</div>
       </div>
     </div>
 
