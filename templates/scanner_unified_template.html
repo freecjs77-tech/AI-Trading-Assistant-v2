@@ -242,7 +242,7 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
 
     {% if watchlist_scanned is defined and watchlist_scanned %}
     <!-- Watchlist -->
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">bookmark_star</span> Watchlist ({{ (watchlist_buy_1st|length) + (watchlist_buy_2nd|length) + (watchlist_buy_3rd|length) }})</h2>
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">bookmark_star</span> Watchlist ({{ watchlist_scanned }} scanned · {{ (watchlist_buy_1st|length) + (watchlist_buy_2nd|length) + (watchlist_buy_3rd|length) }} BUY)</h2>
 
     <!-- Watchlist 편집 UI (로컬 Flask 전용, GH Pages에선 web editor 링크) -->
     <div id="watchlistEditor" class="rounded-xl bg-surface-container border border-outline-variant/10 p-4 mb-4">
@@ -303,25 +303,22 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
       })();
     </script>
 
-    {% set watch_all = [] %}
-    {% for e in watchlist_buy_1st %}{% if watch_all.append({"entry": e, "stage": "1st_BUY", "cls": "secondary"}) %}{% endif %}{% endfor %}
-    {% for e in watchlist_buy_2nd %}{% if watch_all.append({"entry": e, "stage": "2nd_BUY", "cls": "primary"}) %}{% endif %}{% endfor %}
-    {% for e in watchlist_buy_3rd %}{% if watch_all.append({"entry": e, "stage": "3rd_BUY", "cls": "tertiary"}) %}{% endif %}{% endfor %}
-    {% if watch_all %}
+    {# 와치리스트: 포트폴리오처럼 전체 시그널(HOLD/EXIT/TP/TOP 포함) 표시 #}
+    {% if watchlist_all %}
     <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
       <table class="w-full text-left border-collapse">
         <thead><tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
           <th class="px-5 py-3">#</th><th class="px-5 py-3">Ticker</th><th class="px-5 py-3">Name</th><th class="px-5 py-3 text-right">Price</th><th class="px-5 py-3 text-right">Change%</th><th class="px-5 py-3">Signal</th><th class="px-5 py-3 text-right">RSI</th><th class="px-5 py-3 text-right">ADX</th><th class="px-5 py-3 text-right">52w DD</th><th class="px-5 py-3">Streak</th><th class="px-5 py-3">Note</th>
         </tr></thead>
         <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
-        {% for item in watch_all %}{% set e = item.entry %}
+        {% for e in watchlist_all %}
         <tr class="hover:bg-surface-container-high/50 transition-colors">
           <td class="px-5 py-3 text-on-surface-variant">{{ loop.index }}</td>
           <td class="px-5 py-3"><a href="details/{{ e.ticker }}.html" class="font-headline font-bold text-primary hover:underline">{{ e.ticker }}</a></td>
           <td class="px-5 py-3">{{ e.name }}{% if e.market_cap_fmt %} <span class="text-[10px] text-outline">{{ e.market_cap_fmt }}</span>{% endif %}</td>
           <td class="px-5 py-3 text-right">${{ e.price|f2 }}</td>
           <td class="px-5 py-3 text-right font-bold {{ 'text-secondary' if e.change_pct >= 0 else 'text-tertiary' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
-          <td class="px-5 py-3"><span class="sig {% if '1st' in item.stage %}sig-buy1{% elif '2nd' in item.stage %}sig-buy2{% elif '3rd' in item.stage %}sig-buy3{% endif %}">{{ item.stage }}</span></td>
+          <td class="px-5 py-3"><span class="sig {% if '1st_BUY' == e.signal %}sig-buy1{% elif '2nd_BUY' == e.signal %}sig-buy2{% elif '3rd_BUY' == e.signal %}sig-buy3{% elif 'TAKE_PROFIT_2' == e.signal or 'TOP_SIGNAL' == e.signal %}sig-tp2{% elif 'TAKE_PROFIT_1' == e.signal %}sig-tp1{% elif 'WATCH' == e.signal %}sig-watch{% elif 'BOND_WATCH' == e.signal %}sig-bond{% elif 'CASH' == e.signal %}sig-cash{% else %}sig-hold{% endif %}">{{ e.signal }}</span></td>
           <td class="px-5 py-3 text-right">{{ e.rsi|f1 if e.rsi else '—' }}</td>
           <td class="px-5 py-3 text-right">{{ e.adx|f1 if e.adx is defined and e.adx else '—' }}</td>
           <td class="px-5 py-3 text-right">{{ e.drawdown_52w|f1 if e.drawdown_52w is defined and e.drawdown_52w else '—' }}%</td>

@@ -23,7 +23,7 @@ if sys.platform == "win32":
 
 from signal_judge import (
     _check_entry_growth, _check_entry_etf, check_exit_simple, _BUY_SIGNALS,
-    _build_entry_sections_growth, _build_entry_sections_etf,
+    _build_entry_sections_growth, _build_entry_sections_etf, judge_all,
 )
 from portfolio_data import TICKER_META
 
@@ -1007,12 +1007,14 @@ def _pick_entry_checker(ticker: str):
 
 def scan_watchlist(project_dir: str, tickers: list | None = None) -> dict:
     """
-    관심종목 스캔. 보유하지 않은 진입 후보 종목을 모니터링.
-    Exit 시그널은 의미 없음(보유 X) → Entry만 판정. 히스토리는 별도 파일.
-    티커 소스:
-      1) 명시적 인자(tickers) 우선
-      2) watchlist.md 파싱
-      3) 둘 다 없으면 WATCHLIST_TICKERS 하드코딩 폴백
+    관심종목 스캔. 포트폴리오 종목과 동일하게 judge_all을 거쳐 전체 시그널
+    (1st/2nd/3rd BUY, WATCH, HOLD, TAKE_PROFIT_1/2, TOP_SIGNAL, BOND_WATCH, CASH)을
+    모두 반환. 와치리스트는 포트폴리오처럼 추적되는 의사결정 대상이라 Exit/Hold까지
+    가시화해야 한다는 사용자 요구사항에 따라 Entry-only 모드에서 확장되었다.
+
+    반환 키:
+      buy_1st/buy_2nd/buy_3rd/watch_signals — 기존 Entry 섹션 (하위호환)
+      all_signals — 전체 종목에 대한 풀 judge 결과 (signal 필드로 분류)
     """
     today = date.today().strftime("%Y-%m-%d")
     if tickers is not None:
@@ -1027,7 +1029,7 @@ def scan_watchlist(project_dir: str, tickers: list | None = None) -> dict:
     if not scan_tickers:
         return {"status": "ok", "scan_date": today, "scanned": 0,
                 "buy_1st": [], "buy_2nd": [], "buy_3rd": [], "watch_signals": [],
-                "total_signals": 0, "elapsed_sec": 0}
+                "all_signals": [], "total_signals": 0, "elapsed_sec": 0}
 
     print(f"[Watchlist Scanner] Scanning {len(scan_tickers)} tickers...")
     start_time = datetime.now()
@@ -1061,17 +1063,27 @@ def scan_watchlist(project_dir: str, tickers: list | None = None) -> dict:
 
     available = [t for t in scan_tickers if t in data] or list(data.keys())
 
+    # 별도 히스토리(watchlist) 기준으로 full-judge 수행
+    prev_hist = _load_scanner_history(project_dir, "watchlist")
+    # judge_all은 market_data의 data/_macro/_meta를 소비한다. available 티커로 한정한
+    # 서브 market_data를 구성해 watchlist 티커만 판정.
+    _wl_data = {t: data[t] for t in available if t in data}
+    _wl_market = {**market_data, "data": _wl_data}
+    judgments = judge_all(_wl_market, prev_hist)
+
     buy_1st, buy_2nd, buy_3rd, watch_signals = [], [], [], []
+    all_signals = []  # 모든 시그널(포트폴리오 스타일)
+
     for ticker in available:
         d = data.get(ticker)
         if not d or "error" in d:
             continue
+        sig_result = judgments.get(ticker, {})
+        signal = sig_result.get("signal", "HOLD")
+        conditions = sig_result.get("conditions", [])
 
-        # 관심종목은 보유 X → Exit 판정 생략 (Entry 전용)
-        entry_fn, sections_fn = _pick_entry_checker(ticker)
-        signal, conditions = entry_fn(d)
-        if not signal:
-            continue
+        # 판정 섹션은 Entry 체커 기준(디테일 페이지 재사용)
+        _, sections_fn = _pick_entry_checker(ticker)
 
         market_cap = d.get("market_cap", 0) or 0
         entry = {
@@ -1097,11 +1109,16 @@ def scan_watchlist(project_dir: str, tickers: list | None = None) -> dict:
             "macd": d.get("macd"),
             "macd_signal": d.get("macd_signal"),
             "change_3d_pct": d.get("change_3d_pct"),
-            "note": _make_note(conditions),
+            "note": sig_result.get("note") or _make_note(conditions),
             "conditions": conditions,
-            "judgment_sections": sections_fn(d),
+            "judgment_sections": sig_result.get("judgment_sections") or sections_fn(d),
+            # BUY 스트릭/가상수익률 (judge_all이 채워줌)
+            "buy_streak": sig_result.get("buy_streak", 0),
+            "buy_confirmed": sig_result.get("buy_confirmed", False),
+            "hypo_return": sig_result.get("hypo_return"),
         }
 
+        # 기존 Entry 섹션 (하위호환)
         if signal == "1st_BUY":
             buy_1st.append(entry)
         elif signal == "2nd_BUY":
@@ -1111,16 +1128,31 @@ def scan_watchlist(project_dir: str, tickers: list | None = None) -> dict:
         elif signal == "WATCH":
             watch_signals.append(entry)
 
+        # 전체 시그널 (포트폴리오 스타일 렌더용)
+        all_signals.append(entry)
+
     # 시가총액 내림차순
     for lst in (buy_1st, buy_2nd, buy_3rd, watch_signals):
         lst.sort(key=lambda x: -(x.get("market_cap") or 0))
 
-    # BUY 연속일 계산 (별도 히스토리)
-    prev_hist = _load_scanner_history(project_dir, "watchlist")
-    for lst in (buy_1st, buy_2nd, buy_3rd):
-        _apply_streak_to_entries(lst, prev_hist, today)
+    # all_signals: 신호 우선순위 → 시총 내림차순
+    _SIG_ORDER = {
+        "TOP_SIGNAL": 0, "TAKE_PROFIT_2": 1, "TAKE_PROFIT_1": 2,
+        "1st_BUY": 3, "2nd_BUY": 4, "3rd_BUY": 5,
+        "WATCH": 6, "BOND_WATCH": 7, "CASH": 8, "HOLD": 9, "ERROR": 10,
+    }
+    all_signals.sort(key=lambda x: (_SIG_ORDER.get(x["signal"], 99), -(x.get("market_cap") or 0)))
+
+    # 히스토리 업데이트: judge_all이 이미 BUY 스트릭을 계산했으므로 save_today를 사용
     if is_trading_day:
-        _update_scanner_history([buy_1st, buy_2nd, buy_3rd], "watchlist", project_dir, prev_hist, today)
+        try:
+            from history_manager import save_today, prune_old, save_history
+            history_path = os.path.join(project_dir, "history", "scanner_watchlist_history.json")
+            new_hist = save_today(prev_hist, today, judgments, _wl_market, "watchlist")
+            new_hist = prune_old(new_hist)
+            save_history(new_hist, history_path)
+        except Exception as _hse:
+            print(f"  [Watchlist] history save warn: {_hse}")
 
     result = {
         "status": "ok",
@@ -1132,11 +1164,17 @@ def scan_watchlist(project_dir: str, tickers: list | None = None) -> dict:
         "buy_2nd": buy_2nd,
         "buy_3rd": buy_3rd,
         "watch_signals": watch_signals,
+        "all_signals": all_signals,
         "total_signals": len(buy_1st) + len(buy_2nd) + len(buy_3rd),
     }
 
-    print(f"[Watchlist Scanner] Complete: {result['total_signals']} signals "
-          f"(1st:{len(buy_1st)} 2nd:{len(buy_2nd)} 3rd:{len(buy_3rd)} watch:{len(watch_signals)})")
+    # 시그널 카운트 로그
+    _sc = {}
+    for e in all_signals:
+        _sc[e["signal"]] = _sc.get(e["signal"], 0) + 1
+    print(f"[Watchlist Scanner] Complete: {len(all_signals)} judged "
+          f"(1st:{len(buy_1st)} 2nd:{len(buy_2nd)} 3rd:{len(buy_3rd)} watch:{len(watch_signals)}) "
+          f"full={_sc}")
 
     return result
 

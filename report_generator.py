@@ -547,6 +547,9 @@ def generate_scanner_pages(
         "watchlist_buy_1st": watchlist.get("buy_1st", []),
         "watchlist_buy_2nd": watchlist.get("buy_2nd", []),
         "watchlist_buy_3rd": watchlist.get("buy_3rd", []),
+        "watchlist_watch": watchlist.get("watch_signals", []),
+        # 와치리스트는 포트폴리오처럼 전체 시그널(HOLD/EXIT/TP/TOP 포함) 노출
+        "watchlist_all": watchlist.get("all_signals", []),
         "watchlist_scanned": watchlist.get("scanned", 0),
         "watchlist_total": watchlist.get("total_signals", 0),
     }
