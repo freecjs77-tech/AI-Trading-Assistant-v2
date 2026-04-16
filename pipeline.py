@@ -474,25 +474,79 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
 
         # Step 5d: 다른 포트폴리오 (wife 등) 리포트 생성
         print("[Step 5d] Generating secondary portfolio reports...")
+
+        def _build_owner_dividends(owner_portfolio: list, mdata: dict) -> dict:
+            """owner 보유 종목 기반으로 _dividends 딕셔너리 재구성.
+
+            fetch_market_data._dividends는 me 포트 기준이므로 wife 등 다른 owner의
+            리포트 생성 시에는 동일한 스키마로 owner 전용 배당 집계를 만들어
+            ``_owner_market["_dividends"]``에 주입한다.
+
+            스키마:
+              { total_annual(USD), monthly_avg(USD), portfolio_yield(%),
+                per_ticker: {ticker: {shares, div_per_sh, div_yield, annual_income(USD)}} }
+            KOSPI 종목은 USD 환산하여 합산(me 쪽 규약과 동일).
+            """
+            _d = mdata.get("data", {})
+            _rate = (mdata.get("_macro", {}) or {}).get("USD_KRW", 0) or 1
+            total_annual = 0.0
+            total_port_value = 0.0
+            per_ticker: dict = {}
+            for p in owner_portfolio:
+                t = p["ticker"]
+                info = _d.get(t) or {}
+                if not info or "error" in info:
+                    continue
+                div_ttm = info.get("div_ttm", 0.0) or 0.0
+                price = info.get("price", 0.0) or 0.0
+                sh = p["shares"]
+                annual_inc = round(div_ttm * sh, 2)
+                port_val = round(price * sh, 2)
+                if is_kospi_ticker(t) and _rate > 1:
+                    annual_inc = round(annual_inc / _rate, 2)
+                    port_val = round(port_val / _rate, 2)
+                per_ticker[t] = {
+                    "shares": sh,
+                    "div_per_sh": div_ttm,
+                    "div_yield": info.get("div_yield_ttm", 0.0),
+                    "annual_income": annual_inc,
+                }
+                total_annual += annual_inc
+                total_port_value += port_val
+            port_yield = round(total_annual / total_port_value * 100, 4) if total_port_value > 0 else 0.0
+            return {
+                "total_annual": round(total_annual, 2),
+                "monthly_avg": round(total_annual / 12, 2),
+                "portfolio_yield": port_yield,
+                "per_ticker": per_ticker,
+                "note": "TTM 배당 합산. owner별 재계산 (pipeline.py).",
+            }
+
         try:
             from portfolio_paths import discover_portfolios, PRIMARY_OWNER
             from fetch_market_data import parse_portfolio_md as _parse_pmd_all
+            from portfolio_data import is_kospi_ticker
             _owners = [(o, p) for o, p in discover_portfolios(project_dir) if o != PRIMARY_OWNER]
             for _owner, _opath in _owners:
                 _owner_tickers, _ = _parse_pmd_all(_opath)
                 _owner_tickers_set = set(_owner_tickers)
-                # market_data 필터 (data만 owner 보유 티커로 한정, _macro/_meta/_dividends는 그대로)
+                # market_data 필터: data는 owner 보유로 한정, _dividends는 owner 기준으로 재계산
                 _filtered_data = {
                     k: v for k, v in market_data.get("data", {}).items()
                     if k in _owner_tickers_set
                 }
-                _owner_market = {**market_data, "data": _filtered_data}
+                _owner_portfolio = _parse_portfolio_for_report(_opath)
+                _owner_dividends = _build_owner_dividends(_owner_portfolio, market_data)
+                _owner_market = {
+                    **market_data,
+                    "data": _filtered_data,
+                    "_dividends": _owner_dividends,
+                }
                 _owner_history_path = os.path.join(
                     project_dir, "history", f"signals_history_{_owner}.json"
                 )
                 _owner_history = load_history(_owner_history_path)
                 _owner_signals = judge_all(_owner_market, _owner_history)
-                _owner_portfolio = _parse_portfolio_for_report(_opath)
                 _owner_prev = get_previous_signals(_owner_history, today)
                 _owner_report = os.path.join(
                     reports_dir, f"report_{_owner}_{today}.html"
