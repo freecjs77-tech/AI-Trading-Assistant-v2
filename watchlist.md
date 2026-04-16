@@ -7,5 +7,9 @@
 META    # Meta Platforms
 AMD     # AMD
 AVGO    # Broadcom
-XLK     # Technology Select ETF
-COIN    # Coinbase
+IONQ    
+ORCL    
+MU
+TQQQ
+XOVR
+INTC
