@@ -48,6 +48,11 @@ MACRO_SYMBOLS = {
     "USD_KRW": "USDKRW=X",
 }
 
+# wife 배당 base — 2026-04-15 수동 추출본 + wife.md의 기준 환율(1481.24) 사용
+# me와 동일하게 USD/KRW에 단순 비례 스케일링 (근사)
+WIFE_DIV_BASE_KRW = 16675519
+WIFE_DIV_BASE_FX = 1481.24
+
 
 # ── Yahoo Finance v8 chart API ──
 def make_session() -> tuple[requests.Session, str]:
@@ -294,6 +299,10 @@ def build_wife_snapshot(
         t: round(v / total_krw * 100, 2) for t, v in weights_krw.items()
     }
 
+    # 배당 — me와 동일한 FX 스케일링 모델
+    div_annual_krw = round(WIFE_DIV_BASE_KRW * (fx / WIFE_DIV_BASE_FX)) if fx > 1 else WIFE_DIV_BASE_KRW
+    div_yield = round(div_annual_krw / cost_krw * 100, 2) if cost_krw > 0 else 0.0
+
     return {
         "total_value_krw": int(total_krw),
         "cost_basis_krw": int(cost_krw),
@@ -301,8 +310,8 @@ def build_wife_snapshot(
         "pnl_pct": pnl_pct,
         "cash_value_krw": 0,
         "cash_pct": 0.0,
-        "div_annual_krw": 0,
-        "div_yield": 0,
+        "div_annual_krw": div_annual_krw,
+        "div_yield": div_yield,
         "usd_krw": round(fx, 2),
         "vix": None,
         "yield_30y": None,
