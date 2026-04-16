@@ -980,6 +980,22 @@ def generate_detail_pages(
     meta = market_data.get("_meta", {})
     date_str = meta.get("date", datetime.now().strftime("%Y-%m-%d"))
 
+    # 상세 페이지 공통 네비게이션 — deploy 루트 기준 상대경로 (../)
+    nav_ctx = {
+        "nav_portfolio": f"../report_{date_str}.html",
+        "nav_scanner": f"../scanner_{date_str}.html",
+        "nav_backtest": f"../backtest_{date_str}.html",
+        "nav_trend": f"../trend_{date_str}.html",
+        "nav_archive": "../archive.html",
+    }
+    # wife 리포트가 존재하면 네비에 포함
+    try:
+        wife_rpt = os.path.join(os.path.dirname(os.path.abspath(output_dir)), f"report_wife_{date_str}.html")
+        if os.path.exists(wife_rpt):
+            nav_ctx["nav_wife"] = f"../report_wife_{date_str}.html"
+    except Exception:
+        pass
+
     os.makedirs(output_dir, exist_ok=True)
     generated = []
 
@@ -1060,6 +1076,8 @@ def generate_detail_pages(
             # 차트
             "ticker_for_file": ticker,
             "chart_exists": os.path.exists(os.path.join(output_dir, "charts", f"{ticker}.png")),
+            # 네비게이션 (사이드바용)
+            **nav_ctx,
         }
 
         html = template.render(**context)
@@ -1168,6 +1186,8 @@ def generate_detail_pages(
             # 차트
             "ticker_for_file": ticker_for_file,
             "chart_exists": os.path.exists(os.path.join(output_dir, "charts", f"{ticker_for_file}.png")),
+            # 네비게이션 (사이드바용)
+            **nav_ctx,
         }
 
         html = template.render(**context)

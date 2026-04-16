@@ -31,11 +31,44 @@ import sys
 import json
 import re
 import os
+import time
 import argparse
 from datetime import datetime, date, timezone, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 KST = timezone(timedelta(hours=9))
 EST = timezone(timedelta(hours=-5))   # 미국 동부 표준시 (보수적 기준)
+
+# ── yfinance 재시도 래퍼 ───────────────────────────────
+# 429(Rate Limited) / 503 / 네트워크 간헐 오류 시 exponential backoff
+
+_RETRY_DELAYS = (1, 3, 9)  # 초 — 최대 3회 재시도
+
+
+def _download_with_retry(call_fn, label: str = "yf_call", quiet: bool = False):
+    """yfinance 호출을 backoff 재시도로 감쌈.
+
+    call_fn: 인자 없는 callable. 내부에서 yf.download / yf.Ticker.history 등을 실행.
+    label: 로그에 쓸 식별자.
+    성공하면 호출 결과를 반환, 모든 재시도 실패 시 마지막 예외를 raise.
+    """
+    last_exc = None
+    for attempt, delay in enumerate([0] + list(_RETRY_DELAYS)):
+        if delay > 0:
+            if not quiet:
+                print(f"    ⏳ {label} 재시도 대기 {delay}s (시도 {attempt}/{len(_RETRY_DELAYS)})")
+            time.sleep(delay)
+        try:
+            return call_fn()
+        except Exception as e:  # yfinance는 429 시 일반 Exception으로 래핑
+            last_exc = e
+            msg = str(e).lower()
+            # 명백히 영구 오류면 재시도 포기
+            if "no data" in msg or "delisted" in msg or "symbol may be delisted" in msg:
+                raise
+    if last_exc is not None:
+        raise last_exc
+    return None
 
 
 def is_market_open_us() -> bool:
@@ -208,31 +241,38 @@ def macd_hist_trend(hist_series: pd.Series, lookback=3) -> str:
 
 def fetch_macro() -> dict:
     """
-    VIX, 30Y 국채 금리, USD/KRW 환율을 yfinance로 수집.
+    VIX, 30Y 국채 금리, USD/KRW 환율을 yfinance로 수집 (병렬 처리 + 재시도).
     항상 자동 실행됨 (별도 옵션 불필요).
     """
-    macro = {}
+    macro: dict = {}
     targets = {
         "VIX":      "^VIX",
         "yield_30Y":"^TYX",   # 30Y Treasury yield (값 그대로 %, 예: 4.97)
         "USD_KRW":  "USDKRW=X",
     }
-    for key, symbol in targets.items():
+
+    def _fetch_one(key: str, symbol: str):
         try:
-            ticker = yf.Ticker(symbol)
-            df = ticker.history(period="5d", interval="1d", auto_adjust=True)
+            df = _download_with_retry(
+                lambda: yf.Ticker(symbol).history(period="5d", interval="1d", auto_adjust=True),
+                label=f"macro:{key}",
+                quiet=True,
+            )
             if df is not None and not df.empty:
                 df = df[df["Close"].notna()]
             if df is not None and not df.empty:
-                val = float(df["Close"].iloc[-1])
-                macro[key] = round(val, 4)
-            else:
-                macro[key] = None
-        except Exception as e:
-            macro[key] = None
+                return key, round(float(df["Close"].iloc[-1]), 4)
+        except Exception:
+            pass
+        return key, None
 
-    # Master switch 판정 (참고용)
-    # QQQ, SPY 는 개별 종목 수집 결과에서 가져오므로 여기선 스킵
+    # 3개 매크로를 병렬로 수집 (직렬 ~6초 → 병렬 ~2초)
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        futures = [pool.submit(_fetch_one, k, s) for k, s in targets.items()]
+        for fut in as_completed(futures):
+            k, v = fut.result()
+            macro[k] = v
+
     macro["fetched_at"] = datetime.now(KST).strftime("%Y-%m-%d %H:%M")
     return macro
 
@@ -314,15 +354,14 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None) -> dict:
         # 이중 바닥 패턴 탐지
         dbl_bottom = find_double_bottom(close)
 
-        # 시가총액 — cached 모드에서는 info 호출 생략 (레이트리밋 회피)
+        # 시가총액은 현재 사용되지 않으므로 제거 (ticker.info 호출 회피 — rate limit)
         market_cap = 0
-        if cached_df is None:
-            try:
-                market_cap = ticker.info.get("marketCap", 0) or 0
-            except Exception:
-                market_cap = 0
 
-        # 배당 수집 (TTM) — cached 배당이 있으면 직접 계산, 없으면 fetch_div_ttm 호출
+        # 배당 수집 (TTM) — 배치 다운로드(actions=True)로 수집된 cached_divs만 사용
+        # 이전 구현은 cached_divs=None일 때 ticker.dividends + ticker.info를 추가 호출해
+        # 종목당 최대 2회 HTTP 요청(=최대 78회)이 발생했다. 배치 다운로드가 기본이므로
+        # 폴백 경로를 제거해 성능/안정성을 확보한다. 배치가 실패한 극단 케이스는 0 처리.
+        div_ttm, div_yield_ttm = 0.0, 0.0
         if cached_divs is not None:
             try:
                 idx = cached_divs.index.tz_localize(None) if getattr(cached_divs.index, "tzinfo", None) else cached_divs.index
@@ -331,9 +370,7 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None) -> dict:
                 div_ttm = round(float(ttm.sum()), 4) if len(ttm) > 0 else 0.0
                 div_yield_ttm = round(div_ttm / last_close * 100, 4) if (div_ttm > 0 and last_close > 0) else 0.0
             except Exception:
-                div_ttm, div_yield_ttm = 0.0, 0.0
-        else:
-            div_ttm, div_yield_ttm = fetch_div_ttm(ticker, last_close)
+                pass
 
         def safe(series, idx=-1):
             v = series.iloc[idx]
@@ -552,15 +589,19 @@ def main():
             if not args.quiet:
                 print(f"    [청크 {ci // CHUNK + 1}/{(len(yf_symbols) + CHUNK - 1) // CHUNK}] {len(chunk)}종목 ... ", end="", flush=True)
             try:
-                cdf = yf.download(
-                    tickers=chunk,
-                    period="1y",
-                    interval="1d",
-                    auto_adjust=True,
-                    actions=True,
-                    group_by="ticker",
-                    progress=False,
-                    threads=False,  # 직렬 (레이트리밋 안정)
+                cdf = _download_with_retry(
+                    lambda _chunk=chunk: yf.download(
+                        tickers=_chunk,
+                        period="1y",
+                        interval="1d",
+                        auto_adjust=True,
+                        actions=True,
+                        group_by="ticker",
+                        progress=False,
+                        threads=False,  # 직렬 (레이트리밋 안정)
+                    ),
+                    label=f"chunk[{ci // CHUNK + 1}]",
+                    quiet=args.quiet,
                 )
                 chunk_frames.append(cdf)
                 if not args.quiet:

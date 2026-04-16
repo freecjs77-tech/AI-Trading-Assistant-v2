@@ -148,10 +148,23 @@
 <body>
 <div class="container">
 
+  <!-- Top Navigation: 다른 주요 페이지로의 이동 링크 -->
+  <nav class="detail-topnav" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:12px;">
+    <a href="{{ nav_portfolio|default('../index.html') }}" style="color:var(--accent);text-decoration:none;font-weight:600;padding:4px 10px;border-radius:6px;background:var(--panel2);">My Portfolio</a>
+    {% if nav_wife %}
+    <a href="{{ nav_wife }}" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Wife Portfolio</a>
+    {% endif %}
+    <a href="{{ nav_scanner|default('#') }}" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Scanner</a>
+    <a href="{{ nav_backtest|default('#') }}" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Backtest</a>
+    <a href="{{ nav_trend|default('#') }}" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Trend</a>
+    <a href="{{ nav_archive|default('../archive.html') }}" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Archive</a>
+    <span style="flex:1"></span>
+    <button onclick="toggleTheme()" id="themeToggle" style="background:var(--panel2);border:1px solid var(--border);color:var(--accent);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Light Mode</button>
+  </nav>
+
   <!-- Back Navigation -->
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <a href="../index.html" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
-    <button onclick="toggleTheme()" id="themeToggle" style="background:var(--panel);border:1px solid var(--border);color:var(--accent);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">Light Mode</button>
+  <div style="margin-bottom:16px;">
+    <a href="{{ nav_portfolio|default('../index.html') }}" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
   </div>
 
   <!-- Header -->

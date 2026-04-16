@@ -175,6 +175,50 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         print(f"  OK {len(signals)} tickers judged: {sig_counts}")
 
         # Step 4b: Scanner (S&P 100 + ETF + KOSPI + Watchlist)
+        # 최적화: 4개 스캐너가 각각 fetch_market_data.py를 호출하던 기존 방식에서
+        # union 티커를 한 번에 수집 → scanner_shared_{date}.json 으로 공유.
+        # (각 스캐너의 _fetch_scanner_data가 이 파일을 우선 활용)
+        print("[Step 4b] Prefetching scanner universe (shared cache)...")
+        try:
+            from market_scanner import (
+                SP100_TICKERS, ETF_TICKERS, KOSPI_TICKERS, WATCHLIST_TICKERS,
+            )
+            from watchlist_store import load_tickers as _load_watchlist_tickers
+            _wl = []
+            try:
+                _wl = _load_watchlist_tickers(project_dir) or []
+            except Exception:
+                _wl = []
+            if not _wl:
+                _wl = list(WATCHLIST_TICKERS)
+            _scan_union = []
+            _seen = set()
+            for _group in (SP100_TICKERS, ETF_TICKERS, KOSPI_TICKERS, _wl):
+                for _t in _group:
+                    if _t and _t not in _seen:
+                        _seen.add(_t)
+                        _scan_union.append(_t)
+            _shared_path = os.path.join(project_dir, "screenshots", f"scanner_shared_{today}.json")
+            _need_prefetch = not os.path.exists(_shared_path)
+            if _need_prefetch:
+                _fetch_script = os.path.join(project_dir, "fetch_market_data.py")
+                _env = os.environ.copy()
+                _env["PYTHONIOENCODING"] = "utf-8"
+                _cmd = [sys.executable, _fetch_script, "--output", _shared_path, "--quiet"] + _scan_union
+                print(f"  Fetching {len(_scan_union)} unique scanner tickers in one pass...")
+                _prefetch = subprocess.run(
+                    _cmd, cwd=project_dir, capture_output=True, text=True,
+                    timeout=900, env=_env, encoding="utf-8", errors="replace",
+                )
+                if _prefetch.returncode != 0:
+                    print(f"  WARN prefetch failed ({_prefetch.stderr[:200]}) — falling back to per-scanner fetch")
+                else:
+                    print(f"  OK shared cache: {_shared_path}")
+            else:
+                print(f"  Using existing shared cache: {_shared_path}")
+        except Exception as _pfe:
+            print(f"  WARN prefetch skipped: {_pfe}")
+
         print("[Step 4b] Running scanners...")
         from market_scanner import scan_sp100, scan_etf, scan_kospi, scan_watchlist
         scanner_sp100_result = None
@@ -310,6 +354,29 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             usd_krw = macro.get("USD_KRW", 0)
             rate = usd_krw if usd_krw else 1
 
+            def _compute_owner_dividends(owner_portfolio: list) -> tuple[float, float]:
+                """owner의 보유종목을 순회하며 연간 배당금(KRW 환산) 및 배당수익률(%) 계산.
+
+                - market_data.data[ticker].div_ttm: 주당 연간 배당 (US=USD, KR=KRW)
+                - KR 종목은 그대로, US 종목은 환율 적용 후 합산
+                - yield = 총배당 / 원가 × 100
+                """
+                ann_krw = 0.0
+                cost_krw_total = 0.0
+                for p in owner_portfolio:
+                    t = p["ticker"]
+                    div_ttm = data.get(t, {}).get("div_ttm", 0) or 0
+                    shares = p["shares"]
+                    cost = shares * p["avg_cost"]
+                    if is_kospi_ticker(t):
+                        ann_krw += shares * div_ttm
+                        cost_krw_total += cost
+                    else:
+                        ann_krw += shares * div_ttm * rate
+                        cost_krw_total += cost * rate
+                y_pct = (ann_krw / cost_krw_total * 100) if cost_krw_total > 0 else 0
+                return ann_krw, y_pct
+
             def _save_owner_snapshot(owner: str, owner_portfolio: list) -> dict:
                 """주어진 owner의 보유종목을 KRW 통일 환산 → portfolio_daily_{owner}.json 저장."""
                 us_v = us_c = 0.0
@@ -347,9 +414,14 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 # 파일명: me는 기존 portfolio_daily.json, 그 외는 portfolio_daily_{owner}.json
                 fname = "portfolio_daily.json" if owner == "me" else f"portfolio_daily_{owner}.json"
                 path = os.path.join(project_dir, "history", fname)
-                # me만 배당 계산 — 시장 데이터의 _dividends는 me 포트 기준
-                _div_ann = dividends.get("total_annual", 0) if owner == "me" else 0
-                _div_yield = dividends.get("portfolio_yield", 0) if owner == "me" else 0
+                # 배당 계산: owner별로 직접 산정 (me/wife 공통 로직)
+                # - me: fetch_market_data의 _dividends 집계 사용 (KRW 환산은 여기서)
+                # - 그 외 owner: owner_portfolio 기반으로 재계산
+                if owner == "me":
+                    _div_ann_krw = dividends.get("total_annual", 0) * rate
+                    _div_yield = dividends.get("portfolio_yield", 0)
+                else:
+                    _div_ann_krw, _div_yield = _compute_owner_dividends(owner_portfolio)
                 return save_portfolio_snapshot(
                     path=path,
                     date_str=today,
@@ -357,7 +429,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     cost_basis_krw=cost_krw,
                     cash_value_krw=cash_k,
                     cash_pct=c_pct,
-                    div_annual_krw=_div_ann * rate,
+                    div_annual_krw=_div_ann_krw,
                     div_yield=_div_yield,
                     usd_krw=usd_krw,
                     vix=macro.get("VIX"),

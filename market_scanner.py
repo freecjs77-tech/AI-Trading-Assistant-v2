@@ -368,12 +368,62 @@ def _load_portfolio_tickers(project_dir: str) -> set:
     return tickers
 
 
+def _load_shared_scanner_cache(project_dir: str) -> dict:
+    """pipeline이 pre-fetch로 저장한 scanner_shared_{date}.json을 로드.
+
+    4개 스캐너가 공통으로 사용하기 위한 통합 캐시. 존재하지 않으면 {} 반환.
+    """
+    today = date.today().strftime("%Y-%m-%d")
+    shared_path = os.path.join(project_dir, "screenshots", f"scanner_shared_{today}.json")
+    if not os.path.exists(shared_path):
+        return {}
+    try:
+        with open(shared_path, "rb") as f:
+            raw = f.read()
+        return json.loads(raw.rstrip(b" \t\n\r\x00").decode("utf-8"))
+    except Exception:
+        return {}
+
+
+def _filter_from_shared(shared: dict, tickers: list) -> dict:
+    """shared 캐시에서 주어진 tickers만 추출한 새 dict 반환."""
+    if not shared or not shared.get("data"):
+        return {}
+    data = shared.get("data", {})
+    subset = {t: data[t] for t in tickers if t in data}
+    if not subset:
+        return {}
+    return {
+        "_meta": shared.get("_meta", {}),
+        "_macro": shared.get("_macro", {}),
+        "data": subset,
+    }
+
+
 def _fetch_scanner_data(project_dir: str, tickers: list, cache_name: str) -> dict:
-    """종목 기술지표를 yfinance로 수집"""
-    fetch_script = os.path.join(project_dir, "fetch_market_data.py")
-    python_exe = sys.executable
+    """종목 기술지표를 yfinance로 수집.
+
+    최적화: pipeline이 먼저 scanner_shared_{date}.json 으로 4개 스캐너 전체 종목을
+    한 번에 수집해두면, 여기서는 subprocess 호출 없이 해당 subset만 추출해 저장한다.
+    shared 캐시가 없으면 기존 방식(개별 subprocess)으로 폴백.
+    """
     today = date.today().strftime("%Y-%m-%d")
     output_path = os.path.join(project_dir, "screenshots", f"{cache_name}_{today}.json")
+
+    # 1) shared 캐시 우선 시도 — 공통 pre-fetch 결과에서 subset 추출
+    shared = _load_shared_scanner_cache(project_dir)
+    subset = _filter_from_shared(shared, tickers) if shared else {}
+    if subset:
+        try:
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(subset, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
+        return subset
+
+    # 2) 폴백: 기존 subprocess 호출
+    fetch_script = os.path.join(project_dir, "fetch_market_data.py")
+    python_exe = sys.executable
 
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"

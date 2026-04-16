@@ -24,19 +24,22 @@ def prepare_deploy():
     with open(os.path.join(DEPLOY_DIR, ".nojekyll"), "w") as f:
         pass
 
-    # reports/ 복사
+    # 모든 report_*.html을 deploy 루트에 펼쳐놓는다.
+    # (이전 구조: deploy/reports/*.html → 상대경로로 scanner_*.html 찾을 때 404)
+    # 현재 구조: deploy/report_*.html 과 scanner/backtest/trend가 동일 depth에 위치
     report_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "report_*.html")))
     if not report_files:
         print("WARNING: No report files found in reports/")
         return
 
-    deploy_reports = os.path.join(DEPLOY_DIR, "reports")
-    os.makedirs(deploy_reports)
+    # me 포트(report_YYYY-MM-DD.html)와 wife 포트(report_wife_YYYY-MM-DD.html) 모두 루트 복사
     for f in report_files:
-        shutil.copy2(f, deploy_reports)
+        shutil.copy2(f, DEPLOY_DIR)
+    print(f"report pages copied to root ({len(report_files)} files)")
 
-    # 최신 리포트 -> index.html
-    latest = report_files[-1]
+    # 최신 me 리포트 (report_wife 제외) -> index.html
+    me_reports = [f for f in report_files if "_wife_" not in os.path.basename(f)]
+    latest = me_reports[-1] if me_reports else report_files[-1]
     shutil.copy2(latest, os.path.join(DEPLOY_DIR, "index.html"))
     print(f"index.html <- {os.path.basename(latest)}")
 
@@ -75,16 +78,63 @@ def prepare_deploy():
         shutil.copytree(HISTORY_DIR, deploy_history)
         print(f"history/ copied ({len(os.listdir(deploy_history))} files)")
 
-    # archive.html 생성
-    _generate_archive(report_files)
+    # archive.html 생성 (사이드바 전체 링크 통일)
+    _generate_archive(report_files, scanner_files, backtest_files, trend_files)
 
     print(f"Deploy directory ready: {len(report_files)} reports")
 
 
-def _generate_archive(report_files):
-    """날짜별 과거 리포트 목록 HTML 생성"""
+def _latest_date(files, prefix: str) -> str:
+    """files 중 접두사 prefix로 시작하는 파일들의 최신 YYYY-MM-DD 추출. 없으면 빈 문자열."""
+    dates = []
+    for f in files:
+        n = os.path.basename(f)
+        if not n.startswith(prefix):
+            continue
+        stem = n[len(prefix):].replace(".html", "")
+        # wife 접두사 등 복합 케이스 제외 (yyyy-mm-dd 포맷만)
+        try:
+            datetime.strptime(stem, "%Y-%m-%d")
+            dates.append(stem)
+        except ValueError:
+            continue
+    return max(dates) if dates else ""
+
+
+def _generate_archive(report_files, scanner_files=None, backtest_files=None, trend_files=None):
+    """날짜별 과거 리포트 목록 HTML 생성 + 사이드바 전체 링크 통일.
+
+    다른 페이지(Scanner/Backtest/Trend)로의 이동이 Archive에서 가능해지도록,
+    파일시스템에 실제 존재하는 최신 날짜로 링크를 구성.
+    """
+    scanner_files = scanner_files or []
+    backtest_files = backtest_files or []
+    trend_files = trend_files or []
+
+    # me 리포트만 (wife 제외) 아카이브에 표시
+    me_only = [f for f in report_files if "_wife_" not in os.path.basename(f)]
+
+    nav_portfolio_latest = _latest_date(me_only, "report_")
+    nav_scanner_latest = _latest_date(scanner_files, "scanner_")
+    nav_backtest_latest = _latest_date(backtest_files, "backtest_")
+    nav_trend_latest = _latest_date(trend_files, "trend_")
+    # wife 포트 최신
+    wife_files = [f for f in report_files if "_wife_" in os.path.basename(f)]
+    nav_wife_latest = _latest_date(wife_files, "report_wife_")
+
+    link_portfolio = f"report_{nav_portfolio_latest}.html" if nav_portfolio_latest else "index.html"
+    link_scanner = f"scanner_{nav_scanner_latest}.html" if nav_scanner_latest else "#"
+    link_backtest = f"backtest_{nav_backtest_latest}.html" if nav_backtest_latest else "#"
+    link_trend = f"trend_{nav_trend_latest}.html" if nav_trend_latest else "#"
+    link_wife = f"report_wife_{nav_wife_latest}.html" if nav_wife_latest else ""
+
+    wife_link_html = (
+        f'      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{link_wife}"><span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span></a>\n'
+        if link_wife else ""
+    )
+
     rows = []
-    for f in reversed(report_files):
+    for f in reversed(me_only):
         name = os.path.basename(f)
         date_str = name.replace("report_", "").replace(".html", "")
         try:
@@ -92,7 +142,7 @@ def _generate_archive(report_files):
             display = dt.strftime("%Y년 %m월 %d일 (%a)")
         except ValueError:
             display = date_str
-        rows.append(f'            <tr class="hover:bg-surface-container-high/50 transition-colors"><td class="px-6 py-4"><a href="reports/{name}" class="text-primary hover:underline font-medium">{display}</a></td></tr>')
+        rows.append(f'            <tr class="hover:bg-surface-container-high/50 transition-colors"><td class="px-6 py-4"><a href="{name}" class="text-primary hover:underline font-medium">{display}</a></td></tr>')
 
     html = f"""<!DOCTYPE html>
 <html class="dark" lang="ko">
@@ -112,10 +162,10 @@ def _generate_archive(report_files):
       <div><h2 class="text-lg font-black text-primary leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-on-surface/40 mt-1">Precision Curator</p></div>
     </div>
     <div class="space-y-2 flex-grow">
-      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="index.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
-      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
-      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
-      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="#"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{link_portfolio}"><span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span></a>
+{wife_link_html}      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{link_scanner}"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{link_backtest}"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{link_trend}"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
       <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
     </div>
     <div class="pt-6 mt-6 border-t border-outline-variant/20 px-4 text-[10px] text-outline leading-relaxed">{len(rows)} reports</div>

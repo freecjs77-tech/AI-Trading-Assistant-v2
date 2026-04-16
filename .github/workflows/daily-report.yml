@@ -1,9 +1,10 @@
 name: Daily Trading Report
 
-# UTC 21:30 (KST 06:30) 평일 장마감 후 자동 실행
+# UTC 21:00 (KST 06:00) 평일 장마감 후 자동 실행
+# GitHub Actions 스케줄 지연(통상 ~1시간)을 감안해 앞당김 → 실제 실행 목표 KST 07:00
 on:
   schedule:
-    - cron: '30 21 * * 1-5'
+    - cron: '0 21 * * 1-5'
   workflow_dispatch:
 
 concurrency:
