@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<!--
+  AI Trading Assistant — Report Template v5.0 (Precision Curator)
+  업데이트: 2026-04-10
+  변경 이력:
+    v5.0: Precision Curator 디자인 — Tailwind CSS + Material Symbols + M3 컬러
+    v4.0: Kinetic Ledger 다크 테마 리디자인
+    v3.0: Jinja2 템플릿 변환, 통화 토글(USD/KRW)
+-->
+<html lang="ko">
+<head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Report — 2026-04-15</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container": "rgb(var(--c-surface-container) / <alpha-value>)",
+        "surface-container-highest": "rgb(var(--c-surface-container-highest) / <alpha-value>)",
+        "surface-dim": "rgb(var(--c-surface-dim) / <alpha-value>)",
+        "surface": "rgb(var(--c-surface) / <alpha-value>)",
+        "surface-container-high": "rgb(var(--c-surface-container-high) / <alpha-value>)",
+        "surface-container-low": "rgb(var(--c-surface-container-low) / <alpha-value>)",
+        "surface-container-lowest": "rgb(var(--c-surface-container-lowest) / <alpha-value>)",
+        "surface-bright": "rgb(var(--c-surface-bright) / <alpha-value>)",
+        "surface-variant": "rgb(var(--c-surface-variant) / <alpha-value>)",
+        "surface-tint": "rgb(var(--c-surface-tint) / <alpha-value>)",
+        "background": "rgb(var(--c-background) / <alpha-value>)",
+        "primary": "rgb(var(--c-primary) / <alpha-value>)",
+        "primary-dim": "rgb(var(--c-primary-dim) / <alpha-value>)",
+        "primary-container": "rgb(var(--c-primary-container) / <alpha-value>)",
+        "on-primary": "rgb(var(--c-on-primary) / <alpha-value>)",
+        "on-primary-container": "rgb(var(--c-on-primary-container) / <alpha-value>)",
+        "secondary": "rgb(var(--c-secondary) / <alpha-value>)",
+        "secondary-dim": "rgb(var(--c-secondary-dim) / <alpha-value>)",
+        "secondary-container": "rgb(var(--c-secondary-container) / <alpha-value>)",
+        "on-secondary": "rgb(var(--c-on-secondary) / <alpha-value>)",
+        "on-secondary-container": "rgb(var(--c-on-secondary-container) / <alpha-value>)",
+        "tertiary": "rgb(var(--c-tertiary) / <alpha-value>)",
+        "tertiary-dim": "rgb(var(--c-tertiary-dim) / <alpha-value>)",
+        "tertiary-container": "rgb(var(--c-tertiary-container) / <alpha-value>)",
+        "on-tertiary": "rgb(var(--c-on-tertiary) / <alpha-value>)",
+        "on-tertiary-container": "rgb(var(--c-on-tertiary-container) / <alpha-value>)",
+        "on-surface": "rgb(var(--c-on-surface) / <alpha-value>)",
+        "on-surface-variant": "rgb(var(--c-on-surface-variant) / <alpha-value>)",
+        "on-background": "rgb(var(--c-on-background) / <alpha-value>)",
+        "outline": "rgb(var(--c-outline) / <alpha-value>)",
+        "outline-variant": "rgb(var(--c-outline-variant) / <alpha-value>)",
+        "error": "rgb(var(--c-error) / <alpha-value>)",
+        "error-container": "rgb(var(--c-error-container) / <alpha-value>)",
+        "on-error": "rgb(var(--c-on-error) / <alpha-value>)",
+        "on-error-container": "rgb(var(--c-on-error-container) / <alpha-value>)",
+        "inverse-surface": "rgb(var(--c-inverse-surface) / <alpha-value>)",
+        "inverse-primary": "rgb(var(--c-inverse-primary) / <alpha-value>)",
+        "inverse-on-surface": "rgb(var(--c-inverse-on-surface) / <alpha-value>)",
+      },
+      borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" },
+      fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
+    },
+  },
+}
+</script>
+<style>
+  /* ── Dark Theme ── */
+  html.dark {
+    --c-surface-container: 15 25 48; --c-surface-container-highest: 25 37 64;
+    --c-surface-dim: 6 14 32; --c-surface: 6 14 32;
+    --c-surface-container-high: 20 31 56; --c-surface-container-low: 9 19 40;
+    --c-surface-container-lowest: 0 0 0; --c-surface-bright: 31 43 73;
+    --c-surface-variant: 25 37 64; --c-surface-tint: 109 221 255;
+    --c-background: 6 14 32;
+    --c-primary: 109 221 255; --c-primary-dim: 0 195 235;
+    --c-primary-container: 0 210 253; --c-on-primary: 0 76 94;
+    --c-on-primary-container: 0 67 82;
+    --c-secondary: 0 229 188; --c-secondary-dim: 0 201 165;
+    --c-secondary-container: 16 110 0; --c-on-secondary: 11 88 0;
+    --c-on-secondary-container: 231 255 217;
+    --c-tertiary: 255 113 102; --c-tertiary-dim: 229 26 34;
+    --c-tertiary-container: 245 40 43; --c-on-tertiary: 74 0 3;
+    --c-on-tertiary-container: 0 0 0;
+    --c-on-surface: 222 229 255; --c-on-surface-variant: 163 170 196;
+    --c-on-background: 222 229 255;
+    --c-outline: 109 117 140; --c-outline-variant: 64 72 93;
+    --c-error: 255 113 108; --c-error-container: 159 5 25;
+    --c-on-error: 73 0 6; --c-on-error-container: 255 168 163;
+    --c-inverse-surface: 250 248 255; --c-inverse-primary: 0 104 126;
+    --c-inverse-on-surface: 77 85 107;
+    --grad-start: #6dddff; --grad-end: #00d2fd;
+  }
+  /* ── Light Theme (Blue Tone) ── */
+  html.light {
+    --c-surface-container: 255 255 255; --c-surface-container-highest: 226 232 240;
+    --c-surface-dim: 241 245 249; --c-surface: 241 243 245;
+    --c-surface-container-high: 255 255 255; --c-surface-container-low: 248 250 252;
+    --c-surface-container-lowest: 255 255 255; --c-surface-bright: 255 255 255;
+    --c-surface-variant: 248 250 252; --c-surface-tint: 37 99 235;
+    --c-background: 241 243 245;
+    --c-primary: 37 99 235; --c-primary-dim: 30 64 175;
+    --c-primary-container: 219 234 254; --c-on-primary: 255 255 255;
+    --c-on-primary-container: 30 64 175;
+    --c-secondary: 59 130 246; --c-secondary-dim: 29 78 216;
+    --c-secondary-container: 219 234 254; --c-on-secondary: 255 255 255;
+    --c-on-secondary-container: 30 64 175;
+    --c-tertiary: 225 29 72; --c-tertiary-dim: 190 18 60;
+    --c-tertiary-container: 255 241 242; --c-on-tertiary: 255 255 255;
+    --c-on-tertiary-container: 136 19 55;
+    --c-on-surface: 15 23 42; --c-on-surface-variant: 71 85 105;
+    --c-on-background: 15 23 42;
+    --c-outline: 100 116 139; --c-outline-variant: 148 163 184;
+    --c-error: 225 29 72; --c-error-container: 255 241 242;
+    --c-on-error: 255 255 255; --c-on-error-container: 136 19 55;
+    --c-inverse-surface: 15 23 42; --c-inverse-primary: 29 78 216;
+    --c-inverse-on-surface: 248 250 252;
+    --grad-start: #2563EB; --grad-end: #1E40AF;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .gradient-text {
+    background: linear-gradient(135deg, var(--grad-start) 0%, var(--grad-end) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  /* ── Signal Badges (theme-independent) ── */
+  .sig { display:inline-block; padding:2px 10px; font-size:11px; font-weight:700; border-radius:4px; border:none; min-width:90px; text-align:center; }
+  .sig-buy1, .sig-buy2, .sig-buy3 { background:#2563eb; color:#fff; }
+  .sig-tp1, .sig-tp2, .sig-top { background:#e11d48; color:#fff; }
+  .sig-watch, .sig-hold, .sig-cash, .sig-bond { background:#d97706; color:#fff; }
+  .sig-buy1::before, .sig-buy2::before, .sig-buy3::before { content:"▲ "; }
+  .sig-tp1::before, .sig-tp2::before, .sig-top::before { content:"▼ "; }
+  .sig-watch::before { content:"◆ "; }
+  .sig-hold::before { content:"■ "; }
+  .sig-cash::before, .sig-bond::before { content:"● "; }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="1471.08">
+
+<!-- ── Sidebar ── -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center">
+      <span class="material-symbols-outlined text-[#004352]" style="font-variation-settings: 'FILL' 1;">dashboard_customize</span>
+    </div>
+    <div>
+      <h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2>
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p>
+    </div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="report_2026-04-15.html">
+      <span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="report_wife_2026-04-15.html">
+      <span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-04-15.html">
+      <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="backtest_2026-04-15.html">
+      <span class="material-symbols-outlined">history</span><span>Backtest</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="trend_2026-04-15.html">
+      <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html">
+      <span class="material-symbols-outlined">inventory_2</span><span>Archive</span>
+    </a>
+  </div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" class="flex items-center gap-3 px-4 py-3 w-full text-left bg-[#6dddff]/10 text-[#6dddff] hover:bg-[#6dddff]/20 rounded-md transition-all font-bold text-sm">
+      <span class="material-symbols-outlined">rocket_launch</span><span>Run Workflow</span>
+    </a>
+    <button id="themeToggle" onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
+      <span class="material-symbols-outlined">light_mode</span><span>Light Mode</span>
+    </button>
+    <button id="currencyToggle" onclick="toggleCurrency()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
+      <span class="material-symbols-outlined">currency_exchange</span><span>USD / KRW</span>
+    </button>
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">
+      2026년 4월 15일 (수요일)<br>
+      
+        
+          <span class="text-[#ff7166]">LIVE</span> US:closed / KRX:open
+        
+      
+    </div>
+  </div>
+</nav>
+
+<!-- ── Mobile Sidebar Overlay ── -->
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ── Main ── -->
+<main class="md:ml-64 min-h-screen">
+
+  <!-- ── Top Header Bar ── -->
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-8">
+      <!-- Mobile menu button -->
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Trading Command Center</span>
+      <nav class="hidden lg:flex items-center gap-6 font-headline tracking-tight">
+        <div class="flex items-center gap-2">
+          <span class="text-on-surface/60 text-xs">VIX</span>
+          <span class="text-primary font-bold">18.17</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-on-surface/60 text-xs">30Y US Yield</span>
+          <span class="text-primary font-bold">4.891%</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-on-surface/60 text-xs">USD/KRW</span>
+          <span class="text-primary font-bold">1,471.08</span>
+        </div>
+      </nav>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="text-xs text-outline font-label hidden sm:block">2026-04-16 13:37:06</div>
+      <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme">
+        <span class="material-symbols-outlined">light_mode</span>
+      </button>
+      <button class="p-2 text-on-surface/60 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+      <button class="p-2 text-on-surface/60 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
+
+    
+
+    <!-- ══ Hero: Equity + Dividends + Signal Overview ══ -->
+    <section class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <!-- Col 1-2: Total Equity -->
+      <div class="lg:col-span-2 relative overflow-hidden rounded-xl bg-surface-container p-8 border border-outline-variant/10">
+        <div class="absolute top-0 right-0 p-8 opacity-10">
+          <span class="material-symbols-outlined text-[120px]">account_balance_wallet</span>
+        </div>
+        <div class="relative z-10 flex flex-col h-full justify-between gap-8">
+          <div>
+            <p class="text-on-surface-variant font-label text-sm uppercase tracking-widest mb-2">Total Equity Value</p>
+            <h1 class="text-5xl md:text-6xl font-headline font-bold gradient-text money" data-usd="623446.7532154456" data-krw="917140049.7201777">$623,447</h1>
+          </div>
+          <div class="flex flex-wrap gap-12">
+            <div>
+              <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Unrealized P&amp;L</p>
+              <p class="text-2xl font-headline font-semibold text-secondary">
+                <span class="money" data-usd="192205.0158061952" data-krw="282748954.6521777" data-signed="1">+$192,205</span>
+              </p>
+              <p class="text-xs font-label text-secondary/60">&#9650; +44.6% vs Principal</p>
+            </div>
+            <div>
+              <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Cash Reserve</p>
+              <p class="text-2xl font-headline font-semibold text-on-surface">
+                <span class="money" data-usd="91510.0" data-krw="134618530.79999998">$91,510</span>
+              </p>
+              <p class="text-on-surface-variant/60 text-xs font-label">14.7% of portfolio</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 3: Dividends -->
+      <div class="rounded-xl bg-surface-container-high p-8 border border-outline-variant/10 flex flex-col justify-between">
+        <div>
+          <h3 class="font-headline font-bold text-lg mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">payments</span> Dividends
+          </h3>
+          <div class="space-y-6">
+            <div>
+              <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Annual Total</p>
+              <p class="text-3xl font-headline font-bold text-on-surface money" data-usd="26598.01" data-krw="39127800.550799996">$26,598</p>
+              <p class="text-primary text-xs font-label mt-1">Yield 1.74%</p>
+            </div>
+            <div>
+              <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Monthly Average</p>
+              <p class="text-2xl font-headline font-bold text-on-surface money" data-usd="2216.5" data-krw="3260648.82">$2,216</p>
+              <p class="text-on-surface-variant/60 text-[10px] font-label mt-1">110990 $1366/mo · BIL $271/mo · SCHD $133/mo</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Col 4: Signal Overview -->
+      <div class="rounded-xl bg-surface-container-high p-8 border border-outline-variant/10 flex flex-col">
+        <h3 class="font-headline font-bold text-lg mb-6 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">radar</span> Signal Overview
+        </h3>
+        <div class="grid grid-cols-2 gap-4 flex-grow">
+          <div class="p-4 rounded bg-tertiary-container/10 border border-tertiary-container/20 flex flex-col justify-center items-center">
+            <span class="text-tertiary text-2xl font-headline font-bold">00</span>
+            <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Exit</span>
+          </div>
+          <div class="p-4 rounded bg-surface-bright border border-outline-variant/10 flex flex-col justify-center items-center">
+            <span class="text-on-surface text-2xl font-headline font-bold">01</span>
+            <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Trim</span>
+          </div>
+          <div class="p-4 rounded bg-secondary-container/10 border border-secondary-container/20 flex flex-col justify-center items-center">
+            <span class="text-secondary text-2xl font-headline font-bold">05</span>
+            <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Buy</span>
+          </div>
+          <div class="p-4 rounded bg-primary/10 border border-primary/20 flex flex-col justify-center items-center">
+            <span class="text-primary text-2xl font-headline font-bold">3</span>
+            <span class="text-xs font-label text-on-surface-variant uppercase tracking-tighter">Watch</span>
+          </div>
+        </div>
+        <div class="mt-4 p-3 bg-surface-dim rounded text-center">
+          <span class="text-on-surface-variant text-sm font-label">Hold: <span class="text-on-surface font-bold">13</span> &nbsp;|&nbsp;
+          <span class="text-secondary font-bold">Bullish</span>
+          
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ Holdings + Urgent Actions ══ -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <!-- Left: Holdings Tables -->
+      <div class="lg:col-span-3 space-y-6">
+
+        <!-- US Holdings -->
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-headline font-bold">US Holdings</h2>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+                <th class="px-6 py-4">Ticker</th>
+                <th class="px-6 py-4">Price / Avg</th>
+                <th class="px-6 py-4">Total Value</th>
+                <th class="px-6 py-4">Weight</th>
+                <th class="px-6 py-4">P&amp;L %</th>
+                <th class="px-6 py-4">Dividend</th>
+                <th class="px-6 py-4">Signal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/BIL.html" class="block font-headline font-bold text-primary hover:underline">BIL</a>
+                  <span class="text-[10px] text-on-surface-variant">SPDR 1-3 Month T-Bill ETF</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">$91.51</span>
+                  <span class="text-[10px] text-on-surface-variant">$83.51 avg</span>
+                </td>
+                <td class="px-6 py-4 money" data-usd="91510.0">$91,510</td>
+                <td class="px-6 py-4">14.7%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+9.6%</td>
+                <td class="px-6 py-4 text-on-surface">$3,254</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-cash">CASH</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/QQQ.html" class="block font-headline font-bold text-primary hover:underline">QQQ</a>
+                  <span class="text-[10px] text-on-surface-variant">Invesco QQQ Trust ETF</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">$637.40</span>
+                  <span class="text-[10px] text-on-surface-variant">$513.52 avg</span>
+                </td>
+                <td class="px-6 py-4 money" data-usd="32183.9029276">$32,184</td>
+                <td class="px-6 py-4">5.2%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+24.1%</td>
+                <td class="px-6 py-4 text-on-surface">$386</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/VOO.html" class="block font-headline font-bold text-primary hover:underline">VOO</a>
+                  <span class="text-[10px] text-on-surface-variant">Vanguard S&P 500 ETF</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">$643.45</span>
+                  <span class="text-[10px] text-on-surface-variant">$586.40 avg</span>
+                </td>
+                <td class="px-6 py-4 money" data-usd="21015.48044315">$21,015</td>
+                <td class="px-6 py-4">3.4%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+9.7%</td>
+                <td class="px-6 py-4 text-on-surface">$1,272</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-buy3">3rd_BUY</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/SCHD.html" class="block font-headline font-bold text-primary hover:underline">SCHD</a>
+                  <span class="text-[10px] text-on-surface-variant">Schwab US Dividend ETF</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">$30.65</span>
+                  <span class="text-[10px] text-on-surface-variant">$25.88 avg</span>
+                </td>
+                <td class="px-6 py-4 money" data-usd="14235.14451085">$14,235</td>
+                <td class="px-6 py-4">2.3%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+18.4%</td>
+                <td class="px-6 py-4 text-on-surface">$1,597</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-buy2">2nd_BUY</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/AAPL.html" class="block font-headline font-bold text-primary hover:underline">AAPL</a>
+                  <span class="text-[10px] text-on-surface-variant">Apple Inc.</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">$266.43</span>
+                  <span class="text-[10px] text-on-surface-variant">$210.85 avg</span>
+                </td>
+                <td class="px-6 py-4 money" data-usd="12242.56480557">$12,243</td>
+                <td class="px-6 py-4">2.0%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+26.4%</td>
+                <td class="px-6 py-4 text-on-surface">$83</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/TSLA.html" class="block font-headline font-bold text-primary hover:underline">TSLA</a>
+                  <span class="text-[10px] text-on-surface-variant">Tesla Inc.</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">$391.95</span>
+                  <span class="text-[10px] text-on-surface-variant">$391.69 avg</span>
+                </td>
+                <td class="px-6 py-4 money" data-usd="9014.85">$9,015</td>
+                <td class="px-6 py-4">1.4%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+0.1%</td>
+                <td class="px-6 py-4 text-on-surface">$0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-watch">WATCH</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/TLT.html" class="block font-headline font-bold text-primary hover:underline">TLT</a>
+                  <span class="text-[10px] text-on-surface-variant">iShares 20+ Year Treasury ETF</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">$86.83</span>
+                  <span class="text-[10px] text-on-surface-variant">$83.61 avg</span>
+                </td>
+                <td class="px-6 py-4 money" data-usd="2885.39771592">$2,885</td>
+                <td class="px-6 py-4">0.5%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+3.8%</td>
+                <td class="px-6 py-4 text-on-surface">$391</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+            </tbody>
+          </table>
+        </div>
+
+        <!-- KOSPI Holdings -->
+        <h2 class="text-2xl font-headline font-bold mt-8">KOSPI Holdings</h2>
+        <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+                <th class="px-6 py-4">Ticker</th>
+                <th class="px-6 py-4">Price / Avg</th>
+                <th class="px-6 py-4">Total Value</th>
+                <th class="px-6 py-4">Weight</th>
+                <th class="px-6 py-4">P&amp;L %</th>
+                <th class="px-6 py-4">Dividend</th>
+                <th class="px-6 py-4">Signal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/110990.html" class="block font-headline font-bold text-primary hover:underline">110990</a>
+                  <span class="text-[10px] text-on-surface-variant">디아이티</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;23,100</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;12,646 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;534,765,000</td>
+                <td class="px-6 py-4">58.3%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+82.7%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;24,116,327</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-watch">WATCH</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/446720.html" class="block font-headline font-bold text-primary hover:underline">446720</a>
+                  <span class="text-[10px] text-on-surface-variant">SOL 미국배당다우존스</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;13,155</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;13,261 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;24,797,175</td>
+                <td class="px-6 py-4">2.7%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-0.8%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-tp2">PROFIT_2</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/005935.html" class="block font-headline font-bold text-primary hover:underline">005935</a>
+                  <span class="text-[10px] text-on-surface-variant">삼성전자우</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;147,500</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;75,684 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;17,700,000</td>
+                <td class="px-6 py-4">1.9%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+94.9%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/133690.html" class="block font-headline font-bold text-primary hover:underline">133690</a>
+                  <span class="text-[10px] text-on-surface-variant">TIGER 미국나스닥100</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;171,300</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;152,752 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;16,958,700</td>
+                <td class="px-6 py-4">1.8%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+12.1%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/360750.html" class="block font-headline font-bold text-primary hover:underline">360750</a>
+                  <span class="text-[10px] text-on-surface-variant">TIGER 미국S&P500</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;25,695</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;23,361 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;14,543,370</td>
+                <td class="px-6 py-4">1.6%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+10.0%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/069500.html" class="block font-headline font-bold text-primary hover:underline">069500</a>
+                  <span class="text-[10px] text-on-surface-variant">KODEX 200</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;94,300</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;80,840 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;13,202,000</td>
+                <td class="px-6 py-4">1.4%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+16.7%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-buy3">3rd_BUY</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/005930.html" class="block font-headline font-bold text-primary hover:underline">005930</a>
+                  <span class="text-[10px] text-on-surface-variant">삼성전자</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;216,250</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;83,395 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;8,650,000</td>
+                <td class="px-6 py-4">0.9%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+159.3%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;78,173</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-watch">WATCH</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/381170.html" class="block font-headline font-bold text-primary hover:underline">381170</a>
+                  <span class="text-[10px] text-on-surface-variant">TIGER 미국테크TOP10</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;31,465</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;26,218 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;7,614,530</td>
+                <td class="px-6 py-4">0.8%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+20.0%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/229200.html" class="block font-headline font-bold text-primary hover:underline">229200</a>
+                  <span class="text-[10px] text-on-surface-variant">KODEX 코스닥150</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;19,595</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;19,003 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;3,527,100</td>
+                <td class="px-6 py-4">0.4%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+3.1%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-buy2">2nd_BUY</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/011170.html" class="block font-headline font-bold text-primary hover:underline">011170</a>
+                  <span class="text-[10px] text-on-surface-variant">롯데케미칼</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;89,300</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;201,056 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;1,518,100</td>
+                <td class="px-6 py-4">0.2%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-55.6%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/0154F0.html" class="block font-headline font-bold text-primary hover:underline">0154F0</a>
+                  <span class="text-[10px] text-on-surface-variant">WON 초대형IB&금융지주</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;14,910</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;14,237 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;1,341,900</td>
+                <td class="px-6 py-4">0.1%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+4.7%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-buy3">3rd_BUY</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/012330.html" class="block font-headline font-bold text-primary hover:underline">012330</a>
+                  <span class="text-[10px] text-on-surface-variant">현대모비스</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;425,000</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;312,863 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;1,275,000</td>
+                <td class="px-6 py-4">0.1%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+35.8%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/014820.html" class="block font-headline font-bold text-primary hover:underline">014820</a>
+                  <span class="text-[10px] text-on-surface-variant">동원시스템즈</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;25,750</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;136,219 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;1,210,250</td>
+                <td class="px-6 py-4">0.1%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-81.1%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/003475.html" class="block font-headline font-bold text-primary hover:underline">003475</a>
+                  <span class="text-[10px] text-on-surface-variant">유안타증권우</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;4,380</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;7,150 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;700,800</td>
+                <td class="px-6 py-4">0.1%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-38.7%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/0153K0.html" class="block font-headline font-bold text-primary hover:underline">0153K0</a>
+                  <span class="text-[10px] text-on-surface-variant">KODEX 주주환원고배당주</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;0</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;12,208 avg</span>
+                </td>
+                <td class="px-6 py-4">&#8361;0</td>
+                <td class="px-6 py-4">0.0%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-100.0%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-hold">HOLD</span>
+                  
+                  
+                </td>
+              </tr>
+              
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Data Sources -->
+        <div class="mt-8 overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+          <table class="w-full text-left border-collapse font-label text-xs">
+            <thead>
+              <tr class="bg-surface-container text-on-surface-variant text-[10px] uppercase tracking-widest">
+                <th class="px-6 py-3">Category</th><th class="px-6 py-3">Source</th><th class="px-6 py-3">Timestamp</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10 text-on-surface-variant">
+              <tr><td class="px-6 py-2">Portfolio</td><td class="px-6 py-2">portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolios/me.md)</td><td class="px-6 py-2">Screenshot date</td></tr>
+              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-16 13:37:06</td></tr>
+              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-16 13:37:06</td></tr>
+              <tr><td class="px-6 py-2">Dividends (TTM)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-04-16 13:37:06</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right: Urgent Actions -->
+      <div class="space-y-6">
+        <h2 class="text-xl font-headline font-bold flex items-center gap-2">
+          <span class="material-symbols-outlined text-tertiary">priority_high</span> Urgent Actions
+        </h2>
+        <div class="space-y-4">
+          
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-tertiary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">SOL 미국배당다우존스</h4>
+                </div>
+                <span class="sig sig-tp2">PROFIT_2</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">Higher Low 하향 돌파 + MACD 데스크로스 + hist 3일 감소</p>
+            </div>
+            
+            
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">KODEX 200</h4>
+                </div>
+                <span class="sig sig-buy3">3rd_BUY</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">KODEX 코스닥150</h4>
+                </div>
+                <span class="sig sig-buy2">2nd_BUY</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">WON 초대형IB&금융지주</h4>
+                </div>
+                <span class="sig sig-buy3">3rd_BUY</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">VOO</h4>
+                </div>
+                <span class="sig sig-buy3">3rd_BUY</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스</p>
+            </div>
+            
+            <div class="p-6 rounded-xl bg-surface-container-high border-l-4 border-secondary shadow-lg">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <p class="text-xs font-label text-on-surface-variant mb-1">Signal Detected</p>
+                  <h4 class="text-xl font-headline font-bold">SCHD</h4>
+                </div>
+                <span class="sig sig-buy2">2nd_BUY</span>
+              </div>
+              <p class="text-sm text-on-surface/80 mb-4">[확인 대기 1/2일] RSI > 42 + MACD 골든크로스 + 가격 > MA20</p>
+            </div>
+            
+          
+
+          <!-- Market Regime -->
+          <div class="p-6 rounded-xl bg-surface-container border border-outline-variant/10">
+            <p class="text-xs font-label text-on-surface-variant uppercase tracking-widest mb-3">Market Regime</p>
+            <div class="flex items-center gap-4">
+              
+              <div class="w-12 h-12 rounded-full border-4 border-secondary border-t-transparent"></div>
+              <div><p class="text-sm font-bold text-secondary">Bullish</p><p class="text-[10px] text-on-surface-variant">QQQ ⬆️ Above &middot; SPY N/A</p></div>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
+      This report is for personal reference only. Trading signals are generated from technical indicators (RSI, MACD, MA, BB, ADX, Volume) and do not constitute investment advice.<br>
+      Generated by Trading Assistant v5.0 | 2026-04-15 | Data: yfinance (2026-04-16 13:37:06) | Portfolio: portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolios/me.md)
+    </p>
+  </div>
+</main>
+
+<!-- Mobile Bottom Nav -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="index.html" class="text-primary flex flex-col items-center gap-1">
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+    <span class="text-[10px] font-label">Home</span>
+  </a>
+  <a href="scanner_2026-04-15.html" class="text-on-surface-variant flex flex-col items-center gap-1">
+    <span class="material-symbols-outlined">analytics</span>
+    <span class="text-[10px] font-label">Scan</span>
+  </a>
+  <a href="trend_2026-04-15.html" class="text-on-surface-variant flex flex-col items-center gap-1">
+    <span class="material-symbols-outlined">trending_up</span>
+    <span class="text-[10px] font-label">Trend</span>
+  </a>
+  <a href="backtest_2026-04-15.html" class="text-on-surface-variant flex flex-col items-center gap-1">
+    <span class="material-symbols-outlined">history</span>
+    <span class="text-[10px] font-label">Backtest</span>
+  </a>
+</nav>
+
+<script>
+let isKRW = true;
+function toggleCurrency() {
+  isKRW = !isKRW;
+  const rate = parseFloat(document.body.dataset.usdkrw) || 1;
+  const btn = document.getElementById('currencyToggle');
+  document.querySelectorAll('.money').forEach(el => {
+    const krw = parseFloat(el.dataset.krw);
+    const usd = parseFloat(el.dataset.usd);
+    const hasKrw = !isNaN(krw);
+    const hasUsd = !isNaN(usd);
+    if (hasKrw && hasUsd) {
+      const sign = el.dataset.signed === '1' && usd > 0 ? '+' : '';
+      if (isKRW) { el.textContent = sign + formatKRW(Math.round(krw)); }
+      else {
+        if (Math.abs(usd) >= 1000) el.textContent = sign + '$' + usd.toLocaleString('en-US', {maximumFractionDigits:0});
+        else el.textContent = sign + '$' + usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+      }
+      return;
+    }
+    if (hasKrw) {
+      if (isKRW) { el.textContent = el.dataset.fmt === 'full' ? '\u20a9' + Math.round(krw).toLocaleString('ko-KR') : formatKRW(Math.round(krw)); }
+      else { el.textContent = '\u20a9' + krw.toLocaleString('ko-KR', {maximumFractionDigits:0}); }
+      return;
+    }
+    if (!hasUsd) return;
+    if (isKRW) { el.textContent = formatKRW(Math.round(usd * rate)); }
+    else {
+      if (usd >= 1000) el.textContent = '$' + usd.toLocaleString('en-US', {maximumFractionDigits:0});
+      else el.textContent = '$' + usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+  });
+  const spans = btn.querySelectorAll('span');
+  if (spans.length > 1) spans[1].textContent = isKRW ? 'KRW / USD' : 'USD / KRW';
+}
+function formatKRW(krw) {
+  const abs = Math.abs(krw); const sign = krw < 0 ? '-' : '';
+  if (abs >= 100000000) return sign + '\u20a9' + (abs/100000000).toFixed(2) + '\uc5b5';
+  if (abs >= 10000) return sign + '\u20a9' + Math.round(abs/10000).toLocaleString() + '\ub9cc';
+  return sign + '\u20a9' + abs.toLocaleString();
+}
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  sb.classList.toggle('hidden'); sb.classList.toggle('flex');
+  ov.classList.toggle('hidden');
+}
+// ── Theme Toggle ──
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.classList.contains('dark');
+  const newTheme = isDark ? 'light' : 'dark';
+  html.classList.remove('dark', 'light');
+  html.classList.add(newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateThemeIcons(newTheme);
+}
+function updateThemeIcons(theme) {
+  const icon = theme === 'dark' ? 'light_mode' : 'dark_mode';
+  const label = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+  const headerBtn = document.getElementById('themeToggleHeader');
+  const sideBtn = document.getElementById('themeToggle');
+  if (headerBtn) headerBtn.querySelector('.material-symbols-outlined').textContent = icon;
+  if (sideBtn) {
+    sideBtn.querySelector('.material-symbols-outlined').textContent = icon;
+    const spans = sideBtn.querySelectorAll('span');
+    if (spans.length > 1) spans[1].textContent = label;
+  }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  isKRW = false; toggleCurrency();
+  updateThemeIcons(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+});
+</script>
+</body>
+</html>
