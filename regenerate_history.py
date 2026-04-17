@@ -36,12 +36,28 @@ from market_scanner import (
 )
 
 # ── 설정 ──
+import argparse
 NUM_TRADING_DAYS = 30
-HISTORY_PATH = os.path.join(PROJECT_DIR, "history", "signals_history.json")
-PORTFOLIO_DAILY_PATH = os.path.join(PROJECT_DIR, "history", "portfolio_daily.json")
 SCREENSHOTS_DIR = os.path.join(PROJECT_DIR, "screenshots")
-from portfolio_paths import primary_portfolio_path as _primary_portfolio_path
-PORTFOLIO_PATH = _primary_portfolio_path(PROJECT_DIR)
+from portfolio_paths import primary_portfolio_path as _primary_portfolio_path, portfolios_dir as _portfolios_dir, PRIMARY_OWNER as _PRIMARY_OWNER
+
+_arg_parser = argparse.ArgumentParser(description="과거 N거래일 시그널 히스토리 재생성")
+_arg_parser.add_argument("--owner", default=_PRIMARY_OWNER,
+                         help="포트폴리오 소유자 이름 (default: me). me가 아니면 market_data/scanner/portfolio_daily는 건드리지 않고 signals_history_<owner>.json만 갱신")
+_args = _arg_parser.parse_args()
+OWNER = _args.owner
+IS_PRIMARY = (OWNER == _PRIMARY_OWNER)
+
+if IS_PRIMARY:
+    HISTORY_PATH = os.path.join(PROJECT_DIR, "history", "signals_history.json")
+    PORTFOLIO_DAILY_PATH = os.path.join(PROJECT_DIR, "history", "portfolio_daily.json")
+    PORTFOLIO_PATH = _primary_portfolio_path(PROJECT_DIR)
+else:
+    HISTORY_PATH = os.path.join(PROJECT_DIR, "history", f"signals_history_{OWNER}.json")
+    PORTFOLIO_DAILY_PATH = os.path.join(PROJECT_DIR, "history", f"portfolio_daily_{OWNER}.json")
+    PORTFOLIO_PATH = os.path.join(_portfolios_dir(PROJECT_DIR), f"{OWNER}.md")
+    if not os.path.exists(PORTFOLIO_PATH):
+        raise FileNotFoundError(f"portfolio 파일 없음: {PORTFOLIO_PATH}")
 
 MACRO_SYMBOLS = {
     "VIX": "^VIX",
@@ -191,7 +207,7 @@ def build_ticker_data_for_date(
 
 def main():
     print(f"\n{'='*60}")
-    print(f"  히스토리 재생성 스크립트 (최근 {NUM_TRADING_DAYS}거래일)")
+    print(f"  히스토리 재생성 스크립트 (owner={OWNER}, 최근 {NUM_TRADING_DAYS}거래일)")
     print(f"  시그널 히스토리 + 포트폴리오 스냅샷 동시 생성")
     print(f"{'='*60}")
 
@@ -300,6 +316,11 @@ def main():
 
     print(f"  다운로드 완료: {len(ticker_dfs)}/{len(all_yf_symbols)}개 종목")
 
+    # 배당 히스토리 다운로드 (TTM 재계산용) — portfolio 종목만
+    print(f"\n[Dividends] 배당 히스토리 다운로드: {len(tickers)}종목")
+    from backfill_dividends import fetch_all_dividends, compute_ttm_dividend
+    divs_map = fetch_all_dividends(tickers)
+
     def get_series(field: str, yf_sym: str) -> pd.Series:
         if yf_sym in ticker_dfs and field in ticker_dfs[yf_sym].columns:
             return ticker_dfs[yf_sym][field].dropna()
@@ -390,17 +411,18 @@ def main():
             "data": data,
         }
 
-        # market_data JSON 저장
-        md_path = os.path.join(SCREENSHOTS_DIR, f"market_data_{date_str}.json")
-        os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
-        with open(md_path, "w", encoding="utf-8") as f:
-            json.dump(market_data, f, ensure_ascii=False, indent=2)
+        # market_data JSON 저장 — primary owner만. 비-primary는 me 데이터를 덮어쓰지 않도록 skip.
+        if IS_PRIMARY:
+            md_path = os.path.join(SCREENSHOTS_DIR, f"market_data_{date_str}.json")
+            os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+            with open(md_path, "w", encoding="utf-8") as f:
+                json.dump(market_data, f, ensure_ascii=False, indent=2)
 
         # 시그널 판정
         signals = judge_all(market_data, history)
 
         # 히스토리에 추가
-        save_today(history, date_str, signals, market_data, f"portfolio.md (regenerated)")
+        save_today(history, date_str, signals, market_data, f"portfolios/{OWNER}.md (regenerated)")
 
         # 통계 출력
         sig_counts = {}
@@ -415,6 +437,13 @@ def main():
     os.makedirs(os.path.dirname(HISTORY_PATH), exist_ok=True)
     save_history(history, HISTORY_PATH)
     print(f"\n  시그널 히스토리 저장: {len(history)}개 거래일 → {HISTORY_PATH}")
+
+    # 비-primary owner: portfolio_daily 및 scanner 재생성은 skip
+    # (portfolio_daily_{owner}.json은 rebuild_{owner}_history.py로 별도 관리, scanner는 글로벌)
+    if not IS_PRIMARY:
+        print(f"\n  [owner={OWNER}] portfolio_daily / scanner 재생성 skip (me 전용 로직)")
+        print(f"  완료: signals_history_{OWNER}.json 갱신됨")
+        return
 
     # 6) portfolio_daily.json 생성 (트렌드 차트용)
     print(f"\n{'='*60}")
@@ -525,10 +554,25 @@ def main():
 
         weights_cat = {k: round(v, 1) for k, v in weights_cat.items()}
 
-        # 배당 (고정값 — 30일간 크게 변동 없음)
-        # 기존 2026-04-09 데이터 기준: div_annual_krw=42218109, div_yield=2.08
-        div_annual_krw = round(42218109 * (rate / 1481.53), 0) if rate > 1 else 42218109
-        div_yield = 2.08
+        # 배당: 각 종목의 TTM 배당(target_ts 이전 12개월 합산) × 보유주수, KRW 환산
+        # KR 종목은 이미 KRW, US 종목은 rate로 환산
+        import pandas as _pd
+        total_div_krw = 0.0
+        for p in portfolio:
+            t = p["ticker"]
+            shares = p.get("shares", 0) or 0
+            if shares <= 0:
+                continue
+            divs = divs_map.get(t)
+            if divs is None:
+                continue
+            ttm_per_share = compute_ttm_dividend(divs, target_ts)
+            if ttm_per_share <= 0:
+                continue
+            annual = ttm_per_share * shares
+            total_div_krw += annual if is_kospi_ticker(t) else annual * rate
+        div_annual_krw = round(total_div_krw)
+        div_yield = round(total_div_krw / total_value_krw * 100, 2) if total_value_krw > 0 else 0.0
 
         portfolio_daily[date_str] = {
             "total_value_krw": round(total_value_krw),

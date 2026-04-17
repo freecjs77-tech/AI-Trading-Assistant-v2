@@ -35,6 +35,7 @@ TICKER_META = {
     "XLF":   {"name": "Financial Select Sector SPDR",    "cls": "ETF",    "cls_tag": "cls-etf"},
     "NKE":   {"name": "Nike Inc.",                       "cls": "Growth", "cls_tag": "cls-growth"},
     "BTDR":  {"name": "Bitdeer Technologies",            "cls": "Speculative", "cls_tag": "cls-growth"},
+    "IONQ":  {"name": "IonQ Inc.",                       "cls": "Speculative", "cls_tag": "cls-growth"},
     # KOSPI 개별주식
     "110990": {"name": "디아이티",              "cls": "Growth", "cls_tag": "cls-growth"},
     "005930": {"name": "삼성전자",              "cls": "Growth", "cls_tag": "cls-growth"},
@@ -42,6 +43,7 @@ TICKER_META = {
     "000660": {"name": "SK하이닉스",            "cls": "Growth", "cls_tag": "cls-growth"},
     "006400": {"name": "삼성SDI",               "cls": "Growth", "cls_tag": "cls-growth"},
     "373220": {"name": "LG에너지솔루션",        "cls": "Growth", "cls_tag": "cls-growth"},
+    "139480": {"name": "이마트",                "cls": "Value",  "cls_tag": "cls-value"},
     # KOSPI ETF
     "102110": {"name": "TIGER 200",             "cls": "ETF",    "cls_tag": "cls-etf"},
     "458730": {"name": "TIGER 미국배당다우존스", "cls": "ETF",    "cls_tag": "cls-etf"},
@@ -108,18 +110,20 @@ KR_TO_TICKER = {
     "SPDR 금융 ETF": "XLF",
     "나이키": "NKE",
     "비트마인 이머전 테크놀로지스": "BTDR",
+    "아이온큐": "IONQ",
+    "이마트": "139480",
 }
 
 # ── 종목 카테고리 분류 (시그널 판정 전략 그룹) ───────────
 STRATEGY_GROUP = {
     "growth": ["NVDA", "TSLA", "PLTR", "AAPL", "MSFT", "GOOGL", "AMZN", "NKE",
-               "QLD", "SOXL", "ETHU", "CRCL", "BTDR",
+               "QLD", "SOXL", "ETHU", "CRCL", "BTDR", "IONQ",
                "110990", "005930", "000660", "006400", "373220"],
     "etf":    ["VOO", "QQQ", "SCHD", "SOXX", "JEPI", "SPY", "XLE", "XLF",
                "102110", "458730", "379800", "379810", "396500", "0153K0", "232080", "466920",
                "446720", "133690", "360750", "069500", "381170", "229200", "0154F0"],
     "growth_kr_extra": ["005935"],  # 삼성전자우 — growth로 분류
-    "value":  ["O", "UNH", "005380", "011170", "012330", "014820", "003475"],
+    "value":  ["O", "UNH", "005380", "011170", "012330", "014820", "003475", "139480"],
     "bond":   ["TLT"],
     "metal":  ["SLV"],
     "cash":   ["BIL"],

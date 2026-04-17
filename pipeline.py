@@ -292,17 +292,37 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         charts_dir = os.path.join(details_dir, "charts")
         try:
             from chart_generator import generate_all_charts
-            # 포트폴리오 + 스캐너 BUY 종목 차트 생성
+            # 포트폴리오 + 스캐너 BUY 종목 + watchlist 전체 + secondary owner 포트폴리오 차트 생성
             tickers_list = [p["ticker"] for p in portfolio]
-            scanner_buy_tickers = []
+            extra_tickers = []
+            # SP100/ETF/KOSPI 스캐너 BUY만
             for sc in (scanner_sp100_result, scanner_etf_result, scanner_kospi_result):
                 if sc:
                     for key in ("buy_1st", "buy_2nd", "buy_3rd"):
                         for e in sc.get(key, []):
                             t = e.get("ticker", "")
-                            if t and t not in tickers_list and t not in scanner_buy_tickers:
-                                scanner_buy_tickers.append(t)
-            all_chart_tickers = tickers_list + scanner_buy_tickers
+                            if t and t not in tickers_list and t not in extra_tickers:
+                                extra_tickers.append(t)
+            # Watchlist 전체 (HOLD/WATCH 포함 — 상세 페이지가 all_signals 대상)
+            if scanner_watchlist_result:
+                for e in scanner_watchlist_result.get("all_signals", []):
+                    t = e.get("ticker", "")
+                    if t and t not in tickers_list and t not in extra_tickers:
+                        extra_tickers.append(t)
+            # Secondary owner(wife 등) 포트폴리오 티커 — primary에 없는 것만
+            try:
+                from portfolio_paths import discover_portfolios, PRIMARY_OWNER as _PO
+                from fetch_market_data import parse_portfolio_md as _ppmd
+                for _o, _op in discover_portfolios(project_dir):
+                    if _o == _PO:
+                        continue
+                    _ot, _ = _ppmd(_op)
+                    for t in _ot:
+                        if t and t not in tickers_list and t not in extra_tickers:
+                            extra_tickers.append(t)
+            except Exception as _oce:
+                print(f"  WARN secondary owner charts enumerate failed: {_oce}")
+            all_chart_tickers = tickers_list + extra_tickers
             chart_results = generate_all_charts(all_chart_tickers, charts_dir)
             print(f"  OK {len(chart_results)}/{len(all_chart_tickers)} charts generated")
         except Exception as e:
@@ -314,6 +334,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         _sc_sp100_hist = _load_scanner_history(project_dir, "sp100")
         _sc_etf_hist = _load_scanner_history(project_dir, "etf")
         _sc_kospi_hist = _load_scanner_history(project_dir, "kospi")
+        _sc_watch_hist = _load_scanner_history(project_dir, "watchlist")
 
         detail_files = generate_detail_pages(
             market_data=market_data,
@@ -324,9 +345,11 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_sp100=scanner_sp100_result,
             scanner_etf=scanner_etf_result,
             scanner_kospi=scanner_kospi_result,
+            scanner_watchlist=scanner_watchlist_result,
             scanner_sp100_history=_sc_sp100_hist,
             scanner_etf_history=_sc_etf_hist,
             scanner_kospi_history=_sc_kospi_hist,
+            scanner_watchlist_history=_sc_watch_hist,
         )
         print(f"  OK {len(detail_files)} detail pages -> {details_dir}")
 
@@ -359,22 +382,23 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
 
                 - market_data.data[ticker].div_ttm: 주당 연간 배당 (US=USD, KR=KRW)
                 - KR 종목은 그대로, US 종목은 환율 적용 후 합산
-                - yield = 총배당 / 원가 × 100
+                - yield = 총배당 / 평가금액(시장가) × 100  (me 로직과 일치)
                 """
                 ann_krw = 0.0
-                cost_krw_total = 0.0
+                mkt_krw_total = 0.0
                 for p in owner_portfolio:
                     t = p["ticker"]
                     div_ttm = data.get(t, {}).get("div_ttm", 0) or 0
                     shares = p["shares"]
-                    cost = shares * p["avg_cost"]
+                    price = data.get(t, {}).get("price", 0) or 0
+                    val = shares * price
                     if is_kospi_ticker(t):
                         ann_krw += shares * div_ttm
-                        cost_krw_total += cost
+                        mkt_krw_total += val
                     else:
                         ann_krw += shares * div_ttm * rate
-                        cost_krw_total += cost * rate
-                y_pct = (ann_krw / cost_krw_total * 100) if cost_krw_total > 0 else 0
+                        mkt_krw_total += val * rate
+                y_pct = (ann_krw / mkt_krw_total * 100) if mkt_krw_total > 0 else 0
                 return ann_krw, y_pct
 
             def _save_owner_snapshot(owner: str, owner_portfolio: list) -> dict:
@@ -576,6 +600,26 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     _owner_history = prune_old(_owner_history)
                     save_history(_owner_history, _owner_history_path)
                     print(f"  OK signals_history_{_owner}.json updated")
+
+                # owner 전용 티커(primary에 없는 것)만 상세 페이지 생성
+                # primary portfolio는 이미 위에서 상세 생성됨 — 중복 방지
+                _primary_ticker_set = {p["ticker"] for p in portfolio}
+                _owner_only_portfolio = [
+                    p for p in _owner_portfolio
+                    if p["ticker"] not in _primary_ticker_set
+                ]
+                if _owner_only_portfolio:
+                    try:
+                        _owner_details = generate_detail_pages(
+                            market_data=_owner_market,
+                            portfolio=_owner_only_portfolio,
+                            signals=_owner_signals,
+                            history=_owner_history,
+                            output_dir=details_dir,
+                        )
+                        print(f"  OK {_owner} detail pages: {len(_owner_details)} generated")
+                    except Exception as _dpe:
+                        print(f"  WARN {_owner} detail pages failed: {_dpe}")
         except Exception as e:
             import traceback as _tb_sec
             _tb_sec.print_exc()

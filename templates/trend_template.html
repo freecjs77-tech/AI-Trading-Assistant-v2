@@ -130,10 +130,24 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
     </div>
 
     {% if data_days >= 1 %}
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
+      <div class="flex gap-1 items-center" id="assetRangeToggle" role="tablist" aria-label="총 자산 Y축 범위">
+        <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-1">Y축</span>
+        <button data-mode="auto" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">Auto</button>
+        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">5~40억</button>
+      </div>
+    </div>
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="assetTrendChart" style="max-height:320px;"></canvas></div>
 
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">payments</span> 예상 연 배당금 추이</h2>
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">payments</span> 예상 연 배당금 추이</h2>
+      <div class="flex gap-1 items-center" id="divRangeToggle" role="tablist" aria-label="예상 연 배당금 Y축 범위">
+        <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-1">Y축</span>
+        <button data-mode="auto" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">Auto</button>
+        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">1000만~1억</button>
+      </div>
+    </div>
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="divTrendChart" style="max-height:320px;"></canvas></div>
 
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-error">public</span> 매크로 지표 추이</h2>
@@ -238,6 +252,34 @@ document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
     _applyOwner(btn.dataset.owner);
   });
 });
+
+// ── Y축 범위 토글: Auto vs 수동(자산 5~40억, 배당 1000~10000만원) ──
+function _applyRange(chart, mode, cfg){
+  const y = chart.options.scales.y;
+  if(mode === 'manual'){
+    y.min = cfg.min; y.max = cfg.max;
+  } else {
+    delete y.min; delete y.max;
+  }
+  chart.update();
+}
+function _wireRangeToggle(containerId, chart, cfg){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      el.querySelectorAll('.range-btn').forEach(b => {
+        b.classList.remove('bg-primary/20','text-primary','border-primary/30');
+        b.classList.add('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+      });
+      btn.classList.add('bg-primary/20','text-primary','border-primary/30');
+      btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+      _applyRange(chart, btn.dataset.mode, cfg);
+    });
+  });
+}
+_wireRangeToggle('assetRangeToggle', _assetChart, { min: 5, max: 40 });
+_wireRangeToggle('divRangeToggle',   _divChart,   { min: 1000, max: 10000 });
 
 new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'VIX', data:vixData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,108,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, yAxisID:'y' },

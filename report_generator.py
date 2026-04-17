@@ -663,6 +663,19 @@ def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
     return _build_owner_payload(combined_daily)
 
 
+TREND_START_DATE = "2026-03-05"  # 트렌드 차트 시작일 (이전 데이터는 표시 안 함)
+
+
+def _filter_trend_daily(daily: dict) -> dict:
+    """TREND_START_DATE 이후 날짜만 남긴 daily dict 반환. _meta 등 특수키는 유지."""
+    if not daily:
+        return daily
+    return {
+        k: v for k, v in daily.items()
+        if k.startswith("_") or k >= TREND_START_DATE
+    }
+
+
 def generate_trend_page(
     portfolio_daily: dict,
     output_dir: str,
@@ -676,6 +689,11 @@ def generate_trend_page(
         template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
     if date_str is None:
         date_str = datetime.now().strftime("%Y-%m-%d")
+
+    # 트렌드 차트는 TREND_START_DATE 이후만 표시
+    portfolio_daily = _filter_trend_daily(portfolio_daily)
+    if owner_daily:
+        owner_daily = {k: _filter_trend_daily(v) for k, v in owner_daily.items()}
 
     env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
 
@@ -948,9 +966,11 @@ def generate_detail_pages(
     scanner_sp100: dict | None = None,
     scanner_etf: dict | None = None,
     scanner_kospi: dict | None = None,
+    scanner_watchlist: dict | None = None,
     scanner_sp100_history: dict | None = None,
     scanner_etf_history: dict | None = None,
     scanner_kospi_history: dict | None = None,
+    scanner_watchlist_history: dict | None = None,
 ) -> list[str]:
     """
     포트폴리오 + 스캐너 BUY 종목별 상세 페이지 HTML 생성.
@@ -1090,8 +1110,12 @@ def generate_detail_pages(
         generated.append(out_path)
 
     # ── 스캐너 BUY 종목 상세 페이지 ──
+    # Watchlist는 BUY뿐 아니라 HOLD/WATCH 등 all_signals 전체를 상세 페이지로 생성
+    # (포트폴리오처럼 추적되는 의사결정 대상이므로)
     portfolio_tickers = {p["ticker"] for p in portfolio}
     scanner_entries = _collect_scanner_buy_entries(scanner_sp100, scanner_etf, scanner_kospi)
+    if scanner_watchlist:
+        scanner_entries += list(scanner_watchlist.get("all_signals", []))
     seen = set(portfolio_tickers)
 
     # 스캐너별 티커 셋 구성 (히스토리 소스 결정용)
@@ -1106,6 +1130,10 @@ def generate_detail_pages(
     sp100_tickers = _scanner_tickers(scanner_sp100)
     etf_tickers = _scanner_tickers(scanner_etf)
     kospi_tickers = _scanner_tickers(scanner_kospi)
+    watchlist_tickers = set()
+    if scanner_watchlist:
+        for entry in scanner_watchlist.get("all_signals", []):
+            watchlist_tickers.add(entry.get("ticker", ""))
 
     for e in scanner_entries:
         ticker = e.get("ticker", "")
@@ -1181,8 +1209,9 @@ def generate_detail_pages(
                 scanner_sp100_history if ticker in sp100_tickers
                 else scanner_etf_history if ticker in etf_tickers
                 else scanner_kospi_history if ticker in kospi_tickers
+                else scanner_watchlist_history if ticker in watchlist_tickers
                 else {}
-            ) if (scanner_sp100_history or scanner_etf_history or scanner_kospi_history) else [],
+            ) if (scanner_sp100_history or scanner_etf_history or scanner_kospi_history or scanner_watchlist_history) else [],
             # 메타
             "date": date_str,
             "date_ko": _date_ko(date_str),

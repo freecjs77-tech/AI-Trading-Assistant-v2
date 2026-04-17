@@ -16,9 +16,10 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # ── Telegram Bot 설정 ─────────────────────────────────
-BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "8627861470:AAHkv4tuLdJfmx-BqKfF_3bb0eYZu-yZGr4")
-CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "8615904260")
-API_BASE = f"https://api.telegram.org/bot{BOT_TOKEN}"
+# 토큰/채팅 ID는 반드시 환경변수로만 공급. 하드코딩 금지 (토큰 유출 방지).
+BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+API_BASE = f"https://api.telegram.org/bot{BOT_TOKEN}" if BOT_TOKEN else ""
 
 REPORT_URL = "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/index.html"
 
@@ -59,6 +60,7 @@ def _build_message(signals: dict, market_data: dict, portfolio: list) -> str:
             cash_count += 1
 
     # 포트폴리오 원화 환산 (market_data 최신 시세 기준 — 리포트와 동일)
+    from portfolio_data import is_korean_ticker
     krw_rate = usd_krw if usd_krw else 1300
     total_krw = 0
     total_cost_krw = 0
@@ -69,8 +71,7 @@ def _build_message(signals: dict, market_data: dict, portfolio: list) -> str:
         price = data.get(t, {}).get("price", 0) or 0
         val = shares * price
         cost = shares * avg_cost
-        is_kospi = t.isdigit() and len(t) == 6
-        if is_kospi:
+        if is_korean_ticker(t):
             total_krw += val
             total_cost_krw += cost
         else:
@@ -118,6 +119,9 @@ def _build_message(signals: dict, market_data: dict, portfolio: list) -> str:
 
 def _send_message(text: str) -> bool:
     """텍스트 메시지 전송"""
+    if not BOT_TOKEN or not CHAT_ID:
+        print("  [Telegram] TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID 미설정 — 전송 skip")
+        return False
     url = f"{API_BASE}/sendMessage"
     payload = json.dumps({
         "chat_id": CHAT_ID,
