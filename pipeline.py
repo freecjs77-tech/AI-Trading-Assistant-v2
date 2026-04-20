@@ -255,6 +255,47 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         watch_count = (scanner_watchlist_result or {}).get("total_signals", 0)
         print(f"  OK scanners: S&P100={sp_count}, ETF={etf_count}, KOSPI={kospi_count}, Watch={watch_count} signals")
 
+        # Step 4c: Politician Trades (Capitol Trades scrape + aggregate into watchlist)
+        # Independent of signal logic. Failures here must not block the rest of the pipeline
+        # — fetcher/aggregator both exit 0 on error and keep stale caches.
+        print("[Step 4c] Refreshing politician trades watchlist...")
+        _pt_env = os.environ.copy()
+        _pt_env["PYTHONIOENCODING"] = "utf-8"
+        try:
+            _pt_fetch = subprocess.run(
+                [sys.executable, os.path.join(project_dir, "politician_trades_fetcher.py")],
+                cwd=project_dir,
+                env=_pt_env,
+                capture_output=True,
+                text=True,
+                timeout=900,
+            )
+            if _pt_fetch.returncode != 0:
+                print(f"  WARN politician_trades_fetcher rc={_pt_fetch.returncode}: {_pt_fetch.stderr[:500]}")
+            else:
+                # last non-empty line of stdout tends to summarize
+                _lines = [ln for ln in _pt_fetch.stdout.splitlines() if ln.strip()]
+                if _lines:
+                    print(f"  OK fetcher: {_lines[-1]}")
+            _pt_agg = subprocess.run(
+                [sys.executable, os.path.join(project_dir, "politician_trades_aggregator.py")],
+                cwd=project_dir,
+                env=_pt_env,
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+            if _pt_agg.returncode != 0:
+                print(f"  WARN politician_trades_aggregator rc={_pt_agg.returncode}: {_pt_agg.stderr[:500]}")
+            else:
+                _lines = [ln for ln in _pt_agg.stdout.splitlines() if ln.strip()]
+                if _lines:
+                    # first 2 lines usually: "Wrote ...", "  watchlist: N entries ..."
+                    for ln in _lines[:3]:
+                        print(f"  OK aggregator: {ln}")
+        except Exception as e:
+            print(f"  WARN politician trades step failed ({type(e).__name__}: {e}); continuing")
+
         # Step 5: Report generation
         print("[Step 5] Generating report...")
         portfolio = _parse_portfolio_for_report(portfolio_path)

@@ -6,6 +6,7 @@ templates/report_template.html에 데이터를 주입하여 리포트 생성.
 """
 from __future__ import annotations
 
+import json
 import os
 from datetime import datetime
 
@@ -520,11 +521,34 @@ def generate_scanner_pages(
     kospi = scanner_kospi or {}
     watchlist = scanner_watchlist or {}
 
+    # Politician Watchlist (Capitol Trades) — V2c optional section. Graceful if file missing/stale.
+    politician_watchlist: list = []
+    politician_meta: dict = {}
+    politician_updated_at: str | None = None
+    _pt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "history", "politician_trades.json")
+    if os.path.exists(_pt_path):
+        try:
+            with open(_pt_path, encoding="utf-8") as _f:
+                _pt = json.load(_f)
+            politician_watchlist = _pt.get("watchlist", []) or []
+            politician_meta = _pt.get("meta", {}) or {}
+            politician_updated_at = _pt.get("updated_at")
+        except (OSError, json.JSONDecodeError):
+            pass  # stale/missing is fine — section just won't render
+
+    politician_buy_cards = [e for e in politician_watchlist if e.get("color_bias") == "buy"]
+    politician_sell_cards = [e for e in politician_watchlist if e.get("color_bias") == "sell"]
+
     context = {
         **nav,
         "date": date_str,
         "date_ko": _date_ko(date_str),
         "fetched_at": fetched_at,
+        # Politician Watchlist (V2c)
+        "politician_buy_cards": politician_buy_cards,
+        "politician_sell_cards": politician_sell_cards,
+        "politician_meta": politician_meta,
+        "politician_updated_at": politician_updated_at,
         # S&P 100
         "sp100_buy_1st": sp100.get("buy_1st", []),
         "sp100_buy_2nd": sp100.get("buy_2nd", []),

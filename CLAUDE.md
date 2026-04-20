@@ -4,6 +4,9 @@
 개인 미국 주식 포트폴리오(18종목, ~$440K)의 일일 기술적 분석 및 시그널 리포트 자동 생성 시스템.
 GitHub Pages에서 리포트를 서빙하고, GitHub Actions로 파이프라인을 자동/수동 실행한다.
 
+## 진행 중인 계획
+- [Capitol Trades 의원 거래 보조 지표 통합 V2c](docs/plans/capitol-trades-integration.md) — Politician Watchlist 독립 섹션 · Capitol Trades 스크랩 · 가중 스코어 + 별점 0-5 + 색상 (파랑=매수/빨강=매도) · 시그널 로직 불변
+
 ## 배포 (GitHub Pages + Actions)
 - **리포트 URL**: https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/
 - **자동 실행**: 매일 UTC 21:30 (EST 16:30, KST 06:30) 평일 장마감 후

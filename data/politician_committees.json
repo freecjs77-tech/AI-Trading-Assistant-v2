@@ -1,0 +1,17 @@
+{
+  "_note": "Minimal seed of politician_id -> committees for V2c prototype. When not found, aggregator treats as no committee (tier 3 / 1.0x weight). Manually curated from public committee rosters; verify before production use and refresh when Congress reorganizes (start of each new Congress, currently 119th 2025-2027). Committee names must match keys in committee_sector_map.json.",
+  "_source": "Ad-hoc from public committee pages — seed only, incomplete. Add entries as they appear in politician_trades_raw.json top-activity list.",
+
+  "P000048": {"name": "Nancy Pelosi", "committees": []},
+  "L000560": {"name": "Rick Larsen", "committees": []},
+  "M001227": {"name": "Jennifer McClellan", "committees": []},
+  "S001214": {"name": "Greg Steube", "committees": []},
+  "Y000067": {"name": "Rudy Yakym", "committees": []},
+
+  "_expected_tier1_examples": {
+    "_hint": "Fill these after verifying current Congress committee assignments. Examples of high-impact entries:",
+    "EXAMPLE1": {"name": "Example Intel Committee Member", "committees": ["Intelligence"]},
+    "EXAMPLE2": {"name": "Example Armed Services Member", "committees": ["Armed Services"]},
+    "EXAMPLE3": {"name": "Example Finance Committee Member", "committees": ["Finance", "Banking"]}
+  }
+}
