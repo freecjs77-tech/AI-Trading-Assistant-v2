@@ -9,7 +9,11 @@ yfinance로 실시간 기술지표를 수집해 screenshots/market_data_YYYY-MM-
   현재가, MA20/MA50/MA200, RSI(14), MACD/Signal/Hist (최근 3일 추세),
   Bollinger Bands (상단/중단/하단), ADX(14), 거래량/20일평균 거래량/비율,
   최근 20일 고점 대비 하락률,
-  ★ 배당 (TTM): div_ttm (연간 배당/주), div_yield_ttm (배당수익률%)
+  ★ 배당 (연간 예상): div_ttm (연간 배당/주), div_yield_ttm (배당수익률%)
+    ※ 필드명은 과거 호환을 위해 유지하되, 값은 yfinance.dividendRate(forward)을 우선 사용.
+      Forward 없으면 ticker.dividends 최근 12개월 합산(TTM)로 폴백.
+      세금/연간 예상 수입 계산 용도로 forward가 더 정확함.
+    - div_source: "forward" | "ttm" | "none" — 실제 사용된 소스 표시
 
 수집 지표 (매크로 — 자동 포함):
   VIX (^VIX), 30Y 국채 금리 (^TYX), USD/KRW 환율 (USDKRW=X)
@@ -279,41 +283,64 @@ def fetch_macro() -> dict:
 
 # ── 단일 종목 수집 ───────────────────────────────────
 
+def _ttm_sum_from_divs(cached_divs) -> float:
+    """cached_divs(pd.Series)에서 최근 12개월 합산 배당금/주 반환. 실패/없음 시 0.0."""
+    if cached_divs is None or len(cached_divs) == 0:
+        return 0.0
+    try:
+        idx = cached_divs.index.tz_localize(None) if getattr(cached_divs.index, "tzinfo", None) else cached_divs.index
+        cutoff = pd.Timestamp.now() - pd.DateOffset(years=1)
+        ttm = cached_divs[idx >= cutoff]
+        return round(float(ttm.sum()), 4) if len(ttm) > 0 else 0.0
+    except Exception:
+        return 0.0
+
+
+def _fetch_forward_dividend_rate(yf_sym: str, quiet: bool = True) -> float | None:
+    """yfinance ticker.info.dividendRate(forward 연배당/주) 조회.
+
+    None 반환 시 호출측이 TTM 폴백해야 함.
+    rate limit을 고려해 _download_with_retry로 감싸고, 예외는 삼켜 None 반환.
+    """
+    try:
+        def _call():
+            tk = yf.Ticker(yf_sym)
+            info = tk.info or {}
+            rate = info.get("dividendRate")
+            return float(rate) if rate else None
+        return _download_with_retry(_call, label=f"info[{yf_sym}]", quiet=quiet)
+    except Exception:
+        return None
+
+
+# 과거 호환 shim — 다른 모듈에서 import할 수 있으므로 alias 유지
 def fetch_div_ttm(ticker: "yf.Ticker", current_price: float) -> tuple[float, float]:
-    """
-    TTM(최근 12개월) 배당/주 및 배당수익률 계산.
-    반환: (div_ttm, div_yield_pct)  — 실패 시 (0.0, 0.0)
-    """
-    # 방법 1: ticker.dividends (배당 히스토리에서 직접 합산)
+    """(deprecated) ticker.dividends TTM 합산 + info 폴백. 신 코드는 _ttm_sum_from_divs 사용 권장."""
     try:
         divs = ticker.dividends
-        if divs is not None and len(divs) > 0:
-            idx = divs.index.tz_localize(None) if divs.index.tzinfo else divs.index
-            cutoff = pd.Timestamp.now() - pd.DateOffset(years=1)
-            ttm = divs[idx >= cutoff]
-            if len(ttm) > 0:
-                div_ttm = round(float(ttm.sum()), 4)
-                div_yield = round(div_ttm / current_price * 100, 4) if current_price > 0 else 0.0
-                return div_ttm, div_yield
+        div_ttm = _ttm_sum_from_divs(divs)
+        if div_ttm > 0:
+            div_yield = round(div_ttm / current_price * 100, 4) if current_price > 0 else 0.0
+            return div_ttm, div_yield
     except Exception:
         pass
-
-    # 방법 2: ticker.info fallback (yfinance 버전 호환성)
     try:
         info = ticker.info or {}
-        div_ttm = info.get("trailingAnnualDividendRate") or info.get("dividendRate") or 0.0
+        div_ttm = info.get("dividendRate") or info.get("trailingAnnualDividendRate") or 0.0
         if div_ttm and div_ttm > 0:
             div_yield = round(float(div_ttm) / current_price * 100, 4) if current_price > 0 else 0.0
             return round(float(div_ttm), 4), div_yield
     except Exception:
         pass
-
     return 0.0, 0.0
 
 
-def fetch_ticker(symbol: str, cached_df=None, cached_divs=None) -> dict:
+def fetch_ticker(symbol: str, cached_df=None, cached_divs=None, forward_div=None) -> dict:
     """yfinance로 종목 데이터 수집 후 기술지표 계산 (배당 포함).
-    cached_df/cached_divs가 주어지면 네트워크 호출 없이 재사용 (레이트리밋 회피)."""
+
+    cached_df/cached_divs가 주어지면 네트워크 호출 없이 재사용 (레이트리밋 회피).
+    forward_div: yfinance.info.dividendRate 값(연간 예상 배당/주). main()에서 사전 조회해 전달.
+                 None이면 cached_divs TTM 합산으로 폴백."""
     try:
         if cached_df is not None:
             df = cached_df
@@ -357,20 +384,24 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None) -> dict:
         # 시가총액은 현재 사용되지 않으므로 제거 (ticker.info 호출 회피 — rate limit)
         market_cap = 0
 
-        # 배당 수집 (TTM) — 배치 다운로드(actions=True)로 수집된 cached_divs만 사용
-        # 이전 구현은 cached_divs=None일 때 ticker.dividends + ticker.info를 추가 호출해
-        # 종목당 최대 2회 HTTP 요청(=최대 78회)이 발생했다. 배치 다운로드가 기본이므로
-        # 폴백 경로를 제거해 성능/안정성을 확보한다. 배치가 실패한 극단 케이스는 0 처리.
-        div_ttm, div_yield_ttm = 0.0, 0.0
-        if cached_divs is not None:
-            try:
-                idx = cached_divs.index.tz_localize(None) if getattr(cached_divs.index, "tzinfo", None) else cached_divs.index
-                cutoff = pd.Timestamp.now() - pd.DateOffset(years=1)
-                ttm = cached_divs[idx >= cutoff] if len(cached_divs) > 0 else cached_divs
-                div_ttm = round(float(ttm.sum()), 4) if len(ttm) > 0 else 0.0
-                div_yield_ttm = round(div_ttm / last_close * 100, 4) if (div_ttm > 0 and last_close > 0) else 0.0
-            except Exception:
-                pass
+        # 배당 수집 — forward(yfinance.dividendRate) 우선, TTM 합산 폴백
+        # 세금/연간 예상 수입 계산에는 forward가 더 정확 (특별배당·분기 신설 반영)
+        # forward_div는 main()에서 사전에 yf.Ticker.info로 조회해 전달 (배당 이력 있는 종목만)
+        ttm_actual = _ttm_sum_from_divs(cached_divs)
+        if forward_div is not None and forward_div > 0:
+            div_annual = round(float(forward_div), 4)
+            div_source = "forward"
+        elif ttm_actual > 0:
+            div_annual = ttm_actual
+            div_source = "ttm"
+        else:
+            div_annual = 0.0
+            div_source = "none"
+        div_yield_annual = round(div_annual / last_close * 100, 4) if (div_annual > 0 and last_close > 0) else 0.0
+
+        # 구 필드명 유지 (pipeline.py, report_generator.py 등 다운스트림 호환)
+        div_ttm = div_annual
+        div_yield_ttm = div_yield_annual
 
         def safe(series, idx=-1):
             v = series.iloc[idx]
@@ -421,9 +452,12 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None) -> dict:
             "sig_low_stopped":   bool(len(close) >= 4 and float(close.iloc[-1]) >= min(float(p) for p in close.iloc[-4:-1])),
             # 이중 바닥 패턴
             "double_bottom":     dbl_bottom,
-            # 배당 (TTM — 최근 12개월 합산)
-            "div_ttm":           div_ttm,       # 연간 배당/주 ($)
+            # 배당 (연간 예상 — forward 우선, TTM 폴백)
+            "div_ttm":           div_ttm,       # 연간 배당/주 (forward 우선값 — 필드명은 호환용)
             "div_yield_ttm":     div_yield_ttm, # 배당수익률 (%)
+            "div_annual":        div_annual,    # div_ttm의 명시적 alias (forward 의미)
+            "div_yield_annual":  div_yield_annual,
+            "div_source":        div_source,    # "forward" | "ttm" | "none"
             "_last_date":        df.index[-1].strftime("%Y-%m-%d"),  # 마지막 거래일
         }
 
@@ -634,6 +668,36 @@ def main():
             print(f"⚠️  일괄 다운로드 실패 ({_bulk_e}) — 종목별 폴백 사용")
         bulk_df = None
 
+    # ── Forward 배당률 사전 조회 ──
+    # yfinance.info.dividendRate는 forward(예상 연배당) — 세금/수입 예상에 정확
+    # 후보: ①보유종목(portfolio_shares) 전체 + ②최근 1년 배당이력 있는 종목
+    #   ─ ①은 세금 계산 정확도를 위해 TTM=0이어도 필수 (예: 006400 최근 미지급이지만 forward 977원 예측)
+    #   ─ ②는 스캐너/와치리스트에서 배당 있는 것만 (스캐너 비배당주는 호출 스킵)
+    forward_divs: dict[str, float] = {}
+    owned_yf = set()
+    if portfolio_shares:
+        for _sym in portfolio_shares.keys():
+            try:
+                owned_yf.add(to_yfinance_symbol(_sym))
+            except Exception:
+                pass
+    with_div_hist = {s for s in yf_symbols if bulk_divs.get(s) is not None and len(bulk_divs.get(s, [])) > 0}
+    candidate_syms = [s for s in yf_symbols if s in owned_yf or s in with_div_hist]
+    if candidate_syms:
+        if not args.quiet:
+            print(f"  💵 Forward 배당률 조회: 배당이력 있는 {len(candidate_syms)}종목 (info.dividendRate)")
+        ok_cnt, fb_cnt = 0, 0
+        for yf_sym in candidate_syms:
+            fwd = _fetch_forward_dividend_rate(yf_sym, quiet=True)
+            if fwd is not None and fwd > 0:
+                forward_divs[yf_sym] = fwd
+                ok_cnt += 1
+            else:
+                fb_cnt += 1
+            time.sleep(0.2)  # rate limit 완화 (배치성이지만 info는 중량 엔드포인트)
+        if not args.quiet:
+            print(f"     forward {ok_cnt}건 / TTM 폴백 {fb_cnt}건")
+
     # ── 데이터 수집 (캐시 우선, 폴백 시 종목별 네트워크 호출) ──
     results = {}
     success, fail = 0, 0
@@ -659,7 +723,12 @@ def main():
             except Exception:
                 cached_df = None
 
-        data = fetch_ticker(yf_sym, cached_df=cached_df, cached_divs=cached_divs)
+        data = fetch_ticker(
+            yf_sym,
+            cached_df=cached_df,
+            cached_divs=cached_divs,
+            forward_div=forward_divs.get(yf_sym),
+        )
         results[display_sym] = data
 
         if "error" in data:
@@ -747,6 +816,7 @@ def main():
                     "div_per_sh":   div_ttm,
                     "div_yield":    d.get("div_yield_ttm", 0.0),
                     "annual_income": annual_inc,
+                    "div_source":   d.get("div_source", "none"),
                 }
                 total_annual     += annual_inc
                 total_port_value += port_val
@@ -757,7 +827,7 @@ def main():
             "monthly_avg":    round(total_annual / 12, 2),
             "portfolio_yield": port_yield,
             "per_ticker":     per_ticker,
-            "note":           "TTM(최근 12개월) 배당 합산. yfinance dividend history 기준.",
+            "note":           "연간 예상 배당 (forward 우선). yfinance.info.dividendRate 있으면 사용, 없으면 최근 12개월 실배당(TTM) 합산으로 폴백. 세금/예상 수입 계산 용도.",
         }
         if not args.quiet:
             print(f"\n  💰 배당 집계: 연 ${total_annual:,.0f}  |  월 ${total_annual/12:,.0f}  |  수익률 {port_yield:.2f}%")
