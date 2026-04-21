@@ -575,6 +575,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     "div_per_sh": div_ttm,
                     "div_yield": info.get("div_yield_ttm", 0.0),
                     "annual_income": annual_inc,
+                    "div_source": info.get("div_source", "none"),
                 }
                 total_annual += annual_inc
                 total_port_value += port_val
@@ -584,7 +585,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 "monthly_avg": round(total_annual / 12, 2),
                 "portfolio_yield": port_yield,
                 "per_ticker": per_ticker,
-                "note": "TTM 배당 합산. owner별 재계산 (pipeline.py).",
+                "note": "연간 예상 배당 (forward 우선, TTM 폴백). owner별 재계산 (pipeline.py).",
             }
 
         try:
