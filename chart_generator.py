@@ -17,10 +17,13 @@ matplotlib.use("Agg")
 
 
 def _calc_rsi(close: pd.Series, period: int = 14) -> pd.Series:
+    """Wilder's RSI — fetch_market_data.calc_rsi 와 동일 공식 (EMA com=period-1)."""
     delta = close.diff()
-    gain = delta.where(delta > 0, 0.0).rolling(period).mean()
-    loss = (-delta.where(delta < 0, 0.0)).rolling(period).mean()
-    rs = gain / loss
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+    avg_gain = gain.ewm(com=period - 1, min_periods=period).mean()
+    avg_loss = loss.ewm(com=period - 1, min_periods=period).mean()
+    rs = avg_gain / avg_loss
     return 100 - (100 / (1 + rs))
 
 
@@ -52,24 +55,37 @@ def generate_chart(symbol: str, output_path: str, days: int = 120, theme: str = 
         if df is None or df.empty or len(df) < 50:
             return False
 
-        # 최근 N일만 사용
-        df = df.tail(days).copy()
+        # === 지표는 1년 풀 히스토리에서 계산 후 tail ===
+        # (tail 후 계산하면 워밍업이 창 안에서 시작돼 값이 왜곡됨.
+        #  특히 Wilder/EMA 계열 RSI·MACD는 표시 구간 앞 데이터까지 누적돼야 정확)
+        close_full = df["Close"]
 
         # 이동평균
-        ma20 = df["Close"].rolling(20).mean()
-        ma50 = df["Close"].rolling(50).mean()
+        ma20_full = close_full.rolling(20).mean()
+        ma50_full = close_full.rolling(50).mean()
 
         # 볼린저 밴드
-        bb_mid = df["Close"].rolling(20).mean()
-        bb_std = df["Close"].rolling(20).std()
-        bb_upper = bb_mid + 2 * bb_std
-        bb_lower = bb_mid - 2 * bb_std
+        bb_mid_full = close_full.rolling(20).mean()
+        bb_std_full = close_full.rolling(20).std()
+        bb_upper_full = bb_mid_full + 2 * bb_std_full
+        bb_lower_full = bb_mid_full - 2 * bb_std_full
 
-        # RSI
-        rsi = _calc_rsi(df["Close"])
+        # RSI (Wilder's)
+        rsi_full = _calc_rsi(close_full)
 
         # MACD
-        macd_line, signal_line, macd_hist = _calc_macd(df["Close"])
+        macd_line_full, signal_line_full, macd_hist_full = _calc_macd(close_full)
+
+        # 최근 N일만 사용 (df + 모든 지표 동일 구간으로 슬라이스)
+        df = df.tail(days).copy()
+        ma20 = ma20_full.tail(days)
+        ma50 = ma50_full.tail(days)
+        bb_upper = bb_upper_full.tail(days)
+        bb_lower = bb_lower_full.tail(days)
+        rsi = rsi_full.tail(days)
+        macd_line = macd_line_full.tail(days)
+        signal_line = signal_line_full.tail(days)
+        macd_hist = macd_hist_full.tail(days)
 
         # 테마별 스타일
         if theme == "light":
