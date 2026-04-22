@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asset Trend Dashboard — 2026-04-22</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{
+"surface-container":"rgb(var(--c-surface-container)/<alpha-value>)","surface-container-highest":"rgb(var(--c-surface-container-highest)/<alpha-value>)",
+"surface-dim":"rgb(var(--c-surface-dim)/<alpha-value>)","surface":"rgb(var(--c-surface)/<alpha-value>)",
+"surface-container-high":"rgb(var(--c-surface-container-high)/<alpha-value>)","surface-container-low":"rgb(var(--c-surface-container-low)/<alpha-value>)",
+"surface-bright":"rgb(var(--c-surface-bright)/<alpha-value>)","surface-variant":"rgb(var(--c-surface-variant)/<alpha-value>)",
+"background":"rgb(var(--c-background)/<alpha-value>)",
+"primary":"rgb(var(--c-primary)/<alpha-value>)","primary-dim":"rgb(var(--c-primary-dim)/<alpha-value>)",
+"primary-container":"rgb(var(--c-primary-container)/<alpha-value>)","on-primary":"rgb(var(--c-on-primary)/<alpha-value>)",
+"on-primary-container":"rgb(var(--c-on-primary-container)/<alpha-value>)",
+"secondary":"rgb(var(--c-secondary)/<alpha-value>)","secondary-dim":"rgb(var(--c-secondary-dim)/<alpha-value>)",
+"secondary-container":"rgb(var(--c-secondary-container)/<alpha-value>)","on-secondary":"rgb(var(--c-on-secondary)/<alpha-value>)",
+"tertiary":"rgb(var(--c-tertiary)/<alpha-value>)","tertiary-dim":"rgb(var(--c-tertiary-dim)/<alpha-value>)",
+"tertiary-container":"rgb(var(--c-tertiary-container)/<alpha-value>)","on-tertiary":"rgb(var(--c-on-tertiary)/<alpha-value>)",
+"on-surface":"rgb(var(--c-on-surface)/<alpha-value>)","on-surface-variant":"rgb(var(--c-on-surface-variant)/<alpha-value>)",
+"on-background":"rgb(var(--c-on-background)/<alpha-value>)",
+"outline":"rgb(var(--c-outline)/<alpha-value>)","outline-variant":"rgb(var(--c-outline-variant)/<alpha-value>)",
+"error":"rgb(var(--c-error)/<alpha-value>)","error-container":"rgb(var(--c-error-container)/<alpha-value>)",
+"inverse-surface":"rgb(var(--c-inverse-surface)/<alpha-value>)"
+},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+</script>
+<style>
+html.dark{--c-surface-container:15 25 48;--c-surface-container-highest:25 37 64;--c-surface-dim:6 14 32;--c-surface:6 14 32;--c-surface-container-high:20 31 56;--c-surface-container-low:9 19 40;--c-surface-bright:31 43 73;--c-surface-variant:25 37 64;--c-background:6 14 32;--c-primary:109 221 255;--c-primary-dim:0 195 235;--c-primary-container:0 210 253;--c-on-primary:0 76 94;--c-on-primary-container:0 67 82;--c-secondary:0 229 188;--c-secondary-dim:0 201 165;--c-secondary-container:16 110 0;--c-on-secondary:11 88 0;--c-tertiary:255 113 102;--c-tertiary-dim:229 26 34;--c-tertiary-container:245 40 43;--c-on-tertiary:74 0 3;--c-on-surface:222 229 255;--c-on-surface-variant:163 170 196;--c-on-background:222 229 255;--c-outline:109 117 140;--c-outline-variant:64 72 93;--c-error:255 113 108;--c-error-container:159 5 25;--c-inverse-surface:250 248 255}
+html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 232 240;--c-surface-dim:226 232 240;--c-surface:241 245 249;--c-surface-container-high:248 250 252;--c-surface-container-low:255 255 255;--c-surface-bright:248 250 252;--c-surface-variant:241 245 249;--c-background:241 245 249;--c-primary:2 132 199;--c-primary-dim:3 105 161;--c-primary-container:224 242 254;--c-on-primary:255 255 255;--c-on-primary-container:3 105 161;--c-secondary:5 150 105;--c-secondary-dim:4 120 87;--c-secondary-container:167 243 208;--c-on-secondary:255 255 255;--c-tertiary:220 38 38;--c-tertiary-dim:185 28 28;--c-tertiary-container:254 202 202;--c-on-tertiary:255 255 255;--c-on-surface:15 23 42;--c-on-surface-variant:71 85 105;--c-on-background:15 23 42;--c-outline:100 116 139;--c-outline-variant:148 163 184;--c-error:220 38 38;--c-error-container:254 226 226;--c-inverse-surface:15 23 42}
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body">
+
+<!-- Sidebar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center"><span class="material-symbols-outlined text-[#004352]" style="font-variation-settings:'FILL' 1;">dashboard_customize</span></div>
+    <div><h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p></div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="report_2026-04-22.html"><span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span></a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="report_wife_2026-04-22.html"><span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span></a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-04-22.html"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="backtest_2026-04-22.html"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="trend_2026-04-22.html"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
+  </div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <button onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left" id="themeToggle"><span class="material-symbols-outlined">light_mode</span><span>Light Mode</span></button>
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">2026년 4월 22일 (수요일)</div>
+  </div>
+</nav>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<main class="md:ml-64 min-h-screen">
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Asset Trend</span>
+      <span class="text-xs text-outline font-label hidden sm:block">34일 추이</span>
+    </div>
+    <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme"><span class="material-symbols-outlined">light_mode</span></button>
+  </header>
+
+  <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
+    
+    <!-- Owner 선택 토글 (최상단) -->
+    <div class="flex gap-2 items-center" id="ownerToggle" role="tablist">
+      <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-2">포트 선택</span>
+      <button data-owner="me" class="owner-btn px-4 py-2 rounded-md text-sm font-bold bg-primary/20 text-primary border border-primary/30">내 포트</button>
+      <button data-owner="wife" class="owner-btn px-4 py-2 rounded-md text-sm font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">와이프</button>
+      <button data-owner="combined" class="owner-btn px-4 py-2 rounded-md text-sm font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">합산</button>
+    </div>
+    
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary flex items-center gap-4">
+        <span class="material-symbols-outlined text-secondary/60 flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">account_balance</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Total Assets</span>
+          <div class="text-2xl font-headline font-bold text-secondary" id="sumTotal">&#8361;22.97억</div>
+          <div class="text-xs mt-2 text-secondary" id="sumPnl">&#8599; +&#8361;14.15억 (+160.4%)</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-primary flex items-center gap-4">
+        <span class="material-symbols-outlined text-primary/60 flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">savings</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Investment Principal</span>
+          <div class="text-2xl font-headline font-bold text-primary" id="sumCost">&#8361;8.82억</div>
+          <div class="text-xs mt-2 text-outline">투자 원금</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-tertiary flex items-center gap-4">
+        <span class="material-symbols-outlined text-tertiary/60 flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">payments</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Est. Annual Dividend</span>
+          <div class="text-2xl font-headline font-bold text-tertiary" id="sumDivAnnual">&#8361;4,251만</div>
+          <div class="text-xs mt-2 text-secondary" id="sumDivYield">Yield: 1.85%</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-outline flex items-center gap-4">
+        <span class="material-symbols-outlined text-outline flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">currency_exchange</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Cash Liquidity</span>
+          <div class="text-2xl font-headline font-bold text-on-surface" id="sumCash">&#8361;1.22억</div>
+          <div class="text-xs mt-2 text-tertiary" id="sumCashPct">&#9679; 5.3% Allocation</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset Allocation -->
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
+      <h2 class="text-lg font-headline font-bold mb-6" id="allocTitle">Asset Allocation</h2>
+      <div class="flex flex-col lg:flex-row items-center gap-8">
+        <div class="relative" style="width:260px;height:260px;flex-shrink:0;">
+          <canvas id="tickerPie"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" id="pieCenter"></div>
+        </div>
+        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full" id="tickerCards"></div>
+      </div>
+    </div>
+
+    
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
+      <div class="flex gap-1 items-center" id="assetRangeToggle" role="tablist" aria-label="총 자산 Y축 범위">
+        <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-1">Y축</span>
+        <button data-mode="auto" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">Auto</button>
+        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">5~40억</button>
+      </div>
+    </div>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="assetTrendChart" style="max-height:320px;"></canvas></div>
+
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">payments</span> 예상 연 배당금 추이</h2>
+      <div class="flex gap-1 items-center" id="divRangeToggle" role="tablist" aria-label="예상 연 배당금 Y축 범위">
+        <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-1">Y축</span>
+        <button data-mode="auto" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">Auto</button>
+        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">1000만~1억</button>
+      </div>
+    </div>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="divTrendChart" style="max-height:320px;"></canvas></div>
+
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-error">public</span> 매크로 지표 추이</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="macroChart" style="max-height:320px;"></canvas></div>
+    
+
+    <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10">데이터 소스: 일별 파이프라인 스냅샷 | Chart.js 4.x | 총 자산 = USD x 환율 + KRW</p>
+  </div>
+</main>
+
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="report_2026-04-22.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
+  <a href="scanner_2026-04-22.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="trend_2026-04-22.html" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="backtest_2026-04-22.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">history</span><span class="text-[10px] font-label">Backtest</span></a>
+</nav>
+
+<script>
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
+function toggleTheme(){const h=document.documentElement,d=h.classList.contains('dark');h.classList.remove('dark','light');const t=d?'light':'dark';h.classList.add(t);localStorage.setItem('theme',t);updateThemeIcons(t);}
+function updateThemeIcons(t){const i=t==='dark'?'light_mode':'dark_mode',l=t==='dark'?'Light Mode':'Dark Mode';const hb=document.getElementById('themeToggleHeader'),sb=document.getElementById('themeToggle');if(hb)hb.querySelector('.material-symbols-outlined').textContent=i;if(sb){sb.querySelector('.material-symbols-outlined').textContent=i;const ss=sb.querySelectorAll('span');if(ss.length>1)ss[1].textContent=l;}}
+document.addEventListener('DOMContentLoaded',function(){updateThemeIcons(document.documentElement.classList.contains('dark')?'dark':'light');});
+
+const isDark = document.documentElement.classList.contains('dark');
+Chart.defaults.color = isDark ? '#a3aac4' : '#64748b';
+Chart.defaults.borderColor = isDark ? '#40485d' : '#cbd5e1';
+Chart.defaults.plugins.legend.labels.color = isDark ? '#dee5ff' : '#0f172a';
+
+const trend = [{"date": "2026-03-05", "total_eok": 20.91, "cost_eok": 8.16, "pnl_eok": 12.75, "pnl_pct": 156.3, "div_annual_man": 3909, "div_yield": 1.87, "vix": 23.75, "yield_30y": 4.752, "usd_krw": 1460.75}, {"date": "2026-03-06", "total_eok": 23.21, "cost_eok": 8.23, "pnl_eok": 14.99, "pnl_pct": 182.1, "div_annual_man": 3926, "div_yield": 1.69, "vix": 29.49, "yield_30y": 4.755, "usd_krw": 1479.51}, {"date": "2026-03-09", "total_eok": 21.23, "cost_eok": 8.24, "pnl_eok": 12.98, "pnl_pct": 157.5, "div_annual_man": 3937, "div_yield": 1.85, "vix": 25.5, "yield_30y": 4.74, "usd_krw": 1483.89}, {"date": "2026-03-10", "total_eok": 21.71, "cost_eok": 8.17, "pnl_eok": 13.54, "pnl_pct": 165.7, "div_annual_man": 3912, "div_yield": 1.8, "vix": 24.93, "yield_30y": 4.771, "usd_krw": 1464.47}, {"date": "2026-03-11", "total_eok": 22.01, "cost_eok": 8.2, "pnl_eok": 13.81, "pnl_pct": 168.3, "div_annual_man": 3920, "div_yield": 1.78, "vix": 24.23, "yield_30y": 4.857, "usd_krw": 1472.78}, {"date": "2026-03-12", "total_eok": 21.97, "cost_eok": 8.21, "pnl_eok": 13.76, "pnl_pct": 167.6, "div_annual_man": 3924, "div_yield": 1.79, "vix": 27.29, "yield_30y": 4.885, "usd_krw": 1475.34}, {"date": "2026-03-13", "total_eok": 21.78, "cost_eok": 8.2, "pnl_eok": 13.58, "pnl_pct": 165.8, "div_annual_man": 3920, "div_yield": 1.8, "vix": 27.19, "yield_30y": 4.908, "usd_krw": 1470.58}, {"date": "2026-03-16", "total_eok": 22.62, "cost_eok": 8.31, "pnl_eok": 14.31, "pnl_pct": 172.1, "div_annual_man": 3949, "div_yield": 1.75, "vix": 23.51, "yield_30y": 4.859, "usd_krw": 1501.75}, {"date": "2026-03-17", "total_eok": 22.08, "cost_eok": 8.26, "pnl_eok": 13.82, "pnl_pct": 167.2, "div_annual_man": 3938, "div_yield": 1.78, "vix": 22.37, "yield_30y": 4.852, "usd_krw": 1488.91}, {"date": "2026-03-18", "total_eok": 22.0, "cost_eok": 8.25, "pnl_eok": 13.75, "pnl_pct": 166.7, "div_annual_man": 3933, "div_yield": 1.79, "vix": 25.09, "yield_30y": 4.881, "usd_krw": 1484.87}, {"date": "2026-03-19", "total_eok": 21.47, "cost_eok": 8.33, "pnl_eok": 13.15, "pnl_pct": 157.9, "div_annual_man": 3952, "div_yield": 1.84, "vix": 24.06, "yield_30y": 4.852, "usd_krw": 1505.25}, {"date": "2026-03-20", "total_eok": 21.28, "cost_eok": 8.27, "pnl_eok": 13.02, "pnl_pct": 157.5, "div_annual_man": 3940, "div_yield": 1.85, "vix": 26.78, "yield_30y": 4.96, "usd_krw": 1489.84}, {"date": "2026-03-23", "total_eok": 20.25, "cost_eok": 8.32, "pnl_eok": 11.93, "pnl_pct": 143.3, "div_annual_man": 3967, "div_yield": 1.96, "vix": 26.15, "yield_30y": 4.912, "usd_krw": 1504.21}, {"date": "2026-03-24", "total_eok": 20.42, "cost_eok": 8.25, "pnl_eok": 12.17, "pnl_pct": 147.5, "div_annual_man": 3934, "div_yield": 1.93, "vix": 26.95, "yield_30y": 4.941, "usd_krw": 1485.36}, {"date": "2026-03-25", "total_eok": 20.89, "cost_eok": 8.3, "pnl_eok": 12.59, "pnl_pct": 151.8, "div_annual_man": 4003, "div_yield": 1.92, "vix": 25.33, "yield_30y": 4.897, "usd_krw": 1497.31}, {"date": "2026-03-26", "total_eok": 19.99, "cost_eok": 8.31, "pnl_eok": 11.68, "pnl_pct": 140.6, "div_annual_man": 3950, "div_yield": 1.98, "vix": 27.44, "yield_30y": 4.936, "usd_krw": 1500.97}, {"date": "2026-03-27", "total_eok": 19.98, "cost_eok": 8.34, "pnl_eok": 11.64, "pnl_pct": 139.6, "div_annual_man": 3959, "div_yield": 1.98, "vix": 31.05, "yield_30y": 4.982, "usd_krw": 1508.36}, {"date": "2026-03-30", "total_eok": 19.46, "cost_eok": 8.33, "pnl_eok": 11.12, "pnl_pct": 133.5, "div_annual_man": 3955, "div_yield": 2.03, "vix": 30.61, "yield_30y": 4.905, "usd_krw": 1507.02}, {"date": "2026-03-31", "total_eok": 19.21, "cost_eok": 8.37, "pnl_eok": 10.84, "pnl_pct": 129.6, "div_annual_man": 3975, "div_yield": 2.07, "vix": 25.25, "yield_30y": 4.891, "usd_krw": 1516.13}, {"date": "2026-04-01", "total_eok": 19.92, "cost_eok": 8.32, "pnl_eok": 11.6, "pnl_pct": 139.5, "div_annual_man": 3945, "div_yield": 1.98, "vix": 24.54, "yield_30y": 4.9, "usd_krw": 1503.33}, {"date": "2026-04-02", "total_eok": 19.04, "cost_eok": 8.35, "pnl_eok": 10.69, "pnl_pct": 128.0, "div_annual_man": 3953, "div_yield": 2.08, "vix": 23.87, "yield_30y": 4.89, "usd_krw": 1512.09}, {"date": "2026-04-06", "total_eok": 19.32, "cost_eok": 8.34, "pnl_eok": 10.98, "pnl_pct": 131.7, "div_annual_man": 3950, "div_yield": 2.04, "vix": 24.17, "yield_30y": 4.891, "usd_krw": 1509.26}, {"date": "2026-04-07", "total_eok": 19.59, "cost_eok": 8.33, "pnl_eok": 11.26, "pnl_pct": 135.1, "div_annual_man": 3949, "div_yield": 2.02, "vix": 25.78, "yield_30y": 4.921, "usd_krw": 1507.85}, {"date": "2026-04-08", "total_eok": 20.48, "cost_eok": 8.3, "pnl_eok": 12.17, "pnl_pct": 146.6, "div_annual_man": 3941, "div_yield": 1.92, "vix": 21.04, "yield_30y": 4.887, "usd_krw": 1499.13}, {"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.6, "div_annual_man": 3920, "div_yield": 1.96, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6}, {"date": "2026-04-10", "total_eok": 20.51, "cost_eok": 8.21, "pnl_eok": 12.3, "pnl_pct": 149.9, "div_annual_man": 3916, "div_yield": 1.91, "vix": 19.23, "yield_30y": 4.914, "usd_krw": 1473.28}, {"date": "2026-04-13", "total_eok": 20.78, "cost_eok": 8.24, "pnl_eok": 12.54, "pnl_pct": 152.2, "div_annual_man": 3925, "div_yield": 1.89, "vix": 19.12, "yield_30y": 4.9, "usd_krw": 1482.18}, {"date": "2026-04-14", "total_eok": 21.76, "cost_eok": 8.22, "pnl_eok": 13.54, "pnl_pct": 164.8, "div_annual_man": 3921, "div_yield": 1.8, "vix": 18.36, "yield_30y": 4.868, "usd_krw": 1476.84}, {"date": "2026-04-15", "total_eok": 22.06, "cost_eok": 8.19, "pnl_eok": 13.87, "pnl_pct": 169.4, "div_annual_man": 3914, "div_yield": 1.77, "vix": 18.17, "yield_30y": 4.891, "usd_krw": 1469.42}, {"date": "2026-04-16", "total_eok": 23.21, "cost_eok": 8.84, "pnl_eok": 14.37, "pnl_pct": 162.6, "div_annual_man": 3989, "div_yield": 1.72, "vix": 17.94, "yield_30y": 4.929, "usd_krw": 1482.98}, {"date": "2026-04-17", "total_eok": 22.89, "cost_eok": 8.8, "pnl_eok": 14.09, "pnl_pct": 160.2, "div_annual_man": 3979, "div_yield": 1.74, "vix": 19.32, "yield_30y": 4.892, "usd_krw": 1472.48}, {"date": "2026-04-20", "total_eok": 23.03, "cost_eok": 8.79, "pnl_eok": 14.23, "pnl_pct": 161.9, "div_annual_man": 4244, "div_yield": 1.84, "vix": 18.87, "yield_30y": 4.881, "usd_krw": 1471.68}, {"date": "2026-04-21", "total_eok": 22.92, "cost_eok": 8.82, "pnl_eok": 14.1, "pnl_pct": 159.9, "div_annual_man": 4250, "div_yield": 1.85, "vix": 19.12, "yield_30y": 4.898, "usd_krw": 1477.45}, {"date": "2026-04-22", "total_eok": 22.97, "cost_eok": 8.82, "pnl_eok": 14.15, "pnl_pct": 160.4, "div_annual_man": 4251, "div_yield": 1.85, "vix": 19.04, "yield_30y": 4.883, "usd_krw": 1478.48}];
+const dates = trend.map(d => d.date.slice(5));
+const totalAsset = trend.map(d => d.total_eok);
+const costBasis = trend.map(d => d.cost_eok);
+const pnlAmount = trend.map(d => d.pnl_eok);
+const pnlPct = trend.map(d => d.pnl_pct);
+const divData = trend.map(d => d.div_annual_man);
+const divYieldData = trend.map(d => d.div_yield);
+const vixData = trend.map(d => d.vix);
+const yieldData = trend.map(d => d.yield_30y);
+const fxData = trend.map(d => d.usd_krw);
+const dso = { ticks: { color: isDark?'#a3aac4':'#64748b' }, grid: { color: isDark?'rgba(64,72,93,0.3)':'rgba(203,213,225,0.5)' } };
+
+
+// ── 3-way 토글 지원: owner별 풀 페이로드 ──
+const ownersPayload = {"me": {"latest": {"total_eok": "22.97", "cost_eok": "8.82", "pnl_krw": 1414529081, "pnl_eok": "14.15", "pnl_pct": 160.4, "cash_eok": "1.22", "cash_pct": 5.3, "div_annual_man": "4,251", "div_yield": 1.85}, "trend": [{"date": "2026-03-05", "total_eok": 20.91, "cost_eok": 8.16, "pnl_eok": 12.75, "pnl_pct": 156.3, "div_annual_man": 3909, "div_yield": 1.87}, {"date": "2026-03-06", "total_eok": 23.21, "cost_eok": 8.23, "pnl_eok": 14.99, "pnl_pct": 182.1, "div_annual_man": 3926, "div_yield": 1.69}, {"date": "2026-03-09", "total_eok": 21.23, "cost_eok": 8.24, "pnl_eok": 12.98, "pnl_pct": 157.5, "div_annual_man": 3937, "div_yield": 1.85}, {"date": "2026-03-10", "total_eok": 21.71, "cost_eok": 8.17, "pnl_eok": 13.54, "pnl_pct": 165.7, "div_annual_man": 3912, "div_yield": 1.8}, {"date": "2026-03-11", "total_eok": 22.01, "cost_eok": 8.2, "pnl_eok": 13.81, "pnl_pct": 168.3, "div_annual_man": 3920, "div_yield": 1.78}, {"date": "2026-03-12", "total_eok": 21.97, "cost_eok": 8.21, "pnl_eok": 13.76, "pnl_pct": 167.6, "div_annual_man": 3924, "div_yield": 1.79}, {"date": "2026-03-13", "total_eok": 21.78, "cost_eok": 8.2, "pnl_eok": 13.58, "pnl_pct": 165.8, "div_annual_man": 3920, "div_yield": 1.8}, {"date": "2026-03-16", "total_eok": 22.62, "cost_eok": 8.31, "pnl_eok": 14.31, "pnl_pct": 172.1, "div_annual_man": 3949, "div_yield": 1.75}, {"date": "2026-03-17", "total_eok": 22.08, "cost_eok": 8.26, "pnl_eok": 13.82, "pnl_pct": 167.2, "div_annual_man": 3938, "div_yield": 1.78}, {"date": "2026-03-18", "total_eok": 22.0, "cost_eok": 8.25, "pnl_eok": 13.75, "pnl_pct": 166.7, "div_annual_man": 3933, "div_yield": 1.79}, {"date": "2026-03-19", "total_eok": 21.47, "cost_eok": 8.33, "pnl_eok": 13.15, "pnl_pct": 157.9, "div_annual_man": 3952, "div_yield": 1.84}, {"date": "2026-03-20", "total_eok": 21.28, "cost_eok": 8.27, "pnl_eok": 13.02, "pnl_pct": 157.5, "div_annual_man": 3940, "div_yield": 1.85}, {"date": "2026-03-23", "total_eok": 20.25, "cost_eok": 8.32, "pnl_eok": 11.93, "pnl_pct": 143.3, "div_annual_man": 3967, "div_yield": 1.96}, {"date": "2026-03-24", "total_eok": 20.42, "cost_eok": 8.25, "pnl_eok": 12.17, "pnl_pct": 147.5, "div_annual_man": 3934, "div_yield": 1.93}, {"date": "2026-03-25", "total_eok": 20.89, "cost_eok": 8.3, "pnl_eok": 12.59, "pnl_pct": 151.8, "div_annual_man": 4003, "div_yield": 1.92}, {"date": "2026-03-26", "total_eok": 19.99, "cost_eok": 8.31, "pnl_eok": 11.68, "pnl_pct": 140.6, "div_annual_man": 3950, "div_yield": 1.98}, {"date": "2026-03-27", "total_eok": 19.98, "cost_eok": 8.34, "pnl_eok": 11.64, "pnl_pct": 139.6, "div_annual_man": 3959, "div_yield": 1.98}, {"date": "2026-03-30", "total_eok": 19.46, "cost_eok": 8.33, "pnl_eok": 11.12, "pnl_pct": 133.5, "div_annual_man": 3955, "div_yield": 2.03}, {"date": "2026-03-31", "total_eok": 19.21, "cost_eok": 8.37, "pnl_eok": 10.84, "pnl_pct": 129.6, "div_annual_man": 3975, "div_yield": 2.07}, {"date": "2026-04-01", "total_eok": 19.92, "cost_eok": 8.32, "pnl_eok": 11.6, "pnl_pct": 139.5, "div_annual_man": 3945, "div_yield": 1.98}, {"date": "2026-04-02", "total_eok": 19.04, "cost_eok": 8.35, "pnl_eok": 10.69, "pnl_pct": 128.0, "div_annual_man": 3953, "div_yield": 2.08}, {"date": "2026-04-06", "total_eok": 19.32, "cost_eok": 8.34, "pnl_eok": 10.98, "pnl_pct": 131.7, "div_annual_man": 3950, "div_yield": 2.04}, {"date": "2026-04-07", "total_eok": 19.59, "cost_eok": 8.33, "pnl_eok": 11.26, "pnl_pct": 135.1, "div_annual_man": 3949, "div_yield": 2.02}, {"date": "2026-04-08", "total_eok": 20.48, "cost_eok": 8.3, "pnl_eok": 12.17, "pnl_pct": 146.6, "div_annual_man": 3941, "div_yield": 1.92}, {"date": "2026-04-09", "total_eok": 20.03, "cost_eok": 8.22, "pnl_eok": 11.81, "pnl_pct": 143.6, "div_annual_man": 3920, "div_yield": 1.96}, {"date": "2026-04-10", "total_eok": 20.51, "cost_eok": 8.21, "pnl_eok": 12.3, "pnl_pct": 149.9, "div_annual_man": 3916, "div_yield": 1.91}, {"date": "2026-04-13", "total_eok": 20.78, "cost_eok": 8.24, "pnl_eok": 12.54, "pnl_pct": 152.2, "div_annual_man": 3925, "div_yield": 1.89}, {"date": "2026-04-14", "total_eok": 21.76, "cost_eok": 8.22, "pnl_eok": 13.54, "pnl_pct": 164.8, "div_annual_man": 3921, "div_yield": 1.8}, {"date": "2026-04-15", "total_eok": 22.06, "cost_eok": 8.19, "pnl_eok": 13.87, "pnl_pct": 169.4, "div_annual_man": 3914, "div_yield": 1.77}, {"date": "2026-04-16", "total_eok": 23.21, "cost_eok": 8.84, "pnl_eok": 14.37, "pnl_pct": 162.6, "div_annual_man": 3989, "div_yield": 1.72}, {"date": "2026-04-17", "total_eok": 22.89, "cost_eok": 8.8, "pnl_eok": 14.09, "pnl_pct": 160.2, "div_annual_man": 3979, "div_yield": 1.74}, {"date": "2026-04-20", "total_eok": 23.03, "cost_eok": 8.79, "pnl_eok": 14.23, "pnl_pct": 161.9, "div_annual_man": 4244, "div_yield": 1.84}, {"date": "2026-04-21", "total_eok": 22.92, "cost_eok": 8.82, "pnl_eok": 14.1, "pnl_pct": 159.9, "div_annual_man": 4250, "div_yield": 1.85}, {"date": "2026-04-22", "total_eok": 22.97, "cost_eok": 8.82, "pnl_eok": 14.15, "pnl_pct": 160.4, "div_annual_man": 4251, "div_yield": 1.85}], "ticker": [{"name": "디아이티", "value": 63.6, "amount_man": 146062}, {"name": "VOO", "value": 7.8, "amount_man": 17913}, {"name": "QQQ", "value": 5.9, "amount_man": 13550}, {"name": "BIL", "value": 5.3, "amount_man": 12172}, {"name": "SCHD", "value": 3.1, "amount_man": 7119}, {"name": "AAPL", "value": 1.4, "amount_man": 3215}, {"name": "O", "value": 1.2, "amount_man": 2756}, {"name": "JEPI", "value": 1.0, "amount_man": 2297}, {"name": "TIGER 200", "value": 1.0, "amount_man": 2297}, {"name": "SOXX", "value": 0.9, "amount_man": 2067}, {"name": "기타", "value": 8.6, "amount_man": 19751}]}, "wife": {"latest": {"total_eok": "9.16", "cost_eok": "6.36", "pnl_krw": 280880703, "pnl_eok": "2.81", "pnl_pct": 44.2, "cash_eok": "1.35", "cash_pct": 14.8, "div_annual_man": "1,821", "div_yield": 1.99}, "trend": [{"date": "2026-03-05", "total_eok": 8.59, "cost_eok": 6.36, "pnl_eok": 2.23, "pnl_pct": 35.12, "div_annual_man": 1720, "div_yield": 2.0}, {"date": "2026-03-06", "total_eok": 9.45, "cost_eok": 6.36, "pnl_eok": 3.09, "pnl_pct": 48.56, "div_annual_man": 1729, "div_yield": 1.83}, {"date": "2026-03-09", "total_eok": 8.7, "cost_eok": 6.36, "pnl_eok": 2.34, "pnl_pct": 36.82, "div_annual_man": 1731, "div_yield": 1.99}, {"date": "2026-03-10", "total_eok": 8.9, "cost_eok": 6.36, "pnl_eok": 2.54, "pnl_pct": 39.87, "div_annual_man": 1722, "div_yield": 1.94}, {"date": "2026-03-11", "total_eok": 9.01, "cost_eok": 6.36, "pnl_eok": 2.65, "pnl_pct": 41.73, "div_annual_man": 1726, "div_yield": 1.91}, {"date": "2026-03-12", "total_eok": 9.0, "cost_eok": 6.36, "pnl_eok": 2.64, "pnl_pct": 41.54, "div_annual_man": 1727, "div_yield": 1.92}, {"date": "2026-03-13", "total_eok": 8.94, "cost_eok": 6.36, "pnl_eok": 2.57, "pnl_pct": 40.48, "div_annual_man": 1726, "div_yield": 1.93}, {"date": "2026-03-16", "total_eok": 9.24, "cost_eok": 6.36, "pnl_eok": 2.88, "pnl_pct": 45.35, "div_annual_man": 1741, "div_yield": 1.88}, {"date": "2026-03-17", "total_eok": 9.05, "cost_eok": 6.36, "pnl_eok": 2.69, "pnl_pct": 42.26, "div_annual_man": 1734, "div_yield": 1.92}, {"date": "2026-03-18", "total_eok": 9.04, "cost_eok": 6.36, "pnl_eok": 2.68, "pnl_pct": 42.17, "div_annual_man": 1733, "div_yield": 1.92}, {"date": "2026-03-19", "total_eok": 8.84, "cost_eok": 6.36, "pnl_eok": 2.48, "pnl_pct": 39.04, "div_annual_man": 1742, "div_yield": 1.97}, {"date": "2026-03-20", "total_eok": 8.78, "cost_eok": 6.36, "pnl_eok": 2.42, "pnl_pct": 38.05, "div_annual_man": 1736, "div_yield": 1.98}, {"date": "2026-03-23", "total_eok": 8.38, "cost_eok": 6.36, "pnl_eok": 2.02, "pnl_pct": 31.77, "div_annual_man": 1742, "div_yield": 2.08}, {"date": "2026-03-24", "total_eok": 8.45, "cost_eok": 6.36, "pnl_eok": 2.09, "pnl_pct": 32.83, "div_annual_man": 1738, "div_yield": 2.06}, {"date": "2026-03-25", "total_eok": 8.62, "cost_eok": 6.36, "pnl_eok": 2.26, "pnl_pct": 35.55, "div_annual_man": 1739, "div_yield": 2.02}, {"date": "2026-03-26", "total_eok": 8.3, "cost_eok": 6.36, "pnl_eok": 1.94, "pnl_pct": 30.53, "div_annual_man": 1758, "div_yield": 2.12}, {"date": "2026-03-27", "total_eok": 8.31, "cost_eok": 6.36, "pnl_eok": 1.95, "pnl_pct": 30.6, "div_annual_man": 1744, "div_yield": 2.1}, {"date": "2026-03-30", "total_eok": 8.1, "cost_eok": 6.36, "pnl_eok": 1.74, "pnl_pct": 27.42, "div_annual_man": 1722, "div_yield": 2.13}, {"date": "2026-03-31", "total_eok": 7.99, "cost_eok": 6.36, "pnl_eok": 1.63, "pnl_pct": 25.69, "div_annual_man": 1740, "div_yield": 2.18}, {"date": "2026-04-01", "total_eok": 8.27, "cost_eok": 6.36, "pnl_eok": 1.91, "pnl_pct": 29.96, "div_annual_man": 1734, "div_yield": 2.1}, {"date": "2026-04-02", "total_eok": 7.92, "cost_eok": 6.36, "pnl_eok": 1.56, "pnl_pct": 24.59, "div_annual_man": 1729, "div_yield": 2.18}, {"date": "2026-04-06", "total_eok": 8.04, "cost_eok": 6.36, "pnl_eok": 1.68, "pnl_pct": 26.38, "div_annual_man": 1728, "div_yield": 2.15}, {"date": "2026-04-07", "total_eok": 8.13, "cost_eok": 6.36, "pnl_eok": 1.77, "pnl_pct": 27.86, "div_annual_man": 1727, "div_yield": 2.12}, {"date": "2026-04-08", "total_eok": 8.45, "cost_eok": 6.36, "pnl_eok": 2.09, "pnl_pct": 32.91, "div_annual_man": 1723, "div_yield": 2.04}, {"date": "2026-04-09", "total_eok": 8.28, "cost_eok": 6.36, "pnl_eok": 1.92, "pnl_pct": 30.24, "div_annual_man": 1713, "div_yield": 2.07}, {"date": "2026-04-10", "total_eok": 8.46, "cost_eok": 6.36, "pnl_eok": 2.1, "pnl_pct": 33.07, "div_annual_man": 1711, "div_yield": 2.02}, {"date": "2026-04-13", "total_eok": 8.55, "cost_eok": 6.36, "pnl_eok": 2.19, "pnl_pct": 34.44, "div_annual_man": 1715, "div_yield": 2.01}, {"date": "2026-04-14", "total_eok": 8.91, "cost_eok": 6.36, "pnl_eok": 2.55, "pnl_pct": 40.07, "div_annual_man": 1713, "div_yield": 1.92}, {"date": "2026-04-15", "total_eok": 9.01, "cost_eok": 6.36, "pnl_eok": 2.65, "pnl_pct": 41.7, "div_annual_man": 1710, "div_yield": 1.9}, {"date": "2026-04-16", "total_eok": 9.27, "cost_eok": 6.36, "pnl_eok": 2.9, "pnl_pct": 45.6, "div_annual_man": 1716, "div_yield": 1.85}, {"date": "2026-04-17", "total_eok": 9.14, "cost_eok": 6.35, "pnl_eok": 2.79, "pnl_pct": 44.0, "div_annual_man": 1712, "div_yield": 1.87}, {"date": "2026-04-20", "total_eok": 9.19, "cost_eok": 6.34, "pnl_eok": 2.85, "pnl_pct": 44.9, "div_annual_man": 1818, "div_yield": 1.98}, {"date": "2026-04-21", "total_eok": 9.15, "cost_eok": 6.35, "pnl_eok": 2.8, "pnl_pct": 44.0, "div_annual_man": 1820, "div_yield": 1.99}, {"date": "2026-04-22", "total_eok": 9.16, "cost_eok": 6.36, "pnl_eok": 2.81, "pnl_pct": 44.2, "div_annual_man": 1821, "div_yield": 1.99}], "ticker": [{"name": "디아이티", "value": 57.3, "amount_man": 52514}, {"name": "BIL", "value": 14.8, "amount_man": 13564}, {"name": "QQQ", "value": 5.3, "amount_man": 4857}, {"name": "VOO", "value": 3.4, "amount_man": 3116}, {"name": "SOL 미국배당다우존스", "value": 2.8, "amount_man": 2566}, {"name": "SCHD", "value": 2.3, "amount_man": 2108}, {"name": "AAPL", "value": 2.0, "amount_man": 1833}, {"name": "삼성전자우", "value": 2.0, "amount_man": 1833}, {"name": "TIGER 미국나스닥100", "value": 1.9, "amount_man": 1741}, {"name": "TIGER 미국S&P500", "value": 1.6, "amount_man": 1466}, {"name": "기타", "value": 6.5, "amount_man": 5957}]}, "combined": {"latest": {"total_eok": "32.13", "cost_eok": "15.18", "pnl_krw": 1695409784.0, "pnl_eok": "16.95", "pnl_pct": 111.71, "cash_eok": "2.57", "cash_pct": 8.0, "div_annual_man": "6,072", "div_yield": 1.89}, "trend": [{"date": "2026-03-05", "total_eok": 29.5, "cost_eok": 14.52, "pnl_eok": 14.98, "pnl_pct": 103.19, "div_annual_man": 5629, "div_yield": 1.91}, {"date": "2026-03-06", "total_eok": 32.66, "cost_eok": 14.59, "pnl_eok": 18.07, "pnl_pct": 123.89, "div_annual_man": 5656, "div_yield": 1.73}, {"date": "2026-03-09", "total_eok": 29.93, "cost_eok": 14.61, "pnl_eok": 15.32, "pnl_pct": 104.92, "div_annual_man": 5668, "div_yield": 1.89}, {"date": "2026-03-10", "total_eok": 30.61, "cost_eok": 14.53, "pnl_eok": 16.08, "pnl_pct": 110.62, "div_annual_man": 5635, "div_yield": 1.84}, {"date": "2026-03-11", "total_eok": 31.03, "cost_eok": 14.56, "pnl_eok": 16.46, "pnl_pct": 113.04, "div_annual_man": 5646, "div_yield": 1.82}, {"date": "2026-03-12", "total_eok": 30.98, "cost_eok": 14.57, "pnl_eok": 16.4, "pnl_pct": 112.55, "div_annual_man": 5651, "div_yield": 1.82}, {"date": "2026-03-13", "total_eok": 30.71, "cost_eok": 14.56, "pnl_eok": 16.16, "pnl_pct": 111.02, "div_annual_man": 5645, "div_yield": 1.84}, {"date": "2026-03-16", "total_eok": 31.86, "cost_eok": 14.67, "pnl_eok": 17.19, "pnl_pct": 117.16, "div_annual_man": 5690, "div_yield": 1.79}, {"date": "2026-03-17", "total_eok": 31.13, "cost_eok": 14.62, "pnl_eok": 16.5, "pnl_pct": 112.86, "div_annual_man": 5672, "div_yield": 1.82}, {"date": "2026-03-18", "total_eok": 31.04, "cost_eok": 14.61, "pnl_eok": 16.43, "pnl_pct": 112.47, "div_annual_man": 5665, "div_yield": 1.83}, {"date": "2026-03-19", "total_eok": 30.32, "cost_eok": 14.69, "pnl_eok": 15.63, "pnl_pct": 106.45, "div_annual_man": 5694, "div_yield": 1.88}, {"date": "2026-03-20", "total_eok": 30.06, "cost_eok": 14.63, "pnl_eok": 15.44, "pnl_pct": 105.53, "div_annual_man": 5676, "div_yield": 1.89}, {"date": "2026-03-23", "total_eok": 28.63, "cost_eok": 14.68, "pnl_eok": 13.95, "pnl_pct": 94.99, "div_annual_man": 5708, "div_yield": 1.99}, {"date": "2026-03-24", "total_eok": 28.87, "cost_eok": 14.61, "pnl_eok": 14.26, "pnl_pct": 97.59, "div_annual_man": 5672, "div_yield": 1.96}, {"date": "2026-03-25", "total_eok": 29.51, "cost_eok": 14.66, "pnl_eok": 14.85, "pnl_pct": 101.34, "div_annual_man": 5742, "div_yield": 1.95}, {"date": "2026-03-26", "total_eok": 28.29, "cost_eok": 14.67, "pnl_eok": 13.62, "pnl_pct": 92.87, "div_annual_man": 5709, "div_yield": 2.02}, {"date": "2026-03-27", "total_eok": 28.28, "cost_eok": 14.7, "pnl_eok": 13.59, "pnl_pct": 92.44, "div_annual_man": 5703, "div_yield": 2.02}, {"date": "2026-03-30", "total_eok": 27.56, "cost_eok": 14.69, "pnl_eok": 12.87, "pnl_pct": 87.59, "div_annual_man": 5677, "div_yield": 2.06}, {"date": "2026-03-31", "total_eok": 27.2, "cost_eok": 14.73, "pnl_eok": 12.47, "pnl_pct": 84.71, "div_annual_man": 5715, "div_yield": 2.1}, {"date": "2026-04-01", "total_eok": 28.19, "cost_eok": 14.68, "pnl_eok": 13.51, "pnl_pct": 92.03, "div_annual_man": 5678, "div_yield": 2.01}, {"date": "2026-04-02", "total_eok": 26.97, "cost_eok": 14.71, "pnl_eok": 12.25, "pnl_pct": 83.3, "div_annual_man": 5682, "div_yield": 2.11}, {"date": "2026-04-06", "total_eok": 27.36, "cost_eok": 14.7, "pnl_eok": 12.66, "pnl_pct": 86.1, "div_annual_man": 5678, "div_yield": 2.08}, {"date": "2026-04-07", "total_eok": 27.73, "cost_eok": 14.7, "pnl_eok": 13.03, "pnl_pct": 88.67, "div_annual_man": 5676, "div_yield": 2.05}, {"date": "2026-04-08", "total_eok": 28.93, "cost_eok": 14.66, "pnl_eok": 14.27, "pnl_pct": 97.31, "div_annual_man": 5664, "div_yield": 1.96}, {"date": "2026-04-09", "total_eok": 28.31, "cost_eok": 14.58, "pnl_eok": 13.73, "pnl_pct": 94.16, "div_annual_man": 5633, "div_yield": 1.99}, {"date": "2026-04-10", "total_eok": 28.97, "cost_eok": 14.57, "pnl_eok": 14.41, "pnl_pct": 98.9, "div_annual_man": 5627, "div_yield": 1.94}, {"date": "2026-04-13", "total_eok": 29.33, "cost_eok": 14.6, "pnl_eok": 14.73, "pnl_pct": 100.88, "div_annual_man": 5640, "div_yield": 1.92}, {"date": "2026-04-14", "total_eok": 30.67, "cost_eok": 14.58, "pnl_eok": 16.09, "pnl_pct": 110.38, "div_annual_man": 5634, "div_yield": 1.84}, {"date": "2026-04-15", "total_eok": 31.07, "cost_eok": 14.55, "pnl_eok": 16.52, "pnl_pct": 113.55, "div_annual_man": 5624, "div_yield": 1.81}, {"date": "2026-04-16", "total_eok": 32.47, "cost_eok": 15.2, "pnl_eok": 17.27, "pnl_pct": 113.63, "div_annual_man": 5705, "div_yield": 1.76}, {"date": "2026-04-17", "total_eok": 32.03, "cost_eok": 15.14, "pnl_eok": 16.89, "pnl_pct": 111.52, "div_annual_man": 5690, "div_yield": 1.78}, {"date": "2026-04-20", "total_eok": 32.22, "cost_eok": 15.14, "pnl_eok": 17.08, "pnl_pct": 112.84, "div_annual_man": 6062, "div_yield": 1.88}, {"date": "2026-04-21", "total_eok": 32.07, "cost_eok": 15.17, "pnl_eok": 16.9, "pnl_pct": 111.37, "div_annual_man": 6070, "div_yield": 1.89}, {"date": "2026-04-22", "total_eok": 32.13, "cost_eok": 15.18, "pnl_eok": 16.95, "pnl_pct": 111.71, "div_annual_man": 6072, "div_yield": 1.89}], "ticker": [{"name": "디아이티", "value": 61.8, "amount_man": 198576}, {"name": "BIL", "value": 8.0, "amount_man": 25736}, {"name": "VOO", "value": 6.5, "amount_man": 21029}, {"name": "QQQ", "value": 5.7, "amount_man": 18407}, {"name": "SCHD", "value": 2.9, "amount_man": 9227}, {"name": "AAPL", "value": 1.6, "amount_man": 5048}, {"name": "TSLA", "value": 0.9, "amount_man": 2982}, {"name": "O", "value": 0.9, "amount_man": 2756}, {"name": "SOL 미국배당다우존스", "value": 0.8, "amount_man": 2566}, {"name": "삼성전자", "value": 0.8, "amount_man": 2432}, {"name": "기타", "value": 10.0, "amount_man": 31994}]}};
+const ownerLabel = (o) => o==='combined' ? '합산' : (o==='me' ? '내 포트' : (o==='wife' ? '와이프' : o));
+
+let _assetChart = new Chart(document.getElementById('assetTrendChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'총 자산 (억원)', data:totalAsset, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2 },
+  { label:'투자 원금 (억원)', data:costBasis, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:false, borderDash:[5,5], tension:0.3, pointRadius:0 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'억원', color:'#a3aac4' }}}}});
+
+let _divChart = new Chart(document.getElementById('divTrendChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'예상 연 배당 (만원)', data:divData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
+  { label:'배당수익률 (%)', data:divYieldData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'만원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
+
+function _applyOwner(owner){
+  const p = ownersPayload[owner];
+  if(!p) return;
+  // Summary cards
+  const l = p.latest;
+  document.getElementById('sumTotal').innerHTML = '\u20a9' + l.total_eok + '억';
+  const pnlSign = l.pnl_krw >= 0 ? '+' : '';
+  const pctSign = l.pnl_pct >= 0 ? '+' : '';
+  const pnlEl = document.getElementById('sumPnl');
+  pnlEl.innerHTML = '\u2197 ' + pnlSign + '\u20a9' + l.pnl_eok + '억 (' + pctSign + l.pnl_pct + '%)';
+  pnlEl.classList.remove('text-secondary','text-tertiary');
+  pnlEl.classList.add(l.pnl_krw >= 0 ? 'text-secondary' : 'text-tertiary');
+  document.getElementById('sumCost').innerHTML = '\u20a9' + l.cost_eok + '억';
+  document.getElementById('sumDivAnnual').innerHTML = '\u20a9' + l.div_annual_man + '만';
+  document.getElementById('sumDivYield').innerHTML = 'Yield: ' + l.div_yield + '%';
+  document.getElementById('sumCash').innerHTML = '\u20a9' + l.cash_eok + '억';
+  document.getElementById('sumCashPct').innerHTML = '\u25cf ' + l.cash_pct + '% Allocation';
+  // Asset Allocation title
+  document.getElementById('allocTitle').textContent = ownerLabel(owner) + ' — Asset Allocation';
+  // Ticker pie + cards 재렌더
+  _renderTicker(p.ticker);
+  // Asset chart
+  const s = p.trend;
+  _assetChart.data.labels = s.map(d => d.date.slice(5));
+  _assetChart.data.datasets[0].data = s.map(d => d.total_eok);
+  _assetChart.data.datasets[1].data = s.map(d => d.cost_eok);
+  _assetChart.data.datasets[0].label = ownerLabel(owner) + ' 총 자산 (억원)';
+  _assetChart.data.datasets[1].label = ownerLabel(owner) + ' 투자 원금 (억원)';
+  _assetChart.update();
+  // Div chart
+  _divChart.data.labels = s.map(d => d.date.slice(5));
+  _divChart.data.datasets[0].data = s.map(d => d.div_annual_man);
+  _divChart.data.datasets[1].data = s.map(d => d.div_yield);
+  _divChart.update();
+}
+document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#ownerToggle .owner-btn').forEach(b => {
+      b.classList.remove('bg-primary/20','text-primary','border-primary/30');
+      b.classList.add('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+    });
+    btn.classList.add('bg-primary/20','text-primary','border-primary/30');
+    btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+    _applyOwner(btn.dataset.owner);
+  });
+});
+
+// ── Y축 범위 토글: Auto vs 수동(자산 5~40억, 배당 1000~10000만원) ──
+function _applyRange(chart, mode, cfg){
+  const y = chart.options.scales.y;
+  if(mode === 'manual'){
+    y.min = cfg.min; y.max = cfg.max;
+  } else {
+    delete y.min; delete y.max;
+  }
+  chart.update();
+}
+function _wireRangeToggle(containerId, chart, cfg){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      el.querySelectorAll('.range-btn').forEach(b => {
+        b.classList.remove('bg-primary/20','text-primary','border-primary/30');
+        b.classList.add('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+      });
+      btn.classList.add('bg-primary/20','text-primary','border-primary/30');
+      btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+      _applyRange(chart, btn.dataset.mode, cfg);
+    });
+  });
+}
+_wireRangeToggle('assetRangeToggle', _assetChart, { min: 5, max: 40 });
+_wireRangeToggle('divRangeToggle',   _divChart,   { min: 1000, max: 10000 });
+
+new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'VIX', data:vixData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,108,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, yAxisID:'y' },
+  { label:'30Y Treasury (%)', data:yieldData, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, yAxisID:'y' },
+  { label:'USD/KRW', data:fxData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.05)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, borderDash:[6,3], yAxisID:'y1' }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'VIX / Yield', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'USD/KRW', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
+
+
+const tickerData = [{"name": "디아이티", "value": 63.6, "amount_man": 146062}, {"name": "VOO", "value": 7.8, "amount_man": 17913}, {"name": "QQQ", "value": 5.9, "amount_man": 13550}, {"name": "BIL", "value": 5.3, "amount_man": 12172}, {"name": "SCHD", "value": 3.1, "amount_man": 7119}, {"name": "AAPL", "value": 1.4, "amount_man": 3215}, {"name": "O", "value": 1.2, "amount_man": 2756}, {"name": "JEPI", "value": 1.0, "amount_man": 2297}, {"name": "TIGER 200", "value": 1.0, "amount_man": 2297}, {"name": "SOXX", "value": 0.9, "amount_man": 2067}, {"name": "기타", "value": 8.6, "amount_man": 19751}];
+const tColors = ['#00E5BC','#6dddff','#ff716c','#fbbf24','#34d399','#a78bfa','#22d3ee','#475569','#e51a22','#f97316','#94a3b8'];
+let _currentTicker = tickerData;
+let _tickerPie = new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>d.name), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:tColors, borderWidth:0, spacing:2 }]}, options:{ responsive:true, cutout:'72%', plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ var d=_currentTicker[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
+function _renderTicker(data){
+  _currentTicker = data;
+  _tickerPie.data.labels = data.map(d=>d.name);
+  _tickerPie.data.datasets[0].data = data.map(d=>d.value);
+  _tickerPie.update();
+  if(data.length>0){var topT=data[0]; document.getElementById('pieCenter').innerHTML='<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">'+topT.name+'</span><span class="text-3xl font-headline font-bold text-on-surface">'+Math.round(topT.value)+'%</span>';} else { document.getElementById('pieCenter').innerHTML=''; }
+  var cardsHtml='';
+  data.forEach(function(d,i){var a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc';var c=tColors[i%tColors.length];cardsHtml+='<div class="rounded-lg bg-surface-container-high p-4" style="border-left:4px solid '+c+'"><div class="flex justify-between items-center"><span class="font-bold text-sm text-on-surface">'+d.name+'</span><div class="text-right"><div class="font-bold text-sm text-on-surface">'+s+'</div><div class="text-[10px] text-outline">'+d.value.toFixed(1)+'%</div></div></div></div>';});
+  document.getElementById('tickerCards').innerHTML=cardsHtml;
+}
+_renderTicker(tickerData);
+</script>
+</body>
+</html>
