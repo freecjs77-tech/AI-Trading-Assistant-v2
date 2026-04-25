@@ -6,6 +6,7 @@ GitHub Pages에서 리포트를 서빙하고, GitHub Actions로 파이프라인�
 
 ## 진행 중인 계획
 - [Capitol Trades 의원 거래 보조 지표 통합 V2c](docs/plans/capitol-trades-integration.md) — Politician Watchlist 독립 섹션 · Capitol Trades 스크랩 · 가중 스코어 + 별점 0-5 + 색상 (파랑=매수/빨강=매도) · 시그널 로직 불변
+- [SP100 + NDX100 통합 + 섹터 표시](docs/plans/sp100-ndx-merge-with-sectors.md) — SP100_TICKERS 50→~169 (S&P 100 ∪ NASDAQ 100) · GICS 섹터 매핑(Tech/Comm/금융/헬스케어 등 11분류) · 스캐너 표에 Sector 컬럼 추가 · 시그널 로직/캐시키/히스토리 불변
 
 ## 배포 (GitHub Pages + Actions)
 - **리포트 URL**: https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/
