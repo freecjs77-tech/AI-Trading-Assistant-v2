@@ -45,9 +45,19 @@ def test_load_filter_skips_empty_strings():
     finally:
         shutil.rmtree(tmp)
 
+def test_load_filter_rejects_string_value():
+    """politicians 가 list 가 아닌 string 일 때 빈 리스트 반환 (silent corruption 방지)."""
+    tmp, cfg_path = _with_temp_config({"politicians": "Michael McCaul"})
+    try:
+        names = agg._load_politician_filter(cfg_path)
+        assert names == [], f"string 값은 list가 아니므로 거부 기대, got {names}"
+    finally:
+        shutil.rmtree(tmp)
+
 if __name__ == "__main__":
     test_load_filter_returns_empty_when_file_missing()
     test_load_filter_returns_names_when_present()
     test_load_filter_handles_malformed()
     test_load_filter_skips_empty_strings()
+    test_load_filter_rejects_string_value()
     print("[OK] config 로더 테스트 통과")

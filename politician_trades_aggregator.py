@@ -83,9 +83,14 @@ def _load_politician_filter(path: str = POLITICIAN_FILTER_PATH) -> list[str]:
     try:
         with open(path, "r", encoding="utf-8") as f:
             cfg = json.load(f)
+        if not isinstance(cfg, dict):
+            return []
         names = cfg.get("politicians", []) or []
+        if not isinstance(names, list):
+            return []
         return [n for n in names if isinstance(n, str) and n.strip()]
-    except (json.JSONDecodeError, IOError):
+    except (json.JSONDecodeError, OSError) as e:
+        _log(f"WARN: politician filter config malformed at {path} ({type(e).__name__}: {e}) — falling back to consensus")
         return []
 
 
