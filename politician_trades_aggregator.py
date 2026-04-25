@@ -181,6 +181,35 @@ def _direction(tx_type: str) -> int:
     return 0
 
 
+def _build_trade_timeline(trades: list[dict], portfolio_tickers: set[str] | None = None) -> list[dict]:
+    """
+    Filter mode 전용 — 거래 단건을 날짜 desc로 정렬한 timeline 빌드.
+    Raw 필드를 그대로 보존 (별점·스코어 없음).
+    """
+    portfolio_tickers = portfolio_tickers or set()
+    items = []
+    for t in trades:
+        ticker = (t.get("ticker") or "").strip()
+        if not ticker:
+            continue
+        direction_n = _direction(t.get("tx_type", ""))
+        if direction_n == 0:
+            continue
+        items.append({
+            "tx_date": t.get("tx_date", ""),
+            "direction": "buy" if direction_n > 0 else "sell",
+            "ticker": ticker,
+            "issuer_name": t.get("issuer_name", ""),
+            "amount_min": t.get("amount_min"),
+            "amount_max": t.get("amount_max"),
+            "tx_type": t.get("tx_type", ""),
+            "politician_name": t.get("politician_name", ""),
+            "in_portfolio": ticker in portfolio_tickers,
+        })
+    items.sort(key=lambda x: x.get("tx_date", ""), reverse=True)
+    return items
+
+
 def _stars(abs_score: float) -> int:
     for threshold, stars in STAR_THRESHOLDS:
         if abs_score >= threshold:
@@ -212,6 +241,19 @@ def aggregate(
     window_days = raw.get("window_days", 90)
     trades = raw.get("trades", [])
     cutoff_7d = today - timedelta(days=7)
+
+    # Filter mode: drop trades for politicians not in the filter list before any
+    # downstream aggregation (so ticker-level scores don't see filtered-out trades).
+    filter_names = _load_politician_filter()
+    filter_active = bool(filter_names)
+    if filter_active:
+        filter_set = {n.strip() for n in filter_names}
+        before = len(trades)
+        trades = [
+            t for t in trades
+            if (t.get("politician_name") or "").strip() in filter_set
+        ]
+        _log(f"[Aggregator] Filter mode: {len(filter_names)} politicians → {len(trades)}/{before} trades")
 
     # Group US trades by ticker
     by_ticker: dict[str, list[dict]] = defaultdict(list)
@@ -293,12 +335,12 @@ def aggregate(
         else:
             color_bias = "buy" if final_score > 0 else "sell"
 
-        if abs_score < WATCHLIST_MIN_SCORE:
-            continue  # drop below threshold — keeps UI focused
+        if not filter_active and abs_score < WATCHLIST_MIN_SCORE:
+            continue  # drop below threshold — keeps UI focused (consensus mode only)
 
         distinct_politicians_total = len(distinct_buyers | distinct_sellers)
-        if distinct_politicians_total < WATCHLIST_MIN_DISTINCT_POLITICIANS:
-            continue  # noise filter: need at least 2 distinct politicians — avoids single-trader artifacts
+        if not filter_active and distinct_politicians_total < WATCHLIST_MIN_DISTINCT_POLITICIANS:
+            continue  # noise filter: need at least 2 distinct politicians (consensus mode only — filter mode is single-trader by design)
 
         # Sort notables by |amount_min| desc, keep top N
         notable_candidates.sort(key=lambda x: (x.get("amount_min") or 0), reverse=True)
@@ -351,7 +393,7 @@ def aggregate(
 
     politicians_active = len({t.get("politician_id") for t in trades if t.get("politician_id")})
 
-    return {
+    output = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "window_days": window_days,
         "watchlist": watchlist,
@@ -364,7 +406,13 @@ def aggregate(
             "highlights_threshold_score": WATCHLIST_MIN_SCORE,
             "raw_fetched_at": raw.get("fetched_at"),
         },
+        "mode": "filter" if filter_active else "consensus",
+        "filter_politicians": list(filter_names),
+        "trades": [],
     }
+    if filter_active:
+        output["trades"] = _build_trade_timeline(trades, portfolio_tickers=portfolio_tickers)
+    return output
 
 
 def main() -> int:
