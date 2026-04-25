@@ -70,25 +70,15 @@ def api_run_pipeline():
 
 @app.route("/scanner")
 def scanner():
-    """S&P 100 Market Scanner 페이지"""
-    from datetime import date
-    today = date.today().strftime("%Y-%m-%d")
-    cache_path = os.path.join(PROJECT_DIR, "screenshots", f"scanner_{today}.json")
-
-    # 캐시된 스캔 결과가 있으면 로드
-    context = {"scan_date": None}
-    if os.path.exists(cache_path):
-        import json
-        with open(cache_path, "rb") as f:
-            raw = f.read()
-        cache_data = json.loads(raw.rstrip(b" \t\n\r\x00").decode("utf-8"))
-        # 캐시에서 scanner 결과 복원
-        scanner_result_path = os.path.join(PROJECT_DIR, "screenshots", f"scanner_result_{today}.json")
-        if os.path.exists(scanner_result_path):
-            with open(scanner_result_path, "r", encoding="utf-8") as f:
-                context = json.load(f)
-
-    return render_template("scanner.html", **context)
+    """Market Scanner — 파이프라인이 생성한 최신 unified 스캐너 리포트로 리다이렉트.
+    GitHub Pages 배포본과 동일한 페이지를 로컬에서도 보이도록 한다."""
+    files = sorted(glob.glob(os.path.join(REPORTS_DIR, "scanner_*.html")), reverse=True)
+    files = [f for f in files if "scanner_sp100_" not in os.path.basename(f)
+             and "scanner_etf_" not in os.path.basename(f)
+             and "scanner_kospi_" not in os.path.basename(f)]
+    if not files:
+        return "<h1>스캐너 리포트가 없습니다</h1><p>🔄 메인 페이지에서 업데이트를 실행하세요.</p>", 404
+    return send_file(files[0])
 
 
 @app.route("/api/scan-sp100", methods=["POST"])
