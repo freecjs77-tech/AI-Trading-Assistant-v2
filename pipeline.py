@@ -268,6 +268,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 env=_pt_env,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=900,
             )
             if _pt_fetch.returncode != 0:
@@ -283,6 +285,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 env=_pt_env,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=120,
             )
             if _pt_agg.returncode != 0:
