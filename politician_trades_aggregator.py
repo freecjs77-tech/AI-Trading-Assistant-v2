@@ -253,7 +253,7 @@ def aggregate(
             t for t in trades
             if (t.get("politician_name") or "").strip() in filter_set
         ]
-        _log(f"[Aggregator] Filter mode: {len(filter_names)} politicians → {len(trades)}/{total_trades_before_filter} trades")
+        _log(f"[Aggregator] Filter mode: {len(filter_names)} politicians -> {len(trades)}/{total_trades_before_filter} trades")
 
     # Group US trades by ticker
     by_ticker: dict[str, list[dict]] = defaultdict(list)
