@@ -27,17 +27,31 @@ from signal_judge import (
 )
 from portfolio_data import TICKER_META
 
-# ── S&P 100 시총 상위 50 종목 (노이즈 감소, 대형주 집중) ─────
+# ── 미국 대형주 스캐너 — S&P 100 + NASDAQ 100 합집합 (~169종목) ─────
+# 변수명은 호환성을 위해 SP100_TICKERS를 유지 (외부 호출부 영향 없음).
 SP100_TICKERS = [
-    "AAPL", "ABBV", "AMZN", "AVGO", "BAC", "BRK-B", "COP", "COST", "CRM", "CSCO",
-    "CVX", "DHR", "DIS", "GE", "GILD", "GOOG", "GOOGL", "GS", "HD", "HON",
-    "IBM", "INTC", "INTU", "JNJ", "JPM", "KO", "LIN", "LLY", "LMT", "LOW",
-    "MA", "MCD", "MDT", "META", "MRK", "MS", "MSFT", "NEE", "NFLX", "NVDA",
-    "ORCL", "PEP", "PG", "QCOM", "RTX", "TMO", "TSLA", "UNH", "V", "WMT",
+    "AAPL", "ABBV", "ABNB", "ABT", "ACN", "ADBE", "ADI", "ADP", "ADSK", "AEP",
+    "AIG", "ALNY", "AMAT", "AMD", "AMGN", "AMZN", "APP", "ARM", "ASML", "AVGO",
+    "AXON", "AXP", "BA", "BAC", "BK", "BKNG", "BKR", "BLK", "BMY", "BRK-B",
+    "C", "CAT", "CCEP", "CDNS", "CEG", "CHTR", "CL", "CMCSA", "COF", "COP",
+    "COST", "CPRT", "CRM", "CRWD", "CSCO", "CSGP", "CSX", "CTAS", "CTSH", "CVS",
+    "CVX", "DASH", "DDOG", "DE", "DHR", "DIS", "DOW", "DUK", "DXCM", "EA",
+    "EMR", "EXC", "F", "FANG", "FAST", "FDX", "FER", "FTNT", "GD", "GE",
+    "GEHC", "GILD", "GM", "GOOG", "GOOGL", "GS", "HD", "HON", "IBM", "IDXX",
+    "INSM", "INTC", "INTU", "ISRG", "JNJ", "JPM", "KDP", "KHC", "KLAC", "KO",
+    "LIN", "LLY", "LMT", "LOW", "LRCX", "MA", "MAR", "MCD", "MCHP", "MDLZ",
+    "MDT", "MELI", "MET", "META", "MMM", "MNST", "MO", "MPWR", "MRK", "MRVL",
+    "MS", "MSFT", "MSTR", "MU", "NEE", "NFLX", "NKE", "NVDA", "NXPI", "ODFL",
+    "ORCL", "ORLY", "PANW", "PAYX", "PCAR", "PDD", "PEP", "PFE", "PG", "PLTR",
+    "PM", "PYPL", "QCOM", "REGN", "ROP", "ROST", "RTX", "SBUX", "SCHW", "SHOP",
+    "SNDK", "SNPS", "SO", "SPG", "STX", "T", "TGT", "TMO", "TMUS", "TRI",
+    "TSLA", "TTWO", "TXN", "UNH", "UNP", "UPS", "USB", "V", "VRSK", "VRTX",
+    "VZ", "WBD", "WDAY", "WDC", "WFC", "WMT", "XEL", "XOM", "ZS",
 ]
 
 # 종목 이름 (스캐너 표시용)
 SP100_NAMES = {
+    # ── S&P 100 ─────
     "AAPL": "Apple", "ABBV": "AbbVie", "ABT": "Abbott Labs", "ACN": "Accenture",
     "ADBE": "Adobe", "AIG": "AIG", "AMD": "AMD", "AMGN": "Amgen",
     "AMZN": "Amazon", "AVGO": "Broadcom", "AXP": "American Express", "BA": "Boeing",
@@ -65,6 +79,99 @@ SP100_NAMES = {
     "UNH": "UnitedHealth", "UNP": "Union Pacific", "UPS": "UPS", "USB": "US Bancorp",
     "V": "Visa", "VZ": "Verizon", "WFC": "Wells Fargo", "WMT": "Walmart",
     "XOM": "ExxonMobil",
+    # ── NASDAQ 100 전용 추가 ─────
+    "ABNB": "Airbnb", "ADI": "Analog Devices", "ADP": "ADP", "ADSK": "Autodesk",
+    "AEP": "American Electric Power", "ALNY": "Alnylam", "AMAT": "Applied Materials",
+    "APP": "AppLovin", "ARM": "Arm Holdings", "ASML": "ASML", "AXON": "Axon",
+    "BKR": "Baker Hughes", "CCEP": "Coca-Cola Europacific", "CDNS": "Cadence",
+    "CEG": "Constellation Energy", "CPRT": "Copart", "CRWD": "CrowdStrike",
+    "CSGP": "CoStar Group", "CSX": "CSX", "CTAS": "Cintas", "CTSH": "Cognizant",
+    "DASH": "DoorDash", "DDOG": "Datadog", "DXCM": "DexCom", "EA": "Electronic Arts",
+    "FANG": "Diamondback Energy", "FAST": "Fastenal", "FER": "Ferrovial",
+    "FTNT": "Fortinet", "GEHC": "GE HealthCare", "IDXX": "IDEXX Labs",
+    "INSM": "Insmed", "ISRG": "Intuitive Surgical", "KDP": "Keurig Dr Pepper",
+    "KLAC": "KLA Corp", "LRCX": "Lam Research", "MAR": "Marriott",
+    "MCHP": "Microchip", "MELI": "MercadoLibre", "MNST": "Monster Beverage",
+    "MPWR": "Monolithic Power", "MRVL": "Marvell", "MSTR": "MicroStrategy",
+    "MU": "Micron", "NXPI": "NXP Semi", "ODFL": "Old Dominion Freight",
+    "ORLY": "O'Reilly Auto", "PANW": "Palo Alto Networks", "PAYX": "Paychex",
+    "PCAR": "PACCAR", "PDD": "PDD Holdings", "PLTR": "Palantir",
+    "REGN": "Regeneron", "ROP": "Roper", "ROST": "Ross Stores",
+    "SHOP": "Shopify", "SNDK": "SanDisk", "SNPS": "Synopsys", "STX": "Seagate",
+    "TRI": "Thomson Reuters", "TTWO": "Take-Two", "VRSK": "Verisk",
+    "VRTX": "Vertex Pharma", "WBD": "Warner Bros Discovery", "WDAY": "Workday",
+    "WDC": "Western Digital", "XEL": "Xcel Energy", "ZS": "Zscaler",
+}
+
+# 종목 GICS 섹터 분류 (한국어 약어, 11개 섹터)
+# Tech=정보기술, Comm=커뮤니케이션, 경기소비=Consumer Discretionary,
+# 필수소비=Consumer Staples, 헬스케어=Health Care, 금융=Financials,
+# 산업=Industrials, 에너지=Energy, 유틸=Utilities, 부동산=Real Estate, 소재=Materials
+TICKER_SECTORS = {
+    # ── Tech (정보기술) ─────
+    "AAPL": "Tech", "ACN": "Tech", "ADBE": "Tech", "ADI": "Tech",
+    "ADP": "Tech", "ADSK": "Tech", "AMAT": "Tech", "AMD": "Tech",
+    "APP": "Tech", "ARM": "Tech", "ASML": "Tech", "AVGO": "Tech",
+    "CDNS": "Tech", "CRM": "Tech", "CRWD": "Tech", "CSCO": "Tech",
+    "CTSH": "Tech", "DDOG": "Tech", "FTNT": "Tech", "IBM": "Tech",
+    "INTC": "Tech", "INTU": "Tech", "KLAC": "Tech", "LRCX": "Tech",
+    "MCHP": "Tech", "MPWR": "Tech", "MSFT": "Tech", "MSTR": "Tech",
+    "MRVL": "Tech", "MU": "Tech", "NVDA": "Tech", "NXPI": "Tech",
+    "ORCL": "Tech", "PANW": "Tech", "PAYX": "Tech", "PLTR": "Tech",
+    "QCOM": "Tech", "ROP": "Tech", "SNPS": "Tech", "STX": "Tech",
+    "SNDK": "Tech", "TXN": "Tech", "WDAY": "Tech", "WDC": "Tech",
+    "ZS": "Tech",
+    # ── Comm (커뮤니케이션) ─────
+    "CHTR": "Comm", "CMCSA": "Comm", "DIS": "Comm", "EA": "Comm",
+    "GOOG": "Comm", "GOOGL": "Comm", "META": "Comm", "NFLX": "Comm",
+    "T": "Comm", "TMUS": "Comm", "TTWO": "Comm", "VZ": "Comm",
+    "WBD": "Comm",
+    # ── 경기소비 (Consumer Discretionary) ─────
+    "ABNB": "경기소비", "AMZN": "경기소비", "BKNG": "경기소비",
+    "DASH": "경기소비", "F": "경기소비", "GM": "경기소비",
+    "HD": "경기소비", "LOW": "경기소비", "MAR": "경기소비",
+    "MCD": "경기소비", "MELI": "경기소비", "NKE": "경기소비",
+    "ORLY": "경기소비", "PDD": "경기소비", "ROST": "경기소비",
+    "SBUX": "경기소비", "SHOP": "경기소비", "TGT": "경기소비",
+    "TSLA": "경기소비",
+    # ── 필수소비 (Consumer Staples) ─────
+    "CCEP": "필수소비", "CL": "필수소비", "COST": "필수소비",
+    "KDP": "필수소비", "KHC": "필수소비", "KO": "필수소비",
+    "MDLZ": "필수소비", "MNST": "필수소비", "MO": "필수소비",
+    "PEP": "필수소비", "PG": "필수소비", "PM": "필수소비",
+    "WMT": "필수소비",
+    # ── 헬스케어 (Health Care) ─────
+    "ABBV": "헬스케어", "ABT": "헬스케어", "ALNY": "헬스케어",
+    "AMGN": "헬스케어", "BMY": "헬스케어", "CVS": "헬스케어",
+    "DHR": "헬스케어", "DXCM": "헬스케어", "GEHC": "헬스케어",
+    "GILD": "헬스케어", "IDXX": "헬스케어", "INSM": "헬스케어",
+    "ISRG": "헬스케어", "JNJ": "헬스케어", "LLY": "헬스케어",
+    "MDT": "헬스케어", "MRK": "헬스케어", "PFE": "헬스케어",
+    "REGN": "헬스케어", "TMO": "헬스케어", "UNH": "헬스케어",
+    "VRTX": "헬스케어",
+    # ── 금융 (Financials) — V/MA/PYPL은 GICS 2023.3 재분류로 Financials ─────
+    "AIG": "금융", "AXP": "금융", "BAC": "금융", "BK": "금융",
+    "BLK": "금융", "BRK-B": "금융", "C": "금융", "COF": "금융",
+    "GS": "금융", "JPM": "금융", "MA": "금융", "MET": "금융",
+    "MS": "금융", "PYPL": "금융", "SCHW": "금융", "TRI": "금융",
+    "USB": "금융", "V": "금융", "WFC": "금융",
+    # ── 산업 (Industrials) ─────
+    "AXON": "산업", "BA": "산업", "CAT": "산업", "CPRT": "산업",
+    "CSX": "산업", "CTAS": "산업", "DE": "산업", "EMR": "산업",
+    "FAST": "산업", "FDX": "산업", "FER": "산업", "GD": "산업",
+    "GE": "산업", "HON": "산업", "LMT": "산업", "MMM": "산업",
+    "ODFL": "산업", "PCAR": "산업", "RTX": "산업", "UNP": "산업",
+    "UPS": "산업", "VRSK": "산업",
+    # ── 에너지 (Energy) ─────
+    "BKR": "에너지", "COP": "에너지", "CVX": "에너지",
+    "FANG": "에너지", "XOM": "에너지",
+    # ── 유틸 (Utilities) ─────
+    "AEP": "유틸", "CEG": "유틸", "DUK": "유틸", "EXC": "유틸",
+    "NEE": "유틸", "SO": "유틸", "XEL": "유틸",
+    # ── 부동산 (Real Estate) ─────
+    "CSGP": "부동산", "SPG": "부동산",
+    # ── 소재 (Materials) ─────
+    "DOW": "소재", "LIN": "소재",
 }
 
 
