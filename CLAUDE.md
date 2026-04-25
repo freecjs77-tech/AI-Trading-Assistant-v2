@@ -67,7 +67,7 @@ python app.py
 - **스캐너 종목 축소**: SP100 101→50, ETF 20→10, KOSPI 101→50 (대형주 집중)
 - Value Entry 독립화 (거부 RSI>70)
 - **1st BUY 통합 (v5.3b)**: Growth/ETF 동일 — 필수 4개 ALL(RSI≤45 + 가격<MA20 + MACD hist 2일증가 + DD_52w≤-15%), 선택 면제
-- 스캐너(SP100/ETF)에 Exit 판정 추가 → 포트폴리오와 판정 일관성 확보
+- ~~스캐너(SP100/ETF)에 Exit 판정 추가~~ → **롤백**: 마켓 스캐너는 Exit(TOP_SIGNAL/TAKE_PROFIT) 무시하고 Entry 조건만 평가 (과열 종목도 BUY 후보로 노출). Portfolio Exit 로직은 유지.
 - fetch_market_data: change_3d_pct 3일 누적 변동률 추가
 - history: bb_pct 필드 추가 저장
 
