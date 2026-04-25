@@ -1,31 +1,104 @@
 {#
-  Politician Watchlist partial (V2c, Option C).
+  Politician Watchlist partial (V2c, Option C + Filter mode).
   Expects context vars: politician_buy_cards (list), politician_sell_cards (list),
-                       politician_meta (dict), politician_updated_at (str|None)
-  Renders nothing if both lists empty.
+                       politician_meta (dict), politician_updated_at (str|None),
+                       politician_mode ("consensus" | "filter"),
+                       politician_filter_names (list), politician_trades_list (list)
+  Renders nothing if no data for current mode.
 #}
-{% if politician_buy_cards or politician_sell_cards %}
+{% set _has_filter = politician_mode == "filter" and politician_trades_list %}
+{% set _has_consensus = politician_mode != "filter" and (politician_buy_cards or politician_sell_cards) %}
+{% set _filter_empty = politician_mode == "filter" and not politician_trades_list %}
+{% if _has_filter or _has_consensus or _filter_empty %}
 <!-- Politician Watchlist (Capitol Trades) -->
 <section class="rounded-xl bg-surface-container border border-outline-variant/10 p-6 space-y-5">
   <div class="flex items-start justify-between gap-4 flex-wrap">
     <div class="flex items-center gap-3">
       <span class="material-symbols-outlined text-primary" style="font-size:32px;font-variation-settings:'FILL' 1;">account_balance</span>
       <div>
-        <h2 class="text-xl font-headline font-bold text-on-surface">Politician Watchlist <span class="text-on-surface-variant text-sm font-normal">(최근 90일)</span></h2>
-        <p class="text-xs text-on-surface-variant mt-1">의원들이 거래한 TOP 종목 · 가중 스코어 기반</p>
+        <h2 class="text-xl font-headline font-bold text-on-surface">
+          {% if politician_mode == "filter" %}
+            {{ politician_filter_names|join(', ') }} 거래
+            <span class="text-on-surface-variant text-sm font-normal">(최근 90일)</span>
+          {% else %}
+            Politician Watchlist <span class="text-on-surface-variant text-sm font-normal">(최근 90일)</span>
+          {% endif %}
+        </h2>
+        <p class="text-xs text-on-surface-variant mt-1">
+          {% if politician_mode == "filter" %}공시된 매매 내역 (timeline){% else %}의원들이 거래한 TOP 종목 · 가중 스코어 기반{% endif %}
+        </p>
       </div>
     </div>
     <div class="text-[11px] text-on-surface-variant text-right leading-snug">
-      {% if politician_meta.total_us_trades %}US 거래 {{ politician_meta.total_us_trades }}건 · {{ politician_meta.politicians_active or 0 }}명 활동{% endif %}
-      {% if politician_updated_at %}<br><span class="text-outline">업데이트 {{ politician_updated_at[:10] }}</span>{% endif %}
+      {% if politician_mode == "filter" %}
+        거래 {{ politician_trades_list|length }}건
+        {% if politician_updated_at %}<br><span class="text-outline">업데이트 {{ politician_updated_at[:10] }}</span>{% endif %}
+      {% else %}
+        {% if politician_meta.total_us_trades %}US 거래 {{ politician_meta.total_us_trades }}건 · {{ politician_meta.politicians_active or 0 }}명 활동{% endif %}
+        {% if politician_updated_at %}<br><span class="text-outline">업데이트 {{ politician_updated_at[:10] }}</span>{% endif %}
+      {% endif %}
     </div>
   </div>
 
   <!-- Disclaimer -->
+  {% if politician_mode != "filter" %}
   <div class="text-[11px] text-on-surface-variant bg-surface-container-high rounded-md px-3 py-2 border border-outline-variant/10">
     ⓘ 참고용 공시 데이터 · 기술적 시그널과 독립 · <strong>별점·색상은 검증된 예측력이 아니라 의원 활동량의 시각화</strong> · STOCK Act상 최대 45일 지연 공시
   </div>
+  {% else %}
+  <div class="text-[11px] text-on-surface-variant bg-surface-container-high rounded-md px-3 py-2 border border-outline-variant/10">
+    ⓘ 참고용 공시 데이터 · 기술적 시그널과 독립 · STOCK Act상 최대 45일 지연 공시
+  </div>
+  {% endif %}
 
+  {% if _has_filter %}
+  <!-- Filter mode: trade timeline -->
+  <div class="overflow-x-auto rounded-xl border border-outline-variant/10 bg-surface-container-low">
+    <table class="w-full text-left border-collapse text-sm">
+      <thead class="bg-surface-container text-on-surface-variant font-label text-[10px] uppercase tracking-widest">
+        <tr>
+          <th class="px-4 py-3">날짜</th>
+          <th class="px-4 py-3">방향</th>
+          <th class="px-4 py-3">Ticker</th>
+          <th class="px-4 py-3">회사</th>
+          <th class="px-4 py-3 text-right">금액 (USD)</th>
+          <th class="px-4 py-3">공시 종류</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-outline-variant/10">
+        {% for t in politician_trades_list %}
+        <tr class="hover:bg-surface-container-high/40 transition-colors">
+          <td class="px-4 py-3 text-on-surface-variant whitespace-nowrap">{{ t.tx_date }}</td>
+          <td class="px-4 py-3">
+            {% if t.direction == 'buy' %}
+              <span class="text-[11px] font-bold uppercase tracking-wider bg-primary/15 text-primary px-2 py-0.5 rounded">매수</span>
+            {% else %}
+              <span class="text-[11px] font-bold uppercase tracking-wider bg-error/15 text-error px-2 py-0.5 rounded">매도</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 font-mono font-bold text-on-surface">
+            {{ t.ticker }}
+            {% if t.in_portfolio %}<span class="ml-1 text-[9px] uppercase tracking-wider bg-tertiary/20 text-tertiary px-1 py-0.5 rounded">보유</span>{% endif %}
+          </td>
+          <td class="px-4 py-3 text-on-surface-variant truncate max-w-[200px]" title="{{ t.issuer_name }}">{{ t.issuer_name }}</td>
+          <td class="px-4 py-3 text-right text-on-surface-variant whitespace-nowrap">
+            {% if t.amount_min %}${{ '{:,}'.format(t.amount_min) }}{% if t.amount_max %} – ${{ '{:,}'.format(t.amount_max) }}{% endif %}{% else %}—{% endif %}
+          </td>
+          <td class="px-4 py-3 text-[11px] text-outline">{{ t.tx_type }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if _filter_empty %}
+  <div class="rounded-md bg-surface-container-high px-4 py-3 text-center text-xs text-on-surface-variant">
+    {{ politician_filter_names|join(', ') }}의 최근 90일간 공시된 매매 거래가 없습니다.
+  </div>
+  {% endif %}
+
+  {% if _has_consensus %}
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
     <!-- BUY consensus column -->
     <div>
@@ -119,5 +192,6 @@
       {% endif %}
     </div>
   </div>
+  {% endif %}
 </section>
 {% endif %}

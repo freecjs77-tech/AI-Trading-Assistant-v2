@@ -525,6 +525,9 @@ def generate_scanner_pages(
     politician_watchlist: list = []
     politician_meta: dict = {}
     politician_updated_at: str | None = None
+    politician_mode: str = "consensus"
+    politician_filter_names: list = []
+    politician_trades_list: list = []
     _pt_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "history", "politician_trades.json")
     if os.path.exists(_pt_path):
         try:
@@ -533,6 +536,9 @@ def generate_scanner_pages(
             politician_watchlist = _pt.get("watchlist", []) or []
             politician_meta = _pt.get("meta", {}) or {}
             politician_updated_at = _pt.get("updated_at")
+            politician_mode = _pt.get("mode", "consensus") or "consensus"
+            politician_filter_names = _pt.get("filter_politicians", []) or []
+            politician_trades_list = _pt.get("trades", []) or []
         except (OSError, json.JSONDecodeError):
             pass  # stale/missing is fine — section just won't render
 
@@ -549,6 +555,9 @@ def generate_scanner_pages(
         "politician_sell_cards": politician_sell_cards,
         "politician_meta": politician_meta,
         "politician_updated_at": politician_updated_at,
+        "politician_mode": politician_mode,
+        "politician_filter_names": politician_filter_names,
+        "politician_trades_list": politician_trades_list,
         # S&P 100
         "sp100_buy_1st": sp100.get("buy_1st", []),
         "sp100_buy_2nd": sp100.get("buy_2nd", []),
