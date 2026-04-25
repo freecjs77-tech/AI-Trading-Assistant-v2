@@ -1169,9 +1169,9 @@ def generate_detail_pages(
         d = data.get(ticker, {})
         price = e.get("price", d.get("price", 0))
 
-        # 52주 레인지
-        high_52w = d.get("high_52w")
-        low_52w = d.get("low_52w")
+        # 52주 레인지 — 스캐너 전용 티커는 d가 비어있을 수 있어 entry(e)에서 우선 조회
+        high_52w = e.get("high_52w") or d.get("high_52w")
+        low_52w = e.get("low_52w") or d.get("low_52w")
         range_pct = 50
         if high_52w and high_52w > 0:
             low_52w = low_52w or high_52w * 0.7
