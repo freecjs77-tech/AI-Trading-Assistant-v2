@@ -28,6 +28,7 @@ from signal_judge import (
 from portfolio_data import TICKER_META
 
 # ── 미국 대형주 스캐너 — S&P 100 + NASDAQ 100 합집합 (~169종목) ─────
+# 출처: S&P 100 (OEX) + NASDAQ-100 구성종목 (2026-04-25 기준, https://en.wikipedia.org/wiki/Nasdaq-100 Components)
 # 변수명은 호환성을 위해 SP100_TICKERS를 유지 (외부 호출부 영향 없음).
 SP100_TICKERS = [
     "AAPL", "ABBV", "ABNB", "ABT", "ACN", "ADBE", "ADI", "ADP", "ADSK", "AEP",
@@ -115,12 +116,11 @@ TICKER_SECTORS = {
     "CDNS": "Tech", "CRM": "Tech", "CRWD": "Tech", "CSCO": "Tech",
     "CTSH": "Tech", "DDOG": "Tech", "FTNT": "Tech", "IBM": "Tech",
     "INTC": "Tech", "INTU": "Tech", "KLAC": "Tech", "LRCX": "Tech",
-    "MCHP": "Tech", "MPWR": "Tech", "MSFT": "Tech", "MSTR": "Tech",
-    "MRVL": "Tech", "MU": "Tech", "NVDA": "Tech", "NXPI": "Tech",
+    "MCHP": "Tech", "MPWR": "Tech", "MRVL": "Tech", "MSFT": "Tech",
+    "MSTR": "Tech", "MU": "Tech", "NVDA": "Tech", "NXPI": "Tech",
     "ORCL": "Tech", "PANW": "Tech", "PAYX": "Tech", "PLTR": "Tech",
-    "QCOM": "Tech", "ROP": "Tech", "SNPS": "Tech", "STX": "Tech",
-    "SNDK": "Tech", "TXN": "Tech", "WDAY": "Tech", "WDC": "Tech",
-    "ZS": "Tech",
+    "QCOM": "Tech", "SNDK": "Tech", "SNPS": "Tech", "STX": "Tech",
+    "TXN": "Tech", "WDAY": "Tech", "WDC": "Tech", "ZS": "Tech",
     # ── Comm (커뮤니케이션) ─────
     "CHTR": "Comm", "CMCSA": "Comm", "DIS": "Comm", "EA": "Comm",
     "GOOG": "Comm", "GOOGL": "Comm", "META": "Comm", "NFLX": "Comm",
@@ -157,11 +157,11 @@ TICKER_SECTORS = {
     "USB": "금융", "V": "금융", "WFC": "금융",
     # ── 산업 (Industrials) ─────
     "AXON": "산업", "BA": "산업", "CAT": "산업", "CPRT": "산업",
-    "CSX": "산업", "CTAS": "산업", "DE": "산업", "EMR": "산업",
-    "FAST": "산업", "FDX": "산업", "FER": "산업", "GD": "산업",
-    "GE": "산업", "HON": "산업", "LMT": "산업", "MMM": "산업",
-    "ODFL": "산업", "PCAR": "산업", "RTX": "산업", "UNP": "산업",
-    "UPS": "산업", "VRSK": "산업",
+    "CSGP": "산업", "CSX": "산업", "CTAS": "산업", "DE": "산업",
+    "EMR": "산업", "FAST": "산업", "FDX": "산업", "FER": "산업",
+    "GD": "산업", "GE": "산업", "HON": "산업", "LMT": "산업",
+    "MMM": "산업", "ODFL": "산업", "PCAR": "산업", "ROP": "산업",
+    "RTX": "산업", "UNP": "산업", "UPS": "산업", "VRSK": "산업",
     # ── 에너지 (Energy) ─────
     "BKR": "에너지", "COP": "에너지", "CVX": "에너지",
     "FANG": "에너지", "XOM": "에너지",
@@ -169,7 +169,7 @@ TICKER_SECTORS = {
     "AEP": "유틸", "CEG": "유틸", "DUK": "유틸", "EXC": "유틸",
     "NEE": "유틸", "SO": "유틸", "XEL": "유틸",
     # ── 부동산 (Real Estate) ─────
-    "CSGP": "부동산", "SPG": "부동산",
+    "SPG": "부동산",
     # ── 소재 (Materials) ─────
     "DOW": "소재", "LIN": "소재",
 }
