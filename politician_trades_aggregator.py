@@ -246,14 +246,14 @@ def aggregate(
     # downstream aggregation (so ticker-level scores don't see filtered-out trades).
     filter_names = _load_politician_filter()
     filter_active = bool(filter_names)
+    total_trades_before_filter = len(trades)  # preserves meta semantics across both modes
     if filter_active:
-        filter_set = {n.strip() for n in filter_names}
-        before = len(trades)
+        filter_set = set(filter_names)  # loader already strips/dedups string entries
         trades = [
             t for t in trades
             if (t.get("politician_name") or "").strip() in filter_set
         ]
-        _log(f"[Aggregator] Filter mode: {len(filter_names)} politicians → {len(trades)}/{before} trades")
+        _log(f"[Aggregator] Filter mode: {len(filter_names)} politicians → {len(trades)}/{total_trades_before_filter} trades")
 
     # Group US trades by ticker
     by_ticker: dict[str, list[dict]] = defaultdict(list)
@@ -398,7 +398,8 @@ def aggregate(
         "window_days": window_days,
         "watchlist": watchlist,
         "meta": {
-            "total_trades_considered": len(trades),
+            "total_trades_considered": total_trades_before_filter,
+            "total_trades_after_filter": len(trades) if filter_active else None,
             "total_us_trades": us_trade_count,
             "unique_tickers_with_activity": len(by_ticker),
             "tickers_passing_threshold": len(entries),
