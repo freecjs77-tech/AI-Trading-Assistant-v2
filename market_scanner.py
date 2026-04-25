@@ -636,6 +636,7 @@ def scan_sp100(project_dir: str) -> dict:
         entry = {
             "ticker": ticker,
             "name": SP100_NAMES.get(ticker, ticker),
+            "sector": TICKER_SECTORS.get(ticker, "—"),
             "signal": signal,
             "price": d.get("price"),
             "change_pct": d.get("change_pct", 0),
