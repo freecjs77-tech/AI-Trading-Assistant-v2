@@ -22,7 +22,7 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 from signal_judge import (
-    _check_entry_growth, _check_entry_etf, check_exit_simple, _BUY_SIGNALS,
+    _check_entry_growth, _check_entry_etf, _BUY_SIGNALS,
     _build_entry_sections_growth, _build_entry_sections_etf, judge_all,
 )
 from portfolio_data import TICKER_META
@@ -618,10 +618,8 @@ def scan_sp100(project_dir: str) -> dict:
         if not d or "error" in d:
             continue
 
-        # v5.1: Exit 체크 — Exit 시그널이면 Entry 스캔 제외
-        if check_exit_simple(ticker, d):
-            continue
-
+        # 마켓 스캐너는 Exit 시그널(TOP_SIGNAL/TAKE_PROFIT 등)을 무시하고
+        # Entry 조건만 평가한다 — 과열 종목도 BUY 후보로 노출하기 위함.
         signal, conditions = _check_entry_growth(d)
 
         # [v5.3] 전일 BUY였는데 오늘 BUY 미발동 → 거래량 면제 재판정
@@ -783,10 +781,7 @@ def scan_etf(project_dir: str) -> dict:
         if not d or "error" in d:
             continue
 
-        # v5.1: Exit 체크 — Exit 시그널이면 Entry 스캔 제외
-        if check_exit_simple(ticker, d):
-            continue
-
+        # 마켓 스캐너는 Exit 시그널을 무시하고 Entry 조건만 평가한다.
         signal, conditions = _check_entry_etf(d)
         if not signal:
             continue
@@ -995,9 +990,7 @@ def scan_kospi(project_dir: str) -> dict:
         if not d or "error" in d:
             continue
 
-        # v5.1b: Exit 체크 — Exit 시그널이면 Entry 스캔 제외
-        if check_exit_simple(ticker, d):
-            continue
+        # 마켓 스캐너는 Exit 시그널을 무시하고 Entry 조건만 평가한다.
 
         # 티커 표시명: .KS 제거 (history 조회에도 사용)
         display_ticker = ticker.replace(".KS", "")
