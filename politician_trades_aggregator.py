@@ -69,6 +69,25 @@ NOTABLE_TRADE_LIMIT = 3
 BUY_TYPES = {"buy", "receive"}
 SELL_TYPES = {"sell", "exchange"}
 
+POLITICIAN_FILTER_PATH = os.path.join(PROJECT_DIR, "data", "politician_filter.json")
+
+
+def _load_politician_filter(path: str = POLITICIAN_FILTER_PATH) -> list[str]:
+    """
+    Returns list of politician names to filter to (empty = consensus mode).
+    Graceful: missing file, malformed JSON, missing 'politicians' key → [].
+    Skips empty strings and non-string entries.
+    """
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+        names = cfg.get("politicians", []) or []
+        return [n for n in names if isinstance(n, str) and n.strip()]
+    except (json.JSONDecodeError, IOError):
+        return []
+
 
 def _load_json(path: str) -> dict | None:
     try:
