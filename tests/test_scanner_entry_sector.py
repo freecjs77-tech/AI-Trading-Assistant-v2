@@ -1,11 +1,16 @@
 """Verifies scan_sp100 entry dict includes a sector field."""
-import sys, os
+import sys, os, inspect
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+import market_scanner
 from market_scanner import SP100_TICKERS, SP100_NAMES, TICKER_SECTORS
 
+def test_scan_sp100_emits_sector_field():
+    src = inspect.getsource(market_scanner.scan_sp100)
+    assert '"sector": TICKER_SECTORS.get(ticker' in src, \
+        "scan_sp100 entry dict에 sector 필드가 없습니다 — TICKER_SECTORS.get(ticker, ...) 호출 누락"
+
 def test_entry_sector_field_logic():
-    # Simulate the entry dict construction logic for a sample ticker
     sample = SP100_TICKERS[0]
     entry = {
         "ticker": sample,
@@ -19,7 +24,6 @@ def test_entry_sector_field_logic():
         f"{sample} 섹터값이 유효하지 않음: {entry['sector']}"
 
 def test_known_ticker_sectors():
-    # Hardcoded sanity checks for high-profile tickers
     expected = {"AAPL": "Tech", "JPM": "금융", "AMZN": "경기소비",
                 "GOOG": "Comm", "WMT": "필수소비", "LLY": "헬스케어"}
     for tk, want in expected.items():
@@ -27,6 +31,7 @@ def test_known_ticker_sectors():
         assert got == want, f"{tk}: expected {want}, got {got}"
 
 if __name__ == "__main__":
+    test_scan_sp100_emits_sector_field()
     test_entry_sector_field_logic()
     test_known_ticker_sectors()
     print("[OK] scan_sp100 entry sector field verified.")
