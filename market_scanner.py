@@ -104,12 +104,12 @@ SP100_NAMES = {
     "WDC": "Western Digital", "XEL": "Xcel Energy", "ZS": "Zscaler",
 }
 
-# 종목 GICS 섹터 분류 (한국어 약어, 11개 섹터)
-# Tech=정보기술, Comm=커뮤니케이션, 경기소비=Consumer Discretionary,
-# 필수소비=Consumer Staples, 헬스케어=Health Care, 금융=Financials,
-# 산업=Industrials, 에너지=Energy, 유틸=Utilities, 부동산=Real Estate, 소재=Materials
+# 종목 GICS 섹터 분류 (한국어 키, SECTOR_KO_TO_EN으로 영문 변환)
+# Tech=Technology, 통신=Communication Services, 소비순환=Consumer Cyclical,
+# 필수소비=Consumer Defensive, 헬스케어=Healthcare, 금융=Financial Services,
+# 산업재=Industrials, 에너지=Energy, 유틸=Utilities, 부동산=Real Estate, 원자재=Basic Materials
 TICKER_SECTORS = {
-    # ── Tech (정보기술) ─────
+    # ── Tech (Technology) ─────
     "AAPL": "Tech", "ACN": "Tech", "ADBE": "Tech", "ADI": "Tech",
     "ADP": "Tech", "ADSK": "Tech", "AMAT": "Tech", "AMD": "Tech",
     "APP": "Tech", "ARM": "Tech", "ASML": "Tech", "AVGO": "Tech",
@@ -121,26 +121,26 @@ TICKER_SECTORS = {
     "ORCL": "Tech", "PANW": "Tech", "PAYX": "Tech", "PLTR": "Tech",
     "QCOM": "Tech", "SNDK": "Tech", "SNPS": "Tech", "STX": "Tech",
     "TXN": "Tech", "WDAY": "Tech", "WDC": "Tech", "ZS": "Tech",
-    # ── Comm (커뮤니케이션) ─────
-    "CHTR": "Comm", "CMCSA": "Comm", "DIS": "Comm", "EA": "Comm",
-    "GOOG": "Comm", "GOOGL": "Comm", "META": "Comm", "NFLX": "Comm",
-    "T": "Comm", "TMUS": "Comm", "TTWO": "Comm", "VZ": "Comm",
-    "WBD": "Comm",
-    # ── 경기소비 (Consumer Discretionary) ─────
-    "ABNB": "경기소비", "AMZN": "경기소비", "BKNG": "경기소비",
-    "DASH": "경기소비", "F": "경기소비", "GM": "경기소비",
-    "HD": "경기소비", "LOW": "경기소비", "MAR": "경기소비",
-    "MCD": "경기소비", "MELI": "경기소비", "NKE": "경기소비",
-    "ORLY": "경기소비", "PDD": "경기소비", "ROST": "경기소비",
-    "SBUX": "경기소비", "SHOP": "경기소비", "TGT": "경기소비",
-    "TSLA": "경기소비",
-    # ── 필수소비 (Consumer Staples) ─────
+    # ── 통신 (Communication Services) ─────
+    "CHTR": "통신", "CMCSA": "통신", "DIS": "통신", "EA": "통신",
+    "GOOG": "통신", "GOOGL": "통신", "META": "통신", "NFLX": "통신",
+    "T": "통신", "TMUS": "통신", "TTWO": "통신", "VZ": "통신",
+    "WBD": "통신",
+    # ── 소비순환 (Consumer Cyclical) ─────
+    "ABNB": "소비순환", "AMZN": "소비순환", "BKNG": "소비순환",
+    "DASH": "소비순환", "F": "소비순환", "GM": "소비순환",
+    "HD": "소비순환", "LOW": "소비순환", "MAR": "소비순환",
+    "MCD": "소비순환", "MELI": "소비순환", "NKE": "소비순환",
+    "ORLY": "소비순환", "PDD": "소비순환", "ROST": "소비순환",
+    "SBUX": "소비순환", "SHOP": "소비순환", "TGT": "소비순환",
+    "TSLA": "소비순환",
+    # ── 필수소비 (Consumer Defensive) ─────
     "CCEP": "필수소비", "CL": "필수소비", "COST": "필수소비",
     "KDP": "필수소비", "KHC": "필수소비", "KO": "필수소비",
     "MDLZ": "필수소비", "MNST": "필수소비", "MO": "필수소비",
     "PEP": "필수소비", "PG": "필수소비", "PM": "필수소비",
     "WMT": "필수소비",
-    # ── 헬스케어 (Health Care) ─────
+    # ── 헬스케어 (Healthcare) ─────
     "ABBV": "헬스케어", "ABT": "헬스케어", "ALNY": "헬스케어",
     "AMGN": "헬스케어", "BMY": "헬스케어", "CVS": "헬스케어",
     "DHR": "헬스케어", "DXCM": "헬스케어", "GEHC": "헬스케어",
@@ -149,20 +149,20 @@ TICKER_SECTORS = {
     "MDT": "헬스케어", "MRK": "헬스케어", "PFE": "헬스케어",
     "REGN": "헬스케어", "TMO": "헬스케어", "UNH": "헬스케어",
     "VRTX": "헬스케어",
-    # ── 금융 (Financials) — V/MA/PYPL은 GICS 2023.3 재분류로 Financials ─────
+    # ── 금융 (Financial Services) — V/MA/PYPL은 GICS 2023.3 재분류로 Financials ─────
     "AIG": "금융", "AXP": "금융", "BAC": "금융", "BK": "금융",
     "BLK": "금융", "BRK-B": "금융", "C": "금융", "COF": "금융",
     "GS": "금융", "JPM": "금융", "MA": "금융", "MET": "금융",
     "MS": "금융", "PYPL": "금융", "SCHW": "금융",
     "USB": "금융", "V": "금융", "WFC": "금융",
-    # ── 산업 (Industrials) ─────
-    "AXON": "산업", "BA": "산업", "CAT": "산업", "CPRT": "산업",
-    "CSGP": "산업", "CSX": "산업", "CTAS": "산업", "DE": "산업",
-    "EMR": "산업", "FAST": "산업", "FDX": "산업", "FER": "산업",
-    "GD": "산업", "GE": "산업", "HON": "산업", "LMT": "산업",
-    "MMM": "산업", "ODFL": "산업", "PCAR": "산업", "ROP": "산업",
-    "RTX": "산업", "TRI": "산업", "UNP": "산업", "UPS": "산업",
-    "VRSK": "산업",
+    # ── 산업재 (Industrials) ─────
+    "AXON": "산업재", "BA": "산업재", "CAT": "산업재", "CPRT": "산업재",
+    "CSGP": "산업재", "CSX": "산업재", "CTAS": "산업재", "DE": "산업재",
+    "EMR": "산업재", "FAST": "산업재", "FDX": "산업재", "FER": "산업재",
+    "GD": "산업재", "GE": "산업재", "HON": "산업재", "LMT": "산업재",
+    "MMM": "산업재", "ODFL": "산업재", "PCAR": "산업재", "ROP": "산업재",
+    "RTX": "산업재", "TRI": "산업재", "UNP": "산업재", "UPS": "산업재",
+    "VRSK": "산업재",
     # ── 에너지 (Energy) ─────
     "BKR": "에너지", "COP": "에너지", "CVX": "에너지",
     "FANG": "에너지", "XOM": "에너지",
@@ -171,8 +171,24 @@ TICKER_SECTORS = {
     "NEE": "유틸", "SO": "유틸", "XEL": "유틸",
     # ── 부동산 (Real Estate) ─────
     "SPG": "부동산",
-    # ── 소재 (Materials) ─────
-    "DOW": "소재", "LIN": "소재",
+    # ── 원자재 (Basic Materials) ─────
+    "DOW": "원자재", "LIN": "원자재",
+}
+
+
+# 한국어 섹터 키 → 영문 표시명 (yfinance/Yahoo Finance 분류 일치)
+SECTOR_KO_TO_EN = {
+    "Tech":      "Technology",          # Tech은 영문이지만 통일을 위해 Technology로
+    "금융":       "Financial Services",
+    "헬스케어":    "Healthcare",
+    "에너지":     "Energy",
+    "유틸":       "Utilities",
+    "필수소비":    "Consumer Defensive",
+    "소비순환":    "Consumer Cyclical",
+    "산업재":     "Industrials",
+    "통신":       "Communication Services",
+    "부동산":     "Real Estate",
+    "원자재":     "Basic Materials",
 }
 
 
@@ -635,7 +651,7 @@ def scan_sp100(project_dir: str) -> dict:
         entry = {
             "ticker": ticker,
             "name": SP100_NAMES.get(ticker, ticker),
-            "sector": TICKER_SECTORS.get(ticker, "—"),
+            "sector": SECTOR_KO_TO_EN.get(TICKER_SECTORS.get(ticker, ""), "—"),
             "signal": signal,
             "price": d.get("price"),
             "change_pct": d.get("change_pct", 0),
