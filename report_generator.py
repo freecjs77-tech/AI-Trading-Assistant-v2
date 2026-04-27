@@ -745,7 +745,7 @@ def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
     return _build_owner_payload(combined_daily)
 
 
-TREND_START_DATE = "2026-03-05"  # 트렌드 차트 시작일 (이전 데이터는 표시 안 함)
+TREND_START_DATE = "2026-01-02"  # 트렌드 차트 시작일 (= YTD anchor; pre-Mar 5는 합성 스냅샷)
 
 
 def _filter_trend_daily(daily: dict) -> dict:
