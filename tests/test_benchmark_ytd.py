@@ -30,3 +30,52 @@ def test_resolve_kosdaq_ticker():
 def test_resolve_ticker_with_existing_suffix():
     # already converted — pass through unchanged
     assert resolve_yf_symbol("005930.KS") == "005930.KS"
+
+
+# ---------------------------------------------------------------------------
+# Task 3: yfinance close-price fetcher
+# ---------------------------------------------------------------------------
+from unittest.mock import patch, MagicMock
+import pandas as pd
+
+
+def _mock_yf_history(close_value: float):
+    """Build a mock yfinance.Ticker whose .history() returns one row with given close."""
+    df = pd.DataFrame(
+        {"Close": [close_value], "Adj Close": [close_value]},
+        index=pd.to_datetime(["2026-01-02"]),
+    )
+    mock_ticker = MagicMock()
+    mock_ticker.history.return_value = df
+    return mock_ticker
+
+
+def test_fetch_close_on_returns_value():
+    from benchmark_ytd import fetch_close_on
+    with patch("benchmark_ytd.yf.Ticker", return_value=_mock_yf_history(150.25)):
+        assert fetch_close_on("AAPL", "2026-01-02") == 150.25
+
+
+def test_fetch_close_on_empty_returns_none():
+    from benchmark_ytd import fetch_close_on
+    empty_df = pd.DataFrame()
+    mock_ticker = MagicMock()
+    mock_ticker.history.return_value = empty_df
+    with patch("benchmark_ytd.yf.Ticker", return_value=mock_ticker):
+        assert fetch_close_on("UNKNOWN.XX", "2026-01-02") is None
+
+
+def test_fetch_close_on_uses_adj_close_for_spy():
+    """SPY uses Adj Close (dividend-adjusted) for accurate benchmark return."""
+    from benchmark_ytd import fetch_close_on
+    df = pd.DataFrame(
+        {"Close": [470.0], "Adj Close": [468.5]},
+        index=pd.to_datetime(["2026-01-02"]),
+    )
+    mock_ticker = MagicMock()
+    mock_ticker.history.return_value = df
+    with patch("benchmark_ytd.yf.Ticker", return_value=mock_ticker):
+        # SPY → Adj Close
+        assert fetch_close_on("SPY", "2026-01-02", use_adj_close=True) == 468.5
+        # AAPL → Close
+        assert fetch_close_on("AAPL", "2026-01-02", use_adj_close=False) == 470.0
