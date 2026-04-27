@@ -59,6 +59,27 @@ def find_nearest_spy(spy_history: dict, target_date: str) -> float | None:
     return None
 
 
+def _build_fx_lookup(daily_files: dict) -> dict:
+    """Build {date: usd_krw} from all owners' daily files (uses any owner's non-zero rate)."""
+    fx = {}
+    for owner, (path, daily) in daily_files.items():
+        for date_str, snap in daily.items():
+            if date_str.startswith("_"):
+                continue
+            rate = snap.get("usd_krw")
+            if rate and rate > 0 and date_str not in fx:
+                fx[date_str] = float(rate)
+    return fx
+
+
+def _resolve_fx(date_str: str, snap: dict, fx_lookup: dict) -> float | None:
+    """Try snap's own usd_krw, then cross-owner lookup for same date."""
+    rate = snap.get("usd_krw")
+    if rate and rate > 0:
+        return float(rate)
+    return fx_lookup.get(date_str)
+
+
 def main():
     # Step 1: discover owners + load their baselines and current v0
     owner_baselines = {}
@@ -99,6 +120,10 @@ def main():
     spy_history = fetch_spy_history(ANCHOR_DATE, sorted_dates[-1])
     print(f"  Fetched {len(spy_history)} SPY trading days\n")
 
+    # Cross-owner FX fallback table (in case one owner's snapshot has usd_krw=0)
+    fx_lookup = _build_fx_lookup(daily_files)
+    print(f"  Built FX fallback table: {len(fx_lookup)} dates with usd_krw\n")
+
     # Step 4: backfill each daily file
     for owner, (path, daily) in daily_files.items():
         baseline = owner_baselines[owner]
@@ -106,16 +131,23 @@ def main():
         spy_v0_krw = baseline["spy_close_usd"] * baseline["usd_krw"]
 
         added = 0
+        updated = 0  # snapshots that already had None ytd_pct → re-filled
         skipped_existing = 0
         skipped_no_data = 0
         for date_str in sorted([k for k in daily.keys() if not k.startswith("_")]):
             snap = daily[date_str]
-            # Skip if already has all 3 fields (typically: today's snap saved by pipeline)
-            if all(k in snap for k in ("ytd_pct", "spy_ytd_pct", "alpha_pp")):
+            # If all 3 fields exist AND non-None → skip (already valid).
+            # If all 3 keys exist but values are None → reprocess (previous backfill failed).
+            existing_ok = (
+                all(k in snap for k in ("ytd_pct", "spy_ytd_pct", "alpha_pp"))
+                and snap.get("ytd_pct") is not None
+            )
+            if existing_ok:
                 skipped_existing += 1
                 continue
+            is_update = "ytd_pct" in snap  # already has the key but value is None
 
-            usd_krw_d = snap.get("usd_krw")
+            usd_krw_d = _resolve_fx(date_str, snap, fx_lookup)
             total_krw_d = snap.get("total_value_krw")
             if not usd_krw_d or not total_krw_d:
                 skipped_no_data += 1
@@ -135,17 +167,20 @@ def main():
             snap["spy_ytd_pct"] = spy_ytd_pct
             snap["alpha_pp"] = alpha_pp
             # v0_krw 와 spy_v0_krw 도 채워서 합산 뷰가 작동하도록
-            if "v0_krw" not in snap:
+            if snap.get("v0_krw") is None:
                 snap["v0_krw"] = round(current_v0)
-            if "spy_v0_krw" not in snap:
+            if snap.get("spy_v0_krw") is None:
                 snap["spy_v0_krw"] = round(spy_v0_krw, 2)
-            added += 1
+            if is_update:
+                updated += 1
+            else:
+                added += 1
 
         # Write back
-        if added > 0:
+        if added > 0 or updated > 0:
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(daily, f, ensure_ascii=False, indent=2)
-        print(f"  {owner}: added={added}, skipped_existing={skipped_existing}, skipped_no_data={skipped_no_data}")
+        print(f"  {owner}: added={added}, updated={updated}, skipped_existing={skipped_existing}, skipped_no_data={skipped_no_data}")
 
     print("\nBackfill complete.")
     print("Note: portfolio ytd_pct uses 'today\\'s composition since Jan 2' approximation.")
