@@ -631,6 +631,9 @@ def _series_from_daily(daily: dict) -> list:
             "pnl_pct": snap.get("pnl_pct", 0),
             "div_annual_man": round(snap.get("div_annual_krw", 0) / 1e4),
             "div_yield": snap.get("div_yield", 0),
+            "ytd_pct": snap.get("ytd_pct"),
+            "spy_ytd_pct": snap.get("spy_ytd_pct"),
+            "alpha_pp": snap.get("alpha_pp"),
         })
     return out
 
@@ -652,6 +655,9 @@ def _build_owner_payload(daily: dict) -> dict:
         "cash_pct": latest_snap.get("cash_pct", 0),
         "div_annual_man": f"{(latest_snap.get('div_annual_krw', 0) or 0) / 1e4:,.0f}",
         "div_yield": latest_snap.get("div_yield", 0),
+        "ytd_pct": latest_snap.get("ytd_pct"),
+        "spy_ytd_pct": latest_snap.get("spy_ytd_pct"),
+        "alpha_pp": latest_snap.get("alpha_pp"),
     }
     ticker_weights = latest_snap.get("weights_by_ticker", {}) or {}
     sorted_tickers = sorted(ticker_weights.items(), key=lambda x: -x[1])
@@ -792,6 +798,9 @@ def generate_trend_page(
         "cash_pct": latest_snap.get("cash_pct", 0),
         "div_annual_man": f"{latest_snap.get('div_annual_krw', 0) / 1e4:,.0f}",
         "div_yield": latest_snap.get("div_yield", 0),
+        "ytd_pct": latest_snap.get("ytd_pct"),
+        "spy_ytd_pct": latest_snap.get("spy_ytd_pct"),
+        "alpha_pp": latest_snap.get("alpha_pp"),
     }
 
     # 카테고리별 비중 + 금액
