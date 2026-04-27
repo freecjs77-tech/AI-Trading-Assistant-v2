@@ -270,6 +270,21 @@ tailwind.config = {
                 <span class="money" data-usd="{{ total_pnl }}" data-krw="{{ total_pnl_krw }}" data-signed="1">{{ '+' if total_pnl >= 0 else '' }}${{ total_pnl|comma }}</span>
               </p>
               <p class="text-xs font-label {{ 'text-secondary/60' if total_pnl >= 0 else 'text-tertiary/60' }}">{{ '&#9650;' if total_pnl_pct >= 0 else '&#9660;' }} {{ total_pnl_pct|sign_pct }} vs Principal</p>
+              {% if benchmark_status == "ok" and ytd_pct is not none and spy_ytd_pct is not none %}
+              <div class="mt-2 pt-2 border-t border-outline-variant/10 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-label">
+                <span class="text-on-surface-variant uppercase tracking-widest">2026 YTD</span>
+                <span class="font-bold {{ 'text-secondary' if ytd_pct >= 0 else 'text-tertiary' }}">{{ '+' if ytd_pct >= 0 else '' }}{{ '%.2f'|format(ytd_pct) }}%</span>
+                <span class="text-outline">·</span>
+                <span class="text-on-surface-variant">S&amp;P (₩)</span>
+                <span class="font-bold {{ 'text-secondary' if spy_ytd_pct >= 0 else 'text-tertiary' }}">{{ '+' if spy_ytd_pct >= 0 else '' }}{{ '%.2f'|format(spy_ytd_pct) }}%</span>
+                <span class="text-outline">·</span>
+                <span class="text-on-surface-variant">α</span>
+                <span class="font-bold {{ 'text-secondary' if alpha_pp >= 0 else 'text-tertiary' }}">{{ '+' if alpha_pp >= 0 else '' }}{{ '%.2f'|format(alpha_pp) }}pp</span>
+                <span class="ml-1 cursor-help text-outline" title="2026-01-02 기준 baseline. 보유 종목/수량이 변경되면 baseline도 자동 재계산됩니다. 1월 이후 신규 매수 종목은 1월~매수일 가격 변동분이 함께 반영되어 실제 거래 성과와 차이가 있을 수 있습니다.{% if benchmark_excluded %} 제외된 종목: {{ benchmark_excluded|join(', ') }}{% endif %}">ⓘ</span>
+              </div>
+              {% elif benchmark_status == "error" %}
+              <p class="mt-2 text-xs font-label text-outline">2026 YTD: 데이터 준비 중...</p>
+              {% endif %}
             </div>
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Cash Reserve</p>
