@@ -254,6 +254,7 @@ def generate_report(
     backtest_analysis: dict | None = None,
     nav_portfolio: str | None = None,
     active_nav: str = "portfolio",
+    benchmark_data: dict | None = None,
 ) -> str:
     """
     Jinja2 템플릿으로 HTML 리포트 생성.
@@ -432,6 +433,24 @@ def generate_report(
         "nav_trend": f"trend_{date_str}.html",
         **_owner_nav_links(date_str),
     }
+
+    # Benchmark data (YTD vs S&P KRW)
+    if benchmark_data and benchmark_data.get("status") == "ok":
+        context["benchmark_status"] = "ok"
+        context["ytd_pct"] = benchmark_data.get("ytd_pct")
+        context["spy_ytd_pct"] = benchmark_data.get("spy_ytd_pct")
+        context["alpha_pp"] = benchmark_data.get("alpha_pp")
+        context["benchmark_anchor_date"] = benchmark_data.get("anchor_date", "2026-01-02")
+        context["benchmark_excluded"] = benchmark_data.get("excluded_tickers", [])
+    else:
+        context["benchmark_status"] = "error"
+        context["ytd_pct"] = None
+        context["spy_ytd_pct"] = None
+        context["alpha_pp"] = None
+        context["benchmark_anchor_date"] = "2026-01-02"
+        context["benchmark_excluded"] = []
+        if benchmark_data:
+            context["benchmark_error"] = benchmark_data.get("error_message", "unknown")
 
     html = template.render(**context)
 
