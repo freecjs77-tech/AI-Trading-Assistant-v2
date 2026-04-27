@@ -290,6 +290,17 @@ def compute_owner_benchmark(
     today USD/KRW comes from market_data["_macro"]["USD_KRW"].
     today native prices for held tickers come from market_data["data"][ticker]["price"].
     """
+    if not isinstance(market_data, dict):
+        return {
+            "status": "error",
+            "error_message": f"market_data must be a dict, got {type(market_data).__name__}",
+            "ytd_pct": None,
+            "spy_ytd_pct": None,
+            "alpha_pp": None,
+            "excluded_tickers": [],
+            "anchor_date": None,
+        }
+
     try:
         baseline = load_or_build_baseline(holdings, owner, project_dir)
     except Exception as e:
@@ -299,6 +310,8 @@ def compute_owner_benchmark(
             "ytd_pct": None,
             "spy_ytd_pct": None,
             "alpha_pp": None,
+            "excluded_tickers": [],
+            "anchor_date": None,
         }
 
     today_usd_krw = (market_data.get("_macro") or {}).get("USD_KRW") or 0
@@ -309,6 +322,8 @@ def compute_owner_benchmark(
             "ytd_pct": None,
             "spy_ytd_pct": None,
             "alpha_pp": None,
+            "excluded_tickers": [],
+            "anchor_date": None,
         }
 
     data = market_data.get("data", {}) or {}
@@ -327,9 +342,22 @@ def compute_owner_benchmark(
                 "ytd_pct": None,
                 "spy_ytd_pct": None,
                 "alpha_pp": None,
+                "excluded_tickers": [],
+                "anchor_date": None,
             }
 
-    result = compute_returns(holdings, today_prices, today_usd_krw, today_spy_usd, baseline)
+    try:
+        result = compute_returns(holdings, today_prices, today_usd_krw, today_spy_usd, baseline)
+    except Exception as e:
+        return {
+            "status": "error",
+            "error_message": f"compute_returns failed: {e}",
+            "ytd_pct": None,
+            "spy_ytd_pct": None,
+            "alpha_pp": None,
+            "excluded_tickers": [],
+            "anchor_date": None,
+        }
     result["status"] = "ok"
     result["anchor_date"] = baseline["anchor_date"]
     return result

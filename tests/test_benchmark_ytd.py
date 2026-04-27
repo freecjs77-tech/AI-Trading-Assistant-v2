@@ -565,3 +565,55 @@ def test_compute_owner_benchmark_handles_failure_gracefully(tmp_path):
     assert result["status"] == "error"
     assert "error_message" in result
     assert result["ytd_pct"] is None
+
+
+def test_compute_owner_benchmark_market_data_none_returns_error(tmp_path):
+    """market_data=None must not raise; should return status=error."""
+    from benchmark_ytd import compute_owner_benchmark
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+    result = compute_owner_benchmark(
+        holdings=holdings, owner="me", project_dir=str(tmp_path), market_data=None,
+    )
+    assert result["status"] == "error"
+    assert result["ytd_pct"] is None
+    assert "excluded_tickers" in result
+    assert "anchor_date" in result
+
+
+def test_compute_owner_benchmark_missing_usd_krw_returns_error(tmp_path):
+    """Missing USD_KRW in market_data._macro -> status=error, no raise."""
+    from benchmark_ytd import compute_owner_benchmark
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+    market_data = {"data": {"AAPL": {"price": 150.0}}, "_macro": {}}  # no USD_KRW
+
+    fake_data = {"AAPL": 150.0, "KRW=X": 1300.0, "SPY": 468.0}
+
+    def fake_fetch(symbol, date_str, use_adj_close=False):
+        return fake_data.get(symbol)
+
+    with patch("benchmark_ytd.fetch_close_on", side_effect=fake_fetch):
+        result = compute_owner_benchmark(
+            holdings=holdings, owner="me", project_dir=str(tmp_path), market_data=market_data,
+        )
+    assert result["status"] == "error"
+    assert "USD/KRW" in result["error_message"]
+
+
+def test_compute_owner_benchmark_error_returns_have_consistent_shape(tmp_path):
+    """All error returns must include excluded_tickers and anchor_date keys (consistent with ok)."""
+    from benchmark_ytd import compute_owner_benchmark
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+
+    # Trigger baseline-failure error
+    def fake_fetch(symbol, date_str, use_adj_close=False):
+        return None
+
+    with patch("benchmark_ytd.fetch_close_on", side_effect=fake_fetch):
+        result = compute_owner_benchmark(
+            holdings=holdings, owner="me", project_dir=str(tmp_path),
+            market_data={"data": {}, "_macro": {"USD_KRW": 1300}},
+        )
+
+    required_keys = {"status", "error_message", "ytd_pct", "spy_ytd_pct", "alpha_pp",
+                     "excluded_tickers", "anchor_date"}
+    assert required_keys.issubset(result.keys()), f"missing keys: {required_keys - set(result.keys())}"
