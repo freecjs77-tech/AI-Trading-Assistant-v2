@@ -269,3 +269,67 @@ def load_or_build_baseline(holdings: list[dict], owner: str, project_dir: str) -
         with open(path, "w", encoding="utf-8") as f:
             json.dump(baseline, f, ensure_ascii=False, indent=2)
     return baseline
+
+
+def _today_str() -> str:
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def compute_owner_benchmark(
+    holdings: list[dict],
+    owner: str,
+    project_dir: str,
+    market_data: dict,
+) -> dict:
+    """Top-level entry point used by pipeline.
+
+    Builds/loads baseline cache, fetches today's SPY price (separate from market_data
+    for robustness when SPY isn't held), computes returns. Returns dict with `status`
+    field — "ok" or "error" — so callers can render placeholder UI on failure.
+
+    today USD/KRW comes from market_data["_macro"]["USD_KRW"].
+    today native prices for held tickers come from market_data["data"][ticker]["price"].
+    """
+    try:
+        baseline = load_or_build_baseline(holdings, owner, project_dir)
+    except Exception as e:
+        return {
+            "status": "error",
+            "error_message": f"baseline build failed: {e}",
+            "ytd_pct": None,
+            "spy_ytd_pct": None,
+            "alpha_pp": None,
+        }
+
+    today_usd_krw = (market_data.get("_macro") or {}).get("USD_KRW") or 0
+    if today_usd_krw <= 0:
+        return {
+            "status": "error",
+            "error_message": "today USD/KRW unavailable in market_data",
+            "ytd_pct": None,
+            "spy_ytd_pct": None,
+            "alpha_pp": None,
+        }
+
+    data = market_data.get("data", {}) or {}
+    today_prices = {t: (data.get(t) or {}).get("price") for t in [h["ticker"] for h in holdings]}
+
+    today_spy_usd = fetch_close_on(SPY_SYMBOL, _today_str(), use_adj_close=True)
+    if today_spy_usd is None or today_spy_usd <= 0:
+        # fallback to market_data SPY if present
+        spy_today = (data.get("SPY") or {}).get("price")
+        if spy_today and spy_today > 0:
+            today_spy_usd = float(spy_today)
+        else:
+            return {
+                "status": "error",
+                "error_message": "today SPY price unavailable",
+                "ytd_pct": None,
+                "spy_ytd_pct": None,
+                "alpha_pp": None,
+            }
+
+    result = compute_returns(holdings, today_prices, today_usd_krw, today_spy_usd, baseline)
+    result["status"] = "ok"
+    result["anchor_date"] = baseline["anchor_date"]
+    return result

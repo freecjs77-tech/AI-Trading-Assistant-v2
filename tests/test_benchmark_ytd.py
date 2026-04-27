@@ -502,3 +502,66 @@ def test_compute_returns_excludes_missing_today_price_from_v0_too():
     # ytd_pct = (2047500/1950000 - 1)*100 = +5.0% (NOT pessimistic-biased)
     assert round(result["ytd_pct"], 2) == 5.0
     assert "TSLA" in result["excluded_tickers"]
+
+
+# ---------------------------------------------------------------------------
+# Task 8: compute_owner_benchmark — top-level entry point
+# ---------------------------------------------------------------------------
+
+def test_compute_owner_benchmark_end_to_end(tmp_path):
+    """Top-level entry point: takes holdings + market_data, returns full result dict.
+
+    Builds baseline from scratch on first call, fetches today's SPY separately.
+    """
+    from benchmark_ytd import compute_owner_benchmark
+
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+    market_data = {
+        "data": {"AAPL": {"price": 157.5}},
+        "_macro": {"USD_KRW": 1300.0},
+    }
+    fake_data = {
+        "AAPL": 150.0,
+        "KRW=X": 1300.0,
+        "SPY": 482.04,  # used for both Jan2 (Adj) and today
+    }
+
+    def fake_fetch(symbol, date_str, use_adj_close=False):
+        # First call (Jan 2 baseline): SPY adj 468; today SPY: 482.04
+        if symbol == "SPY":
+            return 468.0 if date_str == "2026-01-02" else 482.04
+        return fake_data.get(symbol)
+
+    with patch("benchmark_ytd.fetch_close_on", side_effect=fake_fetch):
+        result = compute_owner_benchmark(
+            holdings=holdings,
+            owner="me",
+            project_dir=str(tmp_path),
+            market_data=market_data,
+        )
+
+    assert result["status"] == "ok"
+    assert round(result["ytd_pct"], 2) == 5.0
+    assert round(result["spy_ytd_pct"], 2) == 3.0
+    assert round(result["alpha_pp"], 2) == 2.0
+
+
+def test_compute_owner_benchmark_handles_failure_gracefully(tmp_path):
+    """If baseline build fails, return status=error placeholder, do not raise."""
+    from benchmark_ytd import compute_owner_benchmark
+
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+    market_data = {"data": {"AAPL": {"price": 150.0}}, "_macro": {"USD_KRW": 1300.0}}
+
+    def fake_fetch(symbol, date_str, use_adj_close=False):
+        return None  # everything fails
+
+    with patch("benchmark_ytd.fetch_close_on", side_effect=fake_fetch):
+        result = compute_owner_benchmark(
+            holdings=holdings, owner="me", project_dir=str(tmp_path),
+            market_data=market_data,
+        )
+
+    assert result["status"] == "error"
+    assert "error_message" in result
+    assert result["ytd_pct"] is None
