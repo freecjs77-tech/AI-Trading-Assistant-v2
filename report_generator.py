@@ -442,6 +442,7 @@ def generate_report(
         context["alpha_pp"] = benchmark_data.get("alpha_pp")
         context["benchmark_anchor_date"] = benchmark_data.get("anchor_date", "2026-01-02")
         context["benchmark_excluded"] = benchmark_data.get("excluded_tickers", [])
+        context["benchmark_error"] = None
     else:
         context["benchmark_status"] = "error"
         context["ytd_pct"] = None
@@ -449,8 +450,9 @@ def generate_report(
         context["alpha_pp"] = None
         context["benchmark_anchor_date"] = "2026-01-02"
         context["benchmark_excluded"] = []
-        if benchmark_data:
-            context["benchmark_error"] = benchmark_data.get("error_message", "unknown")
+        context["benchmark_error"] = (
+            benchmark_data.get("error_message", "unknown") if benchmark_data else None
+        )
 
     html = template.render(**context)
 
