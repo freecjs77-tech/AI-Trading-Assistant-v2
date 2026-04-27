@@ -117,6 +117,36 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
       </div>
     </div>
 
+    <!-- YTD Benchmark Cards -->
+    {% if latest.ytd_pct is not none and latest.spy_ytd_pct is not none %}
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-secondary' if latest.ytd_pct >= 0 else 'border-l-tertiary' }} flex items-center gap-4">
+        <span class="material-symbols-outlined {{ 'text-secondary/60' if latest.ytd_pct >= 0 else 'text-tertiary/60' }} flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">flag</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">2026 YTD (Portfolio)</span>
+          <div class="text-2xl font-headline font-bold {{ 'text-secondary' if latest.ytd_pct >= 0 else 'text-tertiary' }}" id="sumYtd">{{ '+' if latest.ytd_pct >= 0 else '' }}{{ '%.2f'|format(latest.ytd_pct) }}%</div>
+          <div class="text-xs mt-2 text-outline">기준: 2026-01-02</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-secondary' if latest.spy_ytd_pct >= 0 else 'border-l-tertiary' }} flex items-center gap-4">
+        <span class="material-symbols-outlined {{ 'text-secondary/60' if latest.spy_ytd_pct >= 0 else 'text-tertiary/60' }} flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">show_chart</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">S&amp;P 500 YTD (₩)</span>
+          <div class="text-2xl font-headline font-bold {{ 'text-secondary' if latest.spy_ytd_pct >= 0 else 'text-tertiary' }}" id="sumSpy">{{ '+' if latest.spy_ytd_pct >= 0 else '' }}{{ '%.2f'|format(latest.spy_ytd_pct) }}%</div>
+          <div class="text-xs mt-2 text-outline">SPY × USD/KRW</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-secondary' if latest.alpha_pp >= 0 else 'border-l-tertiary' }} flex items-center gap-4">
+        <span class="material-symbols-outlined {{ 'text-secondary/60' if latest.alpha_pp >= 0 else 'text-tertiary/60' }} flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">trending_up</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Alpha vs S&amp;P</span>
+          <div class="text-2xl font-headline font-bold {{ 'text-secondary' if latest.alpha_pp >= 0 else 'text-tertiary' }}" id="sumAlpha">{{ '+' if latest.alpha_pp >= 0 else '' }}{{ '%.2f'|format(latest.alpha_pp) }}pp</div>
+          <div class="text-xs mt-2 text-outline">초과수익</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Asset Allocation -->
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
       <h2 class="text-lg font-headline font-bold mb-6" id="allocTitle">Asset Allocation</h2>
