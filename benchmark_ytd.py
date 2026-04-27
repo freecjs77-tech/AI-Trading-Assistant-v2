@@ -157,6 +157,73 @@ def compute_v_now_total_krw(
     return total, excluded
 
 
+def compute_returns(
+    holdings: list[dict],
+    today_prices: dict,
+    today_usd_krw: float,
+    today_spy_usd: float,
+    baseline: dict,
+) -> dict:
+    """Compute YTD portfolio return, SPY (KRW) return, and alpha.
+
+    Returns:
+        {
+          "v0_krw": float, "v_now_krw": float,
+          "ytd_pct": float | None,
+          "spy_v0_krw": float, "spy_now_krw": float,
+          "spy_ytd_pct": float | None,
+          "alpha_pp": float | None,
+          "excluded_tickers": [ticker, ...],
+        }
+
+    ytd_pct/alpha_pp are None when v0 == 0 (all holdings unmappable).
+
+    Exclusion symmetry: any ticker excluded from v_now (e.g., missing today price)
+    is ALSO excluded from v0, so the v_now/v0 ratio is mathematically valid.
+    """
+    # First pass: compute v_now to discover the full exclusion set
+    v_now_krw, exc_now = compute_v_now_total_krw(holdings, today_prices, today_usd_krw, baseline)
+
+    # Re-derive baseline with v_now's exclusions added to unmappable, then compute v0.
+    # This guarantees v0 uses the same ticker set as v_now.
+    sym_baseline = dict(baseline)
+    sym_baseline["unmappable"] = list(set(baseline.get("unmappable", [])) | set(exc_now))
+    v0_krw, exc_v0 = compute_v0_total_krw(holdings, sym_baseline)
+
+    excluded = sorted(set(exc_now) | set(exc_v0))
+
+    ytd_pct: float | None
+    if v0_krw > 0:
+        ytd_pct = (v_now_krw / v0_krw - 1.0) * 100.0
+    else:
+        ytd_pct = None
+
+    spy_v0_krw = float(baseline["spy_close_usd"]) * float(baseline["usd_krw"])
+    spy_now_krw = float(today_spy_usd) * float(today_usd_krw)
+    spy_ytd_pct: float | None
+    if spy_v0_krw > 0:
+        spy_ytd_pct = (spy_now_krw / spy_v0_krw - 1.0) * 100.0
+    else:
+        spy_ytd_pct = None
+
+    alpha_pp: float | None
+    if ytd_pct is not None and spy_ytd_pct is not None:
+        alpha_pp = ytd_pct - spy_ytd_pct
+    else:
+        alpha_pp = None
+
+    return {
+        "v0_krw": v0_krw,
+        "v_now_krw": v_now_krw,
+        "ytd_pct": ytd_pct,
+        "spy_v0_krw": spy_v0_krw,
+        "spy_now_krw": spy_now_krw,
+        "spy_ytd_pct": spy_ytd_pct,
+        "alpha_pp": alpha_pp,
+        "excluded_tickers": excluded,
+    }
+
+
 def _baseline_cache_path(owner: str, project_dir: str) -> str:
     return os.path.join(project_dir, "data", f"baseline_2026_{owner}.json")
 

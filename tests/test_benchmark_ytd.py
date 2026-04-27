@@ -395,3 +395,110 @@ def test_compute_v_now_missing_today_price_excluded():
     v_now, excluded = compute_v_now_total_krw(holdings, today_prices, 1400.0, baseline)
     assert v_now == 10 * 180.0 * 1400.0
     assert "TSLA" in excluded
+
+
+# ---------------------------------------------------------------------------
+# Task 7: compute_returns — YTD portfolio return, SPY KRW return, alpha
+# ---------------------------------------------------------------------------
+
+def test_compute_returns_positive_alpha():
+    """Portfolio +5%, S&P (KRW) +3% -> alpha = +2.0pp."""
+    from benchmark_ytd import compute_returns
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+    baseline = {
+        "anchor_date": "2026-01-02",
+        "usd_krw": 1300.0,
+        "spy_close_usd": 468.0,
+        "ticker_v0_krw": {"AAPL": 195000.0},
+        "unmappable": [],
+    }
+    today_prices = {"AAPL": 157.5}  # +5% of 150
+    today_usd_krw = 1300.0  # FX flat
+    today_spy_usd = 482.04  # +3% of 468
+
+    result = compute_returns(holdings, today_prices, today_usd_krw, today_spy_usd, baseline)
+
+    assert result["v0_krw"] == 1_950_000.0
+    # 10 * 157.5 * 1300 = 2047500
+    assert result["v_now_krw"] == 2_047_500.0
+    assert round(result["ytd_pct"], 2) == 5.0
+    # SPY KRW: v0 = 468 * 1300 = 608400; v_now = 482.04 * 1300 = 626652
+    # spy_ytd_pct = (626652/608400 - 1)*100 = 3.0
+    assert round(result["spy_ytd_pct"], 2) == 3.0
+    assert round(result["alpha_pp"], 2) == 2.0
+    assert result["excluded_tickers"] == []
+
+
+def test_compute_returns_negative_alpha():
+    from benchmark_ytd import compute_returns
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+    baseline = {
+        "usd_krw": 1300.0, "spy_close_usd": 468.0,
+        "ticker_v0_krw": {"AAPL": 195000.0}, "unmappable": [],
+    }
+    today_prices = {"AAPL": 147.0}  # -2%
+    result = compute_returns(holdings, today_prices, 1300.0, 472.68, baseline)  # SPY +1%
+    assert round(result["ytd_pct"], 2) == -2.0
+    assert round(result["spy_ytd_pct"], 2) == 1.0
+    assert round(result["alpha_pp"], 2) == -3.0
+
+
+def test_compute_returns_zero_v0_returns_none_pct():
+    """All holdings unmappable -> v0 = 0 -> ytd_pct = None (avoid divide-by-zero)."""
+    from benchmark_ytd import compute_returns
+    holdings = [{"ticker": "WEIRD", "shares": 10}]
+    baseline = {
+        "usd_krw": 1300.0, "spy_close_usd": 468.0,
+        "ticker_v0_krw": {}, "unmappable": ["WEIRD"],
+    }
+    result = compute_returns(holdings, {"WEIRD": 100.0}, 1300.0, 482.0, baseline)
+    assert result["ytd_pct"] is None
+    assert result["alpha_pp"] is None
+    # SPY independent -> still computed
+    assert result["spy_ytd_pct"] is not None
+
+
+def test_compute_returns_fx_movement_in_spy_krw():
+    """SPY KRW return reflects USD/KRW movement, not just SPY USD."""
+    from benchmark_ytd import compute_returns
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+    baseline = {
+        "usd_krw": 1000.0, "spy_close_usd": 400.0,
+        "ticker_v0_krw": {"AAPL": 150_000.0}, "unmappable": [],
+    }
+    # SPY USD flat at 400, but FX moved 1000 -> 1100 (+10%)
+    result = compute_returns(holdings, {"AAPL": 150.0}, 1100.0, 400.0, baseline)
+    # SPY KRW: 400*1000=400000 -> 400*1100=440000 -> +10%
+    assert round(result["spy_ytd_pct"], 2) == 10.0
+
+
+def test_compute_returns_excludes_missing_today_price_from_v0_too():
+    """When today_prices is missing a ticker, v0 must also exclude that ticker
+    (not just v_now), to keep v_now/v0 ratio mathematically valid.
+
+    Regression test for the v0/v_now exclusion-symmetry contract.
+    """
+    from benchmark_ytd import compute_returns
+    holdings = [
+        {"ticker": "AAPL", "shares": 10},   # mappable, has today price
+        {"ticker": "TSLA", "shares": 5},    # mappable in baseline, BUT today price missing
+    ]
+    baseline = {
+        "usd_krw": 1300.0,
+        "spy_close_usd": 468.0,
+        "ticker_v0_krw": {"AAPL": 195000.0, "TSLA": 260000.0},
+        "unmappable": [],
+    }
+    today_prices = {"AAPL": 157.5}  # TSLA missing
+    today_usd_krw = 1300.0
+    today_spy_usd = 482.04
+
+    result = compute_returns(holdings, today_prices, today_usd_krw, today_spy_usd, baseline)
+
+    # v0 must EXCLUDE TSLA -> only AAPL: 10 * 195000 = 1_950_000
+    assert result["v0_krw"] == 1_950_000.0
+    # v_now: only AAPL: 10 * 157.5 * 1300 = 2_047_500
+    assert result["v_now_krw"] == 2_047_500.0
+    # ytd_pct = (2047500/1950000 - 1)*100 = +5.0% (NOT pessimistic-biased)
+    assert round(result["ytd_pct"], 2) == 5.0
+    assert "TSLA" in result["excluded_tickers"]
