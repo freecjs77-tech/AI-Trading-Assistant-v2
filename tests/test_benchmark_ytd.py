@@ -79,3 +79,18 @@ def test_fetch_close_on_uses_adj_close_for_spy():
         assert fetch_close_on("SPY", "2026-01-02", use_adj_close=True) == 468.5
         # AAPL → Close
         assert fetch_close_on("AAPL", "2026-01-02", use_adj_close=False) == 470.0
+
+
+def test_fetch_close_on_nan_returns_none():
+    """yfinance can return NaN when a session has missing data; treat as None."""
+    from benchmark_ytd import fetch_close_on
+    import numpy as np
+    df = pd.DataFrame(
+        {"Close": [np.nan], "Adj Close": [np.nan]},
+        index=pd.to_datetime(["2026-01-02"]),
+    )
+    mock_ticker = MagicMock()
+    mock_ticker.history.return_value = df
+    with patch("benchmark_ytd.yf.Ticker", return_value=mock_ticker):
+        assert fetch_close_on("BROKEN", "2026-01-02") is None
+        assert fetch_close_on("BROKEN", "2026-01-02", use_adj_close=True) is None

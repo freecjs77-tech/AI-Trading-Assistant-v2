@@ -5,6 +5,7 @@ See docs/superpowers/specs/2026-04-27-ytd-benchmark-design.md for design.
 from __future__ import annotations
 
 import json
+import math
 import os
 from datetime import datetime, timedelta
 from typing import Iterable
@@ -51,6 +52,9 @@ def fetch_close_on(yf_symbol: str, date_str: str, use_adj_close: bool = False) -
         return None
     val = df[col].iloc[0]
     try:
-        return float(val)
+        f = float(val)
     except (TypeError, ValueError):
         return None
+    if math.isnan(f):
+        return None
+    return f
