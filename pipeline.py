@@ -324,9 +324,14 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             benchmark_by_owner["me"] = {"status": "error", "error_message": str(_be), "ytd_pct": None, "spy_ytd_pct": None, "alpha_pp": None, "excluded_tickers": [], "anchor_date": None}
 
         try:
-            for _owner, _opath in discover_portfolios(project_dir):
-                if _owner == PRIMARY_OWNER:
-                    continue
+            _owners_iter = discover_portfolios(project_dir)
+        except Exception as _de:
+            print(f"  WARN discover_portfolios failed: {_de}")
+            _owners_iter = []
+        for _owner, _opath in _owners_iter:
+            if _owner == PRIMARY_OWNER:
+                continue
+            try:
                 _oholds = _parse_portfolio_for_report(_opath)
                 benchmark_by_owner[_owner] = compute_owner_benchmark(
                     holdings=_oholds, owner=_owner, project_dir=project_dir,
@@ -337,8 +342,17 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     print(f"  OK {_owner}: YTD={_ob['ytd_pct']:+.2f}%  S&P={_ob['spy_ytd_pct']:+.2f}%  alpha={_ob['alpha_pp']:+.2f}pp")
                 else:
                     print(f"  WARN {_owner} benchmark: {_ob.get('error_message', 'unknown')}")
-        except Exception as _be2:
-            print(f"  WARN secondary owner benchmarks failed: {_be2}")
+            except Exception as _be2:
+                print(f"  WARN {_owner} benchmark exception: {_be2}")
+                benchmark_by_owner[_owner] = {
+                    "status": "error",
+                    "error_message": str(_be2),
+                    "ytd_pct": None,
+                    "spy_ytd_pct": None,
+                    "alpha_pp": None,
+                    "excluded_tickers": [],
+                    "anchor_date": None,
+                }
 
         # Step 5: Report generation
         print("[Step 5] Generating report...")
