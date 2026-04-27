@@ -1,0 +1,157 @@
+"""Backfill ytd_pct/spy_ytd_pct/alpha_pp into historical portfolio_daily snapshots.
+
+For visualization purposes — populates the YTD comparison chart with a meaningful
+time series. Uses:
+  - SPY YTD: exact (yfinance historical SPY closes × per-date USD/KRW from snapshots)
+  - Portfolio YTD: approximation using current v0_krw as denominator
+    (assumes today's portfolio composition since 2026-01-02; limitation noted)
+
+This is a one-time script. Future pipeline runs save these fields automatically.
+"""
+import json
+import os
+import sys
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, PROJECT_DIR)
+
+from benchmark_ytd import (
+    ANCHOR_DATE, SPY_SYMBOL, load_or_build_baseline,
+    compute_v0_total_krw, fetch_close_on,
+)
+from portfolio_paths import discover_portfolios
+from pipeline import _parse_portfolio_for_report
+import yfinance as yf
+from datetime import datetime, timedelta
+import pandas as pd
+
+
+def fetch_spy_history(start_date: str, end_date: str) -> dict:
+    """Fetch SPY Adj Close prices for date range. Returns {date_str: close_usd}."""
+    end = (datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=2)).strftime("%Y-%m-%d")
+    print(f"Fetching SPY history {start_date} → {end} ...")
+    t = yf.Ticker(SPY_SYMBOL)
+    df = t.history(start=start_date, end=end, auto_adjust=False)
+    if df is None or df.empty:
+        return {}
+    out = {}
+    for idx, row in df.iterrows():
+        date_str = idx.strftime("%Y-%m-%d")
+        adj = row.get("Adj Close")
+        if pd.notna(adj) and adj > 0:
+            out[date_str] = float(adj)
+    return out
+
+
+def find_nearest_spy(spy_history: dict, target_date: str) -> float | None:
+    """Find SPY close on target_date, or fall back to most recent prior trading day."""
+    if target_date in spy_history:
+        return spy_history[target_date]
+    # walk back up to 7 days
+    dt = datetime.strptime(target_date, "%Y-%m-%d")
+    for back in range(1, 8):
+        d = (dt - timedelta(days=back)).strftime("%Y-%m-%d")
+        if d in spy_history:
+            return spy_history[d]
+    return None
+
+
+def main():
+    # Step 1: discover owners + load their baselines and current v0
+    owner_baselines = {}
+    owner_current_v0 = {}
+    for owner, ppath in discover_portfolios(PROJECT_DIR):
+        holdings = _parse_portfolio_for_report(ppath)
+        baseline = load_or_build_baseline(holdings, owner, PROJECT_DIR)
+        v0_krw, _excluded = compute_v0_total_krw(holdings, baseline)
+        owner_baselines[owner] = baseline
+        owner_current_v0[owner] = v0_krw
+        spy_v0_krw = baseline["spy_close_usd"] * baseline["usd_krw"]
+        print(f"  {owner}: current v0_krw={v0_krw:,.0f}, spy_v0_krw={spy_v0_krw:,.2f} (Jan 2: SPY ${baseline['spy_close_usd']:.2f}, USD/KRW {baseline['usd_krw']:.2f})")
+    print()
+
+    # Step 2: collect all historical dates across all daily files
+    all_dates = set()
+    daily_files = {}
+    for owner in owner_baselines:
+        fname = "portfolio_daily.json" if owner == "me" else f"portfolio_daily_{owner}.json"
+        path = os.path.join(PROJECT_DIR, "history", fname)
+        if not os.path.exists(path):
+            continue
+        with open(path, "r", encoding="utf-8") as f:
+            daily = json.load(f)
+        daily_files[owner] = (path, daily)
+        for d in daily.keys():
+            if not d.startswith("_"):
+                all_dates.add(d)
+
+    if not all_dates:
+        print("No historical snapshots found. Nothing to backfill.")
+        return
+
+    sorted_dates = sorted(all_dates)
+    print(f"Historical dates: {sorted_dates[0]} → {sorted_dates[-1]} ({len(sorted_dates)} dates)")
+
+    # Step 3: fetch SPY history for the full range (one bulk call)
+    spy_history = fetch_spy_history(ANCHOR_DATE, sorted_dates[-1])
+    print(f"  Fetched {len(spy_history)} SPY trading days\n")
+
+    # Step 4: backfill each daily file
+    for owner, (path, daily) in daily_files.items():
+        baseline = owner_baselines[owner]
+        current_v0 = owner_current_v0[owner]
+        spy_v0_krw = baseline["spy_close_usd"] * baseline["usd_krw"]
+
+        added = 0
+        skipped_existing = 0
+        skipped_no_data = 0
+        for date_str in sorted([k for k in daily.keys() if not k.startswith("_")]):
+            snap = daily[date_str]
+            # Skip if already has all 3 fields (typically: today's snap saved by pipeline)
+            if all(k in snap for k in ("ytd_pct", "spy_ytd_pct", "alpha_pp")):
+                skipped_existing += 1
+                continue
+
+            usd_krw_d = snap.get("usd_krw")
+            total_krw_d = snap.get("total_value_krw")
+            if not usd_krw_d or not total_krw_d:
+                skipped_no_data += 1
+                continue
+
+            spy_d_usd = find_nearest_spy(spy_history, date_str)
+            if spy_d_usd is None:
+                skipped_no_data += 1
+                continue
+
+            spy_now_krw = spy_d_usd * usd_krw_d
+            spy_ytd_pct = round((spy_now_krw / spy_v0_krw - 1) * 100, 2) if spy_v0_krw > 0 else None
+            ytd_pct = round((total_krw_d / current_v0 - 1) * 100, 2) if current_v0 > 0 else None
+            alpha_pp = round(ytd_pct - spy_ytd_pct, 2) if ytd_pct is not None and spy_ytd_pct is not None else None
+
+            snap["ytd_pct"] = ytd_pct
+            snap["spy_ytd_pct"] = spy_ytd_pct
+            snap["alpha_pp"] = alpha_pp
+            # v0_krw 와 spy_v0_krw 도 채워서 합산 뷰가 작동하도록
+            if "v0_krw" not in snap:
+                snap["v0_krw"] = round(current_v0)
+            if "spy_v0_krw" not in snap:
+                snap["spy_v0_krw"] = round(spy_v0_krw, 2)
+            added += 1
+
+        # Write back
+        if added > 0:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(daily, f, ensure_ascii=False, indent=2)
+        print(f"  {owner}: added={added}, skipped_existing={skipped_existing}, skipped_no_data={skipped_no_data}")
+
+    print("\nBackfill complete.")
+    print("Note: portfolio ytd_pct uses 'today\\'s composition since Jan 2' approximation.")
+    print("      If positions changed materially over the year, historical points are approximate.")
+    print("      SPY ytd_pct is exact (per-date SPY × per-date USD/KRW vs Jan 2 baseline).")
+
+
+if __name__ == "__main__":
+    main()

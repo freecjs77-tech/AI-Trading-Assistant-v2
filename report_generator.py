@@ -691,6 +691,9 @@ def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
         pnl = 0.0
         cash = 0.0
         div_annual = 0.0
+        v0_sum = 0.0
+        v0_complete = True  # v0_krw가 모든 owner에 있어야 합산 ytd 계산 가능
+        spy_ytd_pct = None
         # 티커별 krw 누적
         ticker_krw = {}
         for d in all_daily:
@@ -705,10 +708,25 @@ def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
             div_annual += snap.get("div_annual_krw", 0) or 0
             for name, w in (snap.get("weights_by_ticker", {}) or {}).items():
                 ticker_krw[name] = ticker_krw.get(name, 0) + t * w / 100
+            # v0_krw / spy_ytd_pct 집계 (모든 owner에 있을 때만 유효)
+            v0 = snap.get("v0_krw")
+            if v0 is None:
+                v0_complete = False
+            else:
+                v0_sum += v0
+            if spy_ytd_pct is None and snap.get("spy_ytd_pct") is not None:
+                spy_ytd_pct = snap.get("spy_ytd_pct")  # 모든 owner 동일하므로 첫 값 사용
         weights_by_ticker = {name: (v / tot * 100) for name, v in ticker_krw.items()} if tot > 0 else {}
         pnl_pct = round((pnl / cost * 100), 2) if cost > 0 else 0
         div_yield = round((div_annual / tot * 100), 2) if tot > 0 else 0
         cash_pct = round((cash / tot * 100), 1) if tot > 0 else 0
+        # 합산 YTD: v0_krw 합산이 완전할 때만 계산
+        ytd_pct_combined = None
+        alpha_pp_combined = None
+        if v0_complete and v0_sum > 0:
+            ytd_pct_combined = round((tot / v0_sum - 1) * 100, 2)
+            if spy_ytd_pct is not None:
+                alpha_pp_combined = round(ytd_pct_combined - spy_ytd_pct, 2)
         combined_daily[date] = {
             "total_value_krw": tot,
             "cost_basis_krw": cost,
@@ -719,6 +737,10 @@ def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
             "div_annual_krw": div_annual,
             "div_yield": div_yield,
             "weights_by_ticker": weights_by_ticker,
+            "v0_krw": v0_sum if v0_complete else None,
+            "ytd_pct": ytd_pct_combined,
+            "spy_ytd_pct": spy_ytd_pct,
+            "alpha_pp": alpha_pp_combined,
         }
     return _build_owner_payload(combined_daily)
 
@@ -781,6 +803,9 @@ def generate_trend_page(
             "vix": snap.get("vix"),
             "yield_30y": snap.get("yield_30y"),
             "usd_krw": snap.get("usd_krw", 0),
+            "ytd_pct": snap.get("ytd_pct"),
+            "spy_ytd_pct": snap.get("spy_ytd_pct"),
+            "alpha_pp": snap.get("alpha_pp"),
         })
 
     # 최신 스냅샷 (Summary Cards)
