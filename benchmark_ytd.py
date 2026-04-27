@@ -104,3 +104,50 @@ def build_baseline(holdings: list[dict]) -> dict:
         "ticker_v0_krw": ticker_v0_krw,
         "unmappable": unmappable,
     }
+
+
+def _baseline_cache_path(owner: str, project_dir: str) -> str:
+    return os.path.join(project_dir, "data", f"baseline_2026_{owner}.json")
+
+
+def load_or_build_baseline(holdings: list[dict], owner: str, project_dir: str) -> dict:
+    """Load cached baseline or build it. Incrementally appends new tickers.
+
+    - First run (no cache): full build via build_baseline().
+    - Subsequent runs: read cache. For tickers not in ticker_v0_krw and not in unmappable,
+      fetch their Jan-2 price using cached USD/KRW and append.
+    """
+    path = _baseline_cache_path(owner, project_dir)
+    if not os.path.exists(path):
+        baseline = build_baseline(holdings)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(baseline, f, ensure_ascii=False, indent=2)
+        return baseline
+
+    with open(path, "r", encoding="utf-8") as f:
+        baseline = json.load(f)
+
+    cached_tickers = set(baseline["ticker_v0_krw"].keys()) | set(baseline.get("unmappable", []))
+    new_tickers = [h["ticker"] for h in holdings if h["ticker"] not in cached_tickers]
+
+    if not new_tickers:
+        return baseline
+
+    usd_krw = baseline["usd_krw"]
+    changed = False
+    for ticker in new_tickers:
+        yf_sym = resolve_yf_symbol(ticker)
+        price = fetch_close_on(yf_sym, ANCHOR_DATE)
+        if price is None or price <= 0:
+            baseline.setdefault("unmappable", []).append(ticker)
+        elif is_korean_ticker(ticker):
+            baseline["ticker_v0_krw"][ticker] = float(price)
+        else:
+            baseline["ticker_v0_krw"][ticker] = float(price) * usd_krw
+        changed = True
+
+    if changed:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(baseline, f, ensure_ascii=False, indent=2)
+    return baseline

@@ -208,3 +208,106 @@ def test_build_baseline_failure_on_missing_spy():
         import pytest
         with pytest.raises(RuntimeError, match="SPY"):
             build_baseline(holdings)
+
+
+# ---------------------------------------------------------------------------
+# Task 5: load_or_build_baseline — cache I/O with incremental ticker append
+# ---------------------------------------------------------------------------
+import tempfile
+import json as _json
+
+
+def test_load_or_build_creates_cache_when_missing(tmp_path):
+    from benchmark_ytd import load_or_build_baseline
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+    fake_data = {"AAPL": 150.0, "KRW=X": 1300.0, "SPY": 470.0}
+
+    with patch("benchmark_ytd.fetch_close_on", side_effect=lambda s, d, use_adj_close=False: fake_data.get(s)):
+        baseline = load_or_build_baseline(holdings, owner="me", project_dir=str(tmp_path))
+
+    cache_path = tmp_path / "data" / "baseline_2026_me.json"
+    assert cache_path.exists()
+    saved = _json.loads(cache_path.read_text(encoding="utf-8"))
+    assert saved["ticker_v0_krw"]["AAPL"] == 150.0 * 1300.0
+    assert baseline == saved
+
+
+def test_load_or_build_reads_existing_cache_no_fetch(tmp_path):
+    """Existing cache + same holdings -> no fetch_close_on calls."""
+    from benchmark_ytd import load_or_build_baseline
+    cache_dir = tmp_path / "data"
+    cache_dir.mkdir()
+    cached = {
+        "anchor_date": "2026-01-02",
+        "usd_krw": 1300.0,
+        "spy_close_usd": 468.0,
+        "ticker_v0_krw": {"AAPL": 195000.0},
+        "unmappable": [],
+    }
+    (cache_dir / "baseline_2026_me.json").write_text(_json.dumps(cached), encoding="utf-8")
+    holdings = [{"ticker": "AAPL", "shares": 10}]
+
+    fetch_mock = MagicMock()
+    with patch("benchmark_ytd.fetch_close_on", fetch_mock):
+        baseline = load_or_build_baseline(holdings, owner="me", project_dir=str(tmp_path))
+
+    assert baseline == cached
+    fetch_mock.assert_not_called()
+
+
+def test_load_or_build_appends_only_new_tickers(tmp_path):
+    """Adding a new ticker -> only the new ticker is fetched, cache updated."""
+    from benchmark_ytd import load_or_build_baseline
+    cache_dir = tmp_path / "data"
+    cache_dir.mkdir()
+    cached = {
+        "anchor_date": "2026-01-02",
+        "usd_krw": 1300.0,
+        "spy_close_usd": 468.0,
+        "ticker_v0_krw": {"AAPL": 195000.0},
+        "unmappable": [],
+    }
+    (cache_dir / "baseline_2026_me.json").write_text(_json.dumps(cached), encoding="utf-8")
+    holdings = [
+        {"ticker": "AAPL", "shares": 10},  # cached
+        {"ticker": "TSLA", "shares": 5},   # new
+    ]
+    calls = []
+
+    def tracked_fetch(symbol, date_str, use_adj_close=False):
+        calls.append(symbol)
+        return {"TSLA": 200.0}.get(symbol)
+
+    with patch("benchmark_ytd.fetch_close_on", side_effect=tracked_fetch):
+        baseline = load_or_build_baseline(holdings, owner="me", project_dir=str(tmp_path))
+
+    # Only TSLA should be fetched (USD/KRW + SPY come from cache)
+    assert calls == ["TSLA"]
+    assert baseline["ticker_v0_krw"]["AAPL"] == 195000.0  # preserved
+    assert baseline["ticker_v0_krw"]["TSLA"] == 200.0 * 1300.0  # new
+
+
+def test_load_or_build_skips_unmappable_already_recorded(tmp_path):
+    """Tickers in cached unmappable list -> not retried."""
+    from benchmark_ytd import load_or_build_baseline
+    cache_dir = tmp_path / "data"
+    cache_dir.mkdir()
+    cached = {
+        "anchor_date": "2026-01-02",
+        "usd_krw": 1300.0,
+        "spy_close_usd": 468.0,
+        "ticker_v0_krw": {"AAPL": 195000.0},
+        "unmappable": ["WEIRD"],
+    }
+    (cache_dir / "baseline_2026_me.json").write_text(_json.dumps(cached), encoding="utf-8")
+    holdings = [
+        {"ticker": "AAPL", "shares": 10},
+        {"ticker": "WEIRD", "shares": 5},  # already unmappable
+    ]
+
+    fetch_mock = MagicMock()
+    with patch("benchmark_ytd.fetch_close_on", fetch_mock):
+        baseline = load_or_build_baseline(holdings, owner="me", project_dir=str(tmp_path))
+
+    fetch_mock.assert_not_called()
+    assert "WEIRD" in baseline["unmappable"]
