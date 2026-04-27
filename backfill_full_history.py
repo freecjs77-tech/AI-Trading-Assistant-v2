@@ -67,7 +67,11 @@ def main():
         return
 
     def get_close(symbol: str, date_str: str, use_adj_close: bool = False) -> float | None:
-        """Forward-fill: find Close (or Adj Close) on or before date_str."""
+        """Forward-fill: find Close (or Adj Close) on or before date_str.
+
+        Drops NaN values before picking the last one — handles the case where
+        intraday today's data exists in the row but the close hasn't been reported
+        yet (e.g., US market still open, or KR market data not yet posted)."""
         col = "Adj Close" if use_adj_close else "Close"
         try:
             if isinstance(df.columns, pd.MultiIndex):
@@ -79,13 +83,10 @@ def main():
             if hasattr(idx, "tz") and idx.tz is not None:
                 idx = idx.tz_localize(None)
                 s.index = idx
-            sub = s[s.index <= target]
+            sub = s[s.index <= target].dropna()
             if len(sub) == 0:
                 return None
-            v = sub.iloc[-1]
-            if pd.isna(v):
-                return None
-            return float(v)
+            return float(sub.iloc[-1])
         except (KeyError, IndexError):
             return None
 
@@ -114,16 +115,27 @@ def main():
         # Real snapshots (non-synthetic) are protected. Synthetic ones get reprocessed
         # to allow methodology fixes (e.g., switching SPY Adj Close vs Close).
         real_dates = {k for k in existing_dates if not daily.get(k, {}).get("_synthetic")}
-        missing_dates = [d for d in spy_dates if d not in real_dates]
+        # Exclude today's date — pipeline generates it after market close.
+        # Synthetic for today would use partial intraday data (US market still open).
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        missing_dates = [d for d in spy_dates if d not in real_dates and d != today_str]
+        # Also delete any pre-existing synthetic snapshot for today (from prior backfill)
+        if today_str in daily and daily[today_str].get("_synthetic"):
+            del daily[today_str]
+            print(f"  {owner}: removed stale synthetic snapshot for today ({today_str})")
 
         baseline = load_or_build_baseline(holdings, owner, PROJECT_DIR)
         v0_krw, _ = compute_v0_total_krw(holdings, baseline)
         spy_v0_krw = baseline["spy_close_usd"] * baseline["usd_krw"]
 
-        # Latest dividend values (constant for backfill)
-        latest_date = max(existing_dates) if existing_dates else None
-        latest_div_krw = daily.get(latest_date, {}).get("div_annual_krw", 0) if latest_date else 0
-        latest_div_yield = daily.get(latest_date, {}).get("div_yield", 0) if latest_date else 0
+        # Latest REAL snapshot values for fields that don't have meaningful historical reconstruction
+        latest_real = max(real_dates) if real_dates else None
+        latest_div_krw = daily.get(latest_real, {}).get("div_annual_krw", 0) if latest_real else 0
+        latest_div_yield = daily.get(latest_real, {}).get("div_yield", 0) if latest_real else 0
+        # Use latest real cost basis for synthetic snapshots → smooth Investment Principal line
+        latest_cost_basis = daily.get(latest_real, {}).get("cost_basis_krw") if latest_real else None
+        if latest_cost_basis is None or latest_cost_basis <= 0:
+            latest_cost_basis = v0_krw  # fallback if no real snapshots
 
         added = 0
         skipped = 0
@@ -190,8 +202,8 @@ def main():
             vix_d = get_close(VIX_SYMBOL, date_str)
             yield_30y_d = get_close(YIELD_30Y_SYMBOL, date_str)
 
-            # cost_basis = v0_krw for synthetic snapshots (Jan 2 baseline as anchor)
-            cost_basis_d = v0_krw
+            # cost_basis = latest real cost (smooth Investment Principal line across boundary)
+            cost_basis_d = latest_cost_basis
             pnl_krw_d = total_krw - cost_basis_d
             pnl_pct_d = (pnl_krw_d / cost_basis_d * 100) if cost_basis_d > 0 else 0
 
