@@ -106,6 +106,57 @@ def build_baseline(holdings: list[dict]) -> dict:
     }
 
 
+def compute_v0_total_krw(holdings: list[dict], baseline: dict) -> tuple[float, list[str]]:
+    """Sum (shares × baseline ticker_v0_krw) over mappable holdings.
+
+    Returns (v0_total_krw, excluded_tickers).
+    """
+    ticker_v0 = baseline["ticker_v0_krw"]
+    unmappable = set(baseline.get("unmappable", []))
+    total = 0.0
+    excluded: list[str] = []
+    for h in holdings:
+        t = h["ticker"]
+        if t in unmappable or t not in ticker_v0:
+            excluded.append(t)
+            continue
+        total += float(h["shares"]) * float(ticker_v0[t])
+    return total, excluded
+
+
+def compute_v_now_total_krw(
+    holdings: list[dict],
+    today_prices: dict,
+    today_usd_krw: float,
+    baseline: dict,
+) -> tuple[float, list[str]]:
+    """Sum (shares × today_price_in_krw) over the SAME mappable set as v0.
+
+    today_prices: {ticker: today_native_price} (USD for US, KRW for KOSPI/KOSDAQ).
+    Excludes tickers that are unmappable in baseline OR missing in today_prices.
+
+    Returns (v_now_total_krw, excluded_tickers).
+    """
+    unmappable = set(baseline.get("unmappable", []))
+    ticker_v0 = baseline["ticker_v0_krw"]
+    total = 0.0
+    excluded: list[str] = []
+    for h in holdings:
+        t = h["ticker"]
+        if t in unmappable or t not in ticker_v0:
+            excluded.append(t)
+            continue
+        price = today_prices.get(t)
+        if price is None or price <= 0:
+            excluded.append(t)
+            continue
+        if is_korean_ticker(t):
+            total += float(h["shares"]) * float(price)
+        else:
+            total += float(h["shares"]) * float(price) * float(today_usd_krw)
+    return total, excluded
+
+
 def _baseline_cache_path(owner: str, project_dir: str) -> str:
     return os.path.join(project_dir, "data", f"baseline_2026_{owner}.json")
 

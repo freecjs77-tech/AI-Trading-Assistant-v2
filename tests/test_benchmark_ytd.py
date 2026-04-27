@@ -311,3 +311,87 @@ def test_load_or_build_skips_unmappable_already_recorded(tmp_path):
 
     fetch_mock.assert_not_called()
     assert "WEIRD" in baseline["unmappable"]
+
+
+# ---------------------------------------------------------------------------
+# Task 6: compute_v0_total_krw + compute_v_now_total_krw
+# ---------------------------------------------------------------------------
+
+def test_compute_v0_total_krw_basic():
+    from benchmark_ytd import compute_v0_total_krw
+    holdings = [
+        {"ticker": "AAPL", "shares": 10},
+        {"ticker": "005930", "shares": 100},
+    ]
+    baseline = {
+        "ticker_v0_krw": {"AAPL": 195000.0, "005930": 80000.0},
+        "unmappable": [],
+    }
+    # 10 * 195000 + 100 * 80000 = 1950000 + 8000000 = 9950000
+    v0, excluded = compute_v0_total_krw(holdings, baseline)
+    assert v0 == 9_950_000.0
+    assert excluded == []
+
+
+def test_compute_v0_skips_unmappable():
+    from benchmark_ytd import compute_v0_total_krw
+    holdings = [
+        {"ticker": "AAPL", "shares": 10},
+        {"ticker": "WEIRD", "shares": 5},
+    ]
+    baseline = {
+        "ticker_v0_krw": {"AAPL": 195000.0},
+        "unmappable": ["WEIRD"],
+    }
+    v0, excluded = compute_v0_total_krw(holdings, baseline)
+    assert v0 == 1_950_000.0
+    assert excluded == ["WEIRD"]
+
+
+def test_compute_v_now_total_krw_us_uses_today_fx():
+    from benchmark_ytd import compute_v_now_total_krw
+    holdings = [
+        {"ticker": "AAPL", "shares": 10},
+        {"ticker": "005930", "shares": 100},
+    ]
+    baseline = {"ticker_v0_krw": {"AAPL": 195000.0, "005930": 80000.0}, "unmappable": []}
+    today_prices = {"AAPL": 180.0, "005930": 90000.0}  # AAPL=USD, 005930=KRW (KOSPI)
+    today_usd_krw = 1400.0
+    # AAPL: 10 * 180 * 1400 = 2520000
+    # 005930: 100 * 90000 = 9000000
+    # total = 11520000
+    v_now, excluded = compute_v_now_total_krw(holdings, today_prices, today_usd_krw, baseline)
+    assert v_now == 11_520_000.0
+    assert excluded == []
+
+
+def test_compute_v_now_skips_same_unmappable_set_as_v0():
+    """v_now must exclude the same tickers as v0 to keep numerator/denominator consistent."""
+    from benchmark_ytd import compute_v_now_total_krw
+    holdings = [
+        {"ticker": "AAPL", "shares": 10},
+        {"ticker": "WEIRD", "shares": 5},
+    ]
+    baseline = {"ticker_v0_krw": {"AAPL": 195000.0}, "unmappable": ["WEIRD"]}
+    today_prices = {"AAPL": 180.0, "WEIRD": 100.0}
+    v_now, excluded = compute_v_now_total_krw(holdings, today_prices, 1400.0, baseline)
+    # WEIRD excluded
+    assert v_now == 10 * 180.0 * 1400.0
+    assert excluded == ["WEIRD"]
+
+
+def test_compute_v_now_missing_today_price_excluded():
+    """If today_prices lacks a ticker -> exclude from BOTH v0 and v_now (handled in caller)."""
+    from benchmark_ytd import compute_v_now_total_krw
+    holdings = [
+        {"ticker": "AAPL", "shares": 10},
+        {"ticker": "TSLA", "shares": 5},
+    ]
+    baseline = {
+        "ticker_v0_krw": {"AAPL": 195000.0, "TSLA": 260000.0},
+        "unmappable": [],
+    }
+    today_prices = {"AAPL": 180.0}  # TSLA missing
+    v_now, excluded = compute_v_now_total_krw(holdings, today_prices, 1400.0, baseline)
+    assert v_now == 10 * 180.0 * 1400.0
+    assert "TSLA" in excluded
