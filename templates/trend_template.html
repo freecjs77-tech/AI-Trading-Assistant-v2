@@ -286,6 +286,16 @@ function _applyOwner(owner){
   _divChart.data.datasets[0].data = s.map(d => d.div_annual_man);
   _divChart.data.datasets[1].data = s.map(d => d.div_yield);
   _divChart.update();
+  // YTD benchmark cards
+  const ytdEl = document.getElementById('sumYtd');
+  const spyEl = document.getElementById('sumSpy');
+  const alphaEl = document.getElementById('sumAlpha');
+  const fmt = (v) => v == null ? 'N/A' : ((v >= 0 ? '+' : '') + v.toFixed(2));
+  if (ytdEl) ytdEl.textContent = fmt(p.latest.ytd_pct) + (p.latest.ytd_pct == null ? '' : '%');
+  if (spyEl) spyEl.textContent = fmt(p.latest.spy_ytd_pct) + (p.latest.spy_ytd_pct == null ? '' : '%');
+  if (alphaEl) alphaEl.textContent = fmt(p.latest.alpha_pp) + (p.latest.alpha_pp == null ? '' : 'pp');
+  // YTD comparison chart
+  if (typeof _updateYtdChart === 'function') _updateYtdChart(p.trend);
 }
 document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -334,6 +344,7 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'VIX / Yield', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'USD/KRW', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
     // YTD Comparison Chart
+    let ytdChart = null;
     (function renderYtdChart() {
       const trendArr = {{ trend_json|safe }};
       if (!trendArr || trendArr.length === 0) return;
@@ -346,7 +357,7 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
       const ctxYtd = document.getElementById('ytdCompareChart');
       if (!ctxYtd) return;
 
-      new Chart(ctxYtd, {
+      ytdChart = new Chart(ctxYtd, {
         type: 'line',
         data: {
           labels,
@@ -399,6 +410,17 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
         },
       });
     })();
+    function _updateYtdChart(trendArr) {
+      if (!ytdChart) return;
+      if (!trendArr || trendArr.length === 0) return;
+      const portSeries = trendArr.map(d => d.ytd_pct);
+      const spySeries = trendArr.map(d => d.spy_ytd_pct);
+      if (portSeries.every(v => v == null) || spySeries.every(v => v == null)) return;
+      ytdChart.data.labels = trendArr.map(d => d.date);
+      ytdChart.data.datasets[0].data = portSeries;
+      ytdChart.data.datasets[1].data = spySeries;
+      ytdChart.update();
+    }
 {% endif %}
 
 const tickerData = {{ ticker_json }};
