@@ -280,7 +280,7 @@ tailwind.config = {
                 <span class="text-outline">·</span>
                 <span class="text-on-surface-variant">α</span>
                 <span class="font-bold {{ 'text-secondary' if alpha_pp >= 0 else 'text-tertiary' }}">{{ '+' if alpha_pp >= 0 else '' }}{{ '%.2f'|format(alpha_pp) }}pp</span>
-                <span class="ml-1 cursor-help text-outline" title="2026-01-02 기준 baseline. 보유 종목/수량이 변경되면 baseline도 자동 재계산됩니다. 1월 이후 신규 매수 종목은 1월~매수일 가격 변동분이 함께 반영되어 실제 거래 성과와 차이가 있을 수 있습니다.{% if benchmark_excluded %} 제외된 종목: {{ benchmark_excluded|join(', ') }}{% endif %}">ⓘ</span>
+                <span class="ml-1 cursor-help text-outline" title="2026-01-02 기준 baseline. 보유 종목/수량이 변경되면 baseline도 자동 재계산됩니다. 1월 이후 신규 매수 종목은 1월~매수일 가격 변동분이 함께 반영되어 실제 거래 성과와 차이가 있을 수 있습니다.{% if benchmark_excluded %} 제외된 종목: {{ benchmark_excluded|join(', ')|e }}{% endif %}">ⓘ</span>
               </div>
               {% elif benchmark_status == "error" %}
               <p class="mt-2 text-xs font-label text-outline">2026 YTD: 데이터 준비 중...</p>
