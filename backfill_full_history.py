@@ -128,11 +128,21 @@ def main():
         v0_krw, _ = compute_v0_total_krw(holdings, baseline)
         spy_v0_krw = baseline["spy_close_usd"] * baseline["usd_krw"]
 
-        # Latest REAL snapshot values for fields that don't have meaningful historical reconstruction
+        # Forward-fill div_annual from nearest preceding real snapshot.
+        # Synthetic dates inherit the most recent real div value, smoothing transitions
+        # across mixed real/synthetic regions (e.g., when user skipped pipeline runs).
+        sorted_real = sorted(real_dates)
+        oldest_real_div = daily.get(sorted_real[0], {}).get("div_annual_krw", 0) if sorted_real else 0
+
+        def synth_div_for(date_str: str) -> float:
+            # Most recent real snapshot on/before date_str. Fall back to oldest if date_str is before all real.
+            for rd in reversed(sorted_real):
+                if rd <= date_str:
+                    return daily[rd].get("div_annual_krw", 0) or 0
+            return oldest_real_div
+
+        # LATEST real cost basis → smooth Investment Principal line (real cost is stable)
         latest_real = max(real_dates) if real_dates else None
-        latest_div_krw = daily.get(latest_real, {}).get("div_annual_krw", 0) if latest_real else 0
-        latest_div_yield = daily.get(latest_real, {}).get("div_yield", 0) if latest_real else 0
-        # Use latest real cost basis for synthetic snapshots → smooth Investment Principal line
         latest_cost_basis = daily.get(latest_real, {}).get("cost_basis_krw") if latest_real else None
         if latest_cost_basis is None or latest_cost_basis <= 0:
             latest_cost_basis = v0_krw  # fallback if no real snapshots
@@ -214,8 +224,9 @@ def main():
                 "pnl_pct": round(pnl_pct_d, 1),
                 "cash_value_krw": round(cash_krw),
                 "cash_pct": round(cash_pct, 1),
-                "div_annual_krw": round(latest_div_krw),
-                "div_yield": round(latest_div_yield, 2),
+                "div_annual_krw": round(synth_div_for(date_str)),
+                # Recompute yield from synthetic total — accurate per-day
+                "div_yield": round((synth_div_for(date_str) / total_krw * 100), 2) if total_krw > 0 else 0,
                 "usd_krw": round(fx_d, 2),
                 "vix": round(vix_d, 2) if vix_d else None,
                 "yield_30y": round(yield_30y_d, 3) if yield_30y_d else None,
