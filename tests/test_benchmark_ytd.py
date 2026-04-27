@@ -617,3 +617,57 @@ def test_compute_owner_benchmark_error_returns_have_consistent_shape(tmp_path):
     required_keys = {"status", "error_message", "ytd_pct", "spy_ytd_pct", "alpha_pp",
                      "excluded_tickers", "anchor_date"}
     assert required_keys.issubset(result.keys()), f"missing keys: {required_keys - set(result.keys())}"
+
+
+def test_save_portfolio_snapshot_with_ytd_fields(tmp_path):
+    """save_portfolio_snapshot accepts ytd_pct/spy_ytd_pct/alpha_pp/v0_krw/spy_v0_krw kwargs."""
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+    from history_manager import save_portfolio_snapshot, load_portfolio_daily
+
+    path = str(tmp_path / "portfolio_daily.json")
+    daily = save_portfolio_snapshot(
+        path=path,
+        date_str="2026-04-27",
+        total_value_krw=2_000_000_000,
+        cost_basis_krw=800_000_000,
+        cash_value_krw=100_000_000,
+        cash_pct=5.0,
+        div_annual_krw=40_000_000,
+        div_yield=2.0,
+        usd_krw=1300.0,
+        vix=20.0,
+        yield_30y=4.5,
+        master_switch="GREEN",
+        holdings_count=18,
+        weights_by_category={},
+        weights_by_ticker={},
+        ytd_pct=5.2,
+        spy_ytd_pct=3.1,
+        alpha_pp=2.1,
+        v0_krw=1_900_000_000,
+        spy_v0_krw=608_400.0,
+    )
+
+    snapshot = daily["2026-04-27"]
+    assert snapshot["ytd_pct"] == 5.2
+    assert snapshot["spy_ytd_pct"] == 3.1
+    assert snapshot["alpha_pp"] == 2.1
+    assert snapshot["v0_krw"] == 1_900_000_000
+    assert snapshot["spy_v0_krw"] == 608_400
+
+
+def test_save_portfolio_snapshot_backward_compatible(tmp_path):
+    """Calling without new kwargs still works (no ytd fields in snapshot)."""
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+    from history_manager import save_portfolio_snapshot
+
+    path = str(tmp_path / "portfolio_daily.json")
+    daily = save_portfolio_snapshot(
+        path=path, date_str="2026-04-27",
+        total_value_krw=1_000, cost_basis_krw=900, cash_value_krw=0, cash_pct=0,
+        div_annual_krw=0, div_yield=0, usd_krw=1300, vix=None, yield_30y=None,
+        master_switch="GREEN", holdings_count=1,
+        weights_by_category={}, weights_by_ticker={},
+    )
+    snap = daily["2026-04-27"]
+    assert "ytd_pct" not in snap
