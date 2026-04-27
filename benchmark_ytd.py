@@ -58,3 +58,49 @@ def fetch_close_on(yf_symbol: str, date_str: str, use_adj_close: bool = False) -
     if math.isnan(f):
         return None
     return f
+
+
+def build_baseline(holdings: list[dict]) -> dict:
+    """Build a fresh Jan-2 baseline from a holdings list.
+
+    Returns:
+        {
+          "anchor_date": "2026-01-02",
+          "usd_krw": <float>,
+          "spy_close_usd": <float>,
+          "ticker_v0_krw": {ticker: jan2_price_in_krw_per_share, ...},
+          "unmappable": [ticker, ...]
+        }
+
+    Raises:
+        RuntimeError: if USD/KRW or SPY fetch fails (no silent fallback).
+    """
+    usd_krw = fetch_close_on(USDKRW_SYMBOL, ANCHOR_DATE)
+    if usd_krw is None or usd_krw <= 0:
+        raise RuntimeError(f"Failed to fetch USD/KRW on {ANCHOR_DATE}")
+
+    spy_usd = fetch_close_on(SPY_SYMBOL, ANCHOR_DATE, use_adj_close=True)
+    if spy_usd is None or spy_usd <= 0:
+        raise RuntimeError(f"Failed to fetch SPY on {ANCHOR_DATE}")
+
+    ticker_v0_krw: dict[str, float] = {}
+    unmappable: list[str] = []
+    for h in holdings:
+        ticker = h["ticker"]
+        yf_sym = resolve_yf_symbol(ticker)
+        price = fetch_close_on(yf_sym, ANCHOR_DATE)
+        if price is None or price <= 0:
+            unmappable.append(ticker)
+            continue
+        if is_korean_ticker(ticker):
+            ticker_v0_krw[ticker] = float(price)
+        else:
+            ticker_v0_krw[ticker] = float(price) * usd_krw
+
+    return {
+        "anchor_date": ANCHOR_DATE,
+        "usd_krw": float(usd_krw),
+        "spy_close_usd": float(spy_usd),
+        "ticker_v0_krw": ticker_v0_krw,
+        "unmappable": unmappable,
+    }
