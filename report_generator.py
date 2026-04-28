@@ -172,11 +172,11 @@ def _signal_counts(signals: dict) -> dict:
     counts = {"TP2": 0, "TP1": 0, "BUY": 0, "WATCH": 0, "HOLD": 0}
     for r in signals.values():
         sig = r.get("signal", "")
-        # _badge_class와 동일한 분류: TAKE_PROFIT_2는 EXIT(TP2), TAKE_PROFIT_1만 TRIM(TP1).
-        # 이전 로직은 "TOP" 검사 후 "TAKE_PROFIT" 단순 검사라 TAKE_PROFIT_2가 TP1로 잘못 집계됨.
-        if "TAKE_PROFIT_2" in sig or "TOP" in sig:
+        # 분류 정책: EXIT = TOP_SIGNAL만 / TRIM = TAKE_PROFIT_1, TAKE_PROFIT_2 모두.
+        # (사용자 정책 결정 — 익절은 모두 TRIM, 과열 경보(TOP)만 EXIT.)
+        if "TOP" in sig:
             counts["TP2"] += 1
-        elif "TAKE_PROFIT_1" in sig:
+        elif "TAKE_PROFIT" in sig:
             counts["TP1"] += 1
         elif "BUY" in sig:
             counts["BUY"] += 1
@@ -188,9 +188,10 @@ def _signal_counts(signals: dict) -> dict:
 
 
 def _badge_class(signal: str) -> str:
-    if "TAKE_PROFIT_2" in signal or "TOP" in signal:
+    # 정책: EXIT = TOP_SIGNAL만, TRIM = TAKE_PROFIT_1/2 모두.
+    if "TOP" in signal:
         return "badge-exit"
-    elif "TAKE_PROFIT_1" in signal:
+    elif "TAKE_PROFIT" in signal:
         return "badge-tp1"
     elif "BUY" in signal:
         return "badge-BUY"
@@ -204,9 +205,10 @@ def _badge_class(signal: str) -> str:
 
 
 def _card_class(signal: str) -> str:
-    if "TAKE_PROFIT_2" in signal or "TOP" in signal:
+    # 정책: EXIT = TOP_SIGNAL만, TRIM = TAKE_PROFIT_1/2 모두.
+    if "TOP" in signal:
         return "exit"
-    elif "TAKE_PROFIT_1" in signal:
+    elif "TAKE_PROFIT" in signal:
         return "tp1"
     elif "BUY" in signal:
         return "buy"
@@ -348,8 +350,9 @@ def generate_report(
     # per-row 배지가 일치함).
     _holding_tickers = {h["ticker"] for h in holdings}
     counts = _signal_counts({t: s for t, s in signals.items() if t in _holding_tickers})
-    tp2_signals = [h for h in holdings if h["signal"] in ("TAKE_PROFIT_2", "TOP_SIGNAL")]
-    tp1_signals = [h for h in holdings if h["signal"] == "TAKE_PROFIT_1"]
+    # 정책: EXIT = TOP_SIGNAL만, TRIM = TAKE_PROFIT_1/2 모두.
+    tp2_signals = [h for h in holdings if h["signal"] == "TOP_SIGNAL"]
+    tp1_signals = [h for h in holdings if h["signal"] in ("TAKE_PROFIT_1", "TAKE_PROFIT_2")]
     buy_signals = [h for h in holdings if "BUY" in h["signal"] and "BOND" not in h["signal"]]
     bond_signals = [h for h in holdings if h["signal"] == "BOND_WATCH"]
     watch_signals = [h for h in holdings if h["signal"] == "WATCH"]
@@ -994,9 +997,14 @@ def generate_backtest_page(
 
 
 def _sig_class(signal: str) -> str:
-    """시그널 문자열 → 히스토리 테이블 CSS 클래스"""
-    if "TAKE_PROFIT" in signal or "TOP" in signal:
+    """시그널 문자열 → 히스토리 테이블 CSS 클래스.
+
+    정책: EXIT = TOP_SIGNAL만, TRIM = TAKE_PROFIT_1/2 모두.
+    """
+    if "TOP" in signal:
         return "sig-exit"
+    if "TAKE_PROFIT" in signal:
+        return "sig-tp1"
     if "BUY" in signal:
         return "sig-buy"
     if "WATCH" in signal or "BOND" in signal:
