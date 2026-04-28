@@ -111,9 +111,13 @@ def main():
         sys.exit(1)
     print(f"  거래일 {len(trading)}일: {trading[0].date()} ~ {trading[-1].date()}")
 
-    print(f"\n  -- 2) 배당 히스토리 다운로드 --")
+    print(f"\n  -- 2a) 배당 히스토리 다운로드 (TTM 폴백용) --")
     div_tickers = _div_tickers(me_holdings, WIFE_HOLDINGS)
     divs_map = core.fetch_all_dividends(div_tickers)
+
+    print(f"\n  -- 2b) Forward 배당률 다운로드 (yfinance.info.dividendRate) --")
+    print(f"  forward 우선, 없으면 TTM 폴백 — fetch_market_data와 동일 로직")
+    forward_map = core.fetch_all_forward_rates(div_tickers)
 
     me_daily: dict[str, dict] = {}
     wife_daily: dict[str, dict] = {}
@@ -122,12 +126,12 @@ def main():
     for ts in trading:
         ds = ts.strftime("%Y-%m-%d")
         if args.owner in ("me", "both"):
-            snap = core.build_me_snapshot(ts, me_holdings, yf_map, dfs, divs_map)
+            snap = core.build_me_snapshot(ts, me_holdings, yf_map, dfs, divs_map, forward_map)
             if snap is not None:
                 me_daily[ds] = snap
         if args.owner in ("wife", "both"):
             snap_w = core.build_wife_snapshot(
-                ts, WIFE_HOLDINGS, WIFE_USD_TICKERS, yf_map, dfs, divs_map
+                ts, WIFE_HOLDINGS, WIFE_USD_TICKERS, yf_map, dfs, divs_map, forward_map
             )
             if snap_w is not None:
                 wife_daily[ds] = snap_w

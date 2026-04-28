@@ -165,6 +165,7 @@ def build_me_snapshot(
     yf_map: dict[str, str],
     dfs: dict[str, pd.DataFrame],
     divs_map: dict[str, pd.Series],
+    forward_map: dict[str, float] | None = None,
 ) -> dict | None:
     """me 포트폴리오 1일 스냅샷.
 
@@ -172,6 +173,7 @@ def build_me_snapshot(
     yf_map:   {ticker -> yfinance symbol}
     dfs:      {symbol -> Close DataFrame}
     divs_map: {ticker -> 배당 Series (주당, 네이티브 통화)}
+    forward_map: {ticker -> forward 연배당/주} — 있으면 TTM보다 우선 (파이프라인과 정합)
     """
     macro = _macro_at(dfs, target_ts)
     usd_krw = macro.get("USD_KRW") or 0
@@ -228,16 +230,16 @@ def build_me_snapshot(
         weights_cat[cls] = weights_cat.get(cls, 0) + w
     weights_cat = {k: round(v, 1) for k, v in weights_cat.items()}
 
-    # TTM 배당
+    # 연배당 — forward 우선, 없으면 TTM 폴백 (fetch_market_data와 동일 로직)
     total_div_krw = 0.0
     for p in holdings:
         shares = p.get("shares", 0) or 0
         if shares <= 0:
             continue
-        ttm = compute_ttm_dividend(divs_map.get(p["ticker"], pd.Series(dtype=float)), target_ts)
-        if ttm <= 0:
+        per_share = annual_dividend_per_share(p["ticker"], target_ts, divs_map, forward_map)
+        if per_share <= 0:
             continue
-        annual = ttm * shares
+        annual = per_share * shares
         total_div_krw += annual if is_kospi_ticker(p["ticker"]) else annual * rate
     div_annual_krw = round(total_div_krw)
     div_yield = round(total_div_krw / total_value_krw * 100, 2) if total_value_krw > 0 else 0.0
@@ -268,11 +270,13 @@ def build_wife_snapshot(
     yf_map: dict[str, str],
     dfs: dict[str, pd.DataFrame],
     divs_map: dict[str, pd.Series],
+    forward_map: dict[str, float] | None = None,
 ) -> dict | None:
     """wife 포트폴리오 1일 스냅샷.
 
     wife_holdings: [(ticker, shares, avg_cost_krw)] — avg_cost는 이미 KRW 환산된 매입원가
     usd_tickers: 가격이 USD인 티커 집합 (가치 계산 시 FX 곱)
+    forward_map: {ticker -> forward 연배당/주} — 있으면 TTM보다 우선 (파이프라인과 정합)
     """
     fx = price_at(dfs, "USDKRW=X", target_ts)
     if fx is None or fx <= 0:
@@ -299,15 +303,15 @@ def build_wife_snapshot(
     pnl_pct = round(pnl_krw / cost_krw * 100, 2) if cost_krw > 0 else 0
     weights_by_ticker = {t: round(v / total_krw * 100, 1) for t, v in weights_krw.items()}
 
-    # TTM 배당 — wife는 BIL 외 USD/KR 모두 동일하게 계산
+    # 연배당 — forward 우선, 없으면 TTM 폴백 (fetch_market_data와 동일 로직)
     total_div_krw = 0.0
     for ticker, shares, _ in wife_holdings:
         if shares <= 0:
             continue
-        ttm = compute_ttm_dividend(divs_map.get(ticker, pd.Series(dtype=float)), target_ts)
-        if ttm <= 0:
+        per_share = annual_dividend_per_share(ticker, target_ts, divs_map, forward_map)
+        if per_share <= 0:
             continue
-        annual = ttm * shares
+        annual = per_share * shares
         total_div_krw += annual * fx if ticker in usd_tickers else annual
     div_annual_krw = round(total_div_krw)
     div_yield = round(total_div_krw / total_krw * 100, 2) if total_krw > 0 else 0.0
@@ -361,3 +365,48 @@ def trading_dates_from(spy_df: pd.DataFrame, start: str) -> pd.DatetimeIndex:
     s = spy_df["Close"].dropna()
     s = s[s.index >= pd.Timestamp(start)]
     return s.index
+
+
+def fetch_all_forward_rates(
+    tickers: list[str],
+    delay: float = 0.2,
+    logger=print,
+) -> dict[str, float]:
+    """티커별 forward 배당률 (yfinance.info.dividendRate, 연배당/주).
+
+    fetch_market_data._fetch_forward_dividend_rate와 동일 로직 — 파이프라인과 정합.
+    실패/없음 시 0.0. 호출자는 0.0인 경우 TTM 폴백.
+    """
+    out: dict[str, float] = {}
+    for i, t in enumerate(tickers, 1):
+        sym = yf_symbol(t)
+        rate = 0.0
+        for attempt in range(MAX_RETRIES):
+            try:
+                info = yf.Ticker(sym).info or {}
+                v = info.get("dividendRate") or info.get("trailingAnnualDividendRate") or 0.0
+                rate = float(v) if v else 0.0
+                break
+            except Exception:
+                time.sleep(2 ** attempt)
+        logger(f"  [{i:2}/{len(tickers)}] {sym}: forward {rate}")
+        out[t] = rate
+        time.sleep(delay)
+    return out
+
+
+def annual_dividend_per_share(
+    ticker: str,
+    target_ts: pd.Timestamp,
+    divs_map: dict[str, pd.Series],
+    forward_map: dict[str, float] | None = None,
+) -> float:
+    """Forward 우선, 없으면 TTM 폴백 — fetch_market_data와 동일 로직.
+
+    파이프라인의 일일 갱신과 트렌드 백필이 같은 값을 산출하도록 통일.
+    """
+    if forward_map:
+        fwd = forward_map.get(ticker, 0.0) or 0.0
+        if fwd > 0:
+            return float(fwd)
+    return compute_ttm_dividend(divs_map.get(ticker, pd.Series(dtype=float)), target_ts)

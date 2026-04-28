@@ -121,6 +121,48 @@ def test_build_wife_snapshot_uses_ttm_dividend():
     assert snap["div_yield"] == round(44_000 / 4_400_000 * 100, 2)
 
 
+def test_annual_dividend_per_share_prefers_forward():
+    """forward_map 값이 있으면 TTM보다 우선."""
+    divs = pd.Series(
+        [0.25, 0.25, 0.25, 0.25],
+        index=pd.to_datetime(["2025-05-01", "2025-08-01", "2025-11-01", "2026-02-01"]),
+    )
+    target = pd.Timestamp("2026-04-15")
+    # TTM = 1.00, forward = 1.20
+    assert core.annual_dividend_per_share("AAPL", target, {"AAPL": divs}, {"AAPL": 1.20}) == 1.20
+    # forward 0이면 TTM 폴백
+    assert core.annual_dividend_per_share("AAPL", target, {"AAPL": divs}, {"AAPL": 0.0}) == pytest.approx(1.0)
+    # forward_map None이면 TTM
+    assert core.annual_dividend_per_share("AAPL", target, {"AAPL": divs}, None) == pytest.approx(1.0)
+    # 둘 다 없으면 0
+    assert core.annual_dividend_per_share("ZZZ", target, {}, {}) == 0.0
+
+
+def test_build_me_snapshot_forward_overrides_ttm():
+    """forward_map 제공 시 TTM 무시."""
+    holdings = [
+        {"ticker": "AAPL", "shares": 10.0, "avg_cost": 100.0},
+        {"ticker": "005930", "shares": 5.0, "avg_cost": 70000.0},
+    ]
+    yf_map = {"AAPL": "AAPL", "005930": "005930.KS"}
+    target = pd.Timestamp("2026-04-15")
+    dfs = {
+        "AAPL":      _make_df(["2026-04-15"], [200.0]),
+        "005930.KS": _make_df(["2026-04-15"], [80000.0]),
+        "USDKRW=X":  _make_df(["2026-04-15"], [1400.0]),
+    }
+    divs_map = {
+        "AAPL": pd.Series([0.25]*4, index=pd.to_datetime(
+            ["2025-05-01","2025-08-01","2025-11-01","2026-02-01"])),
+        "005930": pd.Series([1500.0], index=pd.to_datetime(["2025-12-01"])),
+    }
+    # Forward: AAPL 1.20 (TTM 1.00 무시), 005930 1800 (TTM 1500 무시)
+    forward_map = {"AAPL": 1.20, "005930": 1800.0}
+    snap = core.build_me_snapshot(target, holdings, yf_map, dfs, divs_map, forward_map)
+    # AAPL: 1.20×10×1400=16800 + 005930: 1800×5=9000 → 25800
+    assert snap["div_annual_krw"] == 25800
+
+
 def test_trading_dates_from_filters_by_start():
     df = _make_df(
         ["2025-12-30", "2026-01-02", "2026-01-03", "2026-01-06"],
