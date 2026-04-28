@@ -1334,7 +1334,9 @@ def _calc_hypo_return(ticker: str, current_price: float, history: dict, today_st
             buy_dates.append((dt, ticker_data))
         else:
             break
-        if len(buy_dates) >= 10:
+        # 안전 가드: history 길이만큼 (~30일) 끝까지 수집. SCHD처럼 14일+ streak도
+        # day1을 정확히 잡도록 확장. 이전 10일 cap은 streak 시작일을 잘못 표시했음.
+        if len(buy_dates) >= 60:
             break
 
     if not buy_dates:
