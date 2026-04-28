@@ -303,6 +303,16 @@ def build_wife_snapshot(
     pnl_pct = round(pnl_krw / cost_krw * 100, 2) if cost_krw > 0 else 0
     weights_by_ticker = {t: round(v / total_krw * 100, 1) for t, v in weights_krw.items()}
 
+    # Cash (BIL) — me builder와 동일 로직, BIL 보유분을 cash equivalent로 표시
+    bil_tup = next((h for h in wife_holdings if h[0] == "BIL"), None)
+    cash_value_krw = 0.0
+    if bil_tup:
+        bp = price_at(dfs, "BIL", target_ts)
+        if bp is not None:
+            bil_shares = bil_tup[1]
+            cash_value_krw = bil_shares * bp * fx if "BIL" in usd_tickers else bil_shares * bp
+    cash_pct = (cash_value_krw / total_krw * 100) if total_krw > 0 else 0
+
     # 연배당 — forward 우선, 없으면 TTM 폴백 (fetch_market_data와 동일 로직)
     total_div_krw = 0.0
     for ticker, shares, _ in wife_holdings:
@@ -323,8 +333,8 @@ def build_wife_snapshot(
         "cost_basis_krw": round(cost_krw),
         "pnl_krw": round(pnl_krw),
         "pnl_pct": pnl_pct,
-        "cash_value_krw": 0,
-        "cash_pct": 0.0,
+        "cash_value_krw": round(cash_value_krw),
+        "cash_pct": round(cash_pct, 1),
         "div_annual_krw": div_annual_krw,
         "div_yield": div_yield,
         "usd_krw": round(fx, 2),

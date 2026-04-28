@@ -121,6 +121,29 @@ def test_build_wife_snapshot_uses_ttm_dividend():
     assert snap["div_yield"] == round(44_000 / 4_400_000 * 100, 2)
 
 
+def test_build_wife_snapshot_computes_cash_from_bil():
+    """wife BIL 보유분도 cash equivalent로 계산 (me builder와 동일)."""
+    wife_holdings = [
+        ("BIL",  1000.0, 130_000.0),  # USD priced cash equivalent
+        ("AAPL",   10.0, 150_000.0),
+    ]
+    usd_tickers = {"BIL", "AAPL"}
+    yf_map = {"BIL": "BIL", "AAPL": "AAPL"}
+    target = pd.Timestamp("2026-04-15")
+    dfs = {
+        "BIL":      _make_df(["2026-04-15"], [100.0]),
+        "AAPL":     _make_df(["2026-04-15"], [200.0]),
+        "USDKRW=X": _make_df(["2026-04-15"], [1400.0]),
+    }
+    snap = core.build_wife_snapshot(target, wife_holdings, usd_tickers, yf_map, dfs, divs_map={}, forward_map={})
+    # BIL value: 1000×100×1400 = 140,000,000 KRW
+    # AAPL value: 10×200×1400 = 2,800,000 KRW
+    # Total: 142,800,000
+    assert snap["total_value_krw"] == 142_800_000
+    assert snap["cash_value_krw"] == 140_000_000
+    assert snap["cash_pct"] == round(140_000_000 / 142_800_000 * 100, 1)  # 98.0%
+
+
 def test_annual_dividend_per_share_prefers_forward():
     """forward_map 값이 있으면 TTM보다 우선."""
     divs = pd.Series(
