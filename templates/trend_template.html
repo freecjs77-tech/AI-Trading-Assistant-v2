@@ -117,6 +117,36 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
       </div>
     </div>
 
+    <!-- YTD Benchmark Cards -->
+    {% if latest.ytd_pct is not none and latest.spy_ytd_pct is not none %}
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-secondary' if latest.ytd_pct >= 0 else 'border-l-tertiary' }} flex items-center gap-4">
+        <span class="material-symbols-outlined {{ 'text-secondary/60' if latest.ytd_pct >= 0 else 'text-tertiary/60' }} flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">flag</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">2026 YTD (Portfolio)</span>
+          <div class="text-2xl font-headline font-bold {{ 'text-secondary' if latest.ytd_pct >= 0 else 'text-tertiary' }}" id="sumYtd">{{ '+' if latest.ytd_pct >= 0 else '' }}{{ '%.2f'|format(latest.ytd_pct) }}%</div>
+          <div class="text-xs mt-2 text-outline">기준: 2026-01-02</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-secondary' if latest.spy_ytd_pct >= 0 else 'border-l-tertiary' }} flex items-center gap-4">
+        <span class="material-symbols-outlined {{ 'text-secondary/60' if latest.spy_ytd_pct >= 0 else 'text-tertiary/60' }} flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">show_chart</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">S&amp;P 500 YTD (₩)</span>
+          <div class="text-2xl font-headline font-bold {{ 'text-secondary' if latest.spy_ytd_pct >= 0 else 'text-tertiary' }}" id="sumSpy">{{ '+' if latest.spy_ytd_pct >= 0 else '' }}{{ '%.2f'|format(latest.spy_ytd_pct) }}%</div>
+          <div class="text-xs mt-2 text-outline">SPY × USD/KRW</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-secondary' if latest.alpha_pp >= 0 else 'border-l-tertiary' }} flex items-center gap-4">
+        <span class="material-symbols-outlined {{ 'text-secondary/60' if latest.alpha_pp >= 0 else 'text-tertiary/60' }} flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">trending_up</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Alpha vs S&amp;P</span>
+          <div class="text-2xl font-headline font-bold {{ 'text-secondary' if latest.alpha_pp >= 0 else 'text-tertiary' }}" id="sumAlpha">{{ '+' if latest.alpha_pp >= 0 else '' }}{{ '%.2f'|format(latest.alpha_pp) }}pp</div>
+          <div class="text-xs mt-2 text-outline">초과수익</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- Asset Allocation -->
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
       <h2 class="text-lg font-headline font-bold mb-6" id="allocTitle">Asset Allocation</h2>
@@ -152,6 +182,22 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
 
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-error">public</span> 매크로 지표 추이</h2>
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="macroChart" style="max-height:320px;"></canvas></div>
+
+    <!-- YTD Comparison Chart (Portfolio vs S&P, normalized) -->
+    {% if latest.ytd_pct is not none and latest.spy_ytd_pct is not none %}
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-headline font-bold text-lg flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">compare_arrows</span>
+          포트폴리오 vs S&amp;P 500 (₩) — 2026 YTD
+        </h3>
+        <span class="text-xs text-outline font-label">기준: 2026-01-02 = 0%</span>
+      </div>
+      <div class="relative" style="height:340px;">
+        <canvas id="ytdCompareChart"></canvas>
+      </div>
+    </div>
+    {% endif %}
     {% else %}
     <div class="rounded-xl bg-surface-container border border-outline-variant/10 p-12 text-center text-on-surface-variant">데이터가 축적되면 추이 차트가 표시됩니다.</div>
     {% endif %}
@@ -240,6 +286,16 @@ function _applyOwner(owner){
   _divChart.data.datasets[0].data = s.map(d => d.div_annual_man);
   _divChart.data.datasets[1].data = s.map(d => d.div_yield);
   _divChart.update();
+  // YTD benchmark cards
+  const ytdEl = document.getElementById('sumYtd');
+  const spyEl = document.getElementById('sumSpy');
+  const alphaEl = document.getElementById('sumAlpha');
+  const fmt = (v) => v == null ? 'N/A' : ((v >= 0 ? '+' : '') + v.toFixed(2));
+  if (ytdEl) ytdEl.textContent = fmt(p.latest.ytd_pct) + (p.latest.ytd_pct == null ? '' : '%');
+  if (spyEl) spyEl.textContent = fmt(p.latest.spy_ytd_pct) + (p.latest.spy_ytd_pct == null ? '' : '%');
+  if (alphaEl) alphaEl.textContent = fmt(p.latest.alpha_pp) + (p.latest.alpha_pp == null ? '' : 'pp');
+  // YTD comparison chart
+  if (typeof _updateYtdChart === 'function') _updateYtdChart(p.trend);
 }
 document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -286,6 +342,85 @@ new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:da
   { label:'30Y Treasury (%)', data:yieldData, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, yAxisID:'y' },
   { label:'USD/KRW', data:fxData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.05)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, borderDash:[6,3], yAxisID:'y1' }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'VIX / Yield', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'USD/KRW', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
+
+    // YTD Comparison Chart
+    let ytdChart = null;
+    (function renderYtdChart() {
+      const trendArr = {{ trend_json|safe }};
+      if (!trendArr || trendArr.length === 0) return;
+      const labels = trendArr.map(d => d.date);
+      const portSeries = trendArr.map(d => d.ytd_pct);
+      const spySeries = trendArr.map(d => d.spy_ytd_pct);
+      // skip render if any series is fully null
+      if (portSeries.every(v => v == null) || spySeries.every(v => v == null)) return;
+
+      const ctxYtd = document.getElementById('ytdCompareChart');
+      if (!ctxYtd) return;
+
+      ytdChart = new Chart(ctxYtd, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Portfolio (₩)',
+              data: portSeries,
+              borderColor: 'rgb(109, 221, 255)',
+              backgroundColor: 'rgba(109, 221, 255, 0.1)',
+              borderWidth: 2.5,
+              tension: 0.25,
+              pointRadius: 2,
+              fill: false,
+            },
+            {
+              label: 'S&P 500 (₩)',
+              data: spySeries,
+              borderColor: 'rgba(163, 170, 196, 0.9)',
+              borderDash: [6, 4],
+              borderWidth: 2,
+              tension: 0.25,
+              pointRadius: 2,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 12 } } },
+            tooltip: {
+              callbacks: {
+                label: function(c) {
+                  const v = c.parsed.y;
+                  return `${c.dataset.label}: ${v == null ? 'n/a' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%'}`;
+                },
+              },
+            },
+          },
+          scales: {
+            y: {
+              ticks: {
+                callback: function(v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; },
+              },
+              grid: { color: 'rgba(163, 170, 196, 0.1)' },
+            },
+            x: { grid: { display: false } },
+          },
+        },
+      });
+    })();
+    function _updateYtdChart(trendArr) {
+      if (!ytdChart) return;
+      if (!trendArr || trendArr.length === 0) return;
+      const portSeries = trendArr.map(d => d.ytd_pct);
+      const spySeries = trendArr.map(d => d.spy_ytd_pct);
+      if (portSeries.every(v => v == null) || spySeries.every(v => v == null)) return;
+      ytdChart.data.labels = trendArr.map(d => d.date);
+      ytdChart.data.datasets[0].data = portSeries;
+      ytdChart.data.datasets[1].data = spySeries;
+      ytdChart.update();
+    }
 {% endif %}
 
 const tickerData = {{ ticker_json }};

@@ -207,6 +207,11 @@ def save_portfolio_snapshot(
     holdings_count: int,
     weights_by_category: dict,
     weights_by_ticker: dict,
+    ytd_pct: float | None = None,
+    spy_ytd_pct: float | None = None,
+    alpha_pp: float | None = None,
+    v0_krw: float | None = None,
+    spy_v0_krw: float | None = None,
 ):
     """일별 포트폴리오 스냅샷을 portfolio_daily.json에 저장."""
     daily = load_portfolio_daily(path)
@@ -214,7 +219,7 @@ def save_portfolio_snapshot(
     pnl_krw = total_value_krw - cost_basis_krw
     pnl_pct = (pnl_krw / cost_basis_krw * 100) if cost_basis_krw > 0 else 0
 
-    daily[date_str] = {
+    snap = {
         "total_value_krw": round(total_value_krw),
         "cost_basis_krw": round(cost_basis_krw),
         "pnl_krw": round(pnl_krw),
@@ -231,6 +236,18 @@ def save_portfolio_snapshot(
         "weights_by_category": weights_by_category,
         "weights_by_ticker": weights_by_ticker,
     }
+    if ytd_pct is not None:
+        snap["ytd_pct"] = round(ytd_pct, 2)
+    if spy_ytd_pct is not None:
+        snap["spy_ytd_pct"] = round(spy_ytd_pct, 2)
+    if alpha_pp is not None:
+        snap["alpha_pp"] = round(alpha_pp, 2)
+    if v0_krw is not None:
+        snap["v0_krw"] = round(v0_krw)
+    if spy_v0_krw is not None:
+        snap["spy_v0_krw"] = round(spy_v0_krw, 2)
+
+    daily[date_str] = snap
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:

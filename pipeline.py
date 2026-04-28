@@ -304,6 +304,60 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         except Exception as e:
             print(f"  WARN politician trades step failed ({type(e).__name__}: {e}); continuing")
 
+        # Step 4d: YTD benchmark (vs S&P KRW) — per owner
+        print("[Step 4d] Computing YTD benchmark vs S&P (KRW)...")
+        from benchmark_ytd import compute_owner_benchmark
+        from portfolio_paths import discover_portfolios, PRIMARY_OWNER
+
+        benchmark_by_owner: dict[str, dict] = {}
+        try:
+            me_holdings_for_bench = _parse_portfolio_for_report(portfolio_path)
+            benchmark_by_owner["me"] = compute_owner_benchmark(
+                holdings=me_holdings_for_bench,
+                owner="me",
+                project_dir=project_dir,
+                market_data=market_data,
+            )
+            _bm = benchmark_by_owner["me"]
+            if _bm.get("status") == "ok":
+                print(f"  OK me: YTD={_bm['ytd_pct']:+.2f}%  S&P={_bm['spy_ytd_pct']:+.2f}%  alpha={_bm['alpha_pp']:+.2f}pp")
+            else:
+                print(f"  WARN me benchmark: {_bm.get('error_message', 'unknown')}")
+        except Exception as _be:
+            print(f"  WARN me benchmark exception: {_be}")
+            benchmark_by_owner["me"] = {"status": "error", "error_message": str(_be), "ytd_pct": None, "spy_ytd_pct": None, "alpha_pp": None, "excluded_tickers": [], "anchor_date": None}
+
+        try:
+            _owners_iter = discover_portfolios(project_dir)
+        except Exception as _de:
+            print(f"  WARN discover_portfolios failed: {_de}")
+            _owners_iter = []
+        for _owner, _opath in _owners_iter:
+            if _owner == PRIMARY_OWNER:
+                continue
+            try:
+                _oholds = _parse_portfolio_for_report(_opath)
+                benchmark_by_owner[_owner] = compute_owner_benchmark(
+                    holdings=_oholds, owner=_owner, project_dir=project_dir,
+                    market_data=market_data,
+                )
+                _ob = benchmark_by_owner[_owner]
+                if _ob.get("status") == "ok":
+                    print(f"  OK {_owner}: YTD={_ob['ytd_pct']:+.2f}%  S&P={_ob['spy_ytd_pct']:+.2f}%  alpha={_ob['alpha_pp']:+.2f}pp")
+                else:
+                    print(f"  WARN {_owner} benchmark: {_ob.get('error_message', 'unknown')}")
+            except Exception as _be2:
+                print(f"  WARN {_owner} benchmark exception: {_be2}")
+                benchmark_by_owner[_owner] = {
+                    "status": "error",
+                    "error_message": str(_be2),
+                    "ytd_pct": None,
+                    "spy_ytd_pct": None,
+                    "alpha_pp": None,
+                    "excluded_tickers": [],
+                    "anchor_date": None,
+                }
+
         # Step 5: Report generation
         print("[Step 5] Generating report...")
         portfolio = _parse_portfolio_for_report(portfolio_path)
@@ -320,6 +374,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_sp100=scanner_sp100_result,
             scanner_etf=scanner_etf_result,
             scanner_kospi=scanner_kospi_result,
+            benchmark_data=benchmark_by_owner.get("me"),
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -495,6 +550,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     _div_yield = dividends.get("portfolio_yield", 0)
                 else:
                     _div_ann_krw, _div_yield = _compute_owner_dividends(owner_portfolio)
+                _bm = benchmark_by_owner.get(owner) or {}
                 return save_portfolio_snapshot(
                     path=path,
                     date_str=today,
@@ -511,6 +567,11 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     holdings_count=len(owner_portfolio),
                     weights_by_category=w_cat,
                     weights_by_ticker=w_tick,
+                    ytd_pct=_bm.get("ytd_pct"),
+                    spy_ytd_pct=_bm.get("spy_ytd_pct"),
+                    alpha_pp=_bm.get("alpha_pp"),
+                    v0_krw=_bm.get("v0_krw"),
+                    spy_v0_krw=_bm.get("spy_v0_krw"),
                 )
 
             # me (기본) 스냅샷
@@ -637,6 +698,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     scanner_kospi=scanner_kospi_result,
                     nav_portfolio=f"report_{today}.html",
                     active_nav=_owner,
+                    benchmark_data=benchmark_by_owner.get(_owner),
                 )
                 _sz = os.path.getsize(_owner_report)
                 print(f"  OK {_owner} report -> {_owner_report} ({_sz:,} bytes)")
