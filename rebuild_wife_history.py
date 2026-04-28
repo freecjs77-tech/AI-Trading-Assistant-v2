@@ -59,6 +59,24 @@ def _symbol(ticker: str) -> str:
     return to_yfinance_symbol(ticker) if is_korean_ticker(ticker) else ticker
 
 
+def _compute_wife_div_fields(target_ts, holdings, usd_tickers, fx, divs_map, total_krw):
+    """TTM 기반 배당 계산 (2026-04-28 하드코딩 0 제거)."""
+    import portfolio_history_core as core
+    total_div_krw = 0.0
+    for ticker, shares, _ in holdings:
+        if shares <= 0:
+            continue
+        ttm = core.compute_ttm_dividend(divs_map.get(ticker, pd.Series(dtype=float)), target_ts)
+        if ttm <= 0:
+            continue
+        annual = ttm * shares
+        total_div_krw += annual * fx if ticker in usd_tickers else annual
+    return {
+        "div_annual_krw": round(total_div_krw),
+        "div_yield": round(total_div_krw / total_krw * 100, 2) if total_krw > 0 else 0.0,
+    }
+
+
 def main():
     # me의 날짜 범위 사용
     with open(ME_DAILY, encoding="utf-8") as f:
@@ -71,6 +89,12 @@ def main():
     tickers = [(t, s, c) for t, s, c in HOLDINGS]
     symbols = list({_symbol(t) for t, _, _ in tickers}) + ["KRW=X"]
     print(f"[INFO] 심볼 수: {len(symbols)}")
+
+    # 배당 시리즈 미리 fetch (TTM 계산용)
+    import portfolio_history_core as core
+    print(f"[INFO] 배당 히스토리 다운로드 중...")
+    div_tickers = [t for t, _, _ in HOLDINGS]
+    divs_map = core.fetch_all_dividends(div_tickers, logger=lambda msg: print(f"  {msg}"))
 
     # Ticker.history(period=) 직렬 요청 — yf.download보다 안정적
     start_dt = pd.Timestamp(start_date) - pd.Timedelta(days=7)
@@ -171,8 +195,8 @@ def main():
             "pnl_pct": pnl_pct,
             "cash_value_krw": 0,
             "cash_pct": 0.0,
-            "div_annual_krw": 0,
-            "div_yield": 0,
+            # ─── 배당: TTM 기반으로 계산 (2026-04-28 하드코딩 0 제거) ───
+            **_compute_wife_div_fields(pd.Timestamp(date_str), HOLDINGS, USD_TICKERS, fx, divs_map, total_krw),
             "usd_krw": round(fx, 2),
             "vix": None,
             "yield_30y": None,
