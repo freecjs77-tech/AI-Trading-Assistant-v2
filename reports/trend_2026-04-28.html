@@ -170,6 +170,18 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
     </div>
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="assetTrendChart" style="max-height:320px;"></canvas></div>
 
+    
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">compare_arrows</span> 포트폴리오 vs S&amp;P 500 (₩) — 2026 YTD</h2>
+      <div class="flex gap-1 items-center" id="ytdRangeToggle" role="tablist" aria-label="YTD 비교 Y축 범위">
+        <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-1">Y축</span>
+        <button data-mode="auto" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">Auto</button>
+        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">0~50%</button>
+      </div>
+    </div>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="ytdCompareChart" style="max-height:320px;"></canvas></div>
+    
+
     <div class="flex items-center justify-between gap-2 flex-wrap">
       <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">payments</span> 예상 연 배당금 추이</h2>
       <div class="flex gap-1 items-center" id="divRangeToggle" role="tablist" aria-label="예상 연 배당금 Y축 범위">
@@ -180,24 +192,14 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
     </div>
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="divTrendChart" style="max-height:320px;"></canvas></div>
 
-    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-error">public</span> 매크로 지표 추이</h2>
-    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="macroChart" style="max-height:320px;"></canvas></div>
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-error">show_chart</span> VIX (변동성 지수)</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="vixChart" style="max-height:320px;"></canvas></div>
 
-    <!-- YTD Comparison Chart (Portfolio vs S&P, normalized) -->
-    
-    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="font-headline font-bold text-lg flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary">compare_arrows</span>
-          포트폴리오 vs S&amp;P 500 (₩) — 2026 YTD
-        </h3>
-        <span class="text-xs text-outline font-label">기준: 2026-01-02 = 0%</span>
-      </div>
-      <div class="relative" style="height:340px;">
-        <canvas id="ytdCompareChart"></canvas>
-      </div>
-    </div>
-    
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 30Y Treasury Yield (%)</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="yieldChart" style="max-height:320px;"></canvas></div>
+
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">currency_exchange</span> USD/KRW 환율</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="fxChart" style="max-height:320px;"></canvas></div>
     
 
     <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10">데이터 소스: 일별 파이프라인 스냅샷 | Chart.js 4.x | 총 자산 = USD x 환율 + KRW</p>
@@ -335,90 +337,43 @@ function _wireRangeToggle(containerId, chart, cfg){
 _wireRangeToggle('assetRangeToggle', _assetChart, { min: 5, max: 40 });
 _wireRangeToggle('divRangeToggle',   _divChart,   { min: 1000, max: 10000 });
 
-new Chart(document.getElementById('macroChart'), { type:'line', data:{ labels:dates, datasets:[
-  { label:'VIX', data:vixData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,108,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, yAxisID:'y' },
-  { label:'30Y Treasury (%)', data:yieldData, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, yAxisID:'y' },
-  { label:'USD/KRW', data:fxData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.05)', fill:true, tension:0.3, pointRadius:2, borderWidth:2, borderDash:[6,3], yAxisID:'y1' }
-]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'VIX / Yield', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'USD/KRW', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
+// ── YTD Comparison Chart (다른 차트와 동일 패턴) ──
+let ytdChart = null;
 
-    // YTD Comparison Chart
-    let ytdChart = null;
-    (function renderYtdChart() {
-      const trendArr = [{"date": "2026-01-02", "total_eok": 17.56, "cost_eok": 8.63, "pnl_eok": 8.93, "pnl_pct": 103.4, "div_annual_man": 4139, "div_yield": 2.36, "vix": 14.51, "yield_30y": 4.864, "usd_krw": 1443.64, "ytd_pct": -0.0, "spy_ytd_pct": -0.0, "alpha_pp": 0.0}, {"date": "2026-01-05", "total_eok": 19.35, "cost_eok": 8.62, "pnl_eok": 10.73, "pnl_pct": 124.5, "div_annual_man": 4136, "div_yield": 2.14, "vix": 14.9, "yield_30y": 4.854, "usd_krw": 1440.48, "ytd_pct": 10.18, "spy_ytd_pct": 0.45, "alpha_pp": 9.73}, {"date": "2026-01-06", "total_eok": 19.1, "cost_eok": 8.64, "pnl_eok": 10.46, "pnl_pct": 121.1, "div_annual_man": 4141, "div_yield": 2.17, "vix": 14.75, "yield_30y": 4.866, "usd_krw": 1445.56, "ytd_pct": 8.78, "spy_ytd_pct": 1.4, "alpha_pp": 7.38}, {"date": "2026-01-07", "total_eok": 18.94, "cost_eok": 8.64, "pnl_eok": 10.3, "pnl_pct": 119.3, "div_annual_man": 4140, "div_yield": 2.19, "vix": 15.38, "yield_30y": 4.815, "usd_krw": 1444.96, "ytd_pct": 7.85, "spy_ytd_pct": 1.03, "alpha_pp": 6.82}, {"date": "2026-01-08", "total_eok": 19.05, "cost_eok": 8.64, "pnl_eok": 10.41, "pnl_pct": 120.5, "div_annual_man": 4141, "div_yield": 2.17, "vix": 15.45, "yield_30y": 4.858, "usd_krw": 1446.14, "ytd_pct": 8.5, "spy_ytd_pct": 1.1, "alpha_pp": 7.4}, {"date": "2026-01-09", "total_eok": 18.72, "cost_eok": 8.66, "pnl_eok": 10.07, "pnl_pct": 116.3, "div_annual_man": 4145, "div_yield": 2.21, "vix": 14.49, "yield_30y": 4.819, "usd_krw": 1450.08, "ytd_pct": 6.64, "spy_ytd_pct": 2.05, "alpha_pp": 4.59}, {"date": "2026-01-12", "total_eok": 18.84, "cost_eok": 8.68, "pnl_eok": 10.16, "pnl_pct": 117.1, "div_annual_man": 4150, "div_yield": 2.2, "vix": 15.12, "yield_30y": 4.84, "usd_krw": 1455.24, "ytd_pct": 7.28, "spy_ytd_pct": 2.57, "alpha_pp": 4.71}, {"date": "2026-01-13", "total_eok": 19.2, "cost_eok": 8.72, "pnl_eok": 10.48, "pnl_pct": 120.3, "div_annual_man": 4158, "div_yield": 2.17, "vix": 15.98, "yield_30y": 4.828, "usd_krw": 1464.93, "ytd_pct": 9.33, "spy_ytd_pct": 3.05, "alpha_pp": 6.28}, {"date": "2026-01-14", "total_eok": 19.22, "cost_eok": 8.75, "pnl_eok": 10.47, "pnl_pct": 119.7, "div_annual_man": 4166, "div_yield": 2.17, "vix": 16.75, "yield_30y": 4.795, "usd_krw": 1473.01, "ytd_pct": 9.44, "spy_ytd_pct": 3.11, "alpha_pp": 6.33}, {"date": "2026-01-15", "total_eok": 19.35, "cost_eok": 8.71, "pnl_eok": 10.65, "pnl_pct": 122.3, "div_annual_man": 4157, "div_yield": 2.15, "vix": 15.84, "yield_30y": 4.787, "usd_krw": 1462.9, "ytd_pct": 10.22, "spy_ytd_pct": 2.68, "alpha_pp": 7.54}, {"date": "2026-01-16", "total_eok": 19.3, "cost_eok": 8.73, "pnl_eok": 10.57, "pnl_pct": 121.1, "div_annual_man": 4162, "div_yield": 2.16, "vix": 15.86, "yield_30y": 4.84, "usd_krw": 1468.84, "ytd_pct": 9.92, "spy_ytd_pct": 3.01, "alpha_pp": 6.91}, {"date": "2026-01-20", "total_eok": 19.08, "cost_eok": 8.79, "pnl_eok": 10.29, "pnl_pct": 117.0, "div_annual_man": 4164, "div_yield": 2.18, "vix": 20.09, "yield_30y": 4.92, "usd_krw": 1471.52, "ytd_pct": 8.69, "spy_ytd_pct": 1.1, "alpha_pp": 7.59}, {"date": "2026-01-21", "total_eok": 19.02, "cost_eok": 8.82, "pnl_eok": 10.2, "pnl_pct": 115.7, "div_annual_man": 4170, "div_yield": 2.19, "vix": 16.9, "yield_30y": 4.871, "usd_krw": 1477.78, "ytd_pct": 8.3, "spy_ytd_pct": 2.7, "alpha_pp": 5.6}, {"date": "2026-01-22", "total_eok": 19.2, "cost_eok": 8.77, "pnl_eok": 10.43, "pnl_pct": 119.0, "div_annual_man": 4158, "div_yield": 2.17, "vix": 15.64, "yield_30y": 4.847, "usd_krw": 1464.83, "ytd_pct": 9.36, "spy_ytd_pct": 2.33, "alpha_pp": 7.03}, {"date": "2026-01-23", "total_eok": 19.19, "cost_eok": 8.76, "pnl_eok": 10.43, "pnl_pct": 119.0, "div_annual_man": 4157, "div_yield": 2.17, "vix": 16.09, "yield_30y": 4.833, "usd_krw": 1463.26, "ytd_pct": 9.27, "spy_ytd_pct": 2.26, "alpha_pp": 7.01}, {"date": "2026-01-26", "total_eok": 19.54, "cost_eok": 8.69, "pnl_eok": 10.86, "pnl_pct": 125.0, "div_annual_man": 4131, "div_yield": 2.11, "vix": 16.15, "yield_30y": 4.805, "usd_krw": 1444.81, "ytd_pct": 11.31, "spy_ytd_pct": 1.48, "alpha_pp": 9.83}, {"date": "2026-01-27", "total_eok": 19.75, "cost_eok": 8.67, "pnl_eok": 11.07, "pnl_pct": 127.7, "div_annual_man": 4128, "div_yield": 2.09, "vix": 16.35, "yield_30y": 4.832, "usd_krw": 1440.98, "ytd_pct": 12.45, "spy_ytd_pct": 1.62, "alpha_pp": 10.83}, {"date": "2026-01-28", "total_eok": 20.21, "cost_eok": 8.64, "pnl_eok": 11.57, "pnl_pct": 133.9, "div_annual_man": 4120, "div_yield": 2.04, "vix": 16.35, "yield_30y": 4.86, "usd_krw": 1432.51, "ytd_pct": 15.1, "spy_ytd_pct": 1.01, "alpha_pp": 14.09}, {"date": "2026-01-29", "total_eok": 20.6, "cost_eok": 8.63, "pnl_eok": 11.97, "pnl_pct": 138.8, "div_annual_man": 4131, "div_yield": 2.01, "vix": 16.88, "yield_30y": 4.854, "usd_krw": 1429.27, "ytd_pct": 17.32, "spy_ytd_pct": 0.58, "alpha_pp": 16.74}, {"date": "2026-01-30", "total_eok": 21.8, "cost_eok": 8.62, "pnl_eok": 13.17, "pnl_pct": 152.7, "div_annual_man": 4130, "div_yield": 1.9, "vix": 17.44, "yield_30y": 4.872, "usd_krw": 1428.76, "ytd_pct": 24.13, "spy_ytd_pct": 0.24, "alpha_pp": 23.89}, {"date": "2026-02-02", "total_eok": 21.09, "cost_eok": 8.7, "pnl_eok": 12.39, "pnl_pct": 142.3, "div_annual_man": 4197, "div_yield": 1.99, "vix": 16.34, "yield_30y": 4.909, "usd_krw": 1448.8, "ytd_pct": 20.12, "spy_ytd_pct": 2.16, "alpha_pp": 17.96}, {"date": "2026-02-03", "total_eok": 21.78, "cost_eok": 8.72, "pnl_eok": 13.06, "pnl_pct": 149.8, "div_annual_man": 4146, "div_yield": 1.9, "vix": 18.0, "yield_30y": 4.906, "usd_krw": 1452.54, "ytd_pct": 24.04, "spy_ytd_pct": 1.55, "alpha_pp": 22.49}, {"date": "2026-02-04", "total_eok": 21.56, "cost_eok": 8.7, "pnl_eok": 12.87, "pnl_pct": 148.0, "div_annual_man": 4141, "div_yield": 1.92, "vix": 18.64, "yield_30y": 4.915, "usd_krw": 1446.68, "ytd_pct": 22.8, "spy_ytd_pct": 0.65, "alpha_pp": 22.15}, {"date": "2026-02-05", "total_eok": 20.79, "cost_eok": 8.75, "pnl_eok": 12.04, "pnl_pct": 137.7, "div_annual_man": 4153, "div_yield": 2.0, "vix": 21.77, "yield_30y": 4.862, "usd_krw": 1460.11, "ytd_pct": 18.41, "spy_ytd_pct": 0.32, "alpha_pp": 18.09}, {"date": "2026-02-06", "total_eok": 21.32, "cost_eok": 8.79, "pnl_eok": 12.53, "pnl_pct": 142.6, "div_annual_man": 4162, "div_yield": 1.95, "vix": 20.37, "yield_30y": 4.855, "usd_krw": 1470.68, "ytd_pct": 21.43, "spy_ytd_pct": 2.98, "alpha_pp": 18.45}, {"date": "2026-02-09", "total_eok": 22.37, "cost_eok": 8.76, "pnl_eok": 13.62, "pnl_pct": 155.5, "div_annual_man": 4155, "div_yield": 1.86, "vix": 17.36, "yield_30y": 4.848, "usd_krw": 1462.4, "ytd_pct": 27.42, "spy_ytd_pct": 2.9, "alpha_pp": 24.52}, {"date": "2026-02-10", "total_eok": 21.73, "cost_eok": 8.74, "pnl_eok": 12.99, "pnl_pct": 148.6, "div_annual_man": 4151, "div_yield": 1.91, "vix": 17.79, "yield_30y": 4.788, "usd_krw": 1458.54, "ytd_pct": 23.75, "spy_ytd_pct": 2.36, "alpha_pp": 21.39}, {"date": "2026-02-11", "total_eok": 21.32, "cost_eok": 8.73, "pnl_eok": 12.59, "pnl_pct": 144.2, "div_annual_man": 4148, "div_yield": 1.95, "vix": 17.65, "yield_30y": 4.814, "usd_krw": 1455.33, "ytd_pct": 21.42, "spy_ytd_pct": 2.11, "alpha_pp": 19.31}, {"date": "2026-02-12", "total_eok": 21.49, "cost_eok": 8.69, "pnl_eok": 12.8, "pnl_pct": 147.4, "div_annual_man": 4138, "div_yield": 1.93, "vix": 20.82, "yield_30y": 4.731, "usd_krw": 1444.19, "ytd_pct": 22.38, "spy_ytd_pct": -0.24, "alpha_pp": 22.62}, {"date": "2026-02-13", "total_eok": 21.38, "cost_eok": 8.67, "pnl_eok": 12.71, "pnl_pct": 146.5, "div_annual_man": 4135, "div_yield": 1.93, "vix": 20.6, "yield_30y": 4.698, "usd_krw": 1440.9, "ytd_pct": 21.76, "spy_ytd_pct": -0.4, "alpha_pp": 22.16}, {"date": "2026-02-17", "total_eok": 21.38, "cost_eok": 8.67, "pnl_eok": 12.71, "pnl_pct": 146.6, "div_annual_man": 4135, "div_yield": 1.93, "vix": 20.29, "yield_30y": 4.683, "usd_krw": 1440.23, "ytd_pct": 21.78, "spy_ytd_pct": -0.28, "alpha_pp": 22.06}, {"date": "2026-02-18", "total_eok": 21.41, "cost_eok": 8.67, "pnl_eok": 12.74, "pnl_pct": 146.9, "div_annual_man": 4135, "div_yield": 1.93, "vix": 19.62, "yield_30y": 4.706, "usd_krw": 1439.97, "ytd_pct": 21.92, "spy_ytd_pct": 0.2, "alpha_pp": 21.72}, {"date": "2026-02-19", "total_eok": 21.68, "cost_eok": 8.67, "pnl_eok": 13.01, "pnl_pct": 150.1, "div_annual_man": 4135, "div_yield": 1.91, "vix": 20.23, "yield_30y": 4.704, "usd_krw": 1440.16, "ytd_pct": 23.49, "spy_ytd_pct": -0.05, "alpha_pp": 23.54}, {"date": "2026-02-20", "total_eok": 21.19, "cost_eok": 8.7, "pnl_eok": 12.49, "pnl_pct": 143.6, "div_annual_man": 4142, "div_yield": 1.95, "vix": 19.09, "yield_30y": 4.725, "usd_krw": 1447.75, "ytd_pct": 20.71, "spy_ytd_pct": 1.2, "alpha_pp": 19.51}, {"date": "2026-02-23", "total_eok": 21.23, "cost_eok": 8.68, "pnl_eok": 12.54, "pnl_pct": 144.5, "div_annual_man": 4138, "div_yield": 1.95, "vix": 21.01, "yield_30y": 4.696, "usd_krw": 1443.44, "ytd_pct": 20.89, "spy_ytd_pct": -0.13, "alpha_pp": 21.02}, {"date": "2026-02-24", "total_eok": 23.06, "cost_eok": 8.68, "pnl_eok": 14.38, "pnl_pct": 165.7, "div_annual_man": 4137, "div_yield": 1.79, "vix": 19.55, "yield_30y": 4.689, "usd_krw": 1442.2, "ytd_pct": 31.32, "spy_ytd_pct": 0.51, "alpha_pp": 30.81}, {"date": "2026-02-25", "total_eok": 22.31, "cost_eok": 8.67, "pnl_eok": 13.65, "pnl_pct": 157.4, "div_annual_man": 4135, "div_yield": 1.85, "vix": 17.93, "yield_30y": 4.694, "usd_krw": 1439.99, "ytd_pct": 27.09, "spy_ytd_pct": 1.2, "alpha_pp": 25.89}, {"date": "2026-02-26", "total_eok": 23.13, "cost_eok": 8.62, "pnl_eok": 14.51, "pnl_pct": 168.4, "div_annual_man": 4126, "div_yield": 1.78, "vix": 18.63, "yield_30y": 4.669, "usd_krw": 1426.93, "ytd_pct": 31.74, "spy_ytd_pct": -0.27, "alpha_pp": 32.01}, {"date": "2026-02-27", "total_eok": 22.63, "cost_eok": 8.64, "pnl_eok": 13.99, "pnl_pct": 162.0, "div_annual_man": 4128, "div_yield": 1.82, "vix": 19.86, "yield_30y": 4.633, "usd_krw": 1432.32, "ytd_pct": 28.88, "spy_ytd_pct": -0.37, "alpha_pp": 29.25}, {"date": "2026-03-02", "total_eok": 22.67, "cost_eok": 8.66, "pnl_eok": 14.0, "pnl_pct": 161.6, "div_annual_man": 4178, "div_yield": 1.84, "vix": 21.44, "yield_30y": 4.698, "usd_krw": 1438.5, "ytd_pct": 29.09, "spy_ytd_pct": 0.11, "alpha_pp": 28.98}, {"date": "2026-03-03", "total_eok": 21.85, "cost_eok": 8.72, "pnl_eok": 13.13, "pnl_pct": 150.6, "div_annual_man": 4141, "div_yield": 1.9, "vix": 23.57, "yield_30y": 4.702, "usd_krw": 1452.27, "ytd_pct": 24.42, "spy_ytd_pct": 0.18, "alpha_pp": 24.24}, {"date": "2026-03-04", "total_eok": 20.16, "cost_eok": 8.84, "pnl_eok": 11.32, "pnl_pct": 128.1, "div_annual_man": 4169, "div_yield": 2.07, "vix": 21.15, "yield_30y": 4.716, "usd_krw": 1483.07, "ytd_pct": 14.82, "spy_ytd_pct": 3.03, "alpha_pp": 11.79}, {"date": "2026-03-05", "total_eok": 21.36, "cost_eok": 8.75, "pnl_eok": 12.61, "pnl_pct": 144.1, "div_annual_man": 4148, "div_yield": 1.94, "vix": 23.75, "yield_30y": 4.752, "usd_krw": 1460.75, "ytd_pct": 21.66, "spy_ytd_pct": 0.91, "alpha_pp": 20.75}, {"date": "2026-03-06", "total_eok": 23.7, "cost_eok": 8.82, "pnl_eok": 14.87, "pnl_pct": 168.6, "div_annual_man": 4165, "div_yield": 1.76, "vix": 29.49, "yield_30y": 4.755, "usd_krw": 1479.51, "ytd_pct": 34.97, "spy_ytd_pct": 0.87, "alpha_pp": 34.1}, {"date": "2026-03-09", "total_eok": 21.68, "cost_eok": 8.84, "pnl_eok": 12.84, "pnl_pct": 145.2, "div_annual_man": 4169, "div_yield": 1.92, "vix": 25.5, "yield_30y": 4.74, "usd_krw": 1483.89, "ytd_pct": 23.46, "spy_ytd_pct": 2.05, "alpha_pp": 21.41}, {"date": "2026-03-10", "total_eok": 22.18, "cost_eok": 8.77, "pnl_eok": 13.41, "pnl_pct": 153.0, "div_annual_man": 4152, "div_yield": 1.87, "vix": 24.93, "yield_30y": 4.771, "usd_krw": 1464.47, "ytd_pct": 26.31, "spy_ytd_pct": 0.55, "alpha_pp": 25.76}, {"date": "2026-03-11", "total_eok": 22.48, "cost_eok": 8.8, "pnl_eok": 13.69, "pnl_pct": 155.6, "div_annual_man": 4159, "div_yield": 1.85, "vix": 24.23, "yield_30y": 4.857, "usd_krw": 1472.78, "ytd_pct": 28.05, "spy_ytd_pct": 1.0, "alpha_pp": 27.05}, {"date": "2026-03-12", "total_eok": 22.44, "cost_eok": 8.81, "pnl_eok": 13.63, "pnl_pct": 154.8, "div_annual_man": 4163, "div_yield": 1.86, "vix": 27.29, "yield_30y": 4.885, "usd_krw": 1475.34, "ytd_pct": 27.81, "spy_ytd_pct": -0.36, "alpha_pp": 28.17}, {"date": "2026-03-13", "total_eok": 22.24, "cost_eok": 8.79, "pnl_eok": 13.45, "pnl_pct": 153.1, "div_annual_man": 4159, "div_yield": 1.87, "vix": 27.19, "yield_30y": 4.908, "usd_krw": 1470.58, "ytd_pct": 26.68, "spy_ytd_pct": -1.25, "alpha_pp": 27.93}, {"date": "2026-03-16", "total_eok": 23.1, "cost_eok": 8.91, "pnl_eok": 14.19, "pnl_pct": 159.2, "div_annual_man": 4187, "div_yield": 1.81, "vix": 23.51, "yield_30y": 4.859, "usd_krw": 1501.75, "ytd_pct": 31.55, "spy_ytd_pct": 1.87, "alpha_pp": 29.68}, {"date": "2026-03-17", "total_eok": 22.55, "cost_eok": 8.86, "pnl_eok": 13.69, "pnl_pct": 154.5, "div_annual_man": 4175, "div_yield": 1.85, "vix": 22.37, "yield_30y": 4.852, "usd_krw": 1488.91, "ytd_pct": 28.45, "spy_ytd_pct": 1.27, "alpha_pp": 27.18}, {"date": "2026-03-18", "total_eok": 22.47, "cost_eok": 8.85, "pnl_eok": 13.63, "pnl_pct": 154.1, "div_annual_man": 4171, "div_yield": 1.86, "vix": 25.09, "yield_30y": 4.881, "usd_krw": 1484.87, "ytd_pct": 28.0, "spy_ytd_pct": -0.42, "alpha_pp": 28.42}, {"date": "2026-03-19", "total_eok": 21.94, "cost_eok": 8.93, "pnl_eok": 13.01, "pnl_pct": 145.8, "div_annual_man": 4190, "div_yield": 1.91, "vix": 24.06, "yield_30y": 4.852, "usd_krw": 1505.25, "ytd_pct": 24.95, "spy_ytd_pct": 0.7, "alpha_pp": 24.25}, {"date": "2026-03-20", "total_eok": 21.74, "cost_eok": 8.87, "pnl_eok": 12.88, "pnl_pct": 145.3, "div_annual_man": 4176, "div_yield": 1.92, "vix": 26.78, "yield_30y": 4.96, "usd_krw": 1489.84, "ytd_pct": 23.84, "spy_ytd_pct": -1.76, "alpha_pp": 25.6}, {"date": "2026-03-23", "total_eok": 20.68, "cost_eok": 8.92, "pnl_eok": 11.76, "pnl_pct": 131.8, "div_annual_man": 4189, "div_yield": 2.03, "vix": 26.15, "yield_30y": 4.912, "usd_krw": 1504.21, "ytd_pct": 17.8, "spy_ytd_pct": 0.23, "alpha_pp": 17.57}, {"date": "2026-03-24", "total_eok": 20.86, "cost_eok": 8.85, "pnl_eok": 12.02, "pnl_pct": 135.8, "div_annual_man": 4172, "div_yield": 2.0, "vix": 26.95, "yield_30y": 4.941, "usd_krw": 1485.36, "ytd_pct": 18.83, "spy_ytd_pct": -1.36, "alpha_pp": 20.19}, {"date": "2026-03-25", "total_eok": 21.34, "cost_eok": 8.89, "pnl_eok": 12.44, "pnl_pct": 139.9, "div_annual_man": 4242, "div_yield": 1.99, "vix": 25.33, "yield_30y": 4.897, "usd_krw": 1497.31, "ytd_pct": 21.53, "spy_ytd_pct": -0.01, "alpha_pp": 21.54}, {"date": "2026-03-26", "total_eok": 20.42, "cost_eok": 8.91, "pnl_eok": 11.52, "pnl_pct": 129.3, "div_annual_man": 4188, "div_yield": 2.05, "vix": 27.44, "yield_30y": 4.936, "usd_krw": 1500.97, "ytd_pct": 16.33, "spy_ytd_pct": -1.56, "alpha_pp": 17.89}, {"date": "2026-03-27", "total_eok": 20.41, "cost_eok": 8.94, "pnl_eok": 11.47, "pnl_pct": 128.3, "div_annual_man": 4194, "div_yield": 2.06, "vix": 31.05, "yield_30y": 4.982, "usd_krw": 1508.36, "ytd_pct": 16.23, "spy_ytd_pct": -2.76, "alpha_pp": 18.99}, {"date": "2026-03-30", "total_eok": 19.88, "cost_eok": 8.93, "pnl_eok": 10.94, "pnl_pct": 122.5, "div_annual_man": 4193, "div_yield": 2.11, "vix": 30.61, "yield_30y": 4.905, "usd_krw": 1507.02, "ytd_pct": 13.21, "spy_ytd_pct": -3.17, "alpha_pp": 16.38}, {"date": "2026-03-31", "total_eok": 19.62, "cost_eok": 8.97, "pnl_eok": 10.65, "pnl_pct": 118.8, "div_annual_man": 4201, "div_yield": 2.14, "vix": 25.25, "yield_30y": 4.891, "usd_krw": 1516.13, "ytd_pct": 11.74, "spy_ytd_pct": 0.25, "alpha_pp": 11.49}, {"date": "2026-04-01", "total_eok": 20.35, "cost_eok": 8.92, "pnl_eok": 11.43, "pnl_pct": 128.2, "div_annual_man": 4182, "div_yield": 2.05, "vix": 24.54, "yield_30y": 4.9, "usd_krw": 1503.33, "ytd_pct": 15.92, "spy_ytd_pct": 0.15, "alpha_pp": 15.77}, {"date": "2026-04-02", "total_eok": 19.45, "cost_eok": 8.95, "pnl_eok": 10.5, "pnl_pct": 117.3, "div_annual_man": 4190, "div_yield": 2.15, "vix": 23.87, "yield_30y": 4.89, "usd_krw": 1512.09, "ytd_pct": 10.8, "spy_ytd_pct": 0.82, "alpha_pp": 9.98}, {"date": "2026-04-06", "total_eok": 19.74, "cost_eok": 8.94, "pnl_eok": 10.8, "pnl_pct": 120.8, "div_annual_man": 4187, "div_yield": 2.12, "vix": 24.17, "yield_30y": 4.891, "usd_krw": 1509.26, "ytd_pct": 12.45, "spy_ytd_pct": 1.11, "alpha_pp": 11.34}, {"date": "2026-04-07", "total_eok": 20.02, "cost_eok": 8.94, "pnl_eok": 11.08, "pnl_pct": 124.0, "div_annual_man": 4186, "div_yield": 2.09, "vix": 25.78, "yield_30y": 4.921, "usd_krw": 1507.85, "ytd_pct": 14.03, "spy_ytd_pct": 1.06, "alpha_pp": 12.97}, {"date": "2026-04-08", "total_eok": 20.93, "cost_eok": 8.9, "pnl_eok": 12.03, "pnl_pct": 135.2, "div_annual_man": 4178, "div_yield": 2.0, "vix": 21.04, "yield_30y": 4.887, "usd_krw": 1499.13, "ytd_pct": 19.23, "spy_ytd_pct": 3.04, "alpha_pp": 16.19}, {"date": "2026-04-09", "total_eok": 20.48, "cost_eok": 8.82, "pnl_eok": 11.66, "pnl_pct": 132.3, "div_annual_man": 4159, "div_yield": 2.03, "vix": 19.49, "yield_30y": 4.897, "usd_krw": 1477.6, "ytd_pct": 16.64, "spy_ytd_pct": 2.14, "alpha_pp": 14.5}, {"date": "2026-04-10", "total_eok": 20.97, "cost_eok": 8.8, "pnl_eok": 12.17, "pnl_pct": 138.3, "div_annual_man": 4155, "div_yield": 1.98, "vix": 19.23, "yield_30y": 4.914, "usd_krw": 1473.28, "ytd_pct": 19.42, "spy_ytd_pct": 1.78, "alpha_pp": 17.64}, {"date": "2026-04-13", "total_eok": 21.24, "cost_eok": 8.84, "pnl_eok": 12.41, "pnl_pct": 140.4, "div_annual_man": 4163, "div_yield": 1.96, "vix": 19.12, "yield_30y": 4.9, "usd_krw": 1482.18, "ytd_pct": 20.97, "spy_ytd_pct": 3.39, "alpha_pp": 17.58}, {"date": "2026-04-14", "total_eok": 22.25, "cost_eok": 8.81, "pnl_eok": 13.43, "pnl_pct": 152.4, "div_annual_man": 4159, "div_yield": 1.87, "vix": 18.36, "yield_30y": 4.868, "usd_krw": 1476.84, "ytd_pct": 26.71, "spy_ytd_pct": 4.27, "alpha_pp": 22.44}, {"date": "2026-04-15", "total_eok": 22.56, "cost_eok": 8.78, "pnl_eok": 13.77, "pnl_pct": 156.8, "div_annual_man": 4153, "div_yield": 1.84, "vix": 18.17, "yield_30y": 4.891, "usd_krw": 1469.42, "ytd_pct": 28.46, "spy_ytd_pct": 4.57, "alpha_pp": 23.89}, {"date": "2026-04-16", "total_eok": 23.0, "cost_eok": 8.8, "pnl_eok": 14.2, "pnl_pct": 161.3, "div_annual_man": 4157, "div_yield": 1.81, "vix": 17.94, "yield_30y": 4.929, "usd_krw": 1474.06, "ytd_pct": 31.01, "spy_ytd_pct": 5.16, "alpha_pp": 25.85}, {"date": "2026-04-17", "total_eok": 23.23, "cost_eok": 8.82, "pnl_eok": 14.41, "pnl_pct": 163.4, "div_annual_man": 4160, "div_yield": 1.79, "vix": 17.48, "yield_30y": 4.885, "usd_krw": 1477.92, "ytd_pct": 32.3, "spy_ytd_pct": 6.71, "alpha_pp": 25.59}, {"date": "2026-04-20", "total_eok": 22.84, "cost_eok": 8.77, "pnl_eok": 14.08, "pnl_pct": 160.5, "div_annual_man": 4149, "div_yield": 1.82, "vix": 18.87, "yield_30y": 4.881, "usd_krw": 1465.15, "ytd_pct": 30.1, "spy_ytd_pct": 5.57, "alpha_pp": 24.53}, {"date": "2026-04-21", "total_eok": 22.65, "cost_eok": 8.78, "pnl_eok": 13.86, "pnl_pct": 157.8, "div_annual_man": 4153, "div_yield": 1.83, "vix": 19.5, "yield_30y": 4.898, "usd_krw": 1469.26, "ytd_pct": 28.99, "spy_ytd_pct": 5.18, "alpha_pp": 23.81}, {"date": "2026-04-22", "total_eok": 23.02, "cost_eok": 8.85, "pnl_eok": 14.17, "pnl_pct": 160.2, "div_annual_man": 4168, "div_yield": 1.81, "vix": 18.92, "yield_30y": 4.902, "usd_krw": 1485.8, "ytd_pct": 31.12, "spy_ytd_pct": 7.44, "alpha_pp": 23.68}, {"date": "2026-04-23", "total_eok": 23.39, "cost_eok": 8.82, "pnl_eok": 14.57, "pnl_pct": 165.3, "div_annual_man": 4161, "div_yield": 1.78, "vix": 19.31, "yield_30y": 4.918, "usd_krw": 1477.96, "ytd_pct": 33.23, "spy_ytd_pct": 6.46, "alpha_pp": 26.77}, {"date": "2026-04-24", "total_eok": 24.93, "cost_eok": 8.83, "pnl_eok": 16.11, "pnl_pct": 182.5, "div_annual_man": 4162, "div_yield": 1.67, "vix": 18.71, "yield_30y": 4.916, "usd_krw": 1479.95, "ytd_pct": 42.01, "spy_ytd_pct": 7.43, "alpha_pp": 34.58}, {"date": "2026-04-27", "total_eok": 25.57, "cost_eok": 8.81, "pnl_eok": 16.77, "pnl_pct": 190.4, "div_annual_man": 4158, "div_yield": 1.63, "vix": 18.02, "yield_30y": 4.942, "usd_krw": 1474.69, "ytd_pct": 45.66, "spy_ytd_pct": 7.23, "alpha_pp": 38.43}];
-      if (!trendArr || trendArr.length === 0) return;
-      const labels = trendArr.map(d => d.date);
-      const portSeries = trendArr.map(d => d.ytd_pct);
-      const spySeries = trendArr.map(d => d.spy_ytd_pct);
-      // skip render if any series is fully null
-      if (portSeries.every(v => v == null) || spySeries.every(v => v == null)) return;
+const ytdPortData = trend.map(d => d.ytd_pct);
+const ytdSpyData  = trend.map(d => d.spy_ytd_pct);
+const _ytdYTickFn = function(v){ return (v>=0?'+':'') + v.toFixed(1) + '%'; };
+const _ytdTooltipFn = function(c){ const v=c.parsed.y; return c.dataset.label+': '+(v==null?'n/a':(v>=0?'+':'')+v.toFixed(2)+'%'); };
+ytdChart = new Chart(document.getElementById('ytdCompareChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'Portfolio (₩)', data:ytdPortData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 },
+  { label:'S&P 500 (₩)', data:ytdSpyData, borderColor:'#a3aac4', backgroundColor:'rgba(163,170,196,0.05)', borderDash:[6,4], fill:false, tension:0.3, pointRadius:2, borderWidth:2 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }, tooltip:{ callbacks:{ label:_ytdTooltipFn }}}, scales:{ y:{ ...dso, ticks:{ ...dso.ticks, callback:_ytdYTickFn }, title:{ display:true, text:'%', color:'#a3aac4' }}}}});
+_wireRangeToggle('ytdRangeToggle', ytdChart, { min: 0, max: 50 });
 
-      const ctxYtd = document.getElementById('ytdCompareChart');
-      if (!ctxYtd) return;
+function _updateYtdChart(trendArr){
+  if(!ytdChart) return;
+  if(!trendArr || trendArr.length === 0) return;
+  const portSeries = trendArr.map(d => d.ytd_pct);
+  const spySeries  = trendArr.map(d => d.spy_ytd_pct);
+  if(portSeries.every(v => v == null) || spySeries.every(v => v == null)) return;
+  ytdChart.data.labels = trendArr.map(d => d.date.slice(5));
+  ytdChart.data.datasets[0].data = portSeries;
+  ytdChart.data.datasets[1].data = spySeries;
+  ytdChart.update();
+}
 
-      ytdChart = new Chart(ctxYtd, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Portfolio (₩)',
-              data: portSeries,
-              borderColor: 'rgb(109, 221, 255)',
-              backgroundColor: 'rgba(109, 221, 255, 0.1)',
-              borderWidth: 2.5,
-              tension: 0.25,
-              pointRadius: 2,
-              fill: false,
-            },
-            {
-              label: 'S&P 500 (₩)',
-              data: spySeries,
-              borderColor: 'rgba(163, 170, 196, 0.9)',
-              borderDash: [6, 4],
-              borderWidth: 2,
-              tension: 0.25,
-              pointRadius: 2,
-              fill: false,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom', labels: { font: { size: 12 } } },
-            tooltip: {
-              callbacks: {
-                label: function(c) {
-                  const v = c.parsed.y;
-                  return `${c.dataset.label}: ${v == null ? 'n/a' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%'}`;
-                },
-              },
-            },
-          },
-          scales: {
-            y: {
-              ticks: {
-                callback: function(v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; },
-              },
-              grid: { color: 'rgba(163, 170, 196, 0.1)' },
-            },
-            x: { grid: { display: false } },
-          },
-        },
-      });
-    })();
-    function _updateYtdChart(trendArr) {
-      if (!ytdChart) return;
-      if (!trendArr || trendArr.length === 0) return;
-      const portSeries = trendArr.map(d => d.ytd_pct);
-      const spySeries = trendArr.map(d => d.spy_ytd_pct);
-      if (portSeries.every(v => v == null) || spySeries.every(v => v == null)) return;
-      ytdChart.data.labels = trendArr.map(d => d.date);
-      ytdChart.data.datasets[0].data = portSeries;
-      ytdChart.data.datasets[1].data = spySeries;
-      ytdChart.update();
-    }
+// ── 매크로 지표 (3개 별도 차트) ──
+new Chart(document.getElementById('vixChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'VIX', data:vixData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,108,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'VIX', color:'#a3aac4' }}}}});
+
+new Chart(document.getElementById('yieldChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'30Y Treasury (%)', data:yieldData, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'%', color:'#a3aac4' }}}}});
+
+new Chart(document.getElementById('fxChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'USD/KRW', data:fxData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'KRW', color:'#a3aac4' }}}}});
 
 
 const tickerData = [{"name": "디아이티", "value": 67.1, "amount_man": 171607}, {"name": "VOO", "value": 7.1, "amount_man": 18158}, {"name": "QQQ", "value": 5.4, "amount_man": 13810}, {"name": "BIL", "value": 4.8, "amount_man": 12276}, {"name": "SCHD", "value": 2.8, "amount_man": 7161}, {"name": "AAPL", "value": 1.2, "amount_man": 3069}, {"name": "O", "value": 1.0, "amount_man": 2557}, {"name": "JEPI", "value": 0.9, "amount_man": 2302}, {"name": "TIGER 200", "value": 0.9, "amount_man": 2302}, {"name": "SOXX", "value": 0.8, "amount_man": 2046}, {"name": "기타", "value": 8.1, "amount_man": 20716}];
