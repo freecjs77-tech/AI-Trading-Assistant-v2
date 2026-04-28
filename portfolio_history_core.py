@@ -296,7 +296,7 @@ def build_wife_snapshot(
         return None
     pnl_krw = total_krw - cost_krw
     pnl_pct = round(pnl_krw / cost_krw * 100, 2) if cost_krw > 0 else 0
-    weights_by_ticker = {t: round(v / total_krw * 100, 2) for t, v in weights_krw.items()}
+    weights_by_ticker = {t: round(v / total_krw * 100, 1) for t, v in weights_krw.items()}
 
     # TTM 배당 — wife는 BIL 외 USD/KR 모두 동일하게 계산
     total_div_krw = 0.0
@@ -314,9 +314,9 @@ def build_wife_snapshot(
     macro = _macro_at(dfs, target_ts)
 
     return {
-        "total_value_krw": int(total_krw),
-        "cost_basis_krw": int(cost_krw),
-        "pnl_krw": int(pnl_krw),
+        "total_value_krw": round(total_krw),
+        "cost_basis_krw": round(cost_krw),
+        "pnl_krw": round(pnl_krw),
         "pnl_pct": pnl_pct,
         "cash_value_krw": 0,
         "cash_pct": 0.0,
