@@ -8,6 +8,7 @@ GitHub Pages에서 리포트를 서빙하고, GitHub Actions로 파이프라인�
 - [Capitol Trades 의원 거래 보조 지표 통합 V2c](docs/plans/capitol-trades-integration.md) — Politician Watchlist 독립 섹션 · Capitol Trades 스크랩 · 가중 스코어 + 별점 0-5 + 색상 (파랑=매수/빨강=매도) · 시그널 로직 불변
 - [SP100 + NDX100 통합 + 섹터 표시](docs/plans/sp100-ndx-merge-with-sectors.md) — SP100_TICKERS 50→~169 (S&P 100 ∪ NASDAQ 100) · GICS 섹터 매핑(Tech/Comm/금융/헬스케어 등 11분류) · 스캐너 표에 Sector 컬럼 추가 · 시그널 로직/캐시키/히스토리 불변
 - [Politician Watchlist McCaul 전용 필터](docs/plans/politician-mccaul-only.md) — `data/politician_filter.json` 설정으로 Michael McCaul 거래만 timeline 표시 · 별점·consensus 제거, raw 수치 우선 · config 부재 시 기존 consensus 모드 fallback
+- [Portfolio history rebuild 2026-01-02~](docs/superpowers/plans/2026-04-28-portfolio-history-rebuild.md) — me/wife/합산 트렌드 1월 2일까지 확장 · TTM 배당 단일 진실의 원천(`portfolio_history_core.py`) · 하드코딩 배당(₩42M base, ₩16M base, div=0) 제거 · 현재 보유 동결 후 가격 replay · `SKIP_SCANNERS=1` 로컬 테스트 옵션 추가
 
 ## 배포 (GitHub Pages + Actions)
 - **리포트 URL**: https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/
@@ -44,6 +45,8 @@ python app.py
 ├── history_manager.py        # 시그널 이력 관리 (30일 유지)
 ├── portfolio_data.py         # 종목 메타데이터, 한글→Ticker 변환맵
 ├── fetch_market_data.py      # yfinance 데이터 수집기
+├── portfolio_history_core.py # 히스토리 재계산 코어 (Yahoo v8 + TTM 배당 + me/wife 스냅샷 빌더)
+├── rebuild_portfolio_history.py  # me+wife daily 일괄 재생성 (--start-date 2026-01-02)
 ├── screenshot_ocr.py         # 스크린샷 OCR (현재 미사용, 수동 portfolio.md 운영)
 ├── strategy.md               # 시그널 판정 규칙 문서 v5.3
 ├── portfolio.md              # 보유 종목 현황 (수동 유지)
@@ -83,6 +86,18 @@ portfolio.md를 직접 편집한다. 형식:
 | Ticker | 종목명 | 보유수량 | 평가금액 | 수익금액 | 수익률 |
 ```
 맨 아래 Ticker 목록도 함께 갱신해야 fetch_market_data가 올바른 종목을 수집한다.
+
+## 로컬 테스트 옵션
+```bash
+# 빠른 회귀: 스캐너(S&P100+ETF+KOSPI+Watchlist) 스킵 → ~5분 → ~1분
+SKIP_SCANNERS=1 python pipeline.py
+# Windows PowerShell:
+$env:SKIP_SCANNERS=1; python pipeline.py
+
+# 히스토리 전체 재생성 (1월 2일~ 현재 보유 기준 가격 replay)
+python rebuild_portfolio_history.py --start-date 2026-01-02
+python rebuild_portfolio_history.py --owner me --dry-run    # 검증 모드
+```
 
 ## Windows 인코딩 주의
 - print 문에 이모지/특수문자 사용 시 cp949 에러 발생
