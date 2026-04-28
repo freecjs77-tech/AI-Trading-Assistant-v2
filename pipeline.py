@@ -175,85 +175,89 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         print(f"  OK {len(signals)} tickers judged: {sig_counts}")
 
         # Step 4b: Scanner (S&P 100 + ETF + KOSPI + Watchlist)
-        # 최적화: 4개 스캐너가 각각 fetch_market_data.py를 호출하던 기존 방식에서
-        # union 티커를 한 번에 수집 → scanner_shared_{date}.json 으로 공유.
-        # (각 스캐너의 _fetch_scanner_data가 이 파일을 우선 활용)
-        print("[Step 4b] Prefetching scanner universe (shared cache)...")
-        try:
-            from market_scanner import (
-                SP100_TICKERS, ETF_TICKERS, KOSPI_TICKERS, WATCHLIST_TICKERS,
-            )
-            from watchlist_store import load_tickers as _load_watchlist_tickers
-            _wl = []
-            try:
-                _wl = _load_watchlist_tickers(project_dir) or []
-            except Exception:
-                _wl = []
-            if not _wl:
-                _wl = list(WATCHLIST_TICKERS)
-            _scan_union = []
-            _seen = set()
-            for _group in (SP100_TICKERS, ETF_TICKERS, KOSPI_TICKERS, _wl):
-                for _t in _group:
-                    if _t and _t not in _seen:
-                        _seen.add(_t)
-                        _scan_union.append(_t)
-            _shared_path = os.path.join(project_dir, "screenshots", f"scanner_shared_{today}.json")
-            _need_prefetch = not os.path.exists(_shared_path)
-            if _need_prefetch:
-                _fetch_script = os.path.join(project_dir, "fetch_market_data.py")
-                _env = os.environ.copy()
-                _env["PYTHONIOENCODING"] = "utf-8"
-                _cmd = [sys.executable, _fetch_script, "--output", _shared_path, "--quiet"] + _scan_union
-                print(f"  Fetching {len(_scan_union)} unique scanner tickers in one pass...")
-                _prefetch = subprocess.run(
-                    _cmd, cwd=project_dir, capture_output=True, text=True,
-                    timeout=900, env=_env, encoding="utf-8", errors="replace",
-                )
-                if _prefetch.returncode != 0:
-                    print(f"  WARN prefetch failed ({_prefetch.stderr[:200]}) — falling back to per-scanner fetch")
-                else:
-                    print(f"  OK shared cache: {_shared_path}")
-            else:
-                print(f"  Using existing shared cache: {_shared_path}")
-        except Exception as _pfe:
-            print(f"  WARN prefetch skipped: {_pfe}")
-
-        print("[Step 4b] Running scanners...")
-        from market_scanner import scan_sp100, scan_etf, scan_kospi, scan_watchlist
+        skip_scanners = os.environ.get("SKIP_SCANNERS", "").lower() in ("1", "true", "yes")
         scanner_sp100_result = None
         scanner_etf_result = None
         scanner_kospi_result = None
         scanner_watchlist_result = None
-        try:
-            scanner_sp100_result = scan_sp100(project_dir)
-            if scanner_sp100_result.get("status") != "ok":
-                scanner_sp100_result = None
-        except Exception as e:
-            print(f"  WARN S&P 100 scanner failed: {e}")
-        try:
-            scanner_etf_result = scan_etf(project_dir)
-            if scanner_etf_result.get("status") != "ok":
-                scanner_etf_result = None
-        except Exception as e:
-            print(f"  WARN ETF scanner failed: {e}")
-        try:
-            scanner_kospi_result = scan_kospi(project_dir)
-            if scanner_kospi_result.get("status") != "ok":
-                scanner_kospi_result = None
-        except Exception as e:
-            print(f"  WARN KOSPI scanner failed: {e}")
-        try:
-            scanner_watchlist_result = scan_watchlist(project_dir)
-            if scanner_watchlist_result.get("status") != "ok":
-                scanner_watchlist_result = None
-        except Exception as e:
-            print(f"  WARN Watchlist scanner failed: {e}")
-        sp_count = (scanner_sp100_result or {}).get("total_signals", 0)
-        etf_count = (scanner_etf_result or {}).get("total_signals", 0)
-        kospi_count = (scanner_kospi_result or {}).get("total_signals", 0)
-        watch_count = (scanner_watchlist_result or {}).get("total_signals", 0)
-        print(f"  OK scanners: S&P100={sp_count}, ETF={etf_count}, KOSPI={kospi_count}, Watch={watch_count} signals")
+        if skip_scanners:
+            print("[Step 4b] SKIP_SCANNERS=1 — 스캐너 스킵 (로컬 테스트 모드)")
+        else:
+            # 최적화: 4개 스캐너가 각각 fetch_market_data.py를 호출하던 기존 방식에서
+            # union 티커를 한 번에 수집 → scanner_shared_{date}.json 으로 공유.
+            # (각 스캐너의 _fetch_scanner_data가 이 파일을 우선 활용)
+            print("[Step 4b] Prefetching scanner universe (shared cache)...")
+            try:
+                from market_scanner import (
+                    SP100_TICKERS, ETF_TICKERS, KOSPI_TICKERS, WATCHLIST_TICKERS,
+                )
+                from watchlist_store import load_tickers as _load_watchlist_tickers
+                _wl = []
+                try:
+                    _wl = _load_watchlist_tickers(project_dir) or []
+                except Exception:
+                    _wl = []
+                if not _wl:
+                    _wl = list(WATCHLIST_TICKERS)
+                _scan_union = []
+                _seen = set()
+                for _group in (SP100_TICKERS, ETF_TICKERS, KOSPI_TICKERS, _wl):
+                    for _t in _group:
+                        if _t and _t not in _seen:
+                            _seen.add(_t)
+                            _scan_union.append(_t)
+                _shared_path = os.path.join(project_dir, "screenshots", f"scanner_shared_{today}.json")
+                _need_prefetch = not os.path.exists(_shared_path)
+                if _need_prefetch:
+                    _fetch_script = os.path.join(project_dir, "fetch_market_data.py")
+                    _env = os.environ.copy()
+                    _env["PYTHONIOENCODING"] = "utf-8"
+                    _cmd = [sys.executable, _fetch_script, "--output", _shared_path, "--quiet"] + _scan_union
+                    print(f"  Fetching {len(_scan_union)} unique scanner tickers in one pass...")
+                    _prefetch = subprocess.run(
+                        _cmd, cwd=project_dir, capture_output=True, text=True,
+                        timeout=900, env=_env, encoding="utf-8", errors="replace",
+                    )
+                    if _prefetch.returncode != 0:
+                        print(f"  WARN prefetch failed ({_prefetch.stderr[:200]}) — falling back to per-scanner fetch")
+                    else:
+                        print(f"  OK shared cache: {_shared_path}")
+                else:
+                    print(f"  Using existing shared cache: {_shared_path}")
+            except Exception as _pfe:
+                print(f"  WARN prefetch skipped: {_pfe}")
+
+            print("[Step 4b] Running scanners...")
+            from market_scanner import scan_sp100, scan_etf, scan_kospi, scan_watchlist
+            try:
+                scanner_sp100_result = scan_sp100(project_dir)
+                if scanner_sp100_result.get("status") != "ok":
+                    scanner_sp100_result = None
+            except Exception as e:
+                print(f"  WARN S&P 100 scanner failed: {e}")
+            try:
+                scanner_etf_result = scan_etf(project_dir)
+                if scanner_etf_result.get("status") != "ok":
+                    scanner_etf_result = None
+            except Exception as e:
+                print(f"  WARN ETF scanner failed: {e}")
+            try:
+                scanner_kospi_result = scan_kospi(project_dir)
+                if scanner_kospi_result.get("status") != "ok":
+                    scanner_kospi_result = None
+            except Exception as e:
+                print(f"  WARN KOSPI scanner failed: {e}")
+            try:
+                scanner_watchlist_result = scan_watchlist(project_dir)
+                if scanner_watchlist_result.get("status") != "ok":
+                    scanner_watchlist_result = None
+            except Exception as e:
+                print(f"  WARN Watchlist scanner failed: {e}")
+            sp_count = (scanner_sp100_result or {}).get("total_signals", 0)
+            etf_count = (scanner_etf_result or {}).get("total_signals", 0)
+            kospi_count = (scanner_kospi_result or {}).get("total_signals", 0)
+            watch_count = (scanner_watchlist_result or {}).get("total_signals", 0)
+            print(f"  OK scanners: S&P100={sp_count}, ETF={etf_count}, KOSPI={kospi_count}, Watch={watch_count} signals")
 
         # Step 4c: Politician Trades (Capitol Trades scrape + aggregate into watchlist)
         # Independent of signal logic. Failures here must not block the rest of the pipeline
