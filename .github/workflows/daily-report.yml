@@ -63,6 +63,31 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python pipeline.py --skip-ocr --auto
 
+      - name: Backfill YTD fields (ytd_pct/spy_ytd_pct/alpha_pp)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python backfill_ytd_history.py
+
+      - name: Re-render trend page (with YTD fields just backfilled)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          python -c "
+          import json
+          from datetime import datetime
+          from report_generator import generate_trend_page
+          me = json.load(open('history/portfolio_daily.json', encoding='utf-8'))
+          import os
+          owners = {}
+          for fname in os.listdir('history'):
+              if fname.startswith('portfolio_daily_') and fname.endswith('.json'):
+                  owner = fname.replace('portfolio_daily_','').replace('.json','')
+                  owners[owner] = json.load(open(os.path.join('history', fname), encoding='utf-8'))
+          today = datetime.now().strftime('%Y-%m-%d')
+          out = generate_trend_page(portfolio_daily=me, output_dir='reports', date_str=today, owner_daily=owners)
+          print(f'trend page re-rendered: {out}')
+          "
+
       - name: Prepare deploy directory
         run: python generate_site.py
 
