@@ -399,7 +399,9 @@ def _calc_hypothetical_return(ticker: str, current_price: float, history: dict, 
             buy_dates.append((dt, ticker_data))
         else:
             break
-        if len(buy_dates) >= 10:
+        # 안전 가드: history 길이만큼 끝까지 수집. GS처럼 14일+ streak도
+        # day1을 정확히 잡도록 확장 (이전 10일 cap은 잘못된 day1 표시 원인).
+        if len(buy_dates) >= 60:
             break
 
     if not buy_dates:
