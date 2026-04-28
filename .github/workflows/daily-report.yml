@@ -63,6 +63,15 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python pipeline.py --skip-ocr --auto
 
+      - name: Rebuild portfolio_daily with single forward snapshot (no intraday jump)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          # pipeline.py가 적은 today's row와 master/history의 78일치를 같은
+          # yfinance.info.dividendRate 스냅샷으로 통일 — 4/27 같은 step jump 제거.
+          # 서로 다른 시각에 yfinance.info를 호출하면 ~1-2% 차이가 누적됨.
+          python rebuild_portfolio_history.py --start-date 2026-01-02
+
       - name: Backfill YTD fields (ytd_pct/spy_ytd_pct/alpha_pp)
         env:
           PYTHONIOENCODING: utf-8
