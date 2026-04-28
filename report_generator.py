@@ -172,9 +172,11 @@ def _signal_counts(signals: dict) -> dict:
     counts = {"TP2": 0, "TP1": 0, "BUY": 0, "WATCH": 0, "HOLD": 0}
     for r in signals.values():
         sig = r.get("signal", "")
-        if "TOP" in sig:
+        # _badge_class와 동일한 분류: TAKE_PROFIT_2는 EXIT(TP2), TAKE_PROFIT_1만 TRIM(TP1).
+        # 이전 로직은 "TOP" 검사 후 "TAKE_PROFIT" 단순 검사라 TAKE_PROFIT_2가 TP1로 잘못 집계됨.
+        if "TAKE_PROFIT_2" in sig or "TOP" in sig:
             counts["TP2"] += 1
-        elif "TAKE_PROFIT" in sig:
+        elif "TAKE_PROFIT_1" in sig:
             counts["TP1"] += 1
         elif "BUY" in sig:
             counts["BUY"] += 1
