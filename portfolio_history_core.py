@@ -42,6 +42,6 @@ def normalize_dividends(divs) -> pd.Series:
         divs = divs[col]
     if len(divs) == 0:
         return pd.Series(dtype=float)
-    if divs.index.tz is not None:
+    if hasattr(divs.index, 'tz') and divs.index.tz is not None:
         divs.index = divs.index.tz_localize(None)
     return divs.astype(float)
