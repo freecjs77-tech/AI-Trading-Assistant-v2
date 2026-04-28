@@ -343,8 +343,11 @@ def generate_report(
 
     krw_equiv = total_value_krw
 
-    # 시그널 분류
-    counts = _signal_counts(signals)
+    # 시그널 분류 — 보유종목만 카운트 (signals dict는 SPY/QQQ 등 macro/benchmark 티커도
+    # 포함하므로 holdings.ticker로 필터해야 화면 표시(EXIT/TRIM/BUY/WATCH/HOLD)와
+    # per-row 배지가 일치함).
+    _holding_tickers = {h["ticker"] for h in holdings}
+    counts = _signal_counts({t: s for t, s in signals.items() if t in _holding_tickers})
     tp2_signals = [h for h in holdings if h["signal"] in ("TAKE_PROFIT_2", "TOP_SIGNAL")]
     tp1_signals = [h for h in holdings if h["signal"] == "TAKE_PROFIT_1"]
     buy_signals = [h for h in holdings if "BUY" in h["signal"] and "BOND" not in h["signal"]]
