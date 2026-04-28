@@ -13,8 +13,9 @@ from dataclasses import dataclass
 
 import pandas as pd
 import requests
+import yfinance as yf
 
-from portfolio_data import is_kospi_ticker, get_ticker_name, get_ticker_class
+from portfolio_data import is_kospi_ticker, get_ticker_name, get_ticker_class, is_korean_ticker, to_yfinance_symbol
 
 START_DATE = "2026-01-02"
 TICKER_DELAY = 0.7  # rate limit 회피
@@ -330,3 +331,33 @@ def build_wife_snapshot(
         "weights_by_category": {},
         "weights_by_ticker": weights_by_ticker,
     }
+
+
+def yf_symbol(ticker: str) -> str:
+    """Wrapper around to_yfinance_symbol (handles korean/US tickers)."""
+    return to_yfinance_symbol(ticker) if is_korean_ticker(ticker) else ticker
+
+
+def fetch_all_dividends(tickers: list[str], delay: float = 0.4, logger=print) -> dict[str, pd.Series]:
+    """티커별 전체 배당 시리즈."""
+    out: dict[str, pd.Series] = {}
+    for i, t in enumerate(tickers, 1):
+        sym = yf_symbol(t)
+        s = pd.Series(dtype=float)
+        for attempt in range(MAX_RETRIES):
+            try:
+                s = normalize_dividends(yf.Ticker(sym).dividends)
+                break
+            except Exception:
+                time.sleep(2 ** attempt)
+        logger(f"  [{i:2}/{len(tickers)}] {sym}: {len(s)} events")
+        out[t] = s
+        time.sleep(delay)
+    return out
+
+
+def trading_dates_from(spy_df: pd.DataFrame, start: str) -> pd.DatetimeIndex:
+    """SPY 일봉에서 start (YYYY-MM-DD) 이후 거래일 인덱스 추출."""
+    s = spy_df["Close"].dropna()
+    s = s[s.index >= pd.Timestamp(start)]
+    return s.index

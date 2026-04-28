@@ -119,3 +119,13 @@ def test_build_wife_snapshot_uses_ttm_dividend():
     # Dividend: AAPL 1.00×10×1400=14,000 / 005930 1500×20=30,000 → 44,000
     assert snap["div_annual_krw"] == 44_000
     assert snap["div_yield"] == round(44_000 / 4_400_000 * 100, 2)
+
+
+def test_trading_dates_from_filters_by_start():
+    df = _make_df(
+        ["2025-12-30", "2026-01-02", "2026-01-03", "2026-01-06"],
+        [400, 410, 411, 412],
+    )
+    idx = core.trading_dates_from(df, "2026-01-02")
+    assert len(idx) == 3
+    assert idx[0] == pd.Timestamp("2026-01-02")
