@@ -29,7 +29,6 @@ sys.path.insert(0, str(PROJECT_DIR))
 import pandas as pd
 
 import portfolio_history_core as core
-from fetch_market_data import parse_portfolio_md
 from portfolio_data import is_kospi_ticker, to_yfinance_symbol
 from portfolio_paths import primary_portfolio_path
 
@@ -61,8 +60,7 @@ def _collect_symbols(me_holdings, wife_holdings) -> tuple[list[str], dict[str, s
     for p in me_holdings:
         yf_map[p["ticker"]] = to_yfinance_symbol(p["ticker"])
     for t, _, _ in wife_holdings:
-        yf_map.setdefault(t, to_yfinance_symbol(t) if not is_kospi_ticker(t) else to_yfinance_symbol(t))
-        # is_kospi_ticker 분기는 to_yfinance_symbol 내부에서 처리됨
+        yf_map.setdefault(t, to_yfinance_symbol(t))
 
     syms = set(yf_map.values())
     syms.update(core.MACRO_SYMBOLS.values())
@@ -140,11 +138,15 @@ def main():
         print(f"  me  : {len(me_daily)}일 ({first} ~ {last}) "
               f"first total {me_daily[first]['total_value_krw']:,} -> "
               f"last {me_daily[last]['total_value_krw']:,}")
+    elif args.owner in ("me", "both"):
+        print(f"  me  : WARN — 0 snapshots built (요청됐으나 모두 None)")
     if wife_daily:
         first, last = min(wife_daily), max(wife_daily)
         print(f"  wife: {len(wife_daily)}일 ({first} ~ {last}) "
               f"first total {wife_daily[first]['total_value_krw']:,} -> "
               f"last {wife_daily[last]['total_value_krw']:,}")
+    elif args.owner in ("wife", "both"):
+        print(f"  wife: WARN — 0 snapshots built (요청됐으나 모두 None)")
 
     if args.dry_run:
         print("\n  [DRY-RUN] 저장 생략")
