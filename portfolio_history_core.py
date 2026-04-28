@@ -258,3 +258,75 @@ def build_me_snapshot(
         "weights_by_category": weights_cat,
         "weights_by_ticker": weights_ticker,
     }
+
+
+def build_wife_snapshot(
+    target_ts: pd.Timestamp,
+    wife_holdings: list[tuple[str, float, float]],
+    usd_tickers: set[str],
+    yf_map: dict[str, str],
+    dfs: dict[str, pd.DataFrame],
+    divs_map: dict[str, pd.Series],
+) -> dict | None:
+    """wife 포트폴리오 1일 스냅샷.
+
+    wife_holdings: [(ticker, shares, avg_cost_krw)] — avg_cost는 이미 KRW 환산된 매입원가
+    usd_tickers: 가격이 USD인 티커 집합 (가치 계산 시 FX 곱)
+    """
+    fx = price_at(dfs, "USDKRW=X", target_ts)
+    if fx is None or fx <= 0:
+        return None
+
+    total_krw = 0.0
+    cost_krw = 0.0
+    weights_krw: dict[str, float] = {}
+    miss = 0
+    for ticker, shares, avg_cost_krw in wife_holdings:
+        sym = yf_map.get(ticker, ticker)
+        px = price_at(dfs, sym, target_ts)
+        if px is None:
+            miss += 1
+            continue
+        val_krw = px * shares * fx if ticker in usd_tickers else px * shares
+        total_krw += val_krw
+        cost_krw += avg_cost_krw * shares
+        weights_krw[ticker] = val_krw
+
+    if total_krw <= 0:
+        return None
+    pnl_krw = total_krw - cost_krw
+    pnl_pct = round(pnl_krw / cost_krw * 100, 2) if cost_krw > 0 else 0
+    weights_by_ticker = {t: round(v / total_krw * 100, 2) for t, v in weights_krw.items()}
+
+    # TTM 배당 — wife는 BIL 외 USD/KR 모두 동일하게 계산
+    total_div_krw = 0.0
+    for ticker, shares, _ in wife_holdings:
+        if shares <= 0:
+            continue
+        ttm = compute_ttm_dividend(divs_map.get(ticker, pd.Series(dtype=float)), target_ts)
+        if ttm <= 0:
+            continue
+        annual = ttm * shares
+        total_div_krw += annual * fx if ticker in usd_tickers else annual
+    div_annual_krw = round(total_div_krw)
+    div_yield = round(total_div_krw / total_krw * 100, 2) if total_krw > 0 else 0.0
+
+    macro = _macro_at(dfs, target_ts)
+
+    return {
+        "total_value_krw": int(total_krw),
+        "cost_basis_krw": int(cost_krw),
+        "pnl_krw": int(pnl_krw),
+        "pnl_pct": pnl_pct,
+        "cash_value_krw": 0,
+        "cash_pct": 0.0,
+        "div_annual_krw": div_annual_krw,
+        "div_yield": div_yield,
+        "usd_krw": round(fx, 2),
+        "vix": round(macro["VIX"], 2) if macro.get("VIX") else None,
+        "yield_30y": round(macro["yield_30Y"], 3) if macro.get("yield_30Y") else None,
+        "master_switch": "UNKNOWN",
+        "holdings_count": len(wife_holdings) - miss,
+        "weights_by_category": {},
+        "weights_by_ticker": weights_by_ticker,
+    }

@@ -92,3 +92,30 @@ def test_build_me_snapshot_uses_ttm_dividend():
     assert snap["total_value_krw"] == 3_200_000
     assert snap["div_yield"] == round(21500 / 3_200_000 * 100, 2)
     assert snap["usd_krw"] == 1400.0
+
+
+def test_build_wife_snapshot_uses_ttm_dividend():
+    # wife HOLDINGS 형식: (ticker, shares, avg_cost_krw)
+    wife_holdings = [
+        ("AAPL",   10.0,  150_000.0),  # avg_cost는 KRW 기반 (이미 환산된 매입원가)
+        ("005930", 20.0,   75_000.0),
+    ]
+    usd_tickers = {"AAPL"}
+    yf_map = {"AAPL": "AAPL", "005930": "005930.KS"}
+    target = pd.Timestamp("2026-04-15")
+    dfs = {
+        "AAPL":      _make_df(["2026-04-15"], [200.0]),
+        "005930.KS": _make_df(["2026-04-15"], [80000.0]),
+        "USDKRW=X":  _make_df(["2026-04-15"], [1400.0]),
+    }
+    divs_map = {
+        "AAPL": pd.Series([0.25] * 4, index=pd.to_datetime(
+            ["2025-05-01", "2025-08-01", "2025-11-01", "2026-02-01"])),
+        "005930": pd.Series([1500.0], index=pd.to_datetime(["2025-12-01"])),
+    }
+    snap = core.build_wife_snapshot(target, wife_holdings, usd_tickers, yf_map, dfs, divs_map)
+    # AAPL value: 10×200×1400 = 2,800,000  / 005930 value: 20×80000 = 1,600,000 → 4,400,000
+    assert snap["total_value_krw"] == 4_400_000
+    # Dividend: AAPL 1.00×10×1400=14,000 / 005930 1500×20=30,000 → 44,000
+    assert snap["div_annual_krw"] == 44_000
+    assert snap["div_yield"] == round(44_000 / 4_400_000 * 100, 2)
