@@ -58,3 +58,37 @@ def test_price_at_returns_none_for_missing():
 def test_price_at_returns_none_when_target_before_first():
     dfs = {"AAPL": _make_df(["2026-01-05"], [100.0])}
     assert core.price_at(dfs, "AAPL", pd.Timestamp("2026-01-02")) is None
+
+
+def test_build_me_snapshot_uses_ttm_dividend():
+    # 단순 포트폴리오: AAPL 10주 + 005930(KR) 5주
+    holdings = [
+        {"ticker": "AAPL", "shares": 10.0, "avg_cost": 100.0},
+        {"ticker": "005930", "shares": 5.0, "avg_cost": 70000.0},
+    ]
+    yf_map = {"AAPL": "AAPL", "005930": "005930.KS"}
+    target = pd.Timestamp("2026-04-15")
+    dfs = {
+        "AAPL":      _make_df(["2026-04-15"], [200.0]),
+        "005930.KS": _make_df(["2026-04-15"], [80000.0]),
+        "USDKRW=X":  _make_df(["2026-04-15"], [1400.0]),
+        "^VIX":      _make_df(["2026-04-15"], [18.0]),
+        "^TYX":      _make_df(["2026-04-15"], [4.5]),
+        "QQQ":       _make_df(["2026-04-15"], [400.0]),
+        "SPY":       _make_df(["2026-04-15"], [500.0]),
+    }
+    # AAPL: 분기 0.25 × 4 = 1.00 / 005930: 1500
+    divs_map = {
+        "AAPL": pd.Series(
+            [0.25, 0.25, 0.25, 0.25],
+            index=pd.to_datetime(["2025-05-01", "2025-08-01", "2025-11-01", "2026-02-01"]),
+        ),
+        "005930": pd.Series([1500.0], index=pd.to_datetime(["2025-12-01"])),
+    }
+    snap = core.build_me_snapshot(target, holdings, yf_map, dfs, divs_map)
+    # AAPL: 1.00 × 10 × 1400 = 14000, 005930: 1500 × 5 = 7500 → 합 21500
+    assert snap["div_annual_krw"] == 21500
+    # total_value: AAPL 10×200×1400 + 005930 5×80000 = 2,800,000 + 400,000 = 3,200,000
+    assert snap["total_value_krw"] == 3_200_000
+    assert snap["div_yield"] == round(21500 / 3_200_000 * 100, 2)
+    assert snap["usd_krw"] == 1400.0

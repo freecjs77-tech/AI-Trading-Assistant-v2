@@ -14,6 +14,8 @@ from dataclasses import dataclass
 import pandas as pd
 import requests
 
+from portfolio_data import is_kospi_ticker, get_ticker_name, get_ticker_class
+
 START_DATE = "2026-01-02"
 TICKER_DELAY = 0.7  # rate limit 회피
 MAX_RETRIES = 3
@@ -125,3 +127,134 @@ def price_at(dfs: dict[str, pd.DataFrame], sym: str, target_ts: pd.Timestamp) ->
         return None
     sub = df["Close"][df["Close"].index <= target_ts]
     return float(sub.iloc[-1]) if not sub.empty else None
+
+
+def _macro_at(dfs: dict[str, pd.DataFrame], target_ts: pd.Timestamp) -> dict:
+    out = {}
+    for key, sym in MACRO_SYMBOLS.items():
+        v = price_at(dfs, sym, target_ts)
+        out[key] = round(v, 4) if v is not None else None
+    return out
+
+
+def _master_switch_at(dfs: dict[str, pd.DataFrame], yf_map: dict, target_ts: pd.Timestamp) -> str:
+    qqq_below = spy_below = False
+    for bench in ("QQQ", "SPY"):
+        df = dfs.get(yf_map.get(bench, bench))
+        if df is None:
+            continue
+        s = df["Close"][df["Close"].index <= target_ts]
+        if len(s) >= 200:
+            ma200_val = float(s.rolling(200).mean().iloc[-1])
+            cur = float(s.iloc[-1])
+            if bench == "QQQ":
+                qqq_below = cur < ma200_val
+            else:
+                spy_below = cur < ma200_val
+    if qqq_below and spy_below:
+        return "RED"
+    if qqq_below or spy_below:
+        return "YELLOW"
+    return "GREEN"
+
+
+def build_me_snapshot(
+    target_ts: pd.Timestamp,
+    holdings: list[dict],
+    yf_map: dict[str, str],
+    dfs: dict[str, pd.DataFrame],
+    divs_map: dict[str, pd.Series],
+) -> dict | None:
+    """me 포트폴리오 1일 스냅샷.
+
+    holdings: [{ticker, shares, avg_cost}] (avg_cost는 네이티브 통화)
+    yf_map:   {ticker -> yfinance symbol}
+    dfs:      {symbol -> Close DataFrame}
+    divs_map: {ticker -> 배당 Series (주당, 네이티브 통화)}
+    """
+    macro = _macro_at(dfs, target_ts)
+    usd_krw = macro.get("USD_KRW") or 0
+    rate = usd_krw if usd_krw and usd_krw > 1 else None
+    if rate is None:
+        return None  # FX 누락 일자 skip
+
+    us_value = us_cost = 0.0
+    kospi_value = kospi_cost = 0.0
+    for p in holdings:
+        t = p["ticker"]
+        px = price_at(dfs, yf_map.get(t, t), target_ts)
+        if px is None:
+            continue
+        val = p["shares"] * px
+        cost = p["shares"] * p["avg_cost"]
+        if is_kospi_ticker(t):
+            kospi_value += val; kospi_cost += cost
+        else:
+            us_value += val;    us_cost += cost
+
+    total_value_krw = us_value * rate + kospi_value
+    cost_basis_krw = us_cost * rate + kospi_cost
+    if total_value_krw <= 0:
+        return None
+    pnl_krw = total_value_krw - cost_basis_krw
+    pnl_pct = (pnl_krw / cost_basis_krw * 100) if cost_basis_krw > 0 else 0
+
+    # Cash (BIL)
+    bil = next((p for p in holdings if p["ticker"] == "BIL"), None)
+    cash_val = 0.0
+    if bil:
+        bp = price_at(dfs, "BIL", target_ts)
+        if bp is not None:
+            cash_val = bil["shares"] * bp
+    cash_krw = cash_val * rate
+    denom_usd = us_value + (kospi_value / rate)
+    cash_pct = (cash_val / denom_usd * 100) if denom_usd > 0 else 0
+
+    # 비중
+    weights_cat: dict[str, float] = {}
+    weights_ticker: dict[str, float] = {}
+    for p in holdings:
+        t = p["ticker"]
+        px = price_at(dfs, yf_map.get(t, t), target_ts)
+        if px is None:
+            continue
+        val = p["shares"] * px
+        val_krw = val if is_kospi_ticker(t) else val * rate
+        w = (val_krw / total_value_krw * 100) if total_value_krw > 0 else 0
+        nm = (get_ticker_name(t) or t) if is_kospi_ticker(t) else t
+        weights_ticker[nm] = round(w, 1)
+        cls = get_ticker_class(t) or "Other"
+        weights_cat[cls] = weights_cat.get(cls, 0) + w
+    weights_cat = {k: round(v, 1) for k, v in weights_cat.items()}
+
+    # TTM 배당
+    total_div_krw = 0.0
+    for p in holdings:
+        shares = p.get("shares", 0) or 0
+        if shares <= 0:
+            continue
+        ttm = compute_ttm_dividend(divs_map.get(p["ticker"], pd.Series(dtype=float)), target_ts)
+        if ttm <= 0:
+            continue
+        annual = ttm * shares
+        total_div_krw += annual if is_kospi_ticker(p["ticker"]) else annual * rate
+    div_annual_krw = round(total_div_krw)
+    div_yield = round(total_div_krw / total_value_krw * 100, 2) if total_value_krw > 0 else 0.0
+
+    return {
+        "total_value_krw": round(total_value_krw),
+        "cost_basis_krw": round(cost_basis_krw),
+        "pnl_krw": round(pnl_krw),
+        "pnl_pct": round(pnl_pct, 1),
+        "cash_value_krw": round(cash_krw),
+        "cash_pct": round(cash_pct, 1),
+        "div_annual_krw": div_annual_krw,
+        "div_yield": div_yield,
+        "usd_krw": round(usd_krw, 2),
+        "vix": round(macro["VIX"], 2) if macro.get("VIX") else None,
+        "yield_30y": round(macro["yield_30Y"], 3) if macro.get("yield_30Y") else None,
+        "master_switch": _master_switch_at(dfs, yf_map, target_ts),
+        "holdings_count": len(holdings),
+        "weights_by_category": weights_cat,
+        "weights_by_ticker": weights_ticker,
+    }
