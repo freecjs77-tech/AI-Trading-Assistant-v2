@@ -39,3 +39,22 @@ def test_compute_ttm_dividend_drops_old():
 
 def test_compute_ttm_dividend_empty():
     assert core.compute_ttm_dividend(pd.Series(dtype=float), pd.Timestamp("2026-04-15")) == 0.0
+
+
+def _make_df(dates, prices):
+    """Test fixture: dates와 prices로부터 Close 컬럼만 있는 DataFrame 생성."""
+    return pd.DataFrame({"Close": prices}, index=pd.to_datetime(dates))
+
+
+def test_price_at_picks_last_le_target():
+    dfs = {"AAPL": _make_df(["2026-01-02", "2026-01-03", "2026-01-06"], [100.0, 101.0, 105.0])}
+    assert core.price_at(dfs, "AAPL", pd.Timestamp("2026-01-04")) == 101.0
+
+
+def test_price_at_returns_none_for_missing():
+    assert core.price_at({}, "ZZZ", pd.Timestamp("2026-01-04")) is None
+
+
+def test_price_at_returns_none_when_target_before_first():
+    dfs = {"AAPL": _make_df(["2026-01-05"], [100.0])}
+    assert core.price_at(dfs, "AAPL", pd.Timestamp("2026-01-02")) is None
