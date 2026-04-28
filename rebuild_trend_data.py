@@ -1,4 +1,4 @@
-"""트렌드 페이지 전용 히스토리 재생성 스크립트
+"""트렌드 페이지 전용 히스토리 재생성 스크립트 (최근 N 거래일)
 
 대상 파일:
   - history/portfolio_daily.json (me)
@@ -11,6 +11,12 @@
   - me / wife 각자의 비용 모델은 기존과 동일하게 유지
     · me: avg_cost = native currency (USD or KRW)
     · wife: avg_cost_krw = 원래 매입한 KRW (rebuild_wife_history.py의 HOLDINGS 재사용)
+
+DEPRECATED (2026-04-28):
+  build_me_snapshot / build_wife_snapshot 는 portfolio_history_core.build_me_snapshot /
+  build_wife_snapshot 으로 위임한다.  하드코딩 배당 상수(₩42,218,109 me base,
+  ₩16,675,519 wife base, div_yield=2.08)는 완전히 제거되었다.
+  전체 히스토리 재생성이 필요하면 rebuild_portfolio_history.py 를 사용한다.
 """
 from __future__ import annotations
 import sys
@@ -34,6 +40,7 @@ from portfolio_data import (
     to_yfinance_symbol, is_kospi_ticker, get_ticker_name, get_ticker_class,
 )
 from portfolio_paths import primary_portfolio_path
+import portfolio_history_core as core
 
 # ── 설정 ──
 NUM_TRADING_DAYS = 32  # 약 6주 (기존 데이터와 동일 범위)
@@ -48,10 +55,9 @@ MACRO_SYMBOLS = {
     "USD_KRW": "USDKRW=X",
 }
 
-# wife 배당 base — 2026-04-15 수동 추출본 + wife.md의 기준 환율(1481.24) 사용
-# me와 동일하게 USD/KRW에 단순 비례 스케일링 (근사)
-WIFE_DIV_BASE_KRW = 16675519
-WIFE_DIV_BASE_FX = 1481.24
+# REMOVED 2026-04-28: 하드코딩 배당 base 폐기. portfolio_history_core.compute_ttm_dividend 사용.
+# WIFE_DIV_BASE_KRW = 16675519
+# WIFE_DIV_BASE_FX = 1481.24
 
 
 # ── Yahoo Finance v8 chart API ──
@@ -140,186 +146,39 @@ def price_at(dfs: dict[str, pd.DataFrame], sym: str, target_ts: pd.Timestamp) ->
     return float(sub.iloc[-1]) if not sub.empty else None
 
 
-# ── me 스냅샷 생성 ──
+# ── me 스냅샷 생성 (portfolio_history_core 위임) ──
 def build_me_snapshot(
     target_ts: pd.Timestamp,
     me_holdings: list[dict],
     yf_map: dict[str, str],
     dfs: dict[str, pd.DataFrame],
 ) -> dict | None:
-    """me 포트폴리오 1일치 스냅샷 (regenerate_history.py 로직과 동일)."""
-    date_str = target_ts.strftime("%Y-%m-%d")
+    """me 포트폴리오 1일치 스냅샷 — portfolio_history_core.build_me_snapshot에 위임.
 
-    # 매크로
-    macro_day = {}
-    for key, sym in MACRO_SYMBOLS.items():
-        v = price_at(dfs, sym, target_ts)
-        macro_day[key] = round(v, 4) if v is not None else None
-
-    usd_krw = macro_day.get("USD_KRW") or 0
-    rate = usd_krw if usd_krw > 1 else 1
-    if rate <= 1:
-        return None  # FX 누락 시 스냅샷 생성 불가
-
-    # Master switch (QQQ/SPY vs MA200)
-    qqq_below = spy_below = False
-    for bench in ["QQQ", "SPY"]:
-        df = dfs.get(yf_map.get(bench, bench))
-        if df is None:
-            continue
-        s = df["Close"]
-        s_until = s[s.index <= target_ts]
-        if len(s_until) >= 200:
-            ma200_val = float(s_until.rolling(200).mean().iloc[-1])
-            cur = float(s_until.iloc[-1])
-            if bench == "QQQ":
-                qqq_below = cur < ma200_val
-            else:
-                spy_below = cur < ma200_val
-    if qqq_below and spy_below:
-        master = "RED"
-    elif qqq_below or spy_below:
-        master = "YELLOW"
-    else:
-        master = "GREEN"
-
-    # 종목별 가치
-    us_value = us_cost = 0.0
-    kospi_value = kospi_cost = 0.0
-    weights_cat: dict[str, float] = {}
-    weights_ticker: dict[str, float] = {}
-
-    for p in me_holdings:
-        t = p["ticker"]
-        yf_sym = yf_map.get(t, t)
-        px = price_at(dfs, yf_sym, target_ts)
-        if px is None:
-            continue
-        val = p["shares"] * px
-        cost = p["shares"] * p["avg_cost"]
-        if is_kospi_ticker(t):
-            kospi_value += val
-            kospi_cost += cost
-        else:
-            us_value += val
-            us_cost += cost
-
-    total_value_krw = us_value * rate + kospi_value
-    cost_basis_krw = us_cost * rate + kospi_cost
-    if total_value_krw <= 0:
-        return None
-    pnl_krw = total_value_krw - cost_basis_krw
-    pnl_pct = (pnl_krw / cost_basis_krw * 100) if cost_basis_krw > 0 else 0
-
-    # Cash (BIL)
-    bil = next((p for p in me_holdings if p["ticker"] == "BIL"), None)
-    cash_val = 0.0
-    if bil:
-        bil_px = price_at(dfs, "BIL", target_ts)
-        if bil_px is not None:
-            cash_val = bil["shares"] * bil_px
-    cash_krw = cash_val * rate
-    total_usd_equiv = us_value + (kospi_value / rate)
-    cash_pct = (cash_val / total_usd_equiv * 100) if total_usd_equiv > 0 else 0
-
-    # 비중 계산
-    for p in me_holdings:
-        t = p["ticker"]
-        yf_sym = yf_map.get(t, t)
-        px = price_at(dfs, yf_sym, target_ts)
-        if px is None:
-            continue
-        val = p["shares"] * px
-        val_krw = val if is_kospi_ticker(t) else val * rate
-        w = (val_krw / total_value_krw * 100) if total_value_krw > 0 else 0
-        display_name = (get_ticker_name(t) or t) if is_kospi_ticker(t) else t
-        weights_ticker[display_name] = round(w, 1)
-        cls = get_ticker_class(t) or "Other"
-        weights_cat[cls] = weights_cat.get(cls, 0) + w
-
-    weights_cat = {k: round(v, 1) for k, v in weights_cat.items()}
-
-    # 배당 (고정값 — 기존 로직과 동일)
-    div_annual_krw = round(42218109 * (rate / 1481.53), 0) if rate > 1 else 42218109
-    div_yield = 2.08
-
-    return {
-        "total_value_krw": round(total_value_krw),
-        "cost_basis_krw": round(cost_basis_krw),
-        "pnl_krw": round(pnl_krw),
-        "pnl_pct": round(pnl_pct, 1),
-        "cash_value_krw": round(cash_krw),
-        "cash_pct": round(cash_pct, 1),
-        "div_annual_krw": round(div_annual_krw),
-        "div_yield": round(div_yield, 2),
-        "usd_krw": round(usd_krw, 2),
-        "vix": round(macro_day.get("VIX"), 2) if macro_day.get("VIX") else None,
-        "yield_30y": round(macro_day.get("yield_30Y"), 3) if macro_day.get("yield_30Y") else None,
-        "master_switch": master,
-        "holdings_count": len(me_holdings),
-        "weights_by_category": weights_cat,
-        "weights_by_ticker": weights_ticker,
-    }
+    DEPRECATED wrapper: 배당은 TTM 기반(compute_ttm_dividend).
+    하드코딩 ₩42,218,109 × FX 비례 로직은 2026-04-28 제거.
+    divs_map은 main()에서 fetch 후 build_me_snapshot._divs_map 으로 주입한다.
+    """
+    # REMOVED 2026-04-28: 하드코딩 ₩42,218,109 × FX 비례 폐기. core.compute_ttm_dividend 위임.
+    divs_map = getattr(build_me_snapshot, "_divs_map", {})
+    return core.build_me_snapshot(target_ts, me_holdings, yf_map, dfs, divs_map)
 
 
-# ── wife 스냅샷 생성 (rebuild_wife_history.py 로직과 동일) ──
+# ── wife 스냅샷 생성 (portfolio_history_core 위임) ──
 def build_wife_snapshot(
     target_ts: pd.Timestamp,
     dfs: dict[str, pd.DataFrame],
 ) -> dict | None:
-    fx = price_at(dfs, "USDKRW=X", target_ts)
-    if fx is None or fx <= 0:
-        return None
+    """wife 포트폴리오 1일치 스냅샷 — portfolio_history_core.build_wife_snapshot에 위임.
 
-    total_krw = 0.0
-    cost_krw = 0.0
-    weights_krw: dict[str, float] = {}
-    missing = []
-
-    for ticker, shares, avg_cost_krw in WIFE_HOLDINGS:
-        sym = to_yfinance_symbol(ticker) if is_kospi_ticker(ticker) else ticker
-        px = price_at(dfs, sym, target_ts)
-        if px is None:
-            missing.append(sym)
-            continue
-        if ticker in WIFE_USD_TICKERS:
-            val_krw = px * shares * fx
-        else:
-            val_krw = px * shares
-        total_krw += val_krw
-        cost_krw += avg_cost_krw * shares
-        weights_krw[ticker] = val_krw
-
-    if total_krw <= 0:
-        return None
-
-    pnl_krw = total_krw - cost_krw
-    pnl_pct = round(pnl_krw / cost_krw * 100, 2) if cost_krw > 0 else 0
-    weights_by_ticker = {
-        t: round(v / total_krw * 100, 2) for t, v in weights_krw.items()
-    }
-
-    # 배당 — me와 동일한 FX 스케일링 모델
-    div_annual_krw = round(WIFE_DIV_BASE_KRW * (fx / WIFE_DIV_BASE_FX)) if fx > 1 else WIFE_DIV_BASE_KRW
-    div_yield = round(div_annual_krw / cost_krw * 100, 2) if cost_krw > 0 else 0.0
-
-    return {
-        "total_value_krw": int(total_krw),
-        "cost_basis_krw": int(cost_krw),
-        "pnl_krw": int(pnl_krw),
-        "pnl_pct": pnl_pct,
-        "cash_value_krw": 0,
-        "cash_pct": 0.0,
-        "div_annual_krw": div_annual_krw,
-        "div_yield": div_yield,
-        "usd_krw": round(fx, 2),
-        "vix": None,
-        "yield_30y": None,
-        "master_switch": "UNKNOWN",
-        "holdings_count": len(WIFE_HOLDINGS) - len(missing),
-        "weights_by_category": {},
-        "weights_by_ticker": weights_by_ticker,
-    }
+    DEPRECATED wrapper: 배당은 TTM 기반(compute_ttm_dividend).
+    하드코딩 ₩16,675,519 × FX 비례 로직은 2026-04-28 제거.
+    divs_map은 main()에서 fetch 후 build_wife_snapshot._divs_map 으로 주입한다.
+    """
+    # REMOVED 2026-04-28: 하드코딩 WIFE_DIV_BASE_KRW × FX 비례 폐기. core.compute_ttm_dividend 위임.
+    divs_map = getattr(build_wife_snapshot, "_divs_map", {})
+    yf_map = {t: core.yf_symbol(t) for t, _, _ in WIFE_HOLDINGS}
+    return core.build_wife_snapshot(target_ts, WIFE_HOLDINGS, WIFE_USD_TICKERS, yf_map, dfs, divs_map)
 
 
 def main():
@@ -364,6 +223,18 @@ def main():
     print(f"\n  거래일 {len(trading_dates)}일: "
           f"{trading_dates[0].strftime('%Y-%m-%d')} ~ "
           f"{trading_dates[-1].strftime('%Y-%m-%d')}")
+
+    # ── 4b) 배당 시리즈 fetch + wrapper에 주입 ──
+    print(f"\n{'─'*60}")
+    print(f"  배당 히스토리 다운로드 (TTM 기반, 하드코딩 대체)")
+    print(f"{'─'*60}")
+    all_div_tickers = sorted(set(
+        [p["ticker"] for p in me_holdings] +
+        [t for t, _, _ in WIFE_HOLDINGS]
+    ))
+    divs_map = core.fetch_all_dividends(all_div_tickers)
+    build_me_snapshot._divs_map = divs_map
+    build_wife_snapshot._divs_map = divs_map
 
     # ── 5) me 스냅샷 생성 ──
     print(f"\n{'─'*60}")
