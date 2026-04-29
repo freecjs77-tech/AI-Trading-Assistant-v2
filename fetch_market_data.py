@@ -468,6 +468,10 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None, forward_div=None
         }
 
     except Exception as e:
+        # 진단성 강화 — 동일 에러 재발 시 워크플로우 로그에서 traceback 확인 가능
+        import traceback
+        print(f"  [fetch_ticker {symbol}] exception: {type(e).__name__}: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         return {"error": str(e)}
 
 
@@ -725,7 +729,12 @@ def main():
                         cached_df = bulk_df[yf_sym][["Open","High","Low","Close","Volume"]].dropna(how="all")
                 else:
                     cached_df = bulk_df[["Open","High","Low","Close","Volume"]].dropna(how="all")
+                # bulk concat에서 동일 인덱스가 중복으로 들어오는 KOSPI 케이스 방어
+                if cached_df is not None and getattr(cached_df.index, "has_duplicates", False):
+                    cached_df = cached_df[~cached_df.index.duplicated(keep="last")]
                 cached_divs = bulk_divs.get(yf_sym)
+                if cached_divs is not None and getattr(cached_divs.index, "has_duplicates", False):
+                    cached_divs = cached_divs[~cached_divs.index.duplicated(keep="last")]
             except Exception:
                 cached_df = None
 
