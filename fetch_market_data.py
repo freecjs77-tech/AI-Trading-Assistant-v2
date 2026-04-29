@@ -351,6 +351,12 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None, forward_div=None
         if df is None or df.empty:
             return {"error": "데이터 없음 (상장폐지 또는 심볼 오류)"}
 
+        # KOSPI(.KS/.KQ) 종목에서 yfinance가 같은 날 중복 인덱스를 반환하는
+        # 케이스 방어 — 후속 reindex/groupby 연산에서 'cannot reindex on an axis
+        # with duplicate labels' 에러를 일으킨다. 마지막 값을 신뢰값으로 채택.
+        if df.index.has_duplicates:
+            df = df[~df.index.duplicated(keep="last")]
+
         # 장 시작 전 auto_adjust가 NaN 행을 생성하는 문제 방지
         df = df[df["Close"].notna()]
 
