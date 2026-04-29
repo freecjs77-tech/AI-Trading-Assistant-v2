@@ -286,7 +286,7 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
                    f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden_c3 else '<'} signal {macd_signal:.4f}"))
     else:
         c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
-    _g3_vol = _p("entry_growth.3rd_buy.volume_ratio", 1.3)
+    _g3_vol = _p("entry_growth.3rd_buy.volume_ratio", 1.5)
     vol_13 = volume_ratio is not None and volume_ratio >= _g3_vol
     if skip_volume:
         c3.append(("ok", f"거래량비 >= {_g3_vol}x",
@@ -313,41 +313,35 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     if all(c[0] == "ok" for c in c3) and not (rsi and rsi > _g3_reject):
         return "3rd_BUY", c3
 
-    # ── 2nd BUY (30%) — ALL 충족  [v5.1b: 이중바닥 diff≥3%, MACD 골든크로스 필수] ──
+    # ── 2nd BUY — ALL 충족  [v5.3d: MA20 돌파 확인 단계. 이중바닥→MA20 교체] ──
     c2 = []
-    # ① 이중 바닥 확인 (diff_pct ≥ 3% 이상만 유효)
-    dbl = d.get("double_bottom", {})
-    dbl_detected = dbl.get("detected", False) if isinstance(dbl, dict) else False
-    dbl_diff = dbl.get("diff_pct", 99) if isinstance(dbl, dict) else 99
-    _g2_dbl_diff = _p("entry_growth.2nd_buy.double_bottom_diff", 3.0)
-    dbl_valid = dbl_detected and dbl_diff <= _g2_dbl_diff
-    if isinstance(dbl, dict) and dbl.get("low1"):
-        c2.append(("ok" if dbl_valid else "no",
-                   f"이중바닥 (차이 <= {_g2_dbl_diff}%)",
-                   f"{dbl['low1']['price']}({dbl['low1']['date']}) vs "
-                   f"{dbl['low2']['price']}({dbl['low2']['date']}) 차이 {dbl_diff:.1f}%"
-                   f"{' — 이중바닥 확인이에요' if dbl_valid else f' — {_g2_dbl_diff}% 초과라 무효예요' if dbl_detected else ' — 이중바닥이 아니에요'}"))
-    else:
-        c2.append(("no", f"이중바닥 (차이 <= {_g2_dbl_diff}%)", "최근 60일 로컬 최저점 2개 미만이에요"))
-    # ② RSI > recovery threshold
-    _g2_rsi = _p("entry_growth.2nd_buy.rsi_recovery", 35)
-    rsi_rising_3d = rsi is not None and rsi > _g2_rsi
+    # ① MA20 돌파 확인 (반등이 실제 추세 전환임을 확인)
+    above_ma20_2nd = price_vs_ma20 == "above"
+    c2.append(("ok" if above_ma20_2nd else "no",
+               "가격 > MA20 (돌파 확인)",
+               f"MA20 {'위에 있어요 — 추세 전환 확인이에요' if above_ma20_2nd else '아래에 있어요 — 아직 MA20 돌파 전이에요'}"))
+    # ② RSI > 40 (과매도 충분히 벗어남, 과열 아님)
+    _g2_rsi = _p("entry_growth.2nd_buy.rsi_recovery", 40)
+    rsi_mid = rsi is not None and rsi > _g2_rsi
     if rsi is not None:
-        c2.append(("ok" if rsi_rising_3d else "no",
+        c2.append(("ok" if rsi_mid else "no",
                    f"RSI > {_g2_rsi}",
-                   f"RSI {rsi:.1f} — {'과매도를 벗어났어요' if rsi_rising_3d else '아직 과매도 구간이에요'}"))
+                   f"RSI {rsi:.1f} — {'회복 구간이에요' if rsi_mid else '아직 회복 전이에요'}"))
     else:
         c2.append(("no", f"RSI > {_g2_rsi}", "RSI 데이터가 없어요"))
-    # ③ MACD 골든크로스 필수 (hist 증가만으로는 불충분)
+    # ③ MACD 골든크로스 + hist 2일 증가 (페이크아웃 방지)
     macd_golden = macd is not None and macd_signal is not None and macd > macd_signal
+    hist_inc_2nd = "increasing" in macd_hist_trend
+    macd_2nd_ok = macd_golden and hist_inc_2nd
     if macd is not None and macd_signal is not None:
-        c2.append(("ok" if macd_golden else "no",
-                   "MACD 골든크로스",
-                   f"MACD {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f} — {'골든크로스 발생이에요' if macd_golden else '아직 데스크로스예요'}"))
+        c2.append(("ok" if macd_2nd_ok else "no",
+                   "MACD 골든크로스 + hist 2일 증가",
+                   f"MACD {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f}, "
+                   f"hist {'증가중이에요' if hist_inc_2nd else '증가 미확인이에요'}"))
     else:
-        c2.append(("no", "MACD 골든크로스", "MACD 데이터가 없어요"))
-    # ④ 거래량 ≥ threshold
-    _g2_vol = _p("entry_growth.2nd_buy.volume_ratio", 1.2)
+        c2.append(("no", "MACD 골든크로스 + hist 2일 증가", "MACD 데이터가 없어요"))
+    # ④ 거래량 ≥ 1.5x
+    _g2_vol = _p("entry_growth.2nd_buy.volume_ratio", 1.5)
     vol_12 = volume_ratio is not None and volume_ratio >= _g2_vol
     if skip_volume:
         c2.append(("ok", f"거래량비 >= {_g2_vol}x",
@@ -896,34 +890,29 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
         "gate": "[거부] RSI > 75" if c3_reject else ("[거부] 당일 급락" if reject_drop else None),
     })
 
-    # ── 2nd BUY ──
+    # ── 2nd BUY ──  [v5.3d: MA20 돌파 확인 단계]
     c2 = []
-    dbl = d.get("double_bottom", {})
-    dbl_detected = dbl.get("detected", False) if isinstance(dbl, dict) else False
-    dbl_diff = dbl.get("diff_pct", 99) if isinstance(dbl, dict) else 99
-    dbl_valid = dbl_detected and dbl_diff <= 3.0
-    if isinstance(dbl, dict) and dbl.get("low1"):
-        c2.append(("ok" if dbl_valid else "no",
-                   "이중바닥 (차이 <= 3%)",
-                   f"{dbl['low1']['price']}({dbl['low1']['date']}) vs "
-                   f"{dbl['low2']['price']}({dbl['low2']['date']}) 차이 {dbl_diff:.1f}%"
-                   f"{' - 이중바닥 확인이에요' if dbl_valid else ' - 3% 초과라 무효예요' if dbl_detected else ' - 이중바닥이 아니에요'}"))
-    else:
-        c2.append(("no", "이중바닥 (차이 <= 3%)", "이중 바닥 미감지예요"))
-    rsi_rising_3d = rsi is not None and rsi > 35
+    above_ma20_2nd = price_vs_ma20 == "above"
+    c2.append(("ok" if above_ma20_2nd else "no",
+               "가격 > MA20 (돌파 확인)",
+               f"MA20 {'위에 있어요 — 추세 전환 확인이에요' if above_ma20_2nd else '아래에 있어요 — 아직 MA20 돌파 전이에요'}"))
+    rsi_mid = rsi is not None and rsi > 40
     if rsi is not None:
-        c2.append(("ok" if rsi_rising_3d else "no",
-                   "RSI > 35",
-                   f"RSI {rsi:.1f} - {'과매도를 벗어났어요' if rsi_rising_3d else '아직 과매도 구간이에요'}"))
+        c2.append(("ok" if rsi_mid else "no",
+                   "RSI > 40",
+                   f"RSI {rsi:.1f} - {'회복 구간이에요' if rsi_mid else '아직 회복 전이에요'}"))
     else:
-        c2.append(("no", "RSI > 35", "RSI 데이터가 없어요"))
+        c2.append(("no", "RSI > 40", "RSI 데이터가 없어요"))
     macd_golden = macd is not None and macd_signal is not None and macd > macd_signal
+    hist_inc_2nd = "increasing" in macd_hist_trend
+    macd_2nd_ok = macd_golden and hist_inc_2nd
     if macd is not None and macd_signal is not None:
-        c2.append(("ok" if macd_golden else "no",
-                   "MACD 골든크로스",
-                   f"MACD {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f} - {'골든크로스 발생이에요' if macd_golden else '아직 데스크로스예요'}"))
+        c2.append(("ok" if macd_2nd_ok else "no",
+                   "MACD 골든크로스 + hist 2일 증가",
+                   f"MACD {macd:.4f} {'>' if macd_golden else '<'} signal {macd_signal:.4f}, "
+                   f"hist {'증가중이에요' if hist_inc_2nd else '증가 미확인이에요'}"))
     else:
-        c2.append(("no", "MACD 골든크로스", "MACD 데이터가 없어요"))
+        c2.append(("no", "MACD 골든크로스 + hist 2일 증가", "MACD 데이터가 없어요"))
     _g2_vol_display = _p("entry_growth.2nd_buy.volume_ratio", 1.5)
     vol_12 = volume_ratio is not None and volume_ratio >= _g2_vol_display
     if volume_ratio is not None:
@@ -933,7 +922,7 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
     else:
         c2.append(("no", f"거래량비 >= {_g2_vol_display}x", "거래량 데이터가 없어요"))
     sections.append({
-        "name": f"2차 매수 조건 - {group_label} v2.2",
+        "name": f"2차 매수 조건 - {group_label} v5.3d",
         "rule": "4개 모두 충족",
         "conditions": c2,
         "met": _count_ok(c2),
