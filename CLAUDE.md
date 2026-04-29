@@ -109,3 +109,10 @@ python rebuild_portfolio_history.py --owner me --dry-run    # 검증 모드
 1. Python 3.10+ 설치
 2. pip install yfinance pandas numpy flask jinja2
 3. run_server.bat의 Python 경로를 로컬 환경에 맞게 수정 (또는 python이 PATH에 있으면 자동 탐색)
+4. **pre-commit 가드 활성화**: `git config core.hooksPath .githooks` (clone 직후 1회)
+
+## Pre-commit 가드 (`.githooks/`)
+- `history/*.json` (dict 형태) commit 시 top-level key 개수가 줄면 abort.
+- 1a320422류 사고(strategy 변경 commit에 데이터 손실 동반) 재발 방지.
+- 의도적 정리 시 우회: `ALLOW_HISTORY_SHRINK=1 git commit ...`
+- 활성화 확인: `git config --get core.hooksPath` → `.githooks` 출력
