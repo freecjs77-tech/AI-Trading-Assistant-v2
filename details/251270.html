@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>251270 — Detail</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html.dark {
+    --bg: #060e20; --panel: #091328; --panel2: #0f1930;
+    --accent: #6dddff; --text: #dee5ff; --text-dim: #a3aac4; --sub: #6d758c; --border: #40485d;
+    --green: #00E5BC; --green-bg: #052E16; --red: #ff7166; --red-bg: #2A0A0A;
+    --orange: #fbbf24; --orange-bg: #292524; --cyan: #6dddff; --purple: #a78bfa;
+    --range-bg: #1E293B; --cond-bg: rgba(13,27,44,0.4); --cond-border: rgba(26,48,80,0.5);
+    --row-alt: rgba(13,27,44,0.3); --toggle-icon: 'light_mode'; --toggle-label: 'Light Mode';
+  }
+  html.light {
+    --bg: #f1f5f9; --panel: #ffffff; --panel2: #f8fafc;
+    --accent: #2563eb; --text: #0f172a; --text-dim: #475569; --sub: #64748b; --border: #94a3b8;
+    --green: #16a34a; --green-bg: #a7f3d0; --red: #e11d48; --red-bg: #fecaca;
+    --orange: #d97706; --orange-bg: #fef3c7; --cyan: #00D4FF; --purple: #a78bfa;
+    --range-bg: #e2e8f0; --cond-bg: rgba(248,250,252,0.9); --cond-border: rgba(148,163,184,0.5);
+    --row-alt: rgba(241,245,249,0.6); --toggle-icon: 'dark_mode'; --toggle-label: 'Dark Mode';
+  }
+  /* 테마별 차트 이미지 전환 */
+  html.dark .chart-light { display: none; }
+  html.dark .chart-dark  { display: block; }
+  html.light .chart-dark  { display: none; }
+  html.light .chart-light { display: block; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+  .container { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  /* Back nav */
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); text-decoration: none; font-size: 13px; margin-bottom: 16px; }
+  .back-link:hover { text-decoration: underline; }
+
+  /* Header */
+  .detail-header { background: var(--panel); border-radius: 12px; padding: 24px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .ticker-info h1 { font-size: 28px; font-weight: 800; margin-bottom: 2px; }
+  .ticker-info h1 .ticker-symbol { color: var(--text); }
+  .ticker-info h1 .ticker-name { color: var(--text-dim); font-size: 16px; font-weight: 600; margin-left: 10px; }
+  .ticker-meta { font-size: 12px; color: var(--sub); margin-top: 4px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; min-width: 90px; text-align: center; }
+  .badge-class { background: rgba(59,130,246,0.25); color: #60A5FA; margin-left: 8px; min-width: auto; }
+  .badge-signal { padding: 4px 14px; font-size: 13px; border-radius: 14px; min-width: 90px; text-align: center; }
+  .badge-BUY { background: #2563eb; color: #fff; }
+  .badge-WATCH { background: #d97706; color: #fff; }
+  .badge-HOLD { background: #d97706; color: #fff; }
+  .badge-exit { background: #e11d48; color: #fff; }
+  .badge-tp1 { background: #e11d48; color: #fff; }
+  .badge-BOND { background: #d97706; color: #fff; }
+  .badge-CASH { background: #d97706; color: #fff; }
+  .badge-streak { background: var(--orange); color: #000; font-size: 11px; margin-left: 6px; }
+  .badge-streak.confirmed { background: var(--green); }
+  .price-block { text-align: right; }
+  .price-block .price { font-size: 32px; font-weight: 800; }
+  .price-block .change { font-size: 15px; font-weight: 600; margin-top: 2px; }
+  .change.up { color: var(--green); }
+  .change.dn { color: var(--red); }
+
+  /* Portfolio info */
+  .portfolio-info { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; color: var(--text-dim); }
+  .portfolio-info .item { background: var(--panel2); padding: 4px 12px; border-radius: 8px; }
+  .portfolio-info .pnl-pos { color: var(--green); font-weight: 700; }
+  .portfolio-info .pnl-neg { color: var(--red); font-weight: 700; }
+
+  /* 52w Range Bar */
+  .range-section { background: var(--panel); border-radius: 10px; padding: 16px 24px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .range-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--sub); margin-bottom: 8px; }
+  .range-labels .current { color: var(--accent); font-weight: 700; }
+  .range-bar { position: relative; height: 8px; background: var(--range-bg); border-radius: 4px; }
+  .range-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--red), var(--orange), var(--green)); }
+  .range-marker { position: absolute; top: -4px; width: 16px; height: 16px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translateX(-50%); }
+
+  /* Metric Cards */
+  .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .metric-card { background: var(--panel); border-radius: 10px; padding: 14px 16px; border: 1px solid var(--border); }
+  .metric-card .label { font-size: 11px; color: var(--sub); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .metric-card .value { font-size: 20px; font-weight: 700; }
+  .metric-card .desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .v-green { color: var(--green); }
+  .v-red { color: var(--red); }
+  .v-orange { color: var(--orange); }
+  .v-cyan { color: var(--cyan); }
+  .v-text { color: var(--text); }
+
+  /* Signal Judgment */
+  .signal-section { background: var(--panel); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid var(--border); }
+  .section-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .condition-list { list-style: none; padding: 0; }
+  .condition-list li { padding: 8px 0; border-bottom: 1px solid rgba(26,48,80,0.5); display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
+  .condition-list li:last-child { border-bottom: none; }
+  .cond-icon { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .cond-ok { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+  .cond-no { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+  .cond-na { background: rgba(100,116,139,0.15); color: var(--text-dim); border: 1px solid rgba(139,156,181,0.4); }
+  /* Grouped judgment sections */
+  .judge-group { background: var(--panel2); border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; border-left: 3px solid var(--border); }
+  .judge-group.exit-group { border-left-color: var(--red); }
+  .judge-group.entry-group { border-left-color: var(--accent); }
+  .judge-group-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .judge-group-header .group-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .judge-group-header .group-count { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px; }
+  .cnt-full { background: rgba(52,211,153,0.2); color: var(--green); }
+  .cnt-partial { background: rgba(251,191,36,0.2); color: var(--orange); }
+  .cnt-none { background: rgba(100,116,139,0.15); color: var(--sub); }
+  .judge-group .gate-tag { display: inline-block; background: rgba(248,113,113,0.15); color: var(--red); font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 8px; margin-bottom: 6px; }
+  .judge-group .condition-list { margin: 0; }
+  .judge-group .condition-list li { padding: 5px 0; font-size: 12px; }
+  /* Card-style condition items (3-tuple) */
+  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: var(--cond-bg); border-radius: 8px; border: 1px solid var(--cond-border); }
+  .cond-card:last-child { margin-bottom: 0; }
+  .cond-card .cond-icon { margin-top: 2px; }
+  .cond-card-body { flex: 1; min-width: 0; }
+  .cond-card-title { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.4; }
+  .cond-card-desc { font-size: 12px; color: var(--sub); line-height: 1.4; margin-top: 2px; }
+  .cond-card.cond-card-ok .cond-card-title { color: var(--green); }
+  .cond-card.cond-card-no .cond-card-title { color: var(--text); }
+  .cond-card.cond-card-na .cond-card-title { color: var(--text-dim); }
+  .cond-card.cond-card-na .cond-card-desc { color: var(--text-dim); }
+
+  /* Signal History */
+  .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .history-table th { text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--sub); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
+  .history-table td { padding: 7px 10px; border-bottom: 1px solid rgba(26,48,80,0.4); }
+  .history-table tr:nth-child(even) td { background: var(--row-alt); }
+  .history-table .sig-buy { color: #2563eb; font-weight: 700; }
+  .history-table .sig-watch { color: #d97706; font-weight: 600; }
+  .history-table .sig-hold { color: var(--text-dim); }
+  .history-table .sig-exit { color: #e11d48; font-weight: 700; }
+  .history-table .sig-tp1 { color: #e11d48; font-weight: 700; }
+  .history-table .sig-cash { color: #d97706; }
+
+  /* Footer */
+  .detail-footer { text-align: center; color: var(--sub); font-size: 11px; padding: 20px 0; border-top: 1px solid var(--border); margin-top: 20px; }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .header-top { flex-direction: column; }
+    .price-block { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Top Navigation: 다른 주요 페이지로의 이동 링크 -->
+  <nav class="detail-topnav" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:12px;">
+    <a href="../report_2026-04-28.html" style="color:var(--accent);text-decoration:none;font-weight:600;padding:4px 10px;border-radius:6px;background:var(--panel2);">My Portfolio</a>
+    
+    <a href="../scanner_2026-04-28.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Scanner</a>
+    <a href="../backtest_2026-04-28.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Backtest</a>
+    <a href="../trend_2026-04-28.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Trend</a>
+    <a href="../archive.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Archive</a>
+    <span style="flex:1"></span>
+    <button onclick="toggleTheme()" id="themeToggle" style="background:var(--panel2);border:1px solid var(--border);color:var(--accent);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Light Mode</button>
+  </nav>
+
+  <!-- Back Navigation -->
+  <div style="margin-bottom:16px;">
+    <a href="../report_2026-04-28.html" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
+  </div>
+
+  <!-- Header -->
+  <div class="detail-header">
+    <div class="header-top">
+      <div class="ticker-info">
+        <h1>
+          <span class="ticker-symbol">251270</span>
+          <span class="ticker-name">넷마블</span>
+          <span class="badge badge-class">Unknown</span>
+        </h1>
+        <div class="ticker-meta"> &middot; 2026년 4월 28일 (화요일) &middot; Data: yfinance</div>
+      </div>
+      <div class="price-block">
+        <div class="price">₩51,400</div>
+        <div class="change up">&#9650; +1.6%</div>
+      </div>
+    </div>
+    <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <span class="badge badge-signal badge-BUY">2nd_BUY</span>
+      
+        
+        <span class="badge badge-streak">&#54869;&#51064; &#45824;&#44592; 1/2&#51068;</span>
+        
+      
+      <span style="font-size: 12px; color: var(--text-dim);">[확인 대기 1/2일] 가격 > MA20 (돌파 확인) + RSI > 35 + MACD 골든크로스 + hist 2일 증가</span>
+    </div>
+    
+    
+  </div>
+
+  <!-- 52-Week Range -->
+  
+  <div class="range-section">
+    <div class="range-labels">
+      <span>52&#51452; &#51200;&#51216; ₩44,018</span>
+      <span class="current">&#54788;&#51116; &#50948;&#52824; 32%</span>
+      <span>52&#51452; &#44256;&#51216; ₩66,962</span>
+    </div>
+    <div class="range-bar">
+      <div class="range-fill" style="width: 32%;"></div>
+      <div class="range-marker" style="left: 32%;"></div>
+    </div>
+  </div>
+  
+
+  <!-- Metric Cards -->
+  <div class="metric-grid">
+    <div class="metric-card">
+      <div class="label">RSI (14)</div>
+      <div class="value v-text">52.3</div>
+      <div class="desc">&#51473;&#47549;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">MACD Hist</div>
+      <div class="value v-green">106.6904</div>
+      <div class="desc">중립</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">ADX</div>
+      <div class="value v-text">10.4</div>
+      <div class="desc">&#52628;&#49464; &#50557;&#54868;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">BB%</div>
+      <div class="value v-text">79.5%</div>
+      <div class="desc">&#48180;&#46300; &#51473;&#44036;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">&#44144;&#47000;&#47049; &#48708;&#50984;</div>
+      <div class="value v-cyan">1.70x</div>
+      <div class="desc">20&#51068; &#54217;&#44512; &#45824;&#48708;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Drawdown 20D</div>
+      <div class="value v-text">-1.0%</div>
+      <div class="desc">최근 20일 고점 대비</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">MA20</div>
+      <div class="value v-green">₩50,418</div>
+      <div class="desc">&#9650; &#44032;&#44201; &#49345;&#54924;</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">MA200</div>
+      <div class="value v-red">₩54,401</div>
+      <div class="desc">&#9660; &#44032;&#44201; &#54616;&#54924;</div>
+    </div>
+  </div>
+
+  <!-- Technical Chart -->
+  
+  <div style="background: var(--panel); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border);">
+    <div class="section-title" style="font-size: 13px; font-weight: 700; color: var(--text-dim); margin-bottom: 12px;">Technical Chart &middot; 120 Days</div>
+    <img src="charts/251270.png" alt="251270 chart" class="chart-dark" style="width: 100%; border-radius: 6px;">
+    <img src="charts/251270_light.png" alt="251270 chart" class="chart-light" style="width: 100%; border-radius: 6px;">
+  </div>
+  
+
+  <!-- Signal Judgment Detail -->
+  <div class="signal-section">
+    <div class="section-title">&#128269; &#54032;&#51221; &#44540;&#44144; &#49345;&#49464;</div>
+    <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
+      <span class="badge badge-signal badge-BUY" style="font-size: 14px;">2nd_BUY</span>
+      <span style="font-size: 13px; color: var(--text-dim);">[확인 대기 1/2일] 가격 > MA20 (돌파 확인) + RSI > 35 + MACD 골든크로스 + hist 2일 증가</span>
+    </div>
+    
+    
+    <div class="judge-group entry-group">
+      <div class="judge-group-header">
+        <span class="group-name">3차 매수 조건 - 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="group-count cnt-partial">2/4 충족</span>
+      </div>
+      
+      <div class="condition-card-list">
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">가격 > MA20</div>
+            <div class="cond-card-desc">MA20 위에 있어요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-no">
+          
+          <span class="cond-icon cond-no">&#10007;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">MACD > 0 + 골든크로스</div>
+            <div class="cond-card-desc">MACD -188.7622 < 0, > signal -295.4526</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">거래량비 >= 1.5x</div>
+            <div class="cond-card-desc">거래량비 1.70x - 평소보다 많아요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-no">
+          
+          <span class="cond-icon cond-no">&#10007;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">RSI > 55</div>
+            <div class="cond-card-desc">RSI 52.3 - 아직 55 이하예요</div>
+          </div>
+        </div>
+        
+        
+      </div>
+    </div>
+    
+    <div class="judge-group entry-group">
+      <div class="judge-group-header">
+        <span class="group-name">2차 매수 조건 - 성장주 v5.3d (4개 모두 충족)</span>
+        <span class="group-count cnt-full">4/4 충족</span>
+      </div>
+      
+      <div class="condition-card-list">
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">가격 > MA20 (돌파 확인)</div>
+            <div class="cond-card-desc">MA20 위에 있어요 — 추세 전환 확인이에요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">RSI > 40</div>
+            <div class="cond-card-desc">RSI 52.3 - 회복 구간이에요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">MACD 골든크로스 + hist 2일 증가</div>
+            <div class="cond-card-desc">MACD -188.7622 > signal -295.4526, hist 증가중이에요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">거래량비 >= 1.5x</div>
+            <div class="cond-card-desc">거래량비 1.70x - 충분해요</div>
+          </div>
+        </div>
+        
+        
+      </div>
+    </div>
+    
+    <div class="judge-group entry-group">
+      <div class="judge-group-header">
+        <span class="group-name">1차 매수 조건 — 성장주 v5.3b ([필수] RSI<=45 + 가격<MA20 + MACD hist 2일증가 + DD_52w<=-15%)</span>
+        <span class="group-count cnt-partial">2/4 충족</span>
+      </div>
+      
+      <div class="condition-card-list">
+        
+        
+        
+        <div class="cond-card cond-card-no">
+          
+          <span class="cond-icon cond-no">&#10007;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">[필수] RSI <= 45</div>
+            <div class="cond-card-desc">RSI 52.3 - 아직 45 이하가 아니에요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-no">
+          
+          <span class="cond-icon cond-no">&#10007;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">[필수] 가격 < MA20</div>
+            <div class="cond-card-desc">MA20 위에 있어요 - 아직 조정이 아니에요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">[필수] MACD hist 2일 증가</div>
+            <div class="cond-card-desc">추세 'increasing_2d' - 반전 시작이에요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">[필수] 52주 고점 대비 <= -15%</div>
+            <div class="cond-card-desc">52주 대비 -23.2% - 충분히 조정됐어요</div>
+          </div>
+        </div>
+        
+        
+      </div>
+    </div>
+    
+    
+  </div>
+
+  <!-- Signal History -->
+  
+  <div class="signal-section">
+    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 1&#51068;)</div>
+    <table class="history-table">
+      <thead>
+        <tr><th>&#45216;&#51676;</th><th>&#49884;&#44536;&#45328;</th><th>&#44032;&#44201;</th><th>RSI</th><th>MACD Hist</th><th>DD</th></tr>
+      </thead>
+      <tbody>
+        
+        <tr>
+          <td>2026-04-29</td>
+          <td class="sig-buy">2nd_BUY</td>
+          <td>₩51,400</td>
+          <td>52.3</td>
+          <td>106.6904</td>
+          <td>-1.0%</td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </div>
+  
+
+  <!-- Footer -->
+  <div class="detail-footer">
+    AI Trading Assistant v3.0 &middot; 2026-04-28 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
+  </div>
+
+</div>
+<script>
+function toggleTheme(){var h=document.documentElement,d=h.classList.contains('dark'),t=d?'light':'dark';h.classList.remove('dark','light');h.classList.add(t);localStorage.setItem('theme',t);var b=document.getElementById('themeToggle');if(b)b.textContent=t==='dark'?'Light Mode':'Dark Mode';}
+document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('themeToggle');if(b)b.textContent=document.documentElement.classList.contains('dark')?'Light Mode':'Dark Mode';});
+</script>
+</body>
+</html>
