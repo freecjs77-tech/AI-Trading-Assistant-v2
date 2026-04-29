@@ -25,7 +25,7 @@ from signal_judge import (
     _check_entry_growth, _check_entry_etf, _BUY_SIGNALS,
     _build_entry_sections_growth, _build_entry_sections_etf, judge_all,
 )
-from portfolio_data import TICKER_META
+from portfolio_data import TICKER_META, is_korean_ticker
 
 # ── 미국 대형주 스캐너 — S&P 100 + NASDAQ 100 합집합 (~169종목) ─────
 # 출처: S&P 100 (OEX) + NASDAQ-100 구성종목 (2026-04-25 기준, https://en.wikipedia.org/wiki/Nasdaq-100 Components)
@@ -1039,6 +1039,19 @@ def _krw_mcap(v: float) -> str:
     return f"{v:,.0f}원"
 
 
+def _usd_mcap(v: float) -> str:
+    """USD 시가총액 포맷 (T/B/M 단위)"""
+    if not v:
+        return ""
+    if v >= 1e12:
+        return f"${v/1e12:.1f}T"
+    if v >= 1e9:
+        return f"${v/1e9:.0f}B"
+    if v >= 1e6:
+        return f"${v/1e6:.0f}M"
+    return f"${v:,.0f}"
+
+
 def scan_kospi(project_dir: str) -> dict:
     """
     코스피 시총 상위 100종목 스캔. Growth v2.2 Entry 규칙 통일 적용.
@@ -1292,9 +1305,16 @@ def scan_watchlist(project_dir: str, tickers: list | None = None) -> dict:
         _, sections_fn = _pick_entry_checker(ticker)
 
         market_cap = d.get("market_cap", 0) or 0
+        is_kr = is_korean_ticker(ticker)
+        display_name = (
+            WATCHLIST_NAMES.get(ticker)
+            or TICKER_META.get(ticker, {}).get("name")
+            or ticker
+        )
         entry = {
             "ticker": ticker,
-            "name": WATCHLIST_NAMES.get(ticker, ticker),
+            "name": display_name,
+            "currency": "KRW" if is_kr else "USD",
             "signal": signal,
             "price": d.get("price"),
             "change_pct": d.get("change_pct", 0),
@@ -1307,6 +1327,7 @@ def scan_watchlist(project_dir: str, tickers: list | None = None) -> dict:
             "drawdown_52w": d.get("drawdown_52w_pct"),
             "volume_ratio": d.get("volume_ratio"),
             "market_cap": market_cap,
+            "market_cap_fmt": _krw_mcap(market_cap) if is_kr else _usd_mcap(market_cap),
             "ma20": d.get("ma20"),
             "ma50": d.get("ma50"),
             "ma200": d.get("ma200"),

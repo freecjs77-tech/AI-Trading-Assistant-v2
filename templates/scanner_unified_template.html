@@ -162,7 +162,7 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
           <td class="px-5 py-3"><a href="details/{{ e.ticker }}.html" class="font-headline font-bold text-primary hover:underline">{{ e.ticker }}</a></td>
           <td class="px-5 py-3">{{ e.name }}{% if e.market_cap_fmt %} <span class="text-[10px] text-outline">{{ e.market_cap_fmt }}</span>{% endif %}</td>
           <td class="px-5 py-3"><span class="text-[10px] px-2 py-0.5 rounded bg-surface-container border border-outline-variant/20 text-on-surface-variant font-medium">{{ e.sector }}</span></td>
-          <td class="px-5 py-3 text-right">${{ e.price|f2 }}</td>
+          <td class="px-5 py-3 text-right">{% if e.currency == 'KRW' %}&#8361;{{ '{:,}'.format(e.price|int) }}{% else %}${{ e.price|f2 }}{% endif %}</td>
           <td class="px-5 py-3 text-right font-bold {{ 'text-secondary' if e.change_pct >= 0 else 'text-tertiary' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
           <td class="px-5 py-3"><span class="sig {% if '1st' in item.stage %}sig-buy1{% elif '2nd' in item.stage %}sig-buy2{% elif '3rd' in item.stage %}sig-buy3{% endif %}">{{ item.stage }}</span></td>
           <td class="px-5 py-3 text-right">{{ e.rsi|f1 if e.rsi else '—' }}</td>
@@ -195,7 +195,7 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
           <td class="px-5 py-3 text-on-surface-variant">{{ loop.index }}</td>
           <td class="px-5 py-3"><a href="details/{{ e.ticker }}.html" class="font-headline font-bold text-primary hover:underline">{{ e.ticker }}</a></td>
           <td class="px-5 py-3">{{ e.name }}{% if e.market_cap_fmt %} <span class="text-[10px] text-outline">{{ e.market_cap_fmt }}</span>{% endif %}</td>
-          <td class="px-5 py-3 text-right">${{ e.price|f2 }}</td>
+          <td class="px-5 py-3 text-right">{% if e.currency == 'KRW' %}&#8361;{{ '{:,}'.format(e.price|int) }}{% else %}${{ e.price|f2 }}{% endif %}</td>
           <td class="px-5 py-3 text-right font-bold {{ 'text-secondary' if e.change_pct >= 0 else 'text-tertiary' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
           <td class="px-5 py-3"><span class="sig {% if '1st' in item.stage %}sig-buy1{% elif '2nd' in item.stage %}sig-buy2{% elif '3rd' in item.stage %}sig-buy3{% endif %}">{{ item.stage }}</span></td>
           <td class="px-5 py-3 text-right">{{ e.rsi|f1 if e.rsi else '—' }}</td>
@@ -319,7 +319,7 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
           <td class="px-5 py-3 text-on-surface-variant">{{ loop.index }}</td>
           <td class="px-5 py-3"><a href="details/{{ e.ticker }}.html" class="font-headline font-bold text-primary hover:underline">{{ e.ticker }}</a></td>
           <td class="px-5 py-3">{{ e.name }}{% if e.market_cap_fmt %} <span class="text-[10px] text-outline">{{ e.market_cap_fmt }}</span>{% endif %}</td>
-          <td class="px-5 py-3 text-right">${{ e.price|f2 }}</td>
+          <td class="px-5 py-3 text-right">{% if e.currency == 'KRW' %}&#8361;{{ '{:,}'.format(e.price|int) }}{% else %}${{ e.price|f2 }}{% endif %}</td>
           <td class="px-5 py-3 text-right font-bold {{ 'text-secondary' if e.change_pct >= 0 else 'text-tertiary' }}">{{ '+' if e.change_pct >= 0 else '' }}{{ e.change_pct|f2 }}%</td>
           <td class="px-5 py-3"><span class="sig {% if '1st_BUY' == e.signal %}sig-buy1{% elif '2nd_BUY' == e.signal %}sig-buy2{% elif '3rd_BUY' == e.signal %}sig-buy3{% elif 'TAKE_PROFIT_2' == e.signal or 'TOP_SIGNAL' == e.signal %}sig-tp2{% elif 'TAKE_PROFIT_1' == e.signal %}sig-tp1{% elif 'WATCH' == e.signal %}sig-watch{% elif 'BOND_WATCH' == e.signal %}sig-bond{% elif 'CASH' == e.signal %}sig-cash{% else %}sig-hold{% endif %}">{{ e.signal }}</span></td>
           <td class="px-5 py-3 text-right">{{ e.rsi|f1 if e.rsi else '—' }}</td>
