@@ -17623,7 +17623,7 @@
       "note": "[확정 2일 연속] 가격 > MA20 + RSI > 55 + MACD > 0 + 골든크로스"
     },
     "AAPL": {
-      "signal": "HOLD",
+      "signal": "3rd_BUY",
       "price": 270.17,
       "rsi": 57.535,
       "macd_hist": 0.6069,
@@ -17632,10 +17632,15 @@
       "price_vs_ma20": "above",
       "ma20": 264.362,
       "bb_pct": 72.1,
-      "buy_streak": 0,
-      "buy_confirmed": false,
-      "conditions_met": [],
-      "note": "Exit/Entry 조건 미충족"
+      "buy_streak": 5,
+      "buy_confirmed": true,
+      "conditions_met": [
+        "가격 > MA20",
+        "MACD > 0 + 골든크로스",
+        "거래량비 >= 1.5x",
+        "RSI > 55"
+      ],
+      "note": "[확정 5일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x"
     },
     "TSLA": {
       "signal": "HOLD",
