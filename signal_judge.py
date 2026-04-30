@@ -706,11 +706,16 @@ def _calc_3d_change(d: dict) -> float | None:
     return d.get("change_3d_pct", d.get("change_pct"))
 
 
-def _get_prev_day_data(ticker: str, history: dict) -> dict | None:
-    """signals_history.json에서 전일 데이터 가져오기"""
+def _get_prev_day_data(ticker: str, history: dict, today_str: str = "") -> dict | None:
+    """signals_history.json에서 전 거래일 데이터 가져오기.
+
+    today_str을 명시하면 그 날짜를 제외하고 가장 최근 날짜를 본다.
+    같은 날 재실행 시 자기 자신을 prev_day로 보는 버그 방지 — scanner의
+    `_had_prior_buy`와 동일한 strict 정의."""
     dates = sorted(history.keys())
-    # _meta, _macro 키 제외
     dates = [dt for dt in dates if not dt.startswith("_")]
+    if today_str:
+        dates = [dt for dt in dates if dt < today_str]
     if not dates:
         return None
     last_date = dates[-1]
@@ -1372,7 +1377,7 @@ def judge_all(market_data: dict, history: dict) -> dict[str, dict]:
             }
             continue
 
-        prev_day = _get_prev_day_data(ticker, history)
+        prev_day = _get_prev_day_data(ticker, history, today_str)
 
         # [v5.2] 전일 BUY였으면 2일차 거래량 면제 재판정 대상
         has_prior_streak = prev_day is not None and prev_day.get("signal", "") in _BUY_SIGNALS
