@@ -206,14 +206,20 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                         if _t and _t not in _seen:
                             _seen.add(_t)
                             _scan_union.append(_t)
+                # 포트폴리오 fetch와 스캐너 fetch가 같은 종목(AAPL 등)을 별도 시점에 호출하면
+                # MACD/볼륨이 미세하게 달라져 시그널이 갈리는 문제를 방지한다.
+                # → 포트폴리오에 이미 있는 종목은 prefetch에서 제외하고, 이후 portfolio data를
+                #   shared cache에 병합해 동일 스냅샷을 공유한다.
+                _portfolio_set = set(market_data.get("data", {}).keys())
+                _to_prefetch = [_t for _t in _scan_union if _t not in _portfolio_set]
                 _shared_path = os.path.join(project_dir, "screenshots", f"scanner_shared_{today}.json")
                 _need_prefetch = not os.path.exists(_shared_path)
                 if _need_prefetch:
                     _fetch_script = os.path.join(project_dir, "fetch_market_data.py")
                     _env = os.environ.copy()
                     _env["PYTHONIOENCODING"] = "utf-8"
-                    _cmd = [sys.executable, _fetch_script, "--output", _shared_path, "--quiet"] + _scan_union
-                    print(f"  Fetching {len(_scan_union)} unique scanner tickers in one pass...")
+                    _cmd = [sys.executable, _fetch_script, "--output", _shared_path, "--quiet"] + _to_prefetch
+                    print(f"  Fetching {len(_to_prefetch)} scanner-only tickers ({len(_portfolio_set)} reused from portfolio)...")
                     _prefetch = subprocess.run(
                         _cmd, cwd=project_dir, capture_output=True, text=True,
                         timeout=900, env=_env, encoding="utf-8", errors="replace",
@@ -224,6 +230,27 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                         print(f"  OK shared cache: {_shared_path}")
                 else:
                     print(f"  Using existing shared cache: {_shared_path}")
+
+                # portfolio market_data를 shared cache에 병합 (portfolio 데이터 우선)
+                # → 스캐너가 AAPL 등 portfolio 종목을 평가할 때 judge_all과 동일 스냅샷 사용
+                try:
+                    if os.path.exists(_shared_path):
+                        with open(_shared_path, "rb") as _sf:
+                            _shared = json.loads(_sf.read().rstrip(b" \t\n\r\x00").decode("utf-8"))
+                    else:
+                        _shared = {"data": {}, "_meta": market_data.get("_meta", {}),
+                                   "_macro": market_data.get("_macro", {})}
+                    _shared.setdefault("data", {})
+                    _portfolio_data = market_data.get("data", {}) or {}
+                    _merged = 0
+                    for _t, _td in _portfolio_data.items():
+                        _shared["data"][_t] = _td
+                        _merged += 1
+                    with open(_shared_path, "w", encoding="utf-8") as _sf:
+                        json.dump(_shared, _sf, ensure_ascii=False, indent=2)
+                    print(f"  OK merged {_merged} portfolio tickers into shared cache")
+                except Exception as _mge:
+                    print(f"  WARN portfolio merge into shared cache failed: {_mge}")
             except Exception as _pfe:
                 print(f"  WARN prefetch skipped: {_pfe}")
 
