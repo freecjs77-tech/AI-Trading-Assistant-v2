@@ -18,4 +18,5 @@ NOW
 SNDK
 SOXS
 SOXL
+XOVR
 005930  # 삼성전자 (KOSPI 시범)
