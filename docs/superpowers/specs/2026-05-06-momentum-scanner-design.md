@@ -46,18 +46,56 @@ Step 5   Report generation
 
 번호를 4c2로 잡아 기존 4d/5/5a/5b/5c/6/6b/7 번호 변경 없음 (diff 최소화).
 
-### 2.2 모듈 구성 (단방향 의존: universe → signal → history → backtest)
+### 2.2 모듈 구성 (단방향 의존: config → data → universe → signal → history → backtest)
 
 ```
-momentum_scanner.py        # Entry: scan_momentum_us(), scan_momentum_kr()
-momentum_universe.py       # Universe 구축 (IWB/KODEX holdings, 캐시)
-momentum_data.py           # Data access layer (yfinance bulk fetch, 지표 캐시) - 단일 진입점
+momentum_config.py         # 상수 — RSI 임계값, 가격 비율, 캐시 TTL, 잡주 필터 등
+momentum_data.py           # Data access layer (yfinance bulk fetch, 지표 캐시, 캐시 I/O 공통)
+momentum_universe.py       # Universe 구축 (IWB/KODEX holdings 의존)
 momentum_signal.py         # Sector/Stock momentum 판정, Risk Tag
 momentum_history.py        # streak/change/EXIT 이벤트
 momentum_backtest.py       # leg 기반 평가 (+3d/+5d/+10d, MDD, Duration)
+momentum_scanner.py        # Entry: scan_momentum_us(), scan_momentum_kr() — 위 모듈 조립
 ```
 
-`momentum_data.py`가 yfinance 호출을 단일 진입점으로 통제 (중복 호출/rate limit 방지).
+- `momentum_config.py`: 모든 임계값을 상수로 분리. 추후 튜닝 시 한 곳에서만 수정.
+  ```python
+  # Sector momentum
+  SECTOR_RSI_MIN = 55
+  SECTOR_5D_MIN_PCT = 3.0
+  SECTOR_HIGH_52W_RATIO = 0.95   # 52주 95% 이내
+  SECTOR_HIGH_20D_USE = True     # max(high_20d, high_52w * 0.95)
+
+  # Stock momentum tiers
+  M1_3D_MIN_PCT = 8.0
+  M1_RSI_MIN = 60
+  M2_VOLUME_RATIO_MIN = 1.2
+  M3_HIGH_52W_RATIO = 0.99
+  M3_RSI_MIN = 65
+
+  # Risk tags
+  RISK_OVERHEAT_RSI = 80
+  RISK_PARABOLIC_PCT = 8.0
+  RISK_EXTENDED_MA20_PCT = 10.0
+  RISK_EARLY_RSI_MIN = 60
+  RISK_EARLY_RSI_MAX = 65   # M1 + 60 ≤ RSI < 65
+
+  # Universe
+  CACHE_TTL_DAYS = 7
+  KR_LIQUIDITY_MIN_KRW = 10_000_000_000   # 100억원
+  DAILY_MOVER_1D_PCT = 5.0
+  DAILY_MOVER_3D_PCT = 8.0
+
+  # Backtest
+  BACKTEST_WINDOW_DAYS = 90
+  CONSECUTIVE_LOSS_THRESHOLD = 4   # 최근 5개 leg 중 4개 손실 시 alert
+  ```
+- `momentum_data.py`가 yfinance 호출과 캐시 I/O 모두 단일 진입점으로 통제 (중복 호출/rate limit/캐시 중복 처리 방지). cache_manager 별도 파일 분리 대신 data 모듈에 함수로 포함:
+  ```python
+  load_cache(name) -> dict | None
+  save_cache(name, data, status="ok", fallback_count=0)
+  cache_age_days(name) -> int
+  ```
 
 ### 2.3 신규 파일 / 캐시 위치
 
@@ -138,6 +176,13 @@ US/KR 각각 try (하나 실패해도 다른 쪽 정상 진행). 결과 None일 
 **단일 진입점**: `momentum_data.fetch_etf_holdings(etf_ticker, market='us'|'kr') -> List[str]`
 
 **IWB CSV 처리 규칙** (필수):
+- 컬럼명 유연 처리 — iShares가 컬럼명을 변경할 수 있음:
+  ```python
+  TICKER_COLS = ["Ticker", "Ticker Symbol", "Issuer Ticker"]
+  ticker_col = next((c for c in df.columns if c in TICKER_COLS), None)
+  if ticker_col is None:
+      raise ValueError(f"No known ticker column in CSV. Columns: {df.columns.tolist()}")
+  ```
 - Ticker 컬럼만 추출 (Name/Weight/Market Value 등 폐기)
 - 심볼 정규화: `BRK.B → BRK-B`, `BF.B → BF-B` (yfinance 호환)
 - 비주식 항목 제외: cash, derivative 행 (보통 ticker가 `-` 또는 빈값) skip
@@ -177,12 +222,27 @@ KR_UNIVERSE = KR_BASE ∪ KR_SECTOR_ETF ∪ KR_WEEKLY_TOP100 ∪ KR_DAILY_MOVERS
 - 주 1회만 실행 (TTL 7일), bulk 호출이라 5~10분이라도 부담 적음
 - KR도 동일 (KR_BASE 대상)
 
+**거래대금 정의 (명시)**:
+```python
+dollar_volume_today    = volume * close                     # 당일 거래대금
+avg_5d_dollar_volume   = mean(dollar_volume[-5:])           # 5일 평균
+```
+- US Top100 정렬 키: `avg_5d_dollar_volume` 내림차순 → 상위 100
+- KR 잡주 필터: `avg_5d_dollar_volume ≥ 100억원 (10_000_000_000 KRW)`
+
 ### 3.5 Daily Movers — 계산 비용
 
-매일 universe candidate 약 1300개(US 1000 + KR 350) 대상으로 **1d/3d 변화율만** 계산:
+매일 universe candidate 약 1300개(US 1000 + KR 350) 대상으로 **1d/3d 변화율 + close/MA20 비교만** 계산:
 - yfinance `download()` bulk 호출 1번 (~10-30초)
-- **RSI/MACD/MA 등 무거운 지표는 절대 계산 금지** (속도 핵심)
+- **RSI/MACD 등 무거운 지표는 절대 계산 금지** (속도 핵심)
+- MA20은 close 단순평균 — yfinance bulk 결과로 cheap
 - 통과한 종목만 본 스캔 단계로 진입
+
+**Daily Movers 조건 (확정)**:
+```
+(1d_ret ≥ +5% OR 3d_ret ≥ +8%) AND close > MA20
+```
+`AND close > MA20` 추가 이유: 갭 상승 1일짜리 펌프 (전체 추세는 하락) 노이즈 제거.
 
 ### 3.6 갱신 트리거 의사코드
 
@@ -229,11 +289,13 @@ def get_holdings(etf_ticker, market):
 **Sector Score (정렬용, 0~100)**:
 ```python
 trend_score    = 40   # 필수 ALL 통과 시 고정 (게이트 통과 자체가 만점)
-momentum_score = (가속 4개 중 충족 개수) × 10        # 0~40
-rs_score       = min(20, max(0, (sector_5d - market_5d) × 10))  # 연속값
-                 # +1% → 10, +2% 이상 → 20 cap
+momentum_score = (가속 4개 중 충족 개수) × 10              # 0~40
+rs_score       = min(20, max(0, (sector_5d - market_5d) × 5))  # 연속값
+                 # +0.5% → 2.5, +2% → 10, +4% 이상 → 20 cap
 total          = trend_score + momentum_score + rs_score   # 60~100
 ```
+
+RS 점수가 `× 5` 스케일인 이유: `× 10`은 +2%만 우위면 만점이라 섹터 간 변별력 부족. `× 5`로 +4% 이상부터 만점 → Top 2~3 정렬 시 강한 RS와 미미한 RS 구분 명확.
 
 → Top 2~3 섹터 선택. 동점 시 5d return 큰 순.
 
@@ -276,7 +338,7 @@ Top 2~3 섹터에 속한 종목만 평가. ALL 통과 시 다음 단계로:
 | 🔴 OVERHEAT | RSI(14) ≥ 80 | 빨강 | 신중 (신규 진입 자제) |
 | 🟠 PARABOLIC | 당일 change_pct ≥ +8% | 주황 | 눌림 대기 |
 | 🟡 EXTENDED | `(close - ma20) / ma20 ≥ 0.10` | 노랑 | 분할 진입 |
-| ⚪ EARLY | M1 AND 60 ≤ RSI < 65 | 회색 | 조기 진입 힌트 (옵션) |
+| ⚪ EARLY | M1 AND 60 ≤ RSI < 65 | 회색 | 조기 진입 힌트 |
 
 복수 태그 동시 부여 가능 (예: NVDA M3 🔴🟠).
 
@@ -333,9 +395,9 @@ Top 2~3 섹터에 속한 종목만 평가. ALL 통과 시 다음 단계로:
         "risk_tags": [],
         "price": 850.00,
         "rsi": 62.5,
-        "change_pct": 5.2,
-        "change_3d_pct": 9.1,
-        "change_5d_pct": 11.8,
+        "ret_1d_pct": 5.2,
+        "ret_3d_pct": 9.1,
+        "ret_5d_pct": 11.8,
         "sector": "Tech",
         "rs_vs_sector": false,
         "entry_price": 850.00,
@@ -362,9 +424,12 @@ Top 2~3 섹터에 속한 종목만 평가. ALL 통과 시 다음 단계로:
         "price": 890.00
       },
       "2026-05-07": {
-        "stage": null, "change": "EXIT",
+        "stage": null,
+        "change": "EXIT",
         "exit_price": 920.00,
-        "exit_reason": "EXIT"
+        "exit_date": "2026-05-07",
+        "exit_reason": "EXIT",
+        "prev_stage": "MOMENTUM_3"
       }
     }
   }
@@ -376,8 +441,19 @@ Top 2~3 섹터에 속한 종목만 평가. ALL 통과 시 다음 단계로:
 - `entry_date`: 현재 stage 진입 날짜
 - `entry_context`: 진입 시점 컨텍스트 (sector, streak, risk_tags) — 추후 분석용
 - `time_in_stage`: 현재 stage 유지 일수 (UPGRADE 시 1로 reset)
-- EXIT 이벤트는 하루 entry로 저장: `stage: null, change: "EXIT", exit_price, exit_reason`
+- `ret_1d_pct` / `ret_3d_pct` / `ret_5d_pct`: 시점 종가 기준 누적 수익률 (모멘텀 스키마 통일 명명 — 기존 `fetch_market_data.py`의 `change_pct/change_3d_pct/change_5d_pct`를 momentum_data.py에서 매핑)
+- EXIT 이벤트는 하루 entry로 저장: `stage: null, change: "EXIT", exit_price, exit_date, exit_reason, prev_stage`
 - `exit_reason`: `EXIT` (정상 이탈) | `STOP` (Risk 트리거 — v2) | `TIMEOUT` (기간 초과 — v2)
+
+**필드명 통일 정책**:
+- 기존 `fetch_market_data.py`가 생성하는 시장 데이터는 `change_*_pct` 유지 (signal_judge 등 기존 코드 사용 중)
+- 모멘텀 스키마(`scanner_momentum_*_history.json`, `momentum_backtest_*.json`)는 `ret_*_pct`로 통일
+- 매핑은 `momentum_data.py`가 단일 진입점으로 담당 (`change_5d_pct → ret_5d_pct`)
+
+**JSON 키 순서 보장**:
+- Python `json.dump()`는 dict 삽입 순서를 그대로 직렬화 (Python 3.7+).
+- 다만 외부 도구가 재정렬할 수 있으므로 **읽을 때는 항상 `sorted(dates)` 적용**.
+- 디스플레이/계산 로직에서는 명시적 정렬을 보장한다.
 
 ### 5.2 Streak / Change 계산 규칙
 
@@ -426,15 +502,18 @@ EXIT 시: 하루 EXIT entry 저장 후, 다음 거래일부터 ticker key에 일
   "ret_3d_pct": 4.5,
   "ret_5d_pct": 7.8,
   "ret_10d_pct": null,
-  "max_return_pct": 9.2,
-  "min_return_pct": -1.1,
+  "max_ret_pct": 9.2,
+  "min_ret_pct": -1.1,
   "mdd_pct": -2.3
 }
 ```
 
 **계산 방법**:
-- max/min/MDD: 가능하면 **OHLCV의 high/low** 사용 (정확도). 데이터 없으면 close fallback.
-- ret_3d/5d/10d: 진입 후 N거래일 시점 종가 기준 누적 수익률. 미경과 시 null.
+- max/min/MDD: 가능하면 **intraday OHLCV의 high/low** 사용 (정확도 우선). 데이터 없으면 close fallback.
+  - `max_ret_pct = (max(high_since_entry) / entry_price - 1) * 100`
+  - `min_ret_pct = (min(low_since_entry) / entry_price - 1) * 100`
+  - `mdd_pct = (min(low) - max(high))/max(high) * 100` — peak-to-trough 가장 큰 낙폭
+- `ret_3d/5d/10d`: 진입 후 N거래일 시점 종가 기준 누적 수익률. 미경과 시 null.
 - 진행 중 leg는 `exit_date: null`, `exit_price: null` → 매일 스냅샷 갱신.
 
 ### 5.4 집계 분석 (UI 표시용)
@@ -451,6 +530,7 @@ EXIT 시: 하루 EXIT entry 저장 후, 다음 거래일부터 ticker key에 일
       "avg_ret_5d_pct": 4.8,
       "avg_ret_10d_pct": 7.2,
       "avg_max_ret_pct": 9.5,
+      "avg_min_ret_pct": -1.5,
       "avg_mdd_pct": -3.1,
       "avg_duration_days": 5.2
     },
@@ -705,13 +785,14 @@ git push origin gh-pages
 
 ### 7.5 신규 / 수정 파일 정리
 
-**신규 (9개)**:
-- `momentum_scanner.py`
-- `momentum_universe.py`
-- `momentum_data.py`
-- `momentum_signal.py`
-- `momentum_history.py`
-- `momentum_backtest.py`
+**신규 (10개)**:
+- `momentum_config.py`        — 상수 (RSI 임계값, 비율, TTL 등 한 곳)
+- `momentum_data.py`          — yfinance + 캐시 I/O 단일 진입점
+- `momentum_universe.py`      — IWB/KODEX holdings 처리
+- `momentum_signal.py`        — Sector/M1/M2/M3 판정
+- `momentum_history.py`       — streak/change/EXIT
+- `momentum_backtest.py`      — leg 기반 평가
+- `momentum_scanner.py`       — Entry point
 - `templates/base_momentum.html`
 - `templates/momentum_us.html`
 - `templates/momentum_kr.html`
