@@ -65,6 +65,11 @@ momentum_scanner.py        # Entry: scan_momentum_us(), scan_momentum_kr() — �
   SECTOR_5D_MIN_PCT = 3.0
   SECTOR_HIGH_52W_RATIO = 0.95   # 52주 95% 이내
   SECTOR_HIGH_20D_USE = True     # max(high_20d, high_52w * 0.95)
+  SECTOR_RS_SCALE = 5            # rs_score = min(20, max(0, diff * 5))
+
+  # Pre-filter (종목 게이트)
+  PREFILTER_3D_MIN_PCT = 4.0     # 5%에서 4%로 완화 (초기 리더 포착)
+  PREFILTER_RSI_MIN = 55
 
   # Stock momentum tiers
   M1_3D_MIN_PCT = 8.0
@@ -102,7 +107,7 @@ momentum_scanner.py        # Entry: scan_momentum_us(), scan_momentum_kr() — �
 ```
 data/
   iwb_holdings.json                       # IWB Russell 1000 holdings (TTL 7일)
-  iwv_holdings.json                       # IWV (보조, daily movers 보완)
+  # iwv_holdings.json — V2 후보 (V1.0 미사용)
   kodex200_holdings.json                  # KODEX 200 holdings
   kodex_kosdaq150_holdings.json           # KODEX KOSDAQ 150 holdings
   sector_etf_holdings_us.json             # SPDR/iShares 섹터 ETF holdings (mapping 전용)
@@ -167,7 +172,7 @@ US/KR 각각 try (하나 실패해도 다른 쪽 정상 진행). 결과 None일 
 | 데이터 | 소스 | URL/방식 | 갱신 |
 |---|---|---|---|
 | IWB holdings (~1000) | iShares 공개 CSV | `https://www.ishares.com/us/products/239707/ishares-russell-1000-etf/1467271812596.ajax?fileType=csv&fileName=IWB_holdings&dataType=fund` | TTL 7일 |
-| IWV holdings (~3000, 보조) | iShares (244064) | 동일 패턴 | TTL 7일 |
+| ~~IWV holdings (~3000)~~ | V2 후보 — V1.0에서 제외 | — | — |
 | US 섹터 ETF holdings | SPDR 또는 iShares | XLK/XLF/XLE/XLV/XLI/XLY/XLP/XLU/XLRE/XLB/XLC | TTL 7일 |
 | KODEX 200 (069500) | KRX `data.krx.co.kr` 종목구성내역 API (POST) | 추후 구현 시 정확한 endpoint 확정 | TTL 7일 |
 | KODEX KOSDAQ 150 (229200) | KRX 동일 | 동일 | TTL 7일 |
@@ -191,12 +196,15 @@ US/KR 각각 try (하나 실패해도 다른 쪽 정상 진행). 결과 None일 
 
 ```
 US_BASE          = IWB holdings (~1000)
-US_WEEKLY_TOP100 = (IWB ∪ IWV)에서 거래대금 5일 평균 상위 100 (TTL 7일)
-US_DAILY_MOVERS  = (IWB ∪ IWV)에서 (1d ≥ +5% OR 3d ≥ +8%)인 종목 (당일 계산)
+US_WEEKLY_TOP100 = IWB 내에서 거래대금 5일 평균 상위 100 (TTL 7일)
+US_DAILY_MOVERS  = IWB 내에서 (1d ≥ +5% OR 3d ≥ +8%) AND close > MA20 (당일 계산)
 
 US_UNIVERSE = US_BASE ∪ US_WEEKLY_TOP100 ∪ US_DAILY_MOVERS
-            (중복 제거 후 ≈ 250~400)
+            ≈ IWB ∪ (IWB 부분집합)
+            = IWB (≈ 1000)
 
+# 핵심 원칙: V1.0 universe는 절대 1000개 넘지 않음
+# IWV (~3000) 확장은 V2 — yfinance rate limit / 속도 위험 회피
 # US_SECTOR_ETF holdings는 universe에 포함 안 됨
 # → ticker → sector 매핑 lookup table 용도로만 사용
 ```
@@ -218,8 +226,8 @@ KR_UNIVERSE = KR_BASE ∪ KR_SECTOR_ETF ∪ KR_WEEKLY_TOP100 ∪ KR_DAILY_MOVERS
 ### 3.4 거래대금 Top100 주간 배치
 
 문제: 미국에 "전체 시장 거래대금 랭킹" API 없음. 채택안:
-- (IWB ∪ IWV) universe에 대해서만 yfinance bulk fetch → 거래대금 평균 계산 → Top100 추출
-- 주 1회만 실행 (TTL 7일), bulk 호출이라 5~10분이라도 부담 적음
+- **IWB universe**에 대해서만 yfinance bulk fetch → 거래대금 평균 계산 → Top100 추출
+- 주 1회만 실행 (TTL 7일), bulk 호출이라 5분 이내 (1000 종목)
 - KR도 동일 (KR_BASE 대상)
 
 **거래대금 정의 (명시)**:
@@ -232,7 +240,7 @@ avg_5d_dollar_volume   = mean(dollar_volume[-5:])           # 5일 평균
 
 ### 3.5 Daily Movers — 계산 비용
 
-매일 universe candidate 약 1300개(US 1000 + KR 350) 대상으로 **1d/3d 변화율 + close/MA20 비교만** 계산:
+매일 universe candidate 약 1350개(IWB 1000 + KR 350) 대상으로 **1d/3d 변화율 + close/MA20 비교만** 계산:
 - yfinance `download()` bulk 호출 1번 (~10-30초)
 - **RSI/MACD 등 무거운 지표는 절대 계산 금지** (속도 핵심)
 - MA20은 close 단순평균 — yfinance bulk 결과로 cheap
@@ -243,6 +251,8 @@ avg_5d_dollar_volume   = mean(dollar_volume[-5:])           # 5일 평균
 (1d_ret ≥ +5% OR 3d_ret ≥ +8%) AND close > MA20
 ```
 `AND close > MA20` 추가 이유: 갭 상승 1일짜리 펌프 (전체 추세는 하락) 노이즈 제거.
+
+**Universe 1000개 cap 원칙**: V1.0은 IWB만 사용. V2에서 IWV 부분 확장 시에도 universe 총합 1500 이하로 제한 (rate limit + 속도 보장).
 
 ### 3.6 갱신 트리거 의사코드
 
@@ -308,11 +318,13 @@ RS 점수가 `× 5` 스케일인 이유: `× 10`은 +2%만 우위면 만점이�
 ### 4.3 Pre-filter (종목 게이트)
 
 Top 2~3 섹터에 속한 종목만 평가. ALL 통과 시 다음 단계로:
-- ① 3d return ≥ +5%
+- ① 3d return ≥ +4%   (초기 리더 포착 위해 5% → 4% 완화)
 - ② close > MA20
 - ③ RSI(14) ≥ 55
 
 → 통과 결과 30~80개 예상.
+
+**완화 근거**: pre-filter는 "본 스캔 가치 있는가" 게이트. 너무 빡세면 초기 진입 신호(M1 + RSI 60-65) 진입을 미리 잘라버림. 4%로 낮추되 RSI/MA20는 유지해 잡주 차단.
 
 ### 4.4 Momentum 단계 판정
 
@@ -437,7 +449,10 @@ Top 2~3 섹터에 속한 종목만 평가. ALL 통과 시 다음 단계로:
 ```
 
 **필드 정의**:
-- `entry_price`: **현재 stage**의 최초 진입일 종가 (v1.0 = today_close 단순 채택. v2에서 next_day_open 고려)
+- `entry_price`: **현재 stage**의 최초 진입일 종가 (v1.0 = today_close)
+  - ⚠️ **Look-ahead bias 주의**: 종가는 시그널이 확정되는 시점의 가격이라 실거래에서는 다음 날 시초가/시장가에 매수 가능. 백테스트 수익률은 **이론값(낙관적)**이며 실제 실행 시 슬리피지 발생.
+  - UI 표시 시 "백테스트는 종가 진입 가정" 푸터 명시 필수
+  - V2: `entry_price = next_day_open`으로 변경 (look-ahead 제거)
 - `entry_date`: 현재 stage 진입 날짜
 - `entry_context`: 진입 시점 컨텍스트 (sector, streak, risk_tags) — 추후 분석용
 - `time_in_stage`: 현재 stage 유지 일수 (UPGRADE 시 1로 reset)
@@ -594,7 +609,8 @@ EXIT 시: 하루 EXIT entry 저장 후, 다음 거래일부터 ticker key에 일
 
 ┌─ Footer (Universe / Cache Status) ─────────────────────┐
 │ IWB 1003종목 (cached 5d ago, fallback_count=0)         │
-│ IWV +127 movers · Daily movers: 38 (1d≥5%:22, 3d≥8%:24)│
+│ Daily movers: 38 (1d≥5%:22, 3d≥8%:24)                  │
+│ ⚠ 백테스트는 종가 진입 가정 — 실거래 시 슬리피지 발생  │
 │ KR pages → /momentum_kr_<DATE>.html                    │
 │ ⚠ Momentum KR: unavailable (fetch failed)  ← 실패 시   │
 └────────────────────────────────────────────────────────┘
@@ -847,7 +863,7 @@ git push origin gh-pages
 |---|---|---|
 | iShares CSV 엔드포인트 변경 | URL/포맷 깨질 시 universe 빔 | TTL 캐시 fallback + fallback_count ≥ 3 시 critical 로그 |
 | KRX API 응답 구조 변화 | KR universe 영향 | 동일 — 캐시 fallback |
-| yfinance rate limit (1300 종목 daily fetch) | 실패율 상승 | bulk download() + 청크 분할 + 재시도 |
+| yfinance rate limit (1350 종목 daily fetch — IWB 1000 + KR 350) | 실패율 상승 | bulk download() + 청크 분할 + 재시도. IWV 확장은 V2까지 보류 (1000개 cap) |
 | 신규 IPO / delisted | 데이터 누락 | yfinance 에러 graceful skip |
 | 모멘텀 false positive (휩쏠림 장세) | 진입 후 즉시 손실 | Risk Tag + Backtest + 연속 손실 감지 alert |
 | gh-pages 동시 push race | 데이터 손실 | `git pull --rebase` 안전장치 (필수) |
@@ -859,7 +875,7 @@ git push origin gh-pages
 
 **필수 포함**:
 - US + KR 모멘텀 스캐너 (별도 2개 페이지)
-- IWB / IWV / KODEX 200 / KODEX KOSDAQ 150 holdings 캐시
+- IWB / KODEX 200 / KODEX KOSDAQ 150 holdings 캐시 (IWV는 V2)
 - M1/M2/M3 + Sector momentum + Risk Tags + Streak/Change
 - ⚪ EARLY 태그 (M1 + RSI 60-65)
 - 거래대금 5일 평균 100억원 KR 잡주 필터
@@ -871,7 +887,7 @@ git push origin gh-pages
 
 ### v1.1 (후속 별도 작업, 우선순위 순)
 
-1. IWV 보완 universe 확장 (현재 보조만 — 명시적 필터/가중치 정교화)
+1. **IWV 부분 확장** — `IWB ∪ (IWV에서 weekly liquidity 상위 200)`로 universe 확장. 단 1500개 cap 유지. yfinance rate limit 검증 후 진행.
 2. 텔레그램 메시지에 종목별 차트 썸네일 첨부 (이미지 전송)
 3. KRX endpoint 자동 갱신 (URL 변경 감지 시 알림)
 
@@ -890,7 +906,7 @@ git push origin gh-pages
 | Q1 | 기존 SP100과의 관계 | A — 별도 신규 스캐너로 추가 |
 | Q2 | Universe 범위 | B — US + KR 별도 두 모멘텀 스캐너 |
 | Q3 | 거래대금 처리 | B' Hybrid (ETF + 주간 Top100 + Daily movers) |
-| Q4 | 미국 base 데이터 소스 | A — IWB holdings + IWV 보완 |
+| Q4 | 미국 base 데이터 소스 | A — IWB holdings (V1.0). IWV 보완은 V2로 이전 (rate limit 회피) |
 | Q5 | KR 구조 | A — US와 동일 B' 적용 (KODEX 200 + KOSDAQ 150 base) |
 | Q6 | 출력 / 통합 | A — 별도 2개 페이지 + detail 페이지 + Telegram brief |
 | Q7 | 히스토리 / 백테스트 | A — 풀 편입 + streak + change + 모멘텀 전용 백테스트 |
