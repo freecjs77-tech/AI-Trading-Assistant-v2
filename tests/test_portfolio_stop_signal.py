@@ -190,3 +190,53 @@ if __name__ == "__main__":
     for f in fns:
         f()
     print(f"[OK] {len(fns)} portfolio_stop_signal tests passed.")
+
+
+# ─── generate_portfolio_stop_signals integration ────────────
+
+def test_generate_signals_first_run_uses_today_fallback(monkeypatch, tmp_path):
+    """첫 실행: bootstrap_first_run mock해 today_close fallback 동작 확인."""
+    import portfolio_stop_history as ph
+    import portfolio_stop_signal as pss
+
+    # bootstrap mock — empty (모든 ticker fail) → today_close가 highest로
+    monkeypatch.setattr(ph, "bootstrap_first_run", lambda *a, **kw: {})
+
+    market_data = {
+        "data": {
+            "NVDA": {"price": 920.0, "atr14": 15.0, "prev_close": 915.0},
+            "BIL":  {"price": 91.5,  "atr14": 0.05, "prev_close": 91.5},
+        }
+    }
+    portfolio = [
+        {"ticker": "NVDA", "shares": 50.0},
+        {"ticker": "BIL",  "shares": 900.0},
+    ]
+    history_path = str(tmp_path / "stops.json")
+    out = pss.generate_portfolio_stop_signals(
+        project_dir=str(tmp_path), owner="me",
+        market_data=market_data, portfolio=portfolio,
+        today="2026-05-07", history_path=history_path,
+    )
+    assert out["status"] == "ok"
+    assert "summary" in out
+    # 신규 종목 — display 다운그레이드로 EXIT/EXIT_READY 발동 안 됨
+    assert out["summary"]["EXIT"] == 0
+
+
+def test_generate_signals_returns_summary_shape(monkeypatch, tmp_path):
+    import portfolio_stop_history as ph
+    import portfolio_stop_signal as pss
+
+    monkeypatch.setattr(ph, "bootstrap_first_run", lambda *a, **kw: {})
+
+    market_data = {"data": {"NVDA": {"price": 920.0, "atr14": 15.0, "prev_close": 915.0}}}
+    portfolio = [{"ticker": "NVDA", "shares": 50.0}]
+    out = pss.generate_portfolio_stop_signals(
+        project_dir=str(tmp_path), owner="me",
+        market_data=market_data, portfolio=portfolio,
+        today="2026-05-07", history_path=str(tmp_path / "stops.json"),
+    )
+    assert set(out.keys()) >= {"status", "owner", "date", "summary",
+                                "positions", "changes"}
+    assert set(out["summary"].keys()) >= {"HOLD", "TIGHT", "EXIT_READY", "EXIT"}
