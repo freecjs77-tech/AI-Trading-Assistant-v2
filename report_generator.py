@@ -259,6 +259,8 @@ def generate_report(
     nav_portfolio: str | None = None,
     active_nav: str = "portfolio",
     benchmark_data: dict | None = None,
+    momentum_us: dict | None = None,
+    momentum_kr: dict | None = None,
 ) -> str:
     """
     Jinja2 템플릿으로 HTML 리포트 생성.
@@ -461,6 +463,22 @@ def generate_report(
         context["benchmark_error"] = (
             benchmark_data.get("error_message", "unknown") if benchmark_data else None
         )
+
+    # Momentum scanner nav links (optional)
+    has_momentum_us = momentum_us is not None and momentum_us.get("status") != "failed"
+    has_momentum_kr = momentum_kr is not None and momentum_kr.get("status") != "failed"
+    context["has_momentum_us"] = has_momentum_us
+    context["has_momentum_kr"] = has_momentum_kr
+    context["momentum_us_url"] = (
+        f"momentum_us_{momentum_us.get('as_of', date_str)}.html"
+        if has_momentum_us
+        else ""
+    )
+    context["momentum_kr_url"] = (
+        f"momentum_kr_{momentum_kr.get('as_of', date_str)}.html"
+        if has_momentum_kr
+        else ""
+    )
 
     html = template.render(**context)
 
