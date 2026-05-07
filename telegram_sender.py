@@ -139,6 +139,96 @@ def _send_message(text: str) -> bool:
         return False
 
 
+# ─── Portfolio Stop Signal — risk summary ─────────────────
+
+def _build_portfolio_risk_message(stop_me: dict | None,
+                                  stop_wife: dict | None,
+                                  base_url: str,
+                                  date_str: str) -> str:
+    from portfolio_stop_config import (
+        TELEGRAM_MAX_EXIT_ITEMS, TELEGRAM_MAX_EXIT_READY_ITEMS,
+        TELEGRAM_MAX_TIGHT_ITEMS,
+    )
+
+    def _by_signal(positions, sig):
+        return [p for p in positions if p.get("display_signal") == sig]
+
+    def _trim_list(items, max_n: int):
+        if len(items) <= max_n:
+            return items, 0
+        return items[:max_n], len(items) - max_n
+
+    def _line_full(p):
+        c = p.get("below_stop_count", 0)
+        suffix = f" ({c}d below stop)" if c else ""
+        new_mark = " (new)" if p.get("is_new_position") else ""
+        return f"  {p['ticker']}{new_mark} → {p.get('display_action','-')}{suffix}"
+
+    def _section(title_fmt: str, positions, signal: str, max_n: int,
+                  full=True):
+        items = _by_signal(positions, signal)
+        if not items:
+            return ""
+        kept, extra = _trim_list(items, max_n)
+        title = title_fmt.format(n=len(items))
+        if full:
+            body = "\n".join(_line_full(p) for p in kept)
+        else:
+            body = "  " + ", ".join(p["ticker"] for p in kept)
+        if extra:
+            body += f"\n  + {extra} more — see report"
+        return f"\n\n{title}\n{body}"
+
+    def _owner_block(owner_label: str, result: dict) -> str:
+        if not result or result.get("status") != "ok":
+            return ""
+        s = result.get("summary", {})
+        positions = result.get("positions", [])
+        head = (
+            f"\n[{owner_label}]\n"
+            f"🟢 HOLD ({s.get('HOLD',0)})  "
+            f"🟡 TIGHT ({s.get('TIGHT',0)})  "
+            f"🟠 EXIT_READY ({s.get('EXIT_READY',0)})  "
+            f"🔴 EXIT ({s.get('EXIT',0)})"
+        )
+        body = ""
+        body += _section("🔴 EXIT ({n}):", positions, "EXIT",
+                          TELEGRAM_MAX_EXIT_ITEMS)
+        body += _section("🟠 EXIT_READY ({n}):", positions, "EXIT_READY",
+                          TELEGRAM_MAX_EXIT_READY_ITEMS)
+        body += _section("🟡 TIGHT ({n}):", positions, "TIGHT",
+                          TELEGRAM_MAX_TIGHT_ITEMS, full=False)
+        return head + body
+
+    parts = [f"🛡 Portfolio Risk Summary — {date_str}"]
+    parts.append(_owner_block("me", stop_me))
+    if stop_wife:
+        parts.append(_owner_block("wife", stop_wife))
+
+    base = base_url.rstrip("/")
+    parts.append(f"\n\n📊 me:   {base}/portfolio_stops_{date_str}.html")
+    if stop_wife:
+        parts.append(f"📊 wife: {base}/portfolio_stops_wife_{date_str}.html")
+
+    msg = "\n".join(p for p in parts if p)
+    return msg[:3500]
+
+
+def send_portfolio_risk_summary(stop_me: dict | None,
+                                stop_wife: dict | None,
+                                base_url: str,
+                                date_str: str) -> bool:
+    if not stop_me and not stop_wife:
+        return False
+    text = _build_portfolio_risk_message(stop_me, stop_wife, base_url, date_str)
+    ok = _send_message(text)
+    if ok:
+        print("  [Telegram] Portfolio risk summary sent OK")
+    else:
+        print("  [Telegram] Portfolio risk summary send FAILED")
+    return ok
+
+
 def send_report(signals: dict, market_data: dict, portfolio: list, report_path: str) -> bool:
     """시그널 요약 텍스트 + 리포트 링크를 텔레그램으로 전송"""
     text = _build_message(signals, market_data, portfolio)
