@@ -71,6 +71,13 @@ def prepare_deploy():
     if momentum_files:
         print(f"momentum pages copied ({len(momentum_files)} files)")
 
+    # Portfolio Stop Signal 페이지 복사 (me + wife)
+    stop_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "portfolio_stops_*.html")))
+    for f in stop_files:
+        shutil.copy2(f, DEPLOY_DIR)
+    if stop_files:
+        print(f"portfolio_stops pages copied ({len(stop_files)} files)")
+
     # details/ 복사 (종목 상세 페이지)
     details_src = os.path.join(REPORTS_DIR, "details")
     if os.path.exists(details_src):
