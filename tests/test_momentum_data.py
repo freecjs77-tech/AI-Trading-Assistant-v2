@@ -125,6 +125,42 @@ def test_parse_iwb_csv_unknown_column_raises():
         assert "ticker column" in str(e).lower()
 
 
+def _make_krx_response(items):
+    """Mock KRX API response builder."""
+    from unittest.mock import MagicMock
+    mock = MagicMock()
+    mock.json.return_value = {"output": items}
+    mock.raise_for_status = MagicMock()
+    return mock
+
+
+def test_fetch_kodex_holdings_parses_response():
+    """fetch_krx_etf_holdings — KRX JSON 응답 파싱."""
+    from unittest.mock import patch
+    fake = _make_krx_response([
+        {"ISU_SRT_CD": "005930", "ISU_ABBRV": "삼성전자"},
+        {"ISU_SRT_CD": "000660", "ISU_ABBRV": "SK하이닉스"},
+        {"ISU_SRT_CD": "035720", "ISU_ABBRV": "카카오"},
+    ])
+    with patch("momentum_data.requests.post", return_value=fake):
+        tickers = md.fetch_krx_etf_holdings("069500")  # KODEX 200
+    # KRX 6자리 코드 → yfinance .KS 부착
+    assert tickers == ["005930.KS", "000660.KS", "035720.KS"]
+
+
+def test_fetch_kodex_holdings_skips_invalid_rows():
+    """fetch_krx_etf_holdings — 빈 코드/형식 오류 행 스킵."""
+    from unittest.mock import patch
+    fake = _make_krx_response([
+        {"ISU_SRT_CD": "005930", "ISU_ABBRV": "삼성전자"},
+        {"ISU_SRT_CD": "", "ISU_ABBRV": "현금"},
+        {"ISU_SRT_CD": "12", "ISU_ABBRV": "잘못된 코드"},
+    ])
+    with patch("momentum_data.requests.post", return_value=fake):
+        tickers = md.fetch_krx_etf_holdings("069500")
+    assert tickers == ["005930.KS"]
+
+
 if __name__ == "__main__":
     test_save_and_load_cache()
     test_load_cache_missing_returns_none()
@@ -137,4 +173,6 @@ if __name__ == "__main__":
     test_parse_iwb_csv_with_known_column()
     test_parse_iwb_csv_with_alternative_column()
     test_parse_iwb_csv_unknown_column_raises()
+    test_fetch_kodex_holdings_parses_response()
+    test_fetch_kodex_holdings_skips_invalid_rows()
     print("[OK] momentum_data tests passed.")

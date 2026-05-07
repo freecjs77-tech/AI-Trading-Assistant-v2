@@ -16,7 +16,7 @@ Market Momentum Scanner — Data access layer.
     "data": [...]
   }
 """
-import os, json, sys, io, csv, re
+import os, json, sys, io, csv, re, requests
 from datetime import datetime, timezone, timedelta
 
 if sys.platform == "win32":
@@ -185,7 +185,6 @@ def parse_ishares_csv(csv_bytes: bytes) -> list[str]:
 
 def fetch_iwb_holdings() -> list[str]:
     """IWB Russell 1000 ETF holdings CSV 다운로드 + 정규화."""
-    import requests
     resp = requests.get(IWB_URL, timeout=30,
                         headers={"User-Agent": "Mozilla/5.0"})
     resp.raise_for_status()
@@ -201,3 +200,69 @@ def get_iwb_holdings(force_refresh: bool = False) -> list[str]:
         if cache and cache.get("fetch_status") in ("ok", "stale_fallback"):
             return cache["data"]
     return fetch_with_fallback(name, fetch_iwb_holdings, source="ishares")
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# KRX ETF 구성종목 (Task 5)
+# ───────────────────────────────────────────────────────────────────────────────
+
+# KRX 정보데이터시스템 — ETF PDF (Portfolio Deposit File) 조회
+KRX_ETF_HOLDINGS_URL = "https://data.krx.co.kr/comm/bldAttendant/getJsonData.cmd"
+KRX_ETF_BLD = "dbms/MDC/STAT/standard/MDCSTAT05201"
+
+
+def _krx_full_code(short_code: str) -> str:
+    """6자리 → 12자리 KRX 풀코드 (KR7 + 6자리 + 000)."""
+    return f"KR7{short_code}000"
+
+
+def fetch_krx_etf_holdings(etf_code: str) -> list[str]:
+    """
+    KRX 공개 API에서 ETF 구성종목(PDF) 조회.
+
+    Args:
+        etf_code: 6자리 KRX 단축코드 (예: '069500' = KODEX 200)
+
+    Returns:
+        yfinance 호환 ticker 리스트 (예: ['005930.KS', ...])
+        빈 코드/형식 오류 종목은 스킵.
+    """
+    payload = {
+        "bld": KRX_ETF_BLD,
+        "locale": "ko_KR",
+        "trdDd": datetime.now().strftime("%Y%m%d"),
+        "isuCd": _krx_full_code(etf_code),
+        "isuCd2": _krx_full_code(etf_code),
+        "param1isuCd_finder_secuprodisu1_0": "ALL",
+    }
+    resp = requests.post(
+        KRX_ETF_HOLDINGS_URL,
+        data=payload,
+        timeout=30,
+        headers={
+            "User-Agent": "Mozilla/5.0",
+            "Referer": "https://data.krx.co.kr/",
+        },
+    )
+    resp.raise_for_status()
+    rows = resp.json().get("output", [])
+    out = []
+    for row in rows:
+        code = (row.get("ISU_SRT_CD") or "").strip()
+        if not code or not code.isdigit() or len(code) != 6:
+            continue
+        out.append(f"{code}.KS")
+    return out
+
+
+def get_krx_etf_holdings(etf_code: str, force_refresh: bool = False) -> list[str]:
+    """캐시 + fallback. TTL 7일."""
+    from momentum_config import CACHE_TTL_DAYS
+    name = f"krx_etf_{etf_code}_holdings"
+    if not force_refresh and cache_age_days(name) < CACHE_TTL_DAYS:
+        cache = load_cache(name)
+        if cache and cache.get("fetch_status") in ("ok", "stale_fallback"):
+            return cache["data"]
+    return fetch_with_fallback(
+        name, lambda: fetch_krx_etf_holdings(etf_code), source="krx"
+    )
