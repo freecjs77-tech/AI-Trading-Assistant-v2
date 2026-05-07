@@ -16,7 +16,7 @@ Market Momentum Scanner — Data access layer.
     "data": [...]
   }
 """
-import os, json, sys, time
+import os, json, sys
 from datetime import datetime, timezone, timedelta
 
 if sys.platform == "win32":
