@@ -159,16 +159,38 @@ def _scan_market(market: str, build_universe_fn, sector_etfs: list[str],
         # ticker → sector 매핑 (Task 6)
         if market == "US":
             holdings_dict = md.get_us_sector_holdings()
+            ticker_sector_map = md.build_sector_mapping(holdings_dict, market="us")
         else:
-            holdings_dict = md.get_kr_sector_holdings()
-        ticker_sector_map = md.build_sector_mapping(holdings_dict, market=market.lower())
-        top_sector_etfs = {s["ticker"] for s in top_sectors}
+            # KR: use TICKER_SECTORS from market_scanner directly.
+            # KRX public API requires authentication since 2025; no public ETF
+            # holdings endpoint is available. We map ticker → English sector name
+            # via TICKER_SECTORS + SECTOR_KO_TO_EN so that sector_data lookups
+            # remain consistent, but the sector gate is skipped below (KR has no
+            # sector ETFs to evaluate momentum against).
+            try:
+                from market_scanner import TICKER_SECTORS, SECTOR_KO_TO_EN
+                ticker_sector_map = {
+                    t: SECTOR_KO_TO_EN.get(s, s)
+                    for t, s in TICKER_SECTORS.items()
+                }
+            except ImportError:
+                ticker_sector_map = {}
 
-        # Top 섹터 종목만 필터 → universe 와 교집합
-        top_tickers = [t for t in universe
-                        if ticker_sector_map.get(t) in top_sector_etfs]
-        if not top_tickers:
-            top_tickers = universe[:300]
+        # Top sectors → ticker filter (US only — KR has no sector ETFs)
+        if market == "US":
+            top_sector_etfs = {s["ticker"] for s in top_sectors}
+            top_tickers = [t for t in universe
+                            if ticker_sector_map.get(t) in top_sector_etfs]
+            if not top_tickers:
+                top_tickers = universe[:300]
+        else:
+            # KR: scan all universe (no sector gate).
+            # top_sectors is reset to [] so the KR page shows no misleading
+            # sector leaderboard; M1/M2/M3 tables still populate from
+            # prefilter + classify.
+            top_tickers = list(universe)
+            top_sectors = []
+            result["top_sectors"] = top_sectors
 
         # bulk indicators
         stock_data_map = _fetch_indicators(top_tickers)

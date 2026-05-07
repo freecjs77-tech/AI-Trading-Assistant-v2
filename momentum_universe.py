@@ -2,8 +2,9 @@
 Market Momentum Scanner — Universe 조립.
 
 US: IWB ∪ weekly_top100 ∪ daily_movers (≤ 1500 cap)
-KR: KODEX 200 ∪ KOSDAQ 150 ∪ sector_ETF_holdings ∪ weekly_top100 ∪ daily_movers
-    (잡주 필터: KR은 거래대금 5일평균 ≥ 100억원만)
+KR: KOSPI_TICKERS (market_scanner 101-ticker curated list)
+    ∪ weekly_top100 ∪ daily_movers (잡주 필터: 거래대금 5일평균 ≥ 100억원만)
+    Note: KRX public API requires auth since 2025 — using static list instead.
 """
 import sys
 
@@ -83,29 +84,28 @@ def build_us_universe() -> list[str]:
 
 
 def build_kr_universe() -> list[str]:
-    """KR_BASE = KODEX 200 ∪ KOSDAQ 150
-    KR_SECTOR_ETF holdings (universe + 매핑 둘 다)
-    KR_WEEKLY = KR_BASE 거래대금 5일 평균 Top100
-    KR_DAILY  = KR_BASE 중 daily movers (잡주 필터 적용)
-    Return: 합집합 (≤ 1500 cap)
-    """
-    kodex200 = md.get_krx_etf_holdings("069500")
-    kosdaq150 = md.get_krx_etf_holdings("229200")
-    base = _dedup_preserve_order(list(kodex200) + list(kosdaq150))
+    """KR universe = KOSPI_TICKERS (curated KOSPI/KOSDAQ list from market_scanner)
+    + daily movers within that base, capped at UNIVERSE_CAP.
 
-    # Use auto-populating getter to fetch sector holdings if cache is missing
-    sector_tickers: list[str] = []
+    Note: Previously used KRX API for KODEX 200 / KOSDAQ 150 holdings, but
+    the public endpoint now requires authentication (returns "LOGOUT" 400).
+    pykrx also requires KRX_ID/KRX_PW env vars.
+
+    Design tradeoff: KR has no public sector ETF holdings API, so we skip the
+    sector momentum gate entirely (handled in _scan_market for market=="KR").
+    The flat KOSPI_TICKERS base is the same 101-ticker universe used by
+    scan_kospi in market_scanner.py, which remains unchanged.
+    """
     try:
-        sector_map = md.get_kr_sector_holdings()  # dict {etf_ticker: [stocks]}
-        if isinstance(sector_map, dict):
-            for arr in sector_map.values():
-                sector_tickers.extend(arr or [])
-    except Exception as e:
-        print(f"[universe] WARN KR sector holdings unavailable: {e}")
+        from market_scanner import KOSPI_TICKERS
+    except ImportError:
+        print("[universe] WARN market_scanner.KOSPI_TICKERS unavailable")
+        return []
+    base = list(KOSPI_TICKERS)
 
     weekly = get_weekly_top_liquidity("weekly_liquidity_kr", base, market="kr")
     daily = fetch_daily_movers_for(base, market="kr")
-    uni = _dedup_preserve_order(base + sector_tickers + list(weekly) + list(daily))
+    uni = _dedup_preserve_order(base + list(weekly) + list(daily))
     if len(uni) > UNIVERSE_CAP:
         print(f"[universe] WARN KR universe {len(uni)} > cap {UNIVERSE_CAP} — truncating")
         uni = uni[:UNIVERSE_CAP]
