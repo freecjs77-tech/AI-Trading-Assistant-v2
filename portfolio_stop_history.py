@@ -167,10 +167,9 @@ def evaluate_lifecycle(state: dict, portfolio_tickers: set,
             continue
         if pos.get("missing_since") is None:
             pos["missing_since"] = today_str
-        days_missing = _days_diff(today_str, pos["missing_since"])
-        # missing_since is the FIRST absent day; days_missing=2 means 3 calendar days absent
-        # (ARCHIVE_AFTER_DAYS_MISSING=3 means archive after 3rd absent day → days_diff >= 2)
-        if days_missing >= ARCHIVE_AFTER_DAYS_MISSING - 1:
+        # missing_since is the FIRST absent day → inclusive count of absent days
+        absent_days = _days_diff(today_str, pos["missing_since"]) + 1
+        if absent_days >= ARCHIVE_AFTER_DAYS_MISSING:
             pos["status"] = "closed"
             pos["closed_date"] = today_str
             # signal_history 대신 snapshots에 archive 이벤트 기록
