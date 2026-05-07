@@ -156,6 +156,73 @@ def test_classify_returns_none_when_m1_fails():
     assert ms.classify_stage(s) is None
 
 
+def test_risk_tags_overheat():
+    s = _stock(rsi=82)
+    tags = ms.compute_risk_tags(s, stage="MOMENTUM_2")
+    assert "OVERHEAT" in tags
+
+
+def test_risk_tags_parabolic():
+    s = _stock()
+    s["change_pct"] = 9.0   # 1d +9% > 8% threshold
+    tags = ms.compute_risk_tags(s, stage="MOMENTUM_2")
+    assert "PARABOLIC" in tags
+
+
+def test_risk_tags_extended():
+    """close가 MA20 대비 +12% → EXTENDED."""
+    s = _stock(close=112, ma20=100)
+    tags = ms.compute_risk_tags(s, stage="MOMENTUM_2")
+    assert "EXTENDED" in tags
+
+
+def test_risk_tags_early():
+    """M1 + 60 ≤ RSI < 65 → EARLY."""
+    s = _stock(rsi=62)
+    tags = ms.compute_risk_tags(s, stage="MOMENTUM_1")
+    assert "EARLY" in tags
+
+
+def test_risk_tags_early_only_for_m1():
+    """M2 / M3는 EARLY 부여 안 됨."""
+    s = _stock(rsi=62)
+    assert "EARLY" not in ms.compute_risk_tags(s, stage="MOMENTUM_2")
+
+
+def test_risk_tags_multiple():
+    """복수 태그 — OVERHEAT + PARABOLIC."""
+    s = _stock(rsi=82)
+    s["change_pct"] = 10.0
+    tags = ms.compute_risk_tags(s, stage="MOMENTUM_3")
+    assert "OVERHEAT" in tags and "PARABOLIC" in tags
+
+
+def test_position_hint_priority():
+    """OVERHEAT > PARABOLIC > EXTENDED > EARLY."""
+    assert ms.position_hint(["EXTENDED", "PARABOLIC"]) == "눌림"
+    assert ms.position_hint(["EXTENDED", "EARLY", "OVERHEAT"]) == "신중"
+    assert ms.position_hint([]) == "적극"
+    assert ms.position_hint(["EARLY"]) == "조기"
+
+
+def test_evaluate_stock_returns_full_dict():
+    s = _stock(ret_3d=10.0, rsi=70, close=109, ma20=100,
+               vol_ratio=1.3, macd_hist_trend="rising", ma50=110,
+               high_52w=110, ret_5d=12.0)
+    s["change_pct"] = 2.0
+    result = ms.evaluate_stock(s, sector_5d_return=4.0)
+    assert result["stage"] == "MOMENTUM_3"
+    assert result["risk_tags"] == []
+    assert result["rs_vs_sector"] is True   # 12% > 4%
+    assert result["hint"] == "적극"
+
+
+def test_evaluate_stock_no_signal_when_below_m1():
+    s = _stock(ret_3d=5.0, rsi=55)
+    result = ms.evaluate_stock(s, sector_5d_return=2.0)
+    assert result is None
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):
