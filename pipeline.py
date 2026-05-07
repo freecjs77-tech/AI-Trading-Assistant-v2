@@ -393,6 +393,34 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         else:
             print(f"[Step 4c2] Skipped (MODE={_mode})")
 
+        # Step 4c3: Portfolio Stop Signals (me)
+        # 자동매매 ❌ / 매도 판단 보조 ✅. 4c3로 번호 잡아 4c2와 4d 사이.
+        skip_stops = os.environ.get("SKIP_STOPS", "").lower() in ("1", "true", "yes")
+        stop_result_me = None
+        if skip_stops:
+            print("[Step 4c3] SKIP_STOPS=1 — 포트폴리오 stop 시그널 스킵")
+        else:
+            print("[Step 4c3] Portfolio stop signals (me)...")
+            try:
+                from portfolio_stop_signal import generate_portfolio_stop_signals
+                stop_result_me = generate_portfolio_stop_signals(
+                    project_dir=project_dir, owner="me",
+                    market_data=market_data,
+                    portfolio=_parse_portfolio_for_report(portfolio_path),
+                    today=today,
+                )
+                if stop_result_me and stop_result_me.get("status") == "ok":
+                    s = stop_result_me["summary"]
+                    print(f"  OK [4c3] me: HOLD={s.get('HOLD',0)} "
+                          f"TIGHT={s.get('TIGHT',0)} "
+                          f"EXIT_READY={s.get('EXIT_READY',0)} "
+                          f"EXIT={s.get('EXIT',0)}")
+            except Exception as e:
+                import traceback as _tbs
+                _tbs.print_exc()
+                print(f"  WARN [4c3] me stop signals failed: {e}")
+                stop_result_me = None
+
         # Step 4d: YTD benchmark (vs S&P KRW) — per owner
         print("[Step 4d] Computing YTD benchmark vs S&P (KRW)...")
         from benchmark_ytd import compute_owner_benchmark
@@ -451,6 +479,18 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         print("[Step 5] Generating report...")
         portfolio = _parse_portfolio_for_report(portfolio_path)
         prev_signals = get_previous_signals(history, today)
+
+        # Step 5 (cont.): Stop signal page for me (fail-soft)
+        stop_page_path_me = None
+        if stop_result_me and stop_result_me.get("status") == "ok":
+            try:
+                from portfolio_stop_report import generate_portfolio_stop_page
+                stop_page_path_me = generate_portfolio_stop_page(
+                    stop_result_me, output_dir=reports_dir,
+                )
+                print(f"  OK stop page (me) -> {stop_page_path_me}")
+            except Exception as e:
+                print(f"  WARN stop page (me) failed: {e}")
 
         report_path = os.path.join(reports_dir, f"report_{today}.html")
         generate_report(
@@ -806,6 +846,39 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 )
                 _owner_history = load_history(_owner_history_path)
                 _owner_signals = judge_all(_owner_market, _owner_history)
+
+                # Step 4c3 equivalent for secondary owner — independent state
+                _owner_stop_result = None
+                if not skip_stops:
+                    try:
+                        from portfolio_stop_signal import generate_portfolio_stop_signals
+                        _owner_stop_result = generate_portfolio_stop_signals(
+                            project_dir=project_dir, owner=_owner,
+                            market_data=_owner_market,
+                            portfolio=_owner_portfolio,
+                            today=today,
+                        )
+                        if _owner_stop_result and _owner_stop_result.get("status") == "ok":
+                            s = _owner_stop_result["summary"]
+                            print(f"  OK [4c3] {_owner}: HOLD={s.get('HOLD',0)} "
+                                  f"TIGHT={s.get('TIGHT',0)} "
+                                  f"EXIT_READY={s.get('EXIT_READY',0)} "
+                                  f"EXIT={s.get('EXIT',0)}")
+                    except Exception as e:
+                        print(f"  WARN [4c3] {_owner} stop signals failed: {e}")
+                        _owner_stop_result = None
+
+                # Stop signal page for secondary owner
+                if _owner_stop_result and _owner_stop_result.get("status") == "ok":
+                    try:
+                        from portfolio_stop_report import generate_portfolio_stop_page
+                        _owner_stop_page = generate_portfolio_stop_page(
+                            _owner_stop_result, output_dir=reports_dir,
+                        )
+                        print(f"  OK stop page ({_owner}) -> {_owner_stop_page}")
+                    except Exception as e:
+                        print(f"  WARN stop page ({_owner}) failed: {e}")
+
                 _owner_prev = get_previous_signals(_owner_history, today)
                 _owner_report = os.path.join(
                     reports_dir, f"report_{_owner}_{today}.html"
