@@ -626,6 +626,49 @@ def generate_scanner_pages(
     return [out_path]
 
 
+def generate_momentum_pages(
+    momentum_us: dict | None,
+    momentum_kr: dict | None,
+    output_dir: str,
+    template_dir: str | None = None,
+) -> list[str]:
+    """모멘텀 스캐너 결과 → momentum_us_<DATE>.html / momentum_kr_<DATE>.html 페이지.
+
+    Args:
+        momentum_us: scan_momentum_us() 결과 dict 또는 None
+        momentum_kr: scan_momentum_kr() 결과 dict 또는 None
+        output_dir: 페이지 출력 디렉토리
+        template_dir: Jinja2 템플릿 디렉토리 (기본: ./templates)
+
+    Returns:
+        생성된 파일 경로 리스트 (None 결과는 스킵).
+    """
+    if template_dir is None:
+        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
+    env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
+    env.filters["f1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
+
+    pairs = [
+        ("US", momentum_us, "momentum_us.html", "🇺🇸 US"),
+        ("KR", momentum_kr, "momentum_kr.html", "🇰🇷 KR"),
+    ]
+    output: list[str] = []
+    for market, result, tmpl, label in pairs:
+        if result is None:
+            continue
+        as_of = result.get("as_of", "unknown")
+        path = os.path.join(output_dir, f"momentum_{market.lower()}_{as_of}.html")
+        try:
+            html = env.get_template(tmpl).render(result=result, market_label=label)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(html)
+            output.append(path)
+        except Exception as e:
+            print(f"[report_generator] WARN momentum {market} render failed: {e}")
+    return output
+
+
 def _series_from_daily(daily: dict) -> list:
     """portfolio_daily 스냅샷 → 트렌드 시계열 dict 리스트 (date/total_eok/pnl_eok 등)."""
     out = []
