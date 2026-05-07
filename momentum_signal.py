@@ -120,3 +120,73 @@ def select_top_sectors(evaluated: list[dict], n: int = None) -> list[dict]:
     passing = [s for s in evaluated if s.get("passes_required")]
     passing.sort(key=lambda s: (-s["score"], -s.get("ret_5d_pct", 0)))
     return passing[:n]
+
+
+def passes_prefilter(stock_data: dict) -> bool:
+    """
+    Pre-filter (종목 게이트) — Top 2~3 섹터 종목만 본 스캔.
+
+    ALL 통과 시 True:
+      ① ret_3d_pct ≥ PREFILTER_3D_MIN_PCT (4.0%)
+      ② close > ma20
+      ③ rsi14 ≥ PREFILTER_RSI_MIN (55)
+    """
+    r3 = _safe_float(stock_data.get("ret_3d_pct"))
+    rsi = _safe_float(stock_data.get("rsi14"))
+    close = _safe_float(stock_data.get("close"))
+    ma20 = _safe_float(stock_data.get("ma20"))
+    if r3 is None or rsi is None or close is None or ma20 is None:
+        return False
+    return (
+        r3 >= cfg.PREFILTER_3D_MIN_PCT
+        and close > ma20
+        and rsi >= cfg.PREFILTER_RSI_MIN
+    )
+
+
+def classify_stage(stock_data: dict) -> str | None:
+    """
+    M1/M2/M3 단계 판정 — 가장 높은 단계 반환.
+
+    M1: ret_3d ≥ 8% AND rsi ≥ 60 AND close > ma20
+    M2: M1 충족 AND (volume_ratio≥1.2, macd rising, close>ma50) 중 2개 이상
+    M3: M2 충족 AND close ≥ high_52w × 0.99 AND rsi ≥ 65
+
+    Returns: "MOMENTUM_3" | "MOMENTUM_2" | "MOMENTUM_1" | None
+    """
+    r3 = _safe_float(stock_data.get("ret_3d_pct"))
+    rsi = _safe_float(stock_data.get("rsi14"))
+    close = _safe_float(stock_data.get("close"))
+    ma20 = _safe_float(stock_data.get("ma20"))
+    ma50 = _safe_float(stock_data.get("ma50"))
+    vol_ratio = _safe_float(stock_data.get("volume_ratio"), 0.0)
+    macd_trend = stock_data.get("macd_hist_trend") or "flat"
+    high_52w = _safe_float(stock_data.get("high_52w"))
+
+    # M1
+    if (r3 is None or rsi is None or close is None or ma20 is None
+            or r3 < cfg.M1_3D_MIN_PCT
+            or rsi < cfg.M1_RSI_MIN
+            or close <= ma20):
+        return None
+    stage = "MOMENTUM_1"
+
+    # M2 acceleration count (3개 중 2개)
+    accel = 0
+    if vol_ratio >= cfg.M2_VOLUME_RATIO_MIN:
+        accel += 1
+    if macd_trend == "rising":
+        accel += 1
+    if ma50 is not None and close > ma50:
+        accel += 1
+    if accel >= 2:
+        stage = "MOMENTUM_2"
+
+    # M3
+    if (stage == "MOMENTUM_2"
+            and high_52w is not None
+            and close >= high_52w * cfg.M3_HIGH_52W_RATIO
+            and rsi >= cfg.M3_RSI_MIN):
+        stage = "MOMENTUM_3"
+
+    return stage

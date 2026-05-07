@@ -85,6 +85,77 @@ def test_select_top_sectors():
     assert all(t["passes_required"] for t in top)
 
 
+def _stock(ret_3d=10, rsi=65, close=110, ma20=100, ma50=95,
+           vol_ratio=1.3, macd_hist_trend="rising", high_52w=120,
+           ret_5d=12.0):
+    return {
+        "ticker": "NVDA",
+        "ret_3d_pct": ret_3d, "rsi14": rsi,
+        "close": close, "ma20": ma20, "ma50": ma50,
+        "volume_ratio": vol_ratio,
+        "macd_hist_trend": macd_hist_trend,
+        "high_52w": high_52w,
+        "ret_5d_pct": ret_5d,
+    }
+
+
+def test_prefilter_passes():
+    s = _stock(ret_3d=5.0, rsi=58, close=110, ma20=100)
+    assert ms.passes_prefilter(s) is True
+
+
+def test_prefilter_fails_low_ret_3d():
+    s = _stock(ret_3d=2.0, rsi=58, close=110, ma20=100)
+    assert ms.passes_prefilter(s) is False
+
+
+def test_prefilter_fails_low_rsi():
+    s = _stock(ret_3d=5.0, rsi=50, close=110, ma20=100)
+    assert ms.passes_prefilter(s) is False
+
+
+def test_prefilter_fails_below_ma20():
+    s = _stock(ret_3d=5.0, rsi=58, close=98, ma20=100)
+    assert ms.passes_prefilter(s) is False
+
+
+def test_classify_m1_basic():
+    """M1 = 3d≥8% AND RSI≥60 AND close>MA20 (그러나 M2 가속 미달)."""
+    s = _stock(ret_3d=8.0, rsi=60, close=110, ma20=100,
+               vol_ratio=1.0, macd_hist_trend="flat", ma50=120,  # M2 가속 0/3
+               high_52w=200)                                    # M3 미달
+    assert ms.classify_stage(s) == "MOMENTUM_1"
+
+
+def test_classify_m2_with_2_of_3_acceleration():
+    """M2 = M1 + 가속 3개 중 2개 이상 (volume_ratio≥1.2, macd rising, close>MA50)."""
+    s = _stock(ret_3d=8.0, rsi=60, close=110, ma20=100,
+               vol_ratio=1.3, macd_hist_trend="rising", ma50=95,
+               high_52w=200)   # M3 미달
+    assert ms.classify_stage(s) == "MOMENTUM_2"
+
+
+def test_classify_m3_at_52w_high():
+    """M3 = M2 + close ≥ high_52w × 0.99 + RSI ≥ 65."""
+    s = _stock(ret_3d=10.0, rsi=70, close=120, ma20=100,
+               vol_ratio=1.3, macd_hist_trend="rising", ma50=110,
+               high_52w=120)
+    assert ms.classify_stage(s) == "MOMENTUM_3"
+
+
+def test_classify_m3_requires_rsi_65():
+    """M2 조건 충족 + 52주 고가 도달, 그러나 RSI < 65 → M2."""
+    s = _stock(ret_3d=10.0, rsi=63, close=120, ma20=100,
+               vol_ratio=1.3, macd_hist_trend="rising", ma50=110,
+               high_52w=120)
+    assert ms.classify_stage(s) == "MOMENTUM_2"
+
+
+def test_classify_returns_none_when_m1_fails():
+    s = _stock(ret_3d=5.0, rsi=55, close=110, ma20=100)
+    assert ms.classify_stage(s) is None
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):
