@@ -175,7 +175,13 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         print(f"  OK {len(signals)} tickers judged: {sig_counts}")
 
         # Step 4b: Scanner (S&P 100 + ETF + KOSPI + Watchlist)
-        skip_scanners = os.environ.get("SKIP_SCANNERS", "").lower() in ("1", "true", "yes")
+        _mode = os.environ.get("MODE", "full")
+        skip_scanners = (
+            os.environ.get("SKIP_SCANNERS", "").lower() in ("1", "true", "yes")
+            or _mode == "momentum_only"
+        )
+        if _mode != "full":
+            print(f"[mode] MODE={_mode} (skip_scanners={skip_scanners})")
         scanner_sp100_result = None
         scanner_etf_result = None
         scanner_kospi_result = None
@@ -330,6 +336,50 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                         print(f"  OK aggregator: {ln}")
         except Exception as e:
             print(f"  WARN politician trades step failed ({type(e).__name__}: {e}); continuing")
+
+        # Step 4c2: Momentum Scanner (US + KR, 독립 실행, 실패 격리)
+        # 기존 strategy v5.3 시그널과 무관 — 별도 추세 추종 시그널.
+        momentum_us_result = None
+        momentum_kr_result = None
+        _run_momentum = (_mode in ("full", "momentum_only"))
+        if _run_momentum:
+            print("[Step 4c2] Momentum scanners (US + KR)...")
+            try:
+                from momentum_scanner import scan_momentum_us, scan_momentum_kr
+                try:
+                    momentum_us_result = scan_momentum_us(project_dir)
+                    if momentum_us_result and momentum_us_result.get("status") == "ok":
+                        sigs = momentum_us_result.get("signals", {})
+                        print(f"  OK [Step 4c2] Momentum US: "
+                              f"M3={len(sigs.get('MOMENTUM_3', []))} "
+                              f"M2={len(sigs.get('MOMENTUM_2', []))} "
+                              f"M1={len(sigs.get('MOMENTUM_1', []))}")
+                    elif momentum_us_result:
+                        print(f"  WARN [Step 4c2] Momentum US status: "
+                              f"{momentum_us_result.get('status')} "
+                              f"({momentum_us_result.get('error_message', '')})")
+                except Exception as e:
+                    print(f"  WARN [Step 4c2] Momentum US failed: {e}")
+                    momentum_us_result = None
+                try:
+                    momentum_kr_result = scan_momentum_kr(project_dir)
+                    if momentum_kr_result and momentum_kr_result.get("status") == "ok":
+                        sigs = momentum_kr_result.get("signals", {})
+                        print(f"  OK [Step 4c2] Momentum KR: "
+                              f"M3={len(sigs.get('MOMENTUM_3', []))} "
+                              f"M2={len(sigs.get('MOMENTUM_2', []))} "
+                              f"M1={len(sigs.get('MOMENTUM_1', []))}")
+                    elif momentum_kr_result:
+                        print(f"  WARN [Step 4c2] Momentum KR status: "
+                              f"{momentum_kr_result.get('status')} "
+                              f"({momentum_kr_result.get('error_message', '')})")
+                except Exception as e:
+                    print(f"  WARN [Step 4c2] Momentum KR failed: {e}")
+                    momentum_kr_result = None
+            except ImportError as e:
+                print(f"  WARN [Step 4c2] momentum_scanner module unavailable: {e}")
+        else:
+            print(f"[Step 4c2] Skipped (MODE={_mode})")
 
         # Step 4d: YTD benchmark (vs S&P KRW) — per owner
         print("[Step 4d] Computing YTD benchmark vs S&P (KRW)...")
