@@ -161,6 +161,19 @@ def test_fetch_kodex_holdings_skips_invalid_rows():
     assert tickers == ["005930.KS"]
 
 
+def test_fetch_kosdaq_holdings_uses_kq_suffix():
+    """KOSDAQ 150 holdings should use .KQ for KOSDAQ-listed codes."""
+    from unittest.mock import patch
+    fake = _make_krx_response([
+        {"ISU_SRT_CD": "005930", "ISU_ABBRV": "삼성전자"},   # KOSPI → .KS
+        {"ISU_SRT_CD": "110990", "ISU_ABBRV": "디아이티"},  # KOSDAQ → .KQ
+    ])
+    with patch("momentum_data.requests.post", return_value=fake):
+        tickers = md.fetch_krx_etf_holdings("229200")
+    assert "005930.KS" in tickers, f"KOSPI suffix wrong: {tickers}"
+    assert "110990.KQ" in tickers, f"KOSDAQ suffix wrong: {tickers}"
+
+
 if __name__ == "__main__":
     test_save_and_load_cache()
     test_load_cache_missing_returns_none()
@@ -175,4 +188,5 @@ if __name__ == "__main__":
     test_parse_iwb_csv_unknown_column_raises()
     test_fetch_kodex_holdings_parses_response()
     test_fetch_kodex_holdings_skips_invalid_rows()
+    test_fetch_kosdaq_holdings_uses_kq_suffix()
     print("[OK] momentum_data tests passed.")

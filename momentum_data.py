@@ -251,7 +251,8 @@ def fetch_krx_etf_holdings(etf_code: str) -> list[str]:
         code = (row.get("ISU_SRT_CD") or "").strip()
         if not code or not code.isdigit() or len(code) != 6:
             continue
-        out.append(f"{code}.KS")
+        from portfolio_data import to_yfinance_symbol
+        out.append(to_yfinance_symbol(code))
     return out
 
 
