@@ -82,6 +82,18 @@ def _parse_portfolio_for_report(portfolio_path: str) -> list[dict]:
     return holdings
 
 
+def _load_momentum_history(project_dir: str, market: str) -> dict | None:
+    """history/scanner_momentum_<us|kr>_history.json 로드. 없으면 None."""
+    path = os.path.join(project_dir, "history", f"scanner_momentum_{market}_history.json")
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
 def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = False, auto: bool = False) -> dict:
     today = date.today().strftime("%Y-%m-%d")
     screenshots_dir = os.path.join(project_dir, "screenshots")
@@ -452,6 +464,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_etf=scanner_etf_result,
             scanner_kospi=scanner_kospi_result,
             benchmark_data=benchmark_by_owner.get("me"),
+            momentum_us=momentum_us_result,    # Task 21
+            momentum_kr=momentum_kr_result,    # Task 21
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -466,6 +480,18 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             output_dir=reports_dir,
         )
         print(f"  OK {len(scanner_files)} scanner pages generated")
+
+        # Momentum pages (US + KR)
+        try:
+            from report_generator import generate_momentum_pages
+            momentum_files = generate_momentum_pages(
+                momentum_us=momentum_us_result,
+                momentum_kr=momentum_kr_result,
+                output_dir=reports_dir,
+            )
+            print(f"  OK {len(momentum_files)} momentum pages generated")
+        except Exception as e:
+            print(f"  WARN momentum pages failed: {e}")
 
         # Step 5a: Charts + Detail pages
         print("[Step 5a] Generating charts...")
@@ -490,6 +516,15 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     t = e.get("ticker", "")
                     if t and t not in tickers_list and t not in extra_tickers:
                         extra_tickers.append(t)
+            # 모멘텀 시그널 종목도 차트 생성 대상
+            for mr in (momentum_us_result, momentum_kr_result):
+                if not mr or mr.get("status") != "ok":
+                    continue
+                for stage in ("MOMENTUM_3", "MOMENTUM_2", "MOMENTUM_1"):
+                    for e in mr.get("signals", {}).get(stage, []):
+                        t = e.get("ticker", "")
+                        if t and t not in tickers_list and t not in extra_tickers:
+                            extra_tickers.append(t)
             # Secondary owner(wife 등) 포트폴리오 티커 — primary에 없는 것만
             try:
                 from portfolio_paths import discover_portfolios, PRIMARY_OWNER as _PO
@@ -531,6 +566,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_etf_history=_sc_etf_hist,
             scanner_kospi_history=_sc_kospi_hist,
             scanner_watchlist_history=_sc_watch_hist,
+            momentum_us_history=_load_momentum_history(project_dir, "us"),    # Task 21
+            momentum_kr_history=_load_momentum_history(project_dir, "kr"),    # Task 21
         )
         print(f"  OK {len(detail_files)} detail pages -> {details_dir}")
 
