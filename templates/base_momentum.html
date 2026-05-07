@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ market_label }} Momentum {{ result.as_of }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a1a; color: #e0e0e0; font-family: 'Consolas', 'D2Coding', monospace;
+         margin: 0; padding: 1.5em; line-height: 1.5; font-size: 14px; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 { color: #ffa500; font-size: 28px; font-weight: bold; margin-bottom: 0.5em; }
+  h2 { color: #ffa500; font-size: 18px; font-weight: bold; margin: 1.5em 0 0.8em; border-bottom: 1px solid #444; padding-bottom: 0.4em; }
+  h3 { color: #ffb84d; font-size: 15px; font-weight: bold; margin: 1em 0 0.6em; }
+  p { margin: 0.5em 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 13px; }
+  th, td { border: 1px solid #444; padding: 6px 8px; text-align: left; }
+  th { background: #2a2a2a; color: #ffb84d; font-weight: bold; }
+  tr:nth-child(even) { background: #222; }
+  tr:nth-child(odd) { background: #1f1f1f; }
+  a { color: #4db8ff; text-decoration: none; }
+  a:hover { color: #99d9ff; }
+  nav { margin-bottom: 1.5em; }
+  nav a { margin-right: 16px; font-weight: bold; }
+  nav a:first-child { color: #bbb; }
+  nav a:hover { color: #ddd; }
+  .info { background: #2a2a2a; border-left: 3px solid #ffa500; padding: 8px 12px; margin: 0.8em 0; font-size: 13px; }
+  .alert { background: #3d2020; border-left: 3px solid #ff4444; padding: 8px 12px; margin: 1em 0; color: #ffb3b3; }
+  .pos { color: #4caf50; font-weight: bold; }
+  .neg { color: #ff6b6b; font-weight: bold; }
+  .M3 { color: #ff5722; font-weight: bold; }
+  .M2 { color: #ffa500; font-weight: bold; }
+  .M1 { color: #ffeb3b; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 12px; margin: 0 2px 2px 0; }
+  .badge-OVERHEAT { background: #d32f2f; color: #fff; }
+  .badge-PARABOLIC { background: #ff9800; color: #fff; }
+  .badge-EXTENDED { background: #ffc107; color: #222; }
+  .badge-EARLY { background: #9e9e9e; color: #fff; }
+  .empty-state { text-align: center; padding: 2em 0; color: #888; }
+  .empty-state-icon { font-size: 48px; margin-bottom: 0.5em; }
+  .footer { margin-top: 2em; padding-top: 1em; border-top: 1px dashed #444; font-size: 12px; color: #888; }
+  .sector-leader { background: #242424; border-left: 4px solid #ffa500; padding: 0.8em; margin: 0.5em 0; }
+  .sr-ticker { color: #4db8ff; font-weight: bold; font-size: 13px; }
+  .sr-score { color: #ffb84d; }
+  @media (max-width: 768px) {
+    body { padding: 1em; }
+    table { font-size: 12px; }
+    th, td { padding: 4px 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<nav>{% block nav %}<a href="index.html">📊 Portfolio</a> | 🔥 Momentum Scanner{% endblock %}</nav>
+
+<h1>🔥 {{ market_label }} Momentum — {{ result.as_of }}</h1>
+<p style="color: #aaa;">Scanned: {{ result.scanned_count }} tickers · ⏱ {{ result.elapsed_s|default(0)|round(1) }}s · {{ result.version }}</p>
+
+{% if result.status == "failed" %}
+<div class="alert">⚠ Scan failed: {{ result.error_message }}</div>
+{% else %}
+
+<p style="margin: 1em 0; color: #ccc;">Signals detected: <span class="M3">M3={{ result.signals.MOMENTUM_3|length }}</span> | <span class="M2">M2={{ result.signals.MOMENTUM_2|length }}</span> | <span class="M1">M1={{ result.signals.MOMENTUM_1|length }}</span></p>
+
+<h2>Sector Leaders</h2>
+{% if result.top_sectors %}
+<div style="margin: 1em 0;">
+  {% for s in result.top_sectors %}
+  <div class="sector-leader">
+    <span class="sr-ticker">{{ s.ticker }}</span>
+    <span class="sr-score">Score: {{ s.score }}</span> |
+    <span class="{{ 'pos' if (s.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(s.ret_5d_pct or 0) }}% (5d)</span> |
+    RS: {{ s.rs_score|default(0) }}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p style="color: #666;">— No sector qualifies for momentum today.</p>
+{% endif %}
+
+<h2>Signals</h2>
+{% for stage_name, stage_label in [("MOMENTUM_3","M3"),("MOMENTUM_2","M2"),("MOMENTUM_1","M1")] %}
+  {% set entries = result.signals[stage_name] %}
+  <h3 class="{{ stage_label }}">{{ stage_label }} ({{ entries|length }})</h3>
+  {% if entries %}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Price</th>
+        <th>1d %</th>
+        <th>3d %</th>
+        <th>5d %</th>
+        <th>RSI</th>
+        <th>Sector</th>
+        <th>Sec_RS</th>
+        <th>Risk Tags</th>
+        <th>Hint</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for e in entries %}
+      <tr>
+        <td><a href="details/{{ e.ticker }}.html" style="color: #4db8ff;" title="{{ e.ticker }}">{{ e.name or e.ticker }}</a>{% if e.name and e.name != e.ticker %}<span style="color:#888;font-size:0.82em;margin-left:6px;">{{ e.ticker }}</span>{% endif %}</td>
+        <td>{{ "%.2f"|format(e.price or 0) }}</td>
+        <td class="{{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
+        <td class="{{ 'pos' if (e.ret_3d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_3d_pct or 0) }}%</td>
+        <td class="{{ 'pos' if (e.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_5d_pct or 0) }}%</td>
+        <td>{{ "%.1f"|format(e.rsi or 0) }}</td>
+        <td>{{ e.sector or "—" }}</td>
+        <td>{{ "✓" if e.rs_vs_sector else "—" }}</td>
+        <td>{% for tag in e.risk_tags %}<span class="badge badge-{{ tag }}">{{ tag }}</span>{% endfor %}</td>
+        <td>{{ e.hint }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color: #666;">— No {{ stage_label }} signals today.</p>
+  {% endif %}
+{% endfor %}
+
+{% if result.backtest_summary %}
+<h2>Backtest Summary (Direct 90-day rolling)</h2>
+{% set bs = result.backtest_summary %}
+{% if bs.alerts and bs.alerts.consecutive_loss_warning %}
+<div class="alert">⚠ 최근 5개 leg 중 {{ bs.alerts.recent_5_legs_loss_count }}개 손실 — 신호 신뢰도 점검 필요</div>
+{% endif %}
+<table>
+  <thead>
+    <tr>
+      <th>Stage</th>
+      <th>#legs</th>
+      <th>Win 5d %</th>
+      <th>Avg 3d %</th>
+      <th>Avg 5d %</th>
+      <th>Avg 10d %</th>
+      <th>MDD %</th>
+      <th>Avg dur (days)</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for stage in ["MOMENTUM_3","MOMENTUM_2","MOMENTUM_1"] %}
+    {% if bs.by_stage and stage in bs.by_stage %}
+    {% set st = bs.by_stage[stage] %}
+    <tr>
+      <td>{{ stage }}</td>
+      <td>{{ st.leg_count }}</td>
+      <td>{{ "%.1f"|format(st.win_rate_5d_pct or 0) }}%</td>
+      <td>{{ "%.2f"|format(st.avg_ret_3d_pct or 0) }}%</td>
+      <td>{{ "%.2f"|format(st.avg_ret_5d_pct or 0) }}%</td>
+      <td>{{ "%.2f"|format(st.avg_ret_10d_pct or 0) }}%</td>
+      <td class="neg">{{ "%.2f"|format(st.avg_mdd_pct or 0) }}%</td>
+      <td>{{ "%.1f"|format(st.avg_duration_days or 0) }}</td>
+    </tr>
+    {% endif %}
+  {% endfor %}
+  </tbody>
+</table>
+{% if bs.by_streak and "3+" in bs.by_streak %}
+<p style="margin-top: 1em; color: #4caf50;">🔥 <b>Edge:</b> M3 streak 3+ days → 5d avg {{ "%.1f"|format(bs.by_streak["3+"].avg_ret_5d or 0) }}%</p>
+{% endif %}
+{% else %}
+<p style="color: #666;">백테스트 데이터 누적 중 (최소 90일 후 표시)</p>
+{% endif %}
+
+{% endif %}
+
+<div class="footer">
+{% block footer %}
+<p>Universe: {{ result.scanned_count }} | Version: {{ result.version }}</p>
+<p>⚠ Backtest assumes close entry — slippage expected in live trading</p>
+{% endblock %}
+</div>
+
+</div>
+</body>
+</html>

@@ -288,6 +288,47 @@
   </div>
   {% endif %}
 
+  <!-- Momentum Status & History -->
+  {% if momentum_data %}
+  <div style="background:var(--panel);border-left:4px solid var(--orange);padding:1em;margin:1em 0;border-radius:10px;border:1px solid var(--border);">
+    <h2 style="color:var(--orange);margin-top:0;margin-bottom:1em;font-size:16px;">🔥 CURRENT STATUS</h2>
+    {% set md = momentum_data %}
+    <p style="margin-bottom:0.8em;">
+      <strong>Stage:</strong> {{ md.last.stage or "—" }} ({{ md.last.time_in_stage|default(0) }}일째)
+      | <strong>Entry:</strong> {% if is_kospi %}₩{{ md.last.entry_price|default(0)|comma }}{% else %}${{ md.last.entry_price|default(0)|f2 }}{% endif %} →
+      <strong>Now:</strong> {% if is_kospi %}₩{{ md.last.price|default(0)|comma }}{% else %}${{ md.last.price|default(0)|f2 }}{% endif %}
+    </p>
+    {% if md.last.risk_tags %}
+    <p style="margin:0;">
+      <strong>Risk:</strong>
+      {% for tag in md.last.risk_tags %}<span style="background:var(--red);color:#fff;padding:0 6px;margin-right:4px;border-radius:4px;font-size:0.85em;display:inline-block;">{{ tag }}</span>{% endfor %}
+    </p>
+    {% endif %}
+  </div>
+
+  <div style="background:var(--panel);border:1px solid var(--border);padding:1em;margin:1em 0;border-radius:10px;">
+    <h2 style="color:var(--orange);margin-top:0;margin-bottom:1em;font-size:16px;">🔥 Momentum History (최근 30일)</h2>
+    <table class="history-table">
+      <thead><tr style="background:var(--panel2);">
+        <th style="padding:4px 8px;text-align:left;">Date</th>
+        <th>Stage</th><th>Change</th><th>Streak</th><th>Price</th><th>Risk</th>
+      </tr></thead>
+      <tbody>
+      {% for date, entry in md.recent %}
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:4px 8px;">{{ date }}</td>
+          <td>{{ entry.stage or "EXIT" }}</td>
+          <td>{{ entry.change }}</td>
+          <td>{{ entry.streak|default(0) }}</td>
+          <td>{% if is_kospi %}₩{{ entry.price|default(entry.exit_price|default(0))|comma }}{% else %}${{ entry.price|default(entry.exit_price|default(0))|f2 }}{% endif %}</td>
+          <td style="font-size:0.85em;">{% for tag in entry.risk_tags|default([]) %}{{ tag }} {% endfor %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
   <!-- Signal Judgment Detail -->
   <div class="signal-section">
     <div class="section-title">&#128269; &#54032;&#51221; &#44540;&#44144; &#49345;&#49464;</div>

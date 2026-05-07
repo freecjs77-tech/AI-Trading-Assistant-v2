@@ -241,6 +241,33 @@ def macd_hist_trend(hist_series: pd.Series, lookback=3) -> str:
     return "mixed"
 
 
+def _compute_returns(close: pd.Series) -> dict:
+    """
+    종가 시리즈에서 N일 누적 수익률 계산. NaN/Zero 방어.
+
+    Returns:
+        {"change_5d_pct": float|None, "change_20d_pct": float|None}
+    """
+    out = {"change_5d_pct": None, "change_20d_pct": None}
+    if close is None or len(close) == 0:
+        return out
+    last = float(close.iloc[-1])
+    if pd.isna(last):
+        return out
+
+    def _ret(periods: int):
+        if len(close) < periods + 1:
+            return None
+        denom = close.iloc[-(periods + 1)]
+        if pd.isna(denom) or float(denom) == 0:
+            return None
+        return round((last / float(denom) - 1) * 100, 2)
+
+    out["change_5d_pct"] = _ret(5)
+    out["change_20d_pct"] = _ret(20)
+    return out
+
+
 # ── 매크로 지표 수집 ─────────────────────────────────
 
 def fetch_macro() -> dict:
@@ -420,6 +447,7 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None, forward_div=None
             "prev_close":        round(float(close.iloc[-2]), 2) if len(close) >= 2 else None,
             "change_pct":        round((last_close / float(close.iloc[-2]) - 1) * 100, 2) if len(close) >= 2 else None,
             "change_3d_pct":     round((last_close / float(close.iloc[-4]) - 1) * 100, 2) if len(close) >= 4 else None,
+            **_compute_returns(close),     # change_5d_pct + change_20d_pct
             # 이동평균
             "ma20":              safe(ma20),
             "ma50":              safe(ma50),

@@ -989,6 +989,66 @@ KOSPI_TICKERS = [
     "047050.KS",  # 포스코인터내셔널
 ]
 
+# ── KOSPI 섹터 매핑 (English, GICS 호환) ──
+# 모멘텀 스캐너 KR 섹터 표시용. KOSPI_TICKERS 그룹 주석을 그대로 영문 섹터로 매핑.
+KOSPI_SECTORS = {
+    # 반도체/IT/통신 → Technology / Communication Services
+    "005930.KS": "Technology", "000660.KS": "Technology", "009150.KS": "Technology",
+    "018260.KS": "Technology", "066570.KS": "Technology", "017670.KS": "Communication Services",
+    "030200.KS": "Communication Services", "035420.KS": "Communication Services",
+    "035720.KS": "Communication Services", "036570.KS": "Communication Services",
+    "251270.KS": "Communication Services", "083790.KS": "Communication Services",
+    # 배터리/에너지/소재 → Energy / Basic Materials
+    "373220.KS": "Energy", "006400.KS": "Energy", "051910.KS": "Basic Materials",
+    "096770.KS": "Energy", "009830.KS": "Basic Materials", "112610.KS": "Industrials",
+    "241560.KS": "Energy", "003670.KS": "Basic Materials", "066970.KS": "Basic Materials",
+    "011790.KS": "Basic Materials",
+    # 자동차/부품 → Consumer Cyclical
+    "005380.KS": "Consumer Cyclical", "000270.KS": "Consumer Cyclical",
+    "012330.KS": "Consumer Cyclical", "018880.KS": "Consumer Cyclical",
+    "064350.KS": "Industrials", "086280.KS": "Industrials",
+    "161390.KS": "Consumer Cyclical",
+    # 철강/금속/화학 → Basic Materials
+    "005490.KS": "Basic Materials", "004020.KS": "Basic Materials",
+    "010130.KS": "Basic Materials", "002380.KS": "Basic Materials",
+    "011170.KS": "Basic Materials", "298040.KS": "Basic Materials",
+    "004800.KS": "Basic Materials", "006260.KS": "Industrials",
+    "011780.KS": "Basic Materials",
+    # 금융 → Financial Services
+    "105560.KS": "Financial Services", "055550.KS": "Financial Services",
+    "086790.KS": "Financial Services", "316140.KS": "Financial Services",
+    "032830.KS": "Financial Services", "000810.KS": "Financial Services",
+    "088350.KS": "Financial Services", "005940.KS": "Financial Services",
+    "006800.KS": "Financial Services", "071050.KS": "Financial Services",
+    "024110.KS": "Financial Services", "138040.KS": "Financial Services",
+    "138930.KS": "Financial Services", "005830.KS": "Financial Services",
+    # 바이오/제약 → Healthcare
+    "207940.KS": "Healthcare", "068270.KS": "Healthcare", "068760.KS": "Healthcare",
+    "128940.KS": "Healthcare", "000100.KS": "Healthcare", "326030.KS": "Healthcare",
+    "140490.KS": "Healthcare", "069620.KS": "Healthcare", "096530.KS": "Healthcare",
+    # 건설/조선/방산 → Industrials
+    "000720.KS": "Industrials", "034020.KS": "Industrials", "329180.KS": "Industrials",
+    "010620.KS": "Industrials", "042660.KS": "Industrials", "010140.KS": "Industrials",
+    "047810.KS": "Industrials", "006360.KS": "Industrials", "000150.KS": "Industrials",
+    "042670.KS": "Industrials",
+    # 유통/소비재 → Consumer Defensive / Consumer Cyclical
+    "139480.KS": "Consumer Defensive", "023530.KS": "Consumer Cyclical",
+    "027410.KS": "Consumer Defensive", "007070.KS": "Consumer Defensive",
+    "097950.KS": "Consumer Defensive", "271560.KS": "Consumer Defensive",
+    "000080.KS": "Consumer Defensive", "033780.KS": "Consumer Defensive",
+    "007310.KS": "Consumer Defensive", "009240.KS": "Consumer Cyclical",
+    "008770.KS": "Consumer Cyclical", "192820.KS": "Consumer Defensive",
+    # 운송/물류/지주/기타
+    "000120.KS": "Industrials", "003550.KS": "Industrials", "034730.KS": "Industrials",
+    "028260.KS": "Industrials", "001040.KS": "Consumer Defensive", "078930.KS": "Industrials",
+    "004990.KS": "Industrials", "090430.KS": "Consumer Defensive",
+    "002790.KS": "Consumer Defensive", "021240.KS": "Consumer Defensive",
+    "030000.KS": "Communication Services", "035250.KS": "Consumer Cyclical",
+    "010060.KS": "Basic Materials", "010950.KS": "Energy",
+    "015760.KS": "Utilities", "003490.KS": "Industrials",
+    "011200.KS": "Industrials", "047050.KS": "Industrials",
+}
+
 KOSPI_NAMES = {
     "005930.KS": "삼성전자", "000660.KS": "SK하이닉스", "009150.KS": "삼성전기",
     "018260.KS": "삼성SDS", "066570.KS": "LG전자", "017670.KS": "SK텔레콤",

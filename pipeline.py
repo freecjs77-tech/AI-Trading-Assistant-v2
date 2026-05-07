@@ -82,6 +82,18 @@ def _parse_portfolio_for_report(portfolio_path: str) -> list[dict]:
     return holdings
 
 
+def _load_momentum_history(project_dir: str, market: str) -> dict | None:
+    """history/scanner_momentum_<us|kr>_history.json 로드. 없으면 None."""
+    path = os.path.join(project_dir, "history", f"scanner_momentum_{market}_history.json")
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
 def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = False, auto: bool = False) -> dict:
     today = date.today().strftime("%Y-%m-%d")
     screenshots_dir = os.path.join(project_dir, "screenshots")
@@ -175,7 +187,13 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         print(f"  OK {len(signals)} tickers judged: {sig_counts}")
 
         # Step 4b: Scanner (S&P 100 + ETF + KOSPI + Watchlist)
-        skip_scanners = os.environ.get("SKIP_SCANNERS", "").lower() in ("1", "true", "yes")
+        _mode = os.environ.get("MODE", "full")
+        skip_scanners = (
+            os.environ.get("SKIP_SCANNERS", "").lower() in ("1", "true", "yes")
+            or _mode == "momentum_only"
+        )
+        if _mode != "full":
+            print(f"[mode] MODE={_mode} (skip_scanners={skip_scanners})")
         scanner_sp100_result = None
         scanner_etf_result = None
         scanner_kospi_result = None
@@ -331,6 +349,50 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         except Exception as e:
             print(f"  WARN politician trades step failed ({type(e).__name__}: {e}); continuing")
 
+        # Step 4c2: Momentum Scanner (US + KR, 독립 실행, 실패 격리)
+        # 기존 strategy v5.3 시그널과 무관 — 별도 추세 추종 시그널.
+        momentum_us_result = None
+        momentum_kr_result = None
+        _run_momentum = (_mode in ("full", "momentum_only"))
+        if _run_momentum:
+            print("[Step 4c2] Momentum scanners (US + KR)...")
+            try:
+                from momentum_scanner import scan_momentum_us, scan_momentum_kr
+                try:
+                    momentum_us_result = scan_momentum_us(project_dir)
+                    if momentum_us_result and momentum_us_result.get("status") == "ok":
+                        sigs = momentum_us_result.get("signals", {})
+                        print(f"  OK [Step 4c2] Momentum US: "
+                              f"M3={len(sigs.get('MOMENTUM_3', []))} "
+                              f"M2={len(sigs.get('MOMENTUM_2', []))} "
+                              f"M1={len(sigs.get('MOMENTUM_1', []))}")
+                    elif momentum_us_result:
+                        print(f"  WARN [Step 4c2] Momentum US status: "
+                              f"{momentum_us_result.get('status')} "
+                              f"({momentum_us_result.get('error_message', '')})")
+                except Exception as e:
+                    print(f"  WARN [Step 4c2] Momentum US failed: {e}")
+                    momentum_us_result = None
+                try:
+                    momentum_kr_result = scan_momentum_kr(project_dir)
+                    if momentum_kr_result and momentum_kr_result.get("status") == "ok":
+                        sigs = momentum_kr_result.get("signals", {})
+                        print(f"  OK [Step 4c2] Momentum KR: "
+                              f"M3={len(sigs.get('MOMENTUM_3', []))} "
+                              f"M2={len(sigs.get('MOMENTUM_2', []))} "
+                              f"M1={len(sigs.get('MOMENTUM_1', []))}")
+                    elif momentum_kr_result:
+                        print(f"  WARN [Step 4c2] Momentum KR status: "
+                              f"{momentum_kr_result.get('status')} "
+                              f"({momentum_kr_result.get('error_message', '')})")
+                except Exception as e:
+                    print(f"  WARN [Step 4c2] Momentum KR failed: {e}")
+                    momentum_kr_result = None
+            except ImportError as e:
+                print(f"  WARN [Step 4c2] momentum_scanner module unavailable: {e}")
+        else:
+            print(f"[Step 4c2] Skipped (MODE={_mode})")
+
         # Step 4d: YTD benchmark (vs S&P KRW) — per owner
         print("[Step 4d] Computing YTD benchmark vs S&P (KRW)...")
         from benchmark_ytd import compute_owner_benchmark
@@ -402,6 +464,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_etf=scanner_etf_result,
             scanner_kospi=scanner_kospi_result,
             benchmark_data=benchmark_by_owner.get("me"),
+            momentum_us=momentum_us_result,    # Task 21
+            momentum_kr=momentum_kr_result,    # Task 21
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -416,6 +480,18 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             output_dir=reports_dir,
         )
         print(f"  OK {len(scanner_files)} scanner pages generated")
+
+        # Momentum pages (US + KR)
+        try:
+            from report_generator import generate_momentum_pages
+            momentum_files = generate_momentum_pages(
+                momentum_us=momentum_us_result,
+                momentum_kr=momentum_kr_result,
+                output_dir=reports_dir,
+            )
+            print(f"  OK {len(momentum_files)} momentum pages generated")
+        except Exception as e:
+            print(f"  WARN momentum pages failed: {e}")
 
         # Step 5a: Charts + Detail pages
         print("[Step 5a] Generating charts...")
@@ -440,6 +516,15 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     t = e.get("ticker", "")
                     if t and t not in tickers_list and t not in extra_tickers:
                         extra_tickers.append(t)
+            # 모멘텀 시그널 종목도 차트 생성 대상
+            for mr in (momentum_us_result, momentum_kr_result):
+                if not mr or mr.get("status") != "ok":
+                    continue
+                for stage in ("MOMENTUM_3", "MOMENTUM_2", "MOMENTUM_1"):
+                    for e in mr.get("signals", {}).get(stage, []):
+                        t = e.get("ticker", "")
+                        if t and t not in tickers_list and t not in extra_tickers:
+                            extra_tickers.append(t)
             # Secondary owner(wife 등) 포트폴리오 티커 — primary에 없는 것만
             try:
                 from portfolio_paths import discover_portfolios, PRIMARY_OWNER as _PO
@@ -481,6 +566,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_etf_history=_sc_etf_hist,
             scanner_kospi_history=_sc_kospi_hist,
             scanner_watchlist_history=_sc_watch_hist,
+            momentum_us_history=_load_momentum_history(project_dir, "us"),    # Task 21
+            momentum_kr_history=_load_momentum_history(project_dir, "kr"),    # Task 21
         )
         print(f"  OK {len(detail_files)} detail pages -> {details_dir}")
 
@@ -495,6 +582,16 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 print("  WARN Telegram partial/failed (pipeline continues)")
         except Exception as e:
             print(f"  WARN Telegram error: {e} (pipeline continues)")
+
+        # Step 5b momentum brief
+        try:
+            from telegram_sender import send_momentum_brief
+            if momentum_us_result or momentum_kr_result:
+                sent = send_momentum_brief(momentum_us_result, momentum_kr_result)
+                if sent:
+                    print("  OK momentum brief sent to Telegram")
+        except Exception as e:
+            print(f"  WARN momentum brief telegram failed: {e}")
 
         # Step 5c: Portfolio snapshot + Trend page
         print("[Step 5c] Saving portfolio snapshot & trend page...")

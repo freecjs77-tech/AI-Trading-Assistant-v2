@@ -24,9 +24,14 @@ jobs:
         run: |
           # master의 history를 백업
           cp -r history/ /tmp/history_master 2>/dev/null || mkdir -p /tmp/history_master
-          # gh-pages의 history를 복원
+          # gh-pages의 history + data를 복원 (momentum_*.json 포함)
           git fetch origin gh-pages --depth=1 2>/dev/null || true
-          git checkout origin/gh-pages -- history/ 2>/dev/null || mkdir -p history
+          git checkout origin/gh-pages -- \
+            history/scanner_momentum_us_history.json \
+            history/scanner_momentum_kr_history.json \
+            history/momentum_backtest_us.json \
+            history/momentum_backtest_kr.json \
+            history/ data/ 2>/dev/null || mkdir -p history data
           # JSON 히스토리 파일 병합: gh-pages + master (master 우선)
           python3 -c "
           import json, glob, os
@@ -92,10 +97,16 @@ jobs:
         run: python generate_site.py
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./deploy
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'Update report'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout gh-pages 2>/dev/null || git checkout --orphan gh-pages
+          rm -rf history data deploy 2>/dev/null || true
+          mkdir -p history data deploy
+          cp -r ../history/* ./history/ 2>/dev/null || true
+          cp -r ../data/* ./data/ 2>/dev/null || true
+          cp -r ../deploy/* ./ 2>/dev/null || true
+          git add -A
+          git commit -m "data: $(date -u +%Y-%m-%d) daily report" || true
+          git pull --rebase origin gh-pages || git rebase --abort
+          git push origin gh-pages
