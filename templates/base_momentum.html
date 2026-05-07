@@ -87,7 +87,7 @@
   <table>
     <thead>
       <tr>
-        <th>Ticker</th>
+        <th>Name</th>
         <th>Price</th>
         <th>1d %</th>
         <th>3d %</th>
@@ -102,7 +102,7 @@
     <tbody>
     {% for e in entries %}
       <tr>
-        <td><a href="details/{{ e.ticker }}.html" style="color: #4db8ff;">{{ e.ticker }}</a></td>
+        <td><a href="details/{{ e.ticker }}.html" style="color: #4db8ff;" title="{{ e.ticker }}">{{ e.name or e.ticker }}</a>{% if e.name and e.name != e.ticker %}<span style="color:#888;font-size:0.82em;margin-left:6px;">{{ e.ticker }}</span>{% endif %}</td>
         <td>{{ "%.2f"|format(e.price or 0) }}</td>
         <td class="{{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
         <td class="{{ 'pos' if (e.ret_3d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_3d_pct or 0) }}%</td>

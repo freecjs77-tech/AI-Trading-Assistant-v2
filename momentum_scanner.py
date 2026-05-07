@@ -29,6 +29,26 @@ def _today_kst() -> str:
     return datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
 
 
+def _lookup_name(ticker: str, market: str) -> str:
+    """Ticker → 종목명. 못 찾으면 ticker 그대로 반환.
+
+    KR: market_scanner.KOSPI_NAMES (한글)
+    US: market_scanner.SP100_NAMES + ETF_NAMES + WATCHLIST_NAMES (영문, best effort)
+    """
+    try:
+        if market == "KR":
+            from market_scanner import KOSPI_NAMES
+            return KOSPI_NAMES.get(ticker, ticker)
+        # US: try multiple name sources
+        from market_scanner import SP100_NAMES, ETF_NAMES, WATCHLIST_NAMES
+        for src in (SP100_NAMES, ETF_NAMES, WATCHLIST_NAMES):
+            if ticker in src:
+                return src[ticker]
+        return ticker
+    except ImportError:
+        return ticker
+
+
 def _empty_result(market: str, status: str = "ok",
                   error_message: str | None = None) -> dict:
     return {
@@ -205,6 +225,7 @@ def _scan_market(market: str, build_universe_fn, sector_etfs: list[str],
             evaluation = msig.evaluate_stock(sd, sector_5d_return=sector_5d)
             if evaluation is None:
                 continue
+            evaluation["name"] = _lookup_name(ticker, market)
             signals[evaluation["stage"]].append(evaluation)
             today_signal_list.append(evaluation)
 

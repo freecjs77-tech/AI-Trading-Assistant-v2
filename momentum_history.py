@@ -137,6 +137,7 @@ def update_history(history: dict, today_signals: list[dict], today: str) -> dict
             "ret_1d_pct": sig.get("ret_1d_pct"),
             "ret_3d_pct": sig.get("ret_3d_pct"),
             "ret_5d_pct": sig.get("ret_5d_pct"),
+            "name": sig.get("name"),
             "sector": sig.get("sector"),
             "rs_vs_sector": sig.get("rs_vs_sector"),
             "entry_price": entry_price,
