@@ -30,20 +30,42 @@ import pandas as pd
 
 
 def fetch_spy_history(start_date: str, end_date: str) -> dict:
-    """Fetch SPY Adj Close prices for date range. Returns {date_str: close_usd}."""
+    """Fetch SPY Adj Close prices for date range. Returns {date_str: close_usd}.
+
+    yfinance 429 rate limit에 대해 exponential backoff retry (1s, 3s, 9s).
+    모든 재시도 실패 시 빈 dict 반환 (caller가 graceful skip하도록).
+    """
+    import time
     end = (datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=2)).strftime("%Y-%m-%d")
     print(f"Fetching SPY history {start_date} → {end} ...")
-    t = yf.Ticker(SPY_SYMBOL)
-    df = t.history(start=start_date, end=end, auto_adjust=False)
-    if df is None or df.empty:
-        return {}
-    out = {}
-    for idx, row in df.iterrows():
-        date_str = idx.strftime("%Y-%m-%d")
-        adj = row.get("Adj Close")
-        if pd.notna(adj) and adj > 0:
-            out[date_str] = float(adj)
-    return out
+    delays = [0, 1, 3, 9]
+    last_exc = None
+    for attempt, delay in enumerate(delays):
+        if delay > 0:
+            print(f"  ⏳ retry after {delay}s (attempt {attempt}/{len(delays)-1})")
+            time.sleep(delay)
+        try:
+            t = yf.Ticker(SPY_SYMBOL)
+            df = t.history(start=start_date, end=end, auto_adjust=False)
+            if df is None or df.empty:
+                return {}
+            out = {}
+            for idx, row in df.iterrows():
+                date_str = idx.strftime("%Y-%m-%d")
+                adj = row.get("Adj Close")
+                if pd.notna(adj) and adj > 0:
+                    out[date_str] = float(adj)
+            return out
+        except Exception as e:
+            last_exc = e
+            msg = str(e).lower()
+            if "rate limit" in msg or "too many requests" in msg or "429" in msg:
+                continue   # transient — retry
+            if "no data" in msg or "delisted" in msg:
+                return {}  # permanent — give up
+            continue       # network/transient — retry
+    print(f"  WARN SPY history fetch failed after {len(delays)} attempts: {last_exc}")
+    return {}
 
 
 def find_nearest_spy(spy_history: dict, target_date: str) -> float | None:
@@ -119,6 +141,9 @@ def main():
     # Step 3: fetch SPY history for the full range (one bulk call)
     spy_history = fetch_spy_history(ANCHOR_DATE, sorted_dates[-1])
     print(f"  Fetched {len(spy_history)} SPY trading days\n")
+    if not spy_history:
+        print("  WARN SPY history empty — skipping backfill (will retry on next run)")
+        return  # graceful exit, exit code 0
 
     # Cross-owner FX fallback table (in case one owner's snapshot has usd_krw=0)
     fx_lookup = _build_fx_lookup(daily_files)

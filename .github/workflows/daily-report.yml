@@ -69,6 +69,9 @@ jobs:
         run: python pipeline.py --skip-ocr --auto
 
       - name: Backfill YTD fields (ytd_pct/spy_ytd_pct/alpha_pp)
+        # Best-effort: yfinance rate limit 등 일시 오류로 fail 시 deploy는 진행.
+        # 다음 cron run에서 자연 보완됨.
+        continue-on-error: true
         env:
           PYTHONIOENCODING: utf-8
         run: python backfill_ytd_history.py
