@@ -64,6 +64,13 @@ def prepare_deploy():
     if trend_files:
         print(f"trend pages copied ({len(trend_files)} files)")
 
+    # 모멘텀 페이지 복사 (US/KR 별도 페이지)
+    momentum_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "momentum_*.html")))
+    for f in momentum_files:
+        shutil.copy2(f, DEPLOY_DIR)
+    if momentum_files:
+        print(f"momentum pages copied ({len(momentum_files)} files)")
+
     # details/ 복사 (종목 상세 페이지)
     details_src = os.path.join(REPORTS_DIR, "details")
     if os.path.exists(details_src):
