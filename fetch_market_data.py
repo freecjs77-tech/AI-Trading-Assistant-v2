@@ -148,6 +148,19 @@ def calc_bollinger(close: pd.Series, period=20, num_std=2):
     return mid + num_std * std, mid, mid - num_std * std
 
 
+def calc_atr(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14) -> pd.Series:
+    """Average True Range (ATR) — Wilder smoothing (EWM with com=period-1).
+
+    True Range = max(H-L, |H-Cprev|, |L-Cprev|)
+    """
+    tr = pd.concat([
+        high - low,
+        (high - close.shift()).abs(),
+        (low - close.shift()).abs(),
+    ], axis=1).max(axis=1)
+    return tr.ewm(com=period - 1, min_periods=period).mean()
+
+
 def calc_adx(high: pd.Series, low: pd.Series, close: pd.Series, period=14) -> pd.Series:
     """Average Directional Index (ADX)"""
     tr = pd.concat([
@@ -403,6 +416,14 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None, forward_div=None
         ma200 = close.rolling(200).mean() if len(close) >= 200 else pd.Series([np.nan] * len(close), index=close.index)
         vol_ma20 = volume.rolling(20).mean()
         adx  = calc_adx(high, low, close) if len(df) >= 28 else pd.Series([np.nan] * len(df), index=df.index)
+        atr14_series = calc_atr(high, low, close, period=14)
+        atr14_val = (
+            float(atr14_series.iloc[-1])
+            if len(atr14_series) > 0
+            and not pd.isna(atr14_series.iloc[-1])
+            and np.isfinite(atr14_series.iloc[-1])
+            else None
+        )
 
         last_close  = float(close.iloc[-1])
         recent_high = float(close.iloc[-20:].max())
@@ -470,6 +491,11 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None, forward_div=None
             "bb_pct":            round((last_close - (safe(bb_lower) or 0)) / ((safe(bb_upper) or 1) - (safe(bb_lower) or 0)) * 100, 1) if safe(bb_upper) and safe(bb_lower) else None,
             # ADX
             "adx":               safe(adx),
+            # ATR — trailing stop 시스템에서 사용
+            "atr14":     round(atr14_val, 4) if atr14_val is not None else None,
+            "atr14_pct": round((atr14_val / last_close) * 100, 2)
+                         if atr14_val is not None and last_close > 0
+                         else None,
             # 거래량
             "volume":            int(volume.iloc[-1]),
             "volume_ma20":       int(vol_ma20.iloc[-1]) if safe(vol_ma20) else None,
