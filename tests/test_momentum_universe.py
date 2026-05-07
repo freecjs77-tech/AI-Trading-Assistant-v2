@@ -50,10 +50,10 @@ def test_build_kr_universe_unions_with_sector_etfs():
     try:
         md.save_cache("krx_etf_069500_holdings", ["005930.KS", "000660.KS"], status="ok")
         md.save_cache("krx_etf_229200_holdings", ["196170.KQ"], status="ok")
-        md.save_cache("sector_etf_holdings_kr",
-                      {"091160.KS": ["042700.KS"]}, status="ok")
         md.save_cache("weekly_liquidity_kr", [], status="ok")
-        with patch("momentum_universe.fetch_daily_movers_for", return_value=[]):
+        with patch("momentum_universe.md.get_kr_sector_holdings",
+                   return_value={"091160.KS": ["042700.KS"]}), \
+             patch("momentum_universe.fetch_daily_movers_for", return_value=[]):
             uni = mu.build_kr_universe()
         assert "005930.KS" in uni
         assert "000660.KS" in uni
@@ -78,9 +78,46 @@ def test_build_us_universe_dedup_preserves_order():
         teardown(tmp)
 
 
+def test_kr_movers_drops_all_when_volumes_empty():
+    """KR daily movers — volumes.empty 시 잡주 leak 방지 위해 모두 제외."""
+    import pandas as pd
+    tmp = setup()
+    try:
+        closes = pd.DataFrame({
+            "005930.KS": [100] * 25 + [110],  # 1d +10% → 통과 후보
+        })
+        empty_vol = pd.DataFrame()
+        with patch("momentum_universe.md.fetch_yf_bulk",
+                   return_value=(closes, empty_vol)):
+            result = mu.fetch_daily_movers_for(["005930.KS"], market="kr")
+        assert result == [], f"KR with empty volumes should drop all, got {result}"
+    finally:
+        teardown(tmp)
+
+
+def test_kr_universe_auto_fetches_sector_holdings_on_cache_miss():
+    """sector_etf_holdings_kr cache 없을 때 get_kr_sector_holdings 호출."""
+    tmp = setup()
+    try:
+        md.save_cache("krx_etf_069500_holdings", ["005930.KS"], status="ok")
+        md.save_cache("krx_etf_229200_holdings", [], status="ok")
+        md.save_cache("weekly_liquidity_kr", [], status="ok")
+        # NO sector_etf_holdings_kr cache pre-saved
+        with patch("momentum_universe.md.get_kr_sector_holdings",
+                   return_value={"091160.KS": ["042700.KS"]}) as mock_sec, \
+             patch("momentum_universe.fetch_daily_movers_for", return_value=[]):
+            uni = mu.build_kr_universe()
+        assert mock_sec.called, "should fetch sector holdings"
+        assert "042700.KS" in uni
+    finally:
+        teardown(tmp)
+
+
 if __name__ == "__main__":
     test_build_us_universe_unions_sources()
     test_build_us_universe_caps_at_1500()
     test_build_kr_universe_unions_with_sector_etfs()
     test_build_us_universe_dedup_preserves_order()
+    test_kr_movers_drops_all_when_volumes_empty()
+    test_kr_universe_auto_fetches_sector_holdings_on_cache_miss()
     print("[OK] momentum_universe tests passed.")

@@ -30,6 +30,7 @@ def fetch_daily_movers_for(tickers: list[str], market: str = "us") -> list[str]:
     """
     주어진 ticker 리스트 대상으로 yfinance bulk fetch → daily movers 계산.
     KR은 거래대금 ≥ 100억원 필터 추가.
+    If KR market and volumes are empty, return [] (conservative — no movers if data unreliable).
     """
     if not tickers:
         return []
@@ -37,7 +38,11 @@ def fetch_daily_movers_for(tickers: list[str], market: str = "us") -> list[str]:
     if closes.empty:
         return []
     movers = md.compute_daily_movers(closes)
-    if market == "kr" and not volumes.empty:
+    if market == "kr":
+        if volumes.empty:
+            print(f"[universe] WARN KR movers: no volume data — dropping all "
+                  f"({len(movers)} movers) to prevent penny-stock leakage")
+            return []
         common = closes.columns.intersection(volumes.columns)
         dv = (closes[common].tail(5) * volumes[common].tail(5)).mean(axis=0)
         liquid = set(dv[dv >= cfg.KR_LIQUIDITY_MIN_KRW].index)
@@ -88,11 +93,15 @@ def build_kr_universe() -> list[str]:
     kosdaq150 = md.get_krx_etf_holdings("229200")
     base = _dedup_preserve_order(list(kodex200) + list(kosdaq150))
 
-    sector_holdings = md.load_cache("sector_etf_holdings_kr")
+    # Use auto-populating getter to fetch sector holdings if cache is missing
     sector_tickers: list[str] = []
-    if sector_holdings and isinstance(sector_holdings.get("data"), dict):
-        for arr in sector_holdings["data"].values():
-            sector_tickers.extend(arr or [])
+    try:
+        sector_map = md.get_kr_sector_holdings()  # dict {etf_ticker: [stocks]}
+        if isinstance(sector_map, dict):
+            for arr in sector_map.values():
+                sector_tickers.extend(arr or [])
+    except Exception as e:
+        print(f"[universe] WARN KR sector holdings unavailable: {e}")
 
     weekly = get_weekly_top_liquidity("weekly_liquidity_kr", base, market="kr")
     daily = fetch_daily_movers_for(base, market="kr")
