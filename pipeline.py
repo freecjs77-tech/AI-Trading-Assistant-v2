@@ -506,6 +506,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             benchmark_data=benchmark_by_owner.get("me"),
             momentum_us=momentum_us_result,    # Task 21
             momentum_kr=momentum_kr_result,    # Task 21
+            portfolio_stop_result=stop_result_me,
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -896,6 +897,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     nav_portfolio=f"report_{today}.html",
                     active_nav=_owner,
                     benchmark_data=benchmark_by_owner.get(_owner),
+                    portfolio_stop_result=_owner_stop_result,
                 )
                 _sz = os.path.getsize(_owner_report)
                 print(f"  OK {_owner} report -> {_owner_report} ({_sz:,} bytes)")

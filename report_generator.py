@@ -116,7 +116,8 @@ def _vix_note(vix: float | None) -> str:
         return f"안정 구간 (<20)"
 
 
-def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
+def _build_holdings(portfolio: list, market_data: dict, signals: dict,
+                    stop_by_ticker: dict | None = None) -> list:
     """Holdings 테이블 데이터 구성"""
     data = market_data.get("data", {})
     div_per_ticker = market_data.get("_dividends", {}).get("per_ticker", {})
@@ -162,6 +163,13 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict) -> list:
             "div_annual": div_info.get("annual_income", 0),
             "div_annual_krw": round(div_info.get("annual_income", 0) * usd_krw) if is_kospi_ticker(ticker) else 0,
             "div_yield": div_info.get("div_yield", 0),
+            # Stop signal (Phase 7)
+            "stop_signal": (stop_by_ticker or {}).get(ticker, {}).get("display_signal"),
+            "stop_is_new": (stop_by_ticker or {}).get(ticker, {}).get("is_new_position", False),
+            "stop_below_count": (stop_by_ticker or {}).get(ticker, {}).get("below_count", 0),
+            "stop_price": (stop_by_ticker or {}).get(ticker, {}).get("stop_price"),
+            "stop_gap_pct": (stop_by_ticker or {}).get(ticker, {}).get("gap_pct"),
+            "stop_mode": (stop_by_ticker or {}).get(ticker, {}).get("mode"),
         })
 
     holdings.sort(key=lambda x: -x["value"])
@@ -298,7 +306,21 @@ def generate_report(
     if nav_portfolio is None:
         nav_portfolio = f"report_{date_str}.html"
 
-    holdings = _build_holdings(portfolio, market_data, signals)
+    # Stop signal lookup (Phase 7)
+    _stop_by_ticker: dict = {}
+    if portfolio_stop_result and portfolio_stop_result.get("status") == "ok":
+        for r in portfolio_stop_result.get("positions", []):
+            _stop_by_ticker[r["ticker"]] = {
+                "display_signal": r.get("display_signal"),
+                "raw_signal": r.get("raw_signal"),
+                "is_new_position": r.get("is_new_position", False),
+                "below_count": r.get("below_stop_count", 0),
+                "stop_price": r.get("stop_price"),
+                "gap_pct": r.get("gap_pct"),
+                "mode": r.get("mode"),
+            }
+
+    holdings = _build_holdings(portfolio, market_data, signals, _stop_by_ticker)
 
     # VIX/금리/환율 (포트폴리오 계산에 필요하므로 먼저 로드)
     vix = macro.get("VIX")
@@ -480,6 +502,21 @@ def generate_report(
         if has_momentum_kr
         else ""
     )
+
+    context["portfolio_stop_summary"] = (
+        portfolio_stop_result.get("summary")
+        if portfolio_stop_result and portfolio_stop_result.get("status") == "ok"
+        else None
+    )
+    if portfolio_stop_result and portfolio_stop_result.get("status") == "ok":
+        _stop_owner = portfolio_stop_result.get("owner", "me")
+        _stop_date = portfolio_stop_result.get("date", date_str)
+        context["portfolio_stop_page"] = (
+            f"portfolio_stops_{_stop_date}.html" if _stop_owner == "me"
+            else f"portfolio_stops_{_stop_owner}_{_stop_date}.html"
+        )
+    else:
+        context["portfolio_stop_page"] = None
 
     html = template.render(**context)
 
