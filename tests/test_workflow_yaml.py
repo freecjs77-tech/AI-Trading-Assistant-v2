@@ -35,13 +35,23 @@ def test_workflow_restores_data_directory():
     assert "data/" in yml or "data " in yml, "missing restore for data/ directory"
 
 
-def test_workflow_uses_pull_rebase_before_push():
-    """gh-pages push 전 pull --rebase 안전장치 (1a320422류 사고 재발 방지)."""
+def test_workflow_uses_safe_gh_pages_push():
+    """gh-pages push 안전장치 (1a320422류 데이터 손실 사고 재발 방지).
+
+    본래 의도: force push 금지 + origin/gh-pages tip 기준 작업.
+    구현 방식은 (a) pull --rebase 또는 (b) git worktree origin/gh-pages 둘 다 허용.
+    """
     yml = _read_workflow()
-    # gh-pages 관련 push 근처에 pull --rebase 패턴
-    assert (
-        "pull --rebase" in yml or "rebase" in yml
-    ), "missing pull --rebase safety guard before push"
+    # 1) force push 금지
+    assert "push --force" not in yml and "push -f " not in yml, (
+        "force push detected — risks data loss like 1a320422"
+    )
+    # 2) origin/gh-pages tip 기반 작업
+    has_worktree = "worktree add" in yml and "origin/gh-pages" in yml
+    has_rebase = "pull --rebase" in yml or "rebase" in yml
+    assert has_worktree or has_rebase, (
+        "missing safety guard: must base on origin/gh-pages tip (worktree or rebase)"
+    )
 
 
 def test_workflow_unchanged_secrets():
