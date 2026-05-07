@@ -1133,6 +1133,8 @@ def generate_detail_pages(
     scanner_etf_history: dict | None = None,
     scanner_kospi_history: dict | None = None,
     scanner_watchlist_history: dict | None = None,
+    momentum_us_history: dict | None = None,
+    momentum_kr_history: dict | None = None,
 ) -> list[str]:
     """
     포트폴리오 + 스캐너 BUY 종목별 상세 페이지 HTML 생성.
@@ -1160,6 +1162,22 @@ def generate_detail_pages(
     env.filters["shares_fmt"] = lambda x: f"{x:.3f}" if x < 100 else f"{x:,.0f}"
 
     template = env.get_template("detail_template.html")
+
+    # Momentum 데이터 추출 헬퍼
+    def _ticker_momentum(ticker, us_hist, kr_hist):
+        """ticker가 us 또는 kr momentum history에 있으면 dict 반환, 없으면 None."""
+        for hist in (us_hist, kr_hist):
+            if not hist or "data" not in hist:
+                continue
+            td = hist["data"].get(ticker)
+            if not td:
+                continue
+            sorted_dates = sorted(td.keys(), reverse=True)
+            recent_30 = [(d, td[d]) for d in sorted_dates[:30]]
+            recent_30.reverse()  # 시간 순
+            last = td[sorted_dates[0]]
+            return {"last": last, "recent": recent_30}
+        return None
 
     data = market_data.get("data", {})
     meta = market_data.get("_meta", {})
@@ -1212,6 +1230,9 @@ def generate_detail_pages(
 
         history_rows = _build_history_rows(ticker, history)
 
+        # Momentum 데이터 추출
+        momentum_data = _ticker_momentum(ticker, momentum_us_history, momentum_kr_history)
+
         context = {
             "ticker": ticker,
             "name": get_ticker_name(ticker),
@@ -1255,6 +1276,8 @@ def generate_detail_pages(
             "currency": "KRW" if is_kospi_ticker(ticker) else "USD",
             # 이력
             "history_rows": history_rows,
+            # Momentum 데이터
+            "momentum_data": momentum_data,
             # 메타
             "date": date_str,
             "date_ko": _date_ko(date_str),
@@ -1323,6 +1346,9 @@ def generate_detail_pages(
 
         is_kospi = e.get("currency") == "KRW" or is_kospi_ticker(ticker)
 
+        # Momentum 데이터 추출
+        momentum_data = _ticker_momentum(ticker, momentum_us_history, momentum_kr_history)
+
         context = {
             "ticker": ticker,
             "name": e.get("name", ticker),
@@ -1374,6 +1400,8 @@ def generate_detail_pages(
                 else scanner_watchlist_history if ticker in watchlist_tickers
                 else {}
             ) if (scanner_sp100_history or scanner_etf_history or scanner_kospi_history or scanner_watchlist_history) else [],
+            # Momentum 데이터
+            "momentum_data": momentum_data,
             # 메타
             "date": date_str,
             "date_ko": _date_ko(date_str),
