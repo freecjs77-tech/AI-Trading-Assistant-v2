@@ -261,6 +261,7 @@ def generate_report(
     benchmark_data: dict | None = None,
     momentum_us: dict | None = None,
     momentum_kr: dict | None = None,
+    portfolio_stop_result=None,  # Phase 7 next PR will consume; accepted now to allow pipeline kwargs
 ) -> str:
     """
     Jinja2 템플릿으로 HTML 리포트 생성.

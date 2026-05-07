@@ -1,0 +1,138 @@
+{# templates/portfolio_stops.html — Portfolio Stop Signal page (me/wife shared) #}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>🛡 Portfolio Risk — {{ owner }} {{ date }}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         max-width: 1200px; margin: 0 auto; padding: 20px;
+         background: #0f172a; color: #e2e8f0; }
+  h1 { color: #fbbf24; margin: 0 0 10px; }
+  .meta { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  nav { margin: 10px 0 20px; }
+  nav a { display: inline-block; margin-right: 8px; padding: 6px 12px;
+          background: #1e293b; color: #e2e8f0; border-radius: 6px;
+          text-decoration: none; font-size: 13px; }
+  nav a.active { background: #fbbf24; color: #0f172a; }
+  .cards { display: flex; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
+  .card { padding: 16px; border-radius: 10px; min-width: 140px; }
+  .card.hold { background: #064e3b; }
+  .card.tight { background: #78350f; }
+  .card.exit-ready { background: #9a3412; }
+  .card.exit { background: #991b1b; }
+  .card .num { font-size: 32px; font-weight: 700; }
+  .card .label { font-size: 13px; opacity: .85; }
+  .changes { background: #1e293b; padding: 12px 16px; border-radius: 8px;
+             margin-bottom: 16px; }
+  .changes h3 { margin: 0 0 8px; font-size: 14px; color: #fbbf24; }
+  .changes div { font-size: 13px; padding: 2px 0; }
+  table { width: 100%; border-collapse: collapse; background: #1e293b;
+          border-radius: 8px; overflow: hidden; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #334155; }
+  th { background: #0f172a; color: #fbbf24; font-weight: 600; }
+  tr:hover td { background: #334155; }
+  .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px;
+           font-weight: 600; display: inline-block; }
+  .badge.hold { background: #064e3b; color: #6ee7b7; }
+  .badge.tight { background: #78350f; color: #fde68a; }
+  .badge.exit-ready { background: #9a3412; color: #fdba74; }
+  .badge.exit { background: #991b1b; color: #fecaca; }
+  .badge.exit.deep2 { background: #7f1d1d; }
+  .badge.exit.deep3 { background: #6b1414; }
+  .gap.green-dark { color: #34d399; font-weight: 600; }
+  .gap.green-light { color: #6ee7b7; }
+  .gap.yellow { color: #fbbf24; }
+  .gap.red { color: #f87171; font-weight: 600; }
+  .new-mark { color: #93c5fd; font-size: 11px; margin-left: 4px; }
+  .footer { color: #94a3b8; font-size: 12px; margin-top: 30px;
+            padding: 16px; background: #1e293b; border-radius: 8px; }
+  .footer p { margin: 4px 0; }
+</style>
+</head>
+<body>
+
+<h1>🛡 Portfolio Risk Dashboard — {{ owner }}</h1>
+<div class="meta">
+  Date: {{ date }} · Anchor: {{ anchor_date }} · Tracked:
+  {{ summary.HOLD + summary.TIGHT + summary.EXIT_READY + summary.EXIT }} positions ·
+  Mode: {{ version }}
+</div>
+
+<nav>
+  <a href="report_{{ date }}.html">📊 Portfolio</a>
+  {% if owner != "me" %}<a href="report_{{ owner }}_{{ date }}.html">📊 {{ owner }}</a>{% endif %}
+  <a href="trend_{{ date }}.html">📈 Trend</a>
+  <a class="active" href="#">🛡 Portfolio Risk</a>
+</nav>
+
+<div class="cards">
+  <div class="card hold">
+    <div class="num">{{ summary.HOLD }}</div>
+    <div class="label">🟢 HOLD</div>
+  </div>
+  <div class="card tight">
+    <div class="num">{{ summary.TIGHT }}</div>
+    <div class="label">🟡 TIGHT</div>
+  </div>
+  <div class="card exit-ready">
+    <div class="num">{{ summary.EXIT_READY }}</div>
+    <div class="label">🟠 EXIT READY</div>
+  </div>
+  <div class="card exit">
+    <div class="num">{{ summary.EXIT }}</div>
+    <div class="label">🔴 EXIT</div>
+  </div>
+</div>
+
+{% if changes %}
+<div class="changes">
+  <h3>Signal Changes (vs previous trading day)</h3>
+  {% for c in changes %}
+    <div>{{ c.ticker }}: {{ c.from }} → {{ c.to }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<table>
+  <thead>
+    <tr>
+      <th>Ticker</th>
+      <th>Mode</th>
+      <th>Highest (date)</th>
+      <th>Current</th>
+      <th>Stop</th>
+      <th>Stop Gap</th>
+      <th>Signal</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for r in positions %}
+    <tr>
+      <td>
+        <a href="details/{{ r.ticker }}.html" style="color:#fbbf24">{{ r.ticker }}</a>
+        {% if r.is_new_position %}<span class="new-mark" title="신규 진입 종목 (entry_date 후 14일 이내)">ⓝ</span>{% endif %}
+      </td>
+      <td>{{ r.mode }}</td>
+      <td>{{ r.highest_close | round(2) if r.is_us else r.highest_close | round(0) }}<br>
+          <small style="color:#94a3b8">{{ r.highest_close_date }}</small></td>
+      <td>{{ r.current_close | round(2) if r.is_us else r.current_close | round(0) }}</td>
+      <td>{{ r.stop_price | round(2) if r.is_us else r.stop_price | round(0) }}</td>
+      <td class="gap {{ r.gap_class }}">{{ '+' if r.gap_pct >= 0 else '' }}{{ r.gap_pct }}%</td>
+      <td><span class="badge {{ r.badge_class }}">{{ r.display_label }}</span></td>
+      <td>{{ r.display_action }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="footer">
+  <p>Anchor: {{ anchor_date }} · Bootstrap: yfinance YTD high · Mode: {{ version }}</p>
+  <p>⚠ ⓝ 표시 종목은 신규 진입(entry_date 후 14 calendar days 이내)으로 highest_close 누적 부족 — 시그널 노이즈 가능. EXIT_READY/EXIT는 display 다운그레이드되어 TIGHT (new)로 표기.</p>
+  <p>⚠ 자동 매도 아님 — 매도 판단 보조 reference 시스템</p>
+  <p>Stop 공식: CORE 12% · DEFENSIVE 8% · MOMENTUM ATR×3 [8%,20%] · HIGH_VOL ATR×4 [12%,30%]</p>
+</div>
+
+</body>
+</html>
