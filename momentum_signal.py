@@ -258,6 +258,7 @@ def evaluate_stock(stock_data: dict, sector_5d_return: float | None = None) -> d
         "risk_tags": risk_tags,
         "hint": hint,
         "rs_vs_sector": rs_vs_sector,
+        "sector": stock_data.get("sector"),
         "price": _safe_float(stock_data.get("close")),
         "rsi": _safe_float(stock_data.get("rsi14")),
         "ret_1d_pct": _safe_float(stock_data.get("change_pct")),

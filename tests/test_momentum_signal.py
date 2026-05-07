@@ -210,11 +210,13 @@ def test_evaluate_stock_returns_full_dict():
                vol_ratio=1.3, macd_hist_trend="rising", ma50=110,
                high_52w=110, ret_5d=12.0)
     s["change_pct"] = 2.0
+    s["sector"] = "Technology"
     result = ms.evaluate_stock(s, sector_5d_return=4.0)
     assert result["stage"] == "MOMENTUM_3"
     assert result["risk_tags"] == []
     assert result["rs_vs_sector"] is True   # 12% > 4%
     assert result["hint"] == "적극"
+    assert result["sector"] == "Technology"
 
 
 def test_evaluate_stock_no_signal_when_below_m1():
