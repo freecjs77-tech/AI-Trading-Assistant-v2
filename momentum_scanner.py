@@ -161,18 +161,13 @@ def _scan_market(market: str, build_universe_fn, sector_etfs: list[str],
             holdings_dict = md.get_us_sector_holdings()
             ticker_sector_map = md.build_sector_mapping(holdings_dict, market="us")
         else:
-            # KR: use TICKER_SECTORS from market_scanner directly.
+            # KR: use KOSPI_SECTORS hardcoded mapping (English GICS-compatible names).
             # KRX public API requires authentication since 2025; no public ETF
-            # holdings endpoint is available. We map ticker → English sector name
-            # via TICKER_SECTORS + SECTOR_KO_TO_EN so that sector_data lookups
-            # remain consistent, but the sector gate is skipped below (KR has no
-            # sector ETFs to evaluate momentum against).
+            # holdings endpoint is available. KOSPI_SECTORS maps the curated
+            # KOSPI_TICKERS list directly to English sector names.
             try:
-                from market_scanner import TICKER_SECTORS, SECTOR_KO_TO_EN
-                ticker_sector_map = {
-                    t: SECTOR_KO_TO_EN.get(s, s)
-                    for t, s in TICKER_SECTORS.items()
-                }
+                from market_scanner import KOSPI_SECTORS
+                ticker_sector_map = dict(KOSPI_SECTORS)
             except ImportError:
                 ticker_sector_map = {}
 
