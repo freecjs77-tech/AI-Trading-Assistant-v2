@@ -336,3 +336,87 @@ def get_kr_sector_holdings(force_refresh: bool = False) -> dict[str, list[str]]:
             out[etf] = []
     save_cache(name, out, source="krx", status="ok")
     return out
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Daily Movers + Weekly Top100 (Task 7-8)
+# ───────────────────────────────────────────────────────────────────────────────
+
+def compute_daily_movers(closes) -> list[str]:
+    """
+    종가 DataFrame (columns=tickers, index=dates) → Daily Movers 통과 ticker.
+
+    조건: (1d ≥ +5% OR 3d ≥ +8%) AND close > MA20
+    """
+    import pandas as pd
+    from momentum_config import DAILY_MOVER_1D_PCT, DAILY_MOVER_3D_PCT
+    movers: list[str] = []
+    for t in closes.columns:
+        s = closes[t].dropna()
+        if len(s) < 21:
+            continue
+        last = float(s.iloc[-1])
+        prev = float(s.iloc[-2])
+        prev3 = float(s.iloc[-4]) if len(s) >= 4 else None
+        ma20 = float(s.iloc[-20:].mean())
+        if last <= ma20:
+            continue
+        if prev > 0:
+            r1d = (last / prev - 1) * 100
+            if r1d >= DAILY_MOVER_1D_PCT:
+                movers.append(t)
+                continue
+        if prev3 and prev3 > 0:
+            r3d = (last / prev3 - 1) * 100
+            if r3d >= DAILY_MOVER_3D_PCT:
+                movers.append(t)
+    return movers
+
+
+def compute_weekly_top100(closes, volumes, n: int = 100) -> list[str]:
+    """
+    종가 + 거래량 DF → 5일 평균 dollar_volume 상위 N개 ticker.
+    dollar_volume = close * volume.
+    """
+    import pandas as pd
+    common = closes.columns.intersection(volumes.columns)
+    if len(common) == 0:
+        return []
+    dv = closes[common].tail(5) * volumes[common].tail(5)
+    avg = dv.mean(axis=0).sort_values(ascending=False)
+    return avg.head(n).index.tolist()
+
+
+def fetch_yf_bulk(tickers: list[str], period: str = "30d") -> tuple:
+    """
+    yfinance bulk download. 너무 많은 ticker는 청크 분할.
+
+    Returns:
+        (closes_df, volumes_df) — 각각 DataFrame(columns=tickers, index=dates)
+    """
+    import yfinance as yf
+    import pandas as pd
+    if not tickers:
+        return pd.DataFrame(), pd.DataFrame()
+    chunk_size = 200
+    all_close, all_vol = [], []
+    for i in range(0, len(tickers), chunk_size):
+        chunk = tickers[i:i + chunk_size]
+        try:
+            df = yf.download(chunk, period=period, progress=False,
+                             auto_adjust=False, group_by="column", threads=True)
+            if df is None or df.empty:
+                continue
+            close_df = df["Close"] if "Close" in df.columns.get_level_values(0) else pd.DataFrame()
+            vol_df = df["Volume"] if "Volume" in df.columns.get_level_values(0) else pd.DataFrame()
+            if isinstance(close_df, pd.Series):
+                close_df = close_df.to_frame(chunk[0])
+                vol_df = vol_df.to_frame(chunk[0])
+            all_close.append(close_df)
+            all_vol.append(vol_df)
+        except Exception as e:
+            print(f"[momentum_data] WARN bulk fetch chunk failed: {e}")
+            continue
+    if not all_close:
+        return pd.DataFrame(), pd.DataFrame()
+    return pd.concat(all_close, axis=1), pd.concat(all_vol, axis=1)

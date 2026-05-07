@@ -199,6 +199,57 @@ def test_build_sector_mapping_with_overlap_uses_priority():
     assert mapping["NVDA"] == "XLK"   # 첫 키 우선
 
 
+def test_compute_daily_movers_filters_by_thresholds():
+    """Daily Movers — 1d≥+5% OR 3d≥+8% AND close > MA20 필터."""
+    import pandas as pd
+    # AAPL: 1d +6%, close > MA20 → 통과
+    # MSFT: 3d +9%, close > MA20 → 통과
+    # AMZN: 3d +2% → 탈락
+    closes = pd.DataFrame({
+        "AAPL": [100] * 25 + [106],
+        "MSFT": [100] * 22 + [95, 100, 100, 109],
+        "AMZN": [100] * 25 + [101],
+    })
+    movers = md.compute_daily_movers(closes)
+    assert "AAPL" in movers
+    assert "MSFT" in movers
+    assert "AMZN" not in movers
+
+
+def test_compute_daily_movers_requires_close_above_ma20():
+    """Daily Movers — close ≤ MA20 이면 1d 급등이어도 제외."""
+    # Pass case: 첫 25일 200, 마지막 220 → 1d +10%, MA20≈200 → close > MA20 → 통과
+    import pandas as pd
+    closes_pass = pd.DataFrame({
+        "X": [200] * 25 + [220],
+    })
+    assert "X" in md.compute_daily_movers(closes_pass)
+
+    # Fail case: 첫 25일 200, 마지막 110 → close < MA20 → 제외
+    closes_fail = pd.DataFrame({
+        "X": [200] * 25 + [110],
+    })
+    assert "X" not in md.compute_daily_movers(closes_fail)
+
+
+def test_compute_weekly_top100_by_dollar_volume():
+    """Weekly Top100 — 5일 평균 dollar_volume 상위 N개 ticker."""
+    import pandas as pd
+    # A: dv=100, B: 50, C: 200 → 정렬 C, A, B
+    closes = pd.DataFrame({
+        "A": [10] * 5,
+        "B": [5] * 5,
+        "C": [20] * 5,
+    })
+    volumes = pd.DataFrame({
+        "A": [10] * 5,
+        "B": [10] * 5,
+        "C": [10] * 5,
+    })
+    top = md.compute_weekly_top100(closes, volumes, n=2)
+    assert top == ["C", "A"]
+
+
 if __name__ == "__main__":
     test_save_and_load_cache()
     test_load_cache_missing_returns_none()
@@ -216,4 +267,7 @@ if __name__ == "__main__":
     test_fetch_kosdaq_holdings_uses_kq_suffix()
     test_build_sector_mapping_us()
     test_build_sector_mapping_with_overlap_uses_priority()
+    test_compute_daily_movers_filters_by_thresholds()
+    test_compute_daily_movers_requires_close_above_ma20()
+    test_compute_weekly_top100_by_dollar_volume()
     print("[OK] momentum_data tests passed.")
