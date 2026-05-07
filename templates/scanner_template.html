@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ scanner_title }} — {{ date }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #F1F3F5; color: #0f172a; font-size: 14px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  .header-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0; white-space: nowrap; }
+  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+  h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .subtitle { color: #475569; font-size: 13px; margin-bottom: 20px; }
+  .header-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .header-controls a { padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: #fff; }
+  .nav-active { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px currentColor; }
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .sum-card { background: #fff; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 110px; text-align: center; border-top: 4px solid #94a3b8; }
+  .sum-card .num { font-size: 32px; font-weight: 800; line-height: 1; }
+  .sum-card .lbl { font-size: 11px; color: #475569; margin-top: 4px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; min-width: 90px; text-align: center; }
+  .badge-BUY { background: #16a34a; color: #fff; }
+  .badge-WATCH { background: #d97706; color: #fff; }
+  .card-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .ticker-card { background: #fff; border-radius: 8px; padding: 14px 16px; width: calc(33.333% - 8px); min-width: 0; box-sizing: border-box; border-left: 5px solid #94a3b8; }
+  .ticker-card.buy { border-color: #16a34a; }
+  .ticker-card .ticker { font-size: 18px; font-weight: 800; margin-bottom: 2px; display: flex; align-items: center; flex-wrap: nowrap; gap: 6px; }
+  .ticker-card .name { font-size: 11px; color: #64748b; margin-bottom: 8px; }
+  .ticker-card .price { font-size: 20px; font-weight: 700; }
+  .ticker-card .chg { font-size: 12px; margin-left: 6px; }
+  .ticker-card .chg.up { color: #2563eb; } .ticker-card .chg.dn { color: #e11d48; }
+  .ticker-card .metrics { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12px; }
+  .ticker-card .reason { font-size: 12px; margin-top: 10px; color: #475569; border-top: 1px solid #e2e8f0; padding-top: 8px; }
+  .ref-section { margin-bottom: 16px; }
+  .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+  .ref-table th { background: #f1f5f9; padding: 6px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #cbd5e1; }
+  .ref-table td { padding: 6px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  .ref-table td ul { margin: 2px 0 2px 16px; padding: 0; }
+  .ref-table td ul li { padding: 1px 0; }
+  .ref-table .signal-col { width: 130px; white-space: nowrap; }
+  .ref-table .action-col { width: 80px; }
+  .report-footer { font-size: 11px; color: #94a3b8; margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; }
+  .hypo-box { background: #eff6ff; border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: 11px; border-left: 3px solid #2563eb; }
+  .hypo-box .hypo-title { font-weight: 700; font-size: 11px; color: #475569; margin-bottom: 4px; }
+  .hypo-row { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+  .hypo-row .hypo-label { color: #475569; }
+  .hypo-row .hypo-val { font-weight: 700; }
+  .hypo-row .hypo-val.up { color: #2563eb; }
+  .hypo-row .hypo-val.dn { color: #e11d48; }
+  @media (max-width: 600px) { .ticker-card { width: 100%; } .sum-card { min-width: 80px; } .header-row { flex-direction: column; align-items: flex-start; } .header-controls { margin: 8px 0; } }
+</style>
+</head>
+<body>
+{% macro hypo_return_box(e, is_kospi) %}
+{% if e.hypo_return is defined and e.hypo_return and (e.hypo_return.day1_return is not none or e.hypo_return.day2_return is not none) %}
+<div class="hypo-box">
+  <div class="hypo-title">📊 매수 시뮬레이션</div>
+  {% if e.hypo_return.day1_return is not none %}
+  <div class="hypo-row">
+    <span class="hypo-label">1일차 매수 ({% if is_kospi %}₩{{ "{:,.0f}".format(e.hypo_return.day1_price) }}{% else %}${{ "{:.2f}".format(e.hypo_return.day1_price) }}{% endif %}, {{ e.hypo_return.day1_date[5:] }})</span>
+    <span class="hypo-val {{ 'up' if e.hypo_return.day1_return >= 0 else 'dn' }}">{{ '+' if e.hypo_return.day1_return >= 0 else '' }}{{ "{:.2f}".format(e.hypo_return.day1_return) }}%</span>
+  </div>
+  {% endif %}
+  {% if e.hypo_return.day2_return is not none %}
+  <div class="hypo-row">
+    <span class="hypo-label">확정 매수 ({% if is_kospi %}₩{{ "{:,.0f}".format(e.hypo_return.day2_price) }}{% else %}${{ "{:.2f}".format(e.hypo_return.day2_price) }}{% endif %}, {{ e.hypo_return.day2_date[5:] }})</span>
+    <span class="hypo-val {{ 'up' if e.hypo_return.day2_return >= 0 else 'dn' }}">{{ '+' if e.hypo_return.day2_return >= 0 else '' }}{{ "{:.2f}".format(e.hypo_return.day2_return) }}%</span>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endmacro %}
+
+<div class="container">
+
+  <h1>{{ scanner_icon }} {{ scanner_title }}</h1>
+  <div class="header-controls">
+    <a href="{{ nav_portfolio }}" style="background:#2c3e50;">📊 포트폴리오</a>
+    <a href="{{ nav_sp100 }}" style="background:#2563eb;" {{ 'class=nav-active' if scanner_id == 'sp100' else '' }}>🔍 S&P 100</a>
+    <a href="{{ nav_etf }}" style="background:#3b82f6;" {{ 'class=nav-active' if scanner_id == 'etf' else '' }}>📊 ETF</a>
+    <a href="{{ nav_kospi }}" style="background:#1e40af;" {{ 'class=nav-active' if scanner_id == 'kospi' else '' }}>🇰🇷 KOSPI</a>
+    <a href="{{ nav_backtest }}" style="background:#1d4ed8;">📈 백테스트</a>
+    <a href="{{ nav_trend }}" style="background:#6366f1;">📈 트렌드</a>
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" style="background:#4f46e5;">🔄 업데이트</a>
+    <a href="archive.html" style="background:#64748b;">📁 아카이브</a>
+  </div>
+  <p class="subtitle">{{ date_ko }} &nbsp;|&nbsp; {{ scan_desc }} | {{ scanned }}종목 스캔 | {{ scan_time }}</p>
+
+  {% if buy_1st or buy_2nd or buy_3rd %}
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:{{ accent_color }};"><div class="num" style="color:{{ accent_color }};">{{ (buy_1st|default([]))|length + (buy_2nd|default([]))|length + (buy_3rd|default([]))|length }}</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card" style="border-color:#16a34a;"><div class="num" style="color:#16a34a;">{{ (buy_1st|default([]))|length }}</div><div class="lbl">1st BUY</div></div>
+    <div class="sum-card" style="border-color:#2563eb;"><div class="num" style="color:#2563eb;">{{ (buy_2nd|default([]))|length }}</div><div class="lbl">2nd BUY</div></div>
+    <div class="sum-card" style="border-color:#1d4ed8;"><div class="num" style="color:#1d4ed8;">{{ (buy_3rd|default([]))|length }}</div><div class="lbl">3rd BUY</div></div>
+  </div>
+
+  {% if buy_1st %}
+  <h3 style="color:#16a34a;">1st BUY — {{ buy_1st_label }} ({{ buy_1st|length }}종목)</h3>
+  <div class="card-grid">
+    {% for e in buy_1st %}
+    <div class="ticker-card buy">
+      <div class="ticker">{{ e.ticker }} <span class="badge badge-BUY">1st_BUY</span>{% if e.buy_confirmed %}<span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#ea580c;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap_fmt %} · {{ e.market_cap_fmt }}{% elif e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">{% if is_kospi %}₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}{% else %}${{ e.price|f2 }}{% endif %}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      <div class="metrics"><span>RSI: {{ e.rsi|f1 if e.rsi else 'N/A' }}</span>{% if e.adx is defined %}<span>ADX: {{ e.adx|f1 if e.adx else 'N/A' }}</span>{% endif %}{% if e.drawdown_52w is defined %}<span>52w DD: {{ e.drawdown_52w|f1 if e.drawdown_52w else 'N/A' }}%</span>{% endif %}</div>
+      {{ hypo_return_box(e, is_kospi) }}
+      <div class="reason">{{ e.note }}</div>
+      <a href="details/{{ e.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#2563eb;text-decoration:none;border:1px solid #2563eb;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if buy_2nd %}
+  <h3 style="color:#2563eb;">2nd BUY — 반등 확인 진입 ({{ buy_2nd|length }}종목)</h3>
+  <div class="card-grid">
+    {% for e in buy_2nd %}
+    <div class="ticker-card" style="border-color:#2563eb;">
+      <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#2563eb;color:#fff;">2nd_BUY</span>{% if e.buy_confirmed %}<span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#ea580c;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap_fmt %} · {{ e.market_cap_fmt }}{% elif e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">{% if is_kospi %}₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}{% else %}${{ e.price|f2 }}{% endif %}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      {{ hypo_return_box(e, is_kospi) }}
+      <div class="reason">{{ e.note }}</div>
+      <a href="details/{{ e.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#2563eb;text-decoration:none;border:1px solid #2563eb;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if buy_3rd %}
+  <h3 style="color:#1d4ed8;">3rd BUY — 상승 초기 진입 ({{ buy_3rd|length }}종목)</h3>
+  <div class="card-grid">
+    {% for e in buy_3rd %}
+    <div class="ticker-card" style="border-color:#1d4ed8;">
+      <div class="ticker">{{ e.ticker }} <span class="badge" style="background:#1d4ed8;color:#fff;">3rd_BUY</span>{% if e.buy_confirmed %}<span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;font-weight:bold;">{{ e.buy_streak }}일 연속 ✅</span>{% elif e.buy_streak is defined and e.buy_streak > 0 %}<span style="background:#ea580c;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 {{ e.buy_streak }}/2일 ⏳</span>{% endif %}</div>
+      <div class="name">{{ e.name }}{% if e.market_cap_fmt %} · {{ e.market_cap_fmt }}{% elif e.market_cap %} · {{ e.market_cap|mcap }}{% endif %}</div>
+      <div><span class="price">{% if is_kospi %}₩{{ "{:,.0f}".format(e.price) if e.price else 'N/A' }}{% else %}${{ e.price|f2 }}{% endif %}</span><span class="chg {{ 'up' if e.change_pct >= 0 else 'dn' }}">{{ '▲' if e.change_pct >= 0 else '▼' }} {{ (e.change_pct|abs)|f2 }}%</span></div>
+      {{ hypo_return_box(e, is_kospi) }}
+      <div class="reason">{{ e.note }}</div>
+      <a href="details/{{ e.ticker }}.html" style="display:inline-block;margin-top:8px;font-size:12px;color:#2563eb;text-decoration:none;border:1px solid #2563eb;padding:3px 10px;border-radius:12px;">상세 분석 →</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <p style="font-size:13px;color:#64748b;text-align:center;padding:20px;">스캔 결과 없음 — GitHub Actions에서 워크플로우를 실행하세요</p>
+  {% endif %}
+
+  {{ ref_html|safe }}
+
+  <p class="report-footer">
+    Generated by AI Trading Assistant v3.0 | {{ date }} | Data: yfinance ({{ fetched_at }})
+  </p>
+
+</div>
+</body>
+</html>

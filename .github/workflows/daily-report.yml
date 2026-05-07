@@ -1,0 +1,115 @@
+name: Daily Trading Report
+
+# UTC 20:00 (KST 05:00) 평일 장마감 후 자동 실행
+# GitHub Actions 스케줄 지연(통상 ~1시간)을 감안해 1시간 더 앞당김 → 실제 실행 목표 KST 06:00
+on:
+  schedule:
+    - cron: '0 20 * * 1-5'
+  workflow_dispatch:
+
+concurrency:
+  group: report-generation
+  cancel-in-progress: false
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Restore & merge history from gh-pages
+        run: |
+          # master의 history를 백업
+          cp -r history/ /tmp/history_master 2>/dev/null || mkdir -p /tmp/history_master
+          # gh-pages의 history + data를 복원 (momentum_*.json 포함)
+          git fetch origin gh-pages --depth=1 2>/dev/null || true
+          git checkout origin/gh-pages -- \
+            history/scanner_momentum_us_history.json \
+            history/scanner_momentum_kr_history.json \
+            history/momentum_backtest_us.json \
+            history/momentum_backtest_kr.json \
+            history/ data/ 2>/dev/null || mkdir -p history data
+          # JSON 히스토리 파일 병합: gh-pages + master (master 우선)
+          python3 -c "
+          import json, glob, os
+          for f in glob.glob('/tmp/history_master/*.json'):
+              name = os.path.basename(f)
+              target = os.path.join('history', name)
+              try:
+                  master = json.load(open(f, encoding='utf-8'))
+                  deployed = json.load(open(target, encoding='utf-8')) if os.path.exists(target) else {}
+                  if isinstance(master, dict) and isinstance(deployed, dict):
+                      deployed.update(master)  # master 데이터가 우선
+                      json.dump(deployed, open(target, 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+                      print(f'  merged {name}: {len(deployed)} keys')
+                  else:
+                      print(f'  skip {name}: not a dict')
+              except Exception as e:
+                  print(f'  error {name}: {e}')
+          "
+          rm -rf /tmp/history_master
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        env:
+          PYTHONIOENCODING: utf-8
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python pipeline.py --skip-ocr --auto
+
+      - name: Backfill YTD fields (ytd_pct/spy_ytd_pct/alpha_pp)
+        # Best-effort: yfinance rate limit 등 일시 오류로 fail 시 deploy는 진행.
+        # 다음 cron run에서 자연 보완됨.
+        continue-on-error: true
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python backfill_ytd_history.py
+
+      - name: Re-render trend page (with YTD fields just backfilled)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          python -c "
+          import json
+          from datetime import datetime
+          from report_generator import generate_trend_page
+          me = json.load(open('history/portfolio_daily.json', encoding='utf-8'))
+          import os
+          owners = {}
+          for fname in os.listdir('history'):
+              if fname.startswith('portfolio_daily_') and fname.endswith('.json'):
+                  owner = fname.replace('portfolio_daily_','').replace('.json','')
+                  owners[owner] = json.load(open(os.path.join('history', fname), encoding='utf-8'))
+          today = datetime.now().strftime('%Y-%m-%d')
+          out = generate_trend_page(portfolio_daily=me, output_dir='reports', date_str=today, owner_daily=owners)
+          print(f'trend page re-rendered: {out}')
+          "
+
+      - name: Prepare deploy directory
+        run: python generate_site.py
+
+      - name: Deploy to GitHub Pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout gh-pages 2>/dev/null || git checkout --orphan gh-pages
+          rm -rf history data deploy 2>/dev/null || true
+          mkdir -p history data deploy
+          cp -r ../history/* ./history/ 2>/dev/null || true
+          cp -r ../data/* ./data/ 2>/dev/null || true
+          cp -r ../deploy/* ./ 2>/dev/null || true
+          git add -A
+          git commit -m "data: $(date -u +%Y-%m-%d) daily report" || true
+          git pull --rebase origin gh-pages || git rebase --abort
+          git push origin gh-pages

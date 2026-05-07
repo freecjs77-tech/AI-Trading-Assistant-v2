@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<!--
+  AI Trading Assistant — Report Template v3.0 (Jinja2)
+  업데이트: 2026-04-01
+  변경 이력:
+    v3.0: Jinja2 템플릿 변환, 통화 토글(USD/KRW), Signal Reference 상세화, 업데이트 버튼
+    v2.1: Portfolio Overview Row 3 배당 카드 추가
+    v2.0: Portfolio Overview 섹션 추가, Full Holdings Table 확장
+-->
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Report — 2026-04-02</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fff; color: #1a1a1a; font-size: 14px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  h2 { font-size: 16px; font-weight: 700; margin: 24px 0 12px; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+  h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 20px; }
+  .header-controls { float: right; margin-top: -36px; display: flex; gap: 8px; align-items: center; }
+  .header-controls button { padding: 6px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 13px; }
+  #currencyToggle { background: #f0f0f0; color: #333; }
+  #currencyToggle:hover { background: #e0e0e0; }
+  #updateBtn { background: #3498db; color: #fff; }
+  #updateBtn:hover { background: #2980b9; }
+  #updateBtn:disabled { background: #95a5a6; cursor: not-allowed; }
+  #updateStatus { font-size: 12px; color: #888; }
+  .macro-banner { border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; border-left: 5px solid #e74c3c; background: #fff5f5; }
+  .macro-banner.yellow { border-color: #f39c12; background: #fffbf0; }
+  .macro-banner.green { border-color: #27ae60; background: #f0fff4; }
+  .macro-grid { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-top: 10px; }
+  .macro-item { font-size: 13px; }
+  .macro-item span { font-weight: 700; }
+  .macro-note { font-size: 11px; color: #888; margin-top: 8px; }
+  .summary-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .sum-card { background: #f8f9fa; border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 110px; text-align: center; border-top: 4px solid #ccc; }
+  .sum-card.exit { border-color: #e74c3c; } .sum-card.exit2 { border-color: #e67e22; }
+  .sum-card.buy { border-color: #27ae60; } .sum-card.watch { border-color: #f39c12; }
+  .sum-card.hold { border-color: #95a5a6; }
+  .sum-card .num { font-size: 32px; font-weight: 800; line-height: 1; }
+  .sum-card .lbl { font-size: 11px; color: #666; margin-top: 4px; }
+  .sum-card.exit .num { color: #e74c3c; } .sum-card.exit2 .num { color: #e67e22; }
+  .sum-card.buy .num { color: #27ae60; } .sum-card.watch .num { color: #f39c12; }
+  .port-summary-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .port-card { background: #f8f9fa; border-radius: 8px; padding: 12px 16px; flex: 1; min-width: 150px; border-top: 3px solid #3498db; }
+  .port-card.green { border-color: #27ae60; } .port-card.blue { border-color: #3498db; }
+  .port-card.gray { border-color: #95a5a6; } .port-card.orange { border-color: #e67e22; }
+  .port-card.teal { border-color: #1abc9c; }
+  .port-card .pc-label { font-size: 10px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .port-card .pc-value { font-size: 20px; font-weight: 800; color: #1a1a1a; line-height: 1.2; }
+  .port-card .pc-sub { font-size: 12px; color: #666; margin-top: 3px; }
+  .port-card .pc-sub.pos { color: #27ae60; font-weight: 600; }
+  .port-card .pc-sub.neg { color: #e74c3c; font-weight: 600; }
+  .port-card .pc-sub.warn { color: #e67e22; font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .badge-exit { background: #e74c3c; color: #fff; } .badge-tp1 { background: #e67e22; color: #fff; }
+  .badge-BUY { background: #27ae60; color: #fff; }
+  .badge-WATCH { background: #f39c12; color: #fff; } .badge-HOLD { background: #95a5a6; color: #fff; }
+  .badge-CASH { background: #3498db; color: #fff; } .badge-BOND { background: #1abc9c; color: #fff; }
+  .card-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .ticker-card { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; flex: 1; min-width: 220px; max-width: 340px; border-left: 5px solid #ccc; }
+  .ticker-card.exit { border-color: #e74c3c; } .ticker-card.tp1 { border-color: #e67e22; }
+  .ticker-card.buy { border-color: #27ae60; } .ticker-card.watch { border-color: #f39c12; }
+  .ticker-card.bond { border-color: #1abc9c; } .ticker-card.hold { border-color: #95a5a6; }
+  .ticker-card .ticker { font-size: 18px; font-weight: 800; margin-bottom: 2px; }
+  .ticker-card .name { font-size: 11px; color: #888; margin-bottom: 8px; }
+  .ticker-card .price { font-size: 20px; font-weight: 700; }
+  .ticker-card .chg { font-size: 12px; margin-left: 6px; }
+  .ticker-card .chg.up { color: #27ae60; } .ticker-card .chg.dn { color: #e74c3c; }
+  .ticker-card .metrics { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12px; }
+  .ticker-card .reason { font-size: 12px; margin-top: 10px; color: #444; border-top: 1px solid #e0e0e0; padding-top: 8px; }
+  .holdings-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .holdings-tbl th { background: #f0f0f0; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; white-space: nowrap; }
+  .holdings-tbl th.tbl-num, .holdings-tbl td.tbl-num { text-align: right; }
+  .holdings-tbl td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  .holdings-tbl tr:hover td { background: #fafafa; }
+  .cls-tag { display: inline-block; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .cls-etf { background: #eef2ff; color: #4f46e5; } .cls-growth { background: #f0fdf4; color: #166534; }
+  .cls-value { background: #fefce8; color: #854d0e; } .cls-bond { background: #f0fdfa; color: #0f766e; }
+  .cls-cash { background: #f0f9ff; color: #0369a1; } .cls-metal { background: #fdf4ff; color: #7e22ce; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #f0f0f0; padding: 8px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; white-space: nowrap; }
+  td { padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  tr:hover td { background: #fafafa; }
+  .tbl-num { text-align: right; } .pnl-pos { color: #27ae60; font-weight: 600; } .pnl-neg { color: #e74c3c; font-weight: 600; }
+  .judge-block { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+  .judge-block h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .cond-list { list-style: none; font-size: 12px; } .cond-list li { padding: 2px 0; }
+  .cond-list li::before { margin-right: 6px; }
+  .cond-ok::before { content: "✅"; } .cond-no::before { content: "❌"; } .cond-na::before { content: "⬜"; }
+  .ref-section { margin-bottom: 16px; }
+  .ref-section h3 { font-size: 13px; font-weight: 700; margin: 12px 0 8px; color: #555; }
+  .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
+  .ref-table th { background: #f0f0f0; padding: 6px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid #ddd; }
+  .ref-table td { padding: 6px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+  .ref-table td ul { margin: 2px 0 2px 16px; padding: 0; }
+  .ref-table td ul li { padding: 1px 0; }
+  .ref-table .signal-col { width: 130px; white-space: nowrap; }
+  .ref-table .action-col { width: 80px; }
+  .source-table { font-size: 12px; } .source-table td { padding: 4px 10px; }
+  .report-footer { font-size: 11px; color: #aaa; margin-top: 24px; padding-top: 12px; border-top: 1px solid #eee; }
+  .alert-box { background: #fff0f0; border: 2px solid #e74c3c; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; }
+  .alert-box strong { color: #e74c3c; font-size: 15px; }
+  @media (max-width: 600px) { .ticker-card { min-width: 100%; max-width: 100%; } .sum-card { min-width: 80px; } .port-card { min-width: 140px; } .header-controls { float: none; margin: 8px 0; } }
+</style>
+</head>
+<body data-usdkrw="1515.78">
+<div class="container">
+
+  <h1>📊 AI Trading Assistant — Signal Report</h1>
+  <div class="header-controls">
+    <button id="currencyToggle" onclick="toggleCurrency()">💱 ₩ 원화 보기</button>
+    <a href="#scanner" style="padding:6px 14px;background:#27ae60;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🔍 S&amp;P</a>
+    <a href="#scanner-etf" style="padding:6px 14px;background:#3498db;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">📊 ETF</a>
+    <a href="#scanner-kospi" style="padding:6px 14px;background:#e74c3c;color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px;">🇰🇷 KOSPI</a>
+    <button id="updateBtn" onclick="runPipeline()">🔄 업데이트</button>
+    <span id="updateStatus"></span>
+  </div>
+  <p class="subtitle">
+    2026년 4월 2일 (목요일) &nbsp;|&nbsp;
+    데이터 수집: 2026-04-02 19:42:50 &nbsp;|&nbsp;
+    기술지표: yfinance &nbsp;|&nbsp;
+    포트폴리오: portfolio.md (C:\Users\DIT-969\Downloads\AI Trading Assistant\portfolio.md)
+  </p>
+
+  
+
+  <div class="macro-banner ">
+    <strong>🔴 MASTER SWITCH: RED — QQQ MA200 하회, SPY MA200 하회</strong>
+    <div class="macro-grid">
+      <div class="macro-item">QQQ: <span>$584.31</span> vs MA200 <span>$593.2566</span> → ⬇️ Below</div>
+      <div class="macro-item">SPY: <span>$655.24</span> vs MA200 <span>$658.7385</span> → ⬇️ Below</div>
+      <div class="macro-item">VIX: <span>26.86</span></div>
+      <div class="macro-item">30Y 국채: <span>4.9%</span></div>
+      <div class="macro-item">USD/KRW: <span>₩1,515.78</span></div>
+    </div>
+    <p class="macro-note">⚠️ 위 지표는 시장 참고용입니다. 개별 종목 시그널은 순수 기술지표(RSI·MACD·MA·BB·ADX·거래량)로만 판정됩니다.</p>
+  </div>
+
+  <h2>요약</h2>
+  <div class="summary-grid">
+    <div class="sum-card exit"><div class="num">0</div><div class="lbl">TP2 EXIT</div></div>
+    <div class="sum-card exit2"><div class="num">0</div><div class="lbl">TP1 TRIM</div></div>
+    <div class="sum-card buy"><div class="num">2</div><div class="lbl">BUY</div></div>
+    <div class="sum-card watch"><div class="num">8</div><div class="lbl">WATCH</div></div>
+    <div class="sum-card hold"><div class="num">8</div><div class="lbl">HOLD/CASH</div></div>
+  </div>
+
+  <h2>📊 Portfolio Overview</h2>
+  <div class="port-summary-grid">
+    <div class="port-card green">
+      <div class="pc-label">Total Value</div>
+      <div class="pc-value money" data-usd="442677.88990158">$442,678</div>
+      <div class="pc-sub pos">+$63,080 (+16.6%)</div>
+    </div>
+    <div class="port-card gray">
+      <div class="pc-label">Cost Basis</div>
+      <div class="pc-value money" data-usd="379598.28">$379,598</div>
+      <div class="pc-sub">투자 원금</div>
+    </div>
+    <div class="port-card blue">
+      <div class="pc-label">Holdings</div>
+      <div class="pc-value">18</div>
+      <div class="pc-sub">6 categories</div>
+    </div>
+    <div class="port-card blue">
+      <div class="pc-label">Cash (BIL)</div>
+      <div class="pc-value money" data-usd="91400.0">$91,400</div>
+      <div class="pc-sub">20.6% of portfolio</div>
+    </div>
+  </div>
+  <div class="port-summary-grid">
+    <div class="port-card orange">
+      <div class="pc-label">VIX</div>
+      <div class="pc-value" style="color:#e67e22;">26.86</div>
+      <div class="pc-sub warn">불안 구간 (20~30)</div>
+    </div>
+    <div class="port-card teal">
+      <div class="pc-label">30Y Treasury</div>
+      <div class="pc-value" style="color:#e67e22;">4.9%</div>
+      <div class="pc-sub">4.900%</div>
+    </div>
+    <div class="port-card gray">
+      <div class="pc-label">USD/KRW</div>
+      <div class="pc-value">₩1,515.78</div>
+      <div class="pc-sub">≈ 6.71억원</div>
+    </div>
+  </div>
+  <div class="port-summary-grid">
+    <div class="port-card green">
+      <div class="pc-label">예상 연 배당금</div>
+      <div class="pc-value money" data-usd="9782.57">$9,783</div>
+      <div class="pc-sub">TTM 배당 기준 (yfinance)</div>
+    </div>
+    <div class="port-card green">
+      <div class="pc-label">월 평균 배당</div>
+      <div class="pc-value money" data-usd="815.21">$815</div>
+      <div class="pc-sub">BIL $301/mo · SCHD $133/mo · VOO $105/mo</div>
+    </div>
+    <div class="port-card green">
+      <div class="pc-label">배당수익률</div>
+      <div class="pc-value">2.21%</div>
+      <div class="pc-sub">포트폴리오 총가치 기준</div>
+    </div>
+  </div>
+
+  <h2>📋 Full Holdings Table</h2>
+  <table class="holdings-tbl">
+    <thead>
+      <tr>
+        <th>#</th><th>Ticker</th><th>Class</th>
+        <th class="tbl-num">보유주수</th><th class="tbl-num">평균단가</th><th class="tbl-num">현재가</th>
+        <th class="tbl-num">평가금액</th><th class="tbl-num">비중</th><th class="tbl-num">P&amp;L%</th><th>Signal</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        <td>1</td>
+        <td><b>VOO</b></td>
+        <td><span class="cls-tag cls-etf">ETF</span></td>
+        <td class="tbl-num">177</td>
+        <td class="tbl-num money" data-usd="514.2064950985068">$514.21</td>
+        <td class="tbl-num money" data-usd="602.3">$602.30</td>
+        <td class="tbl-num money" data-usd="106554.77759669999">$106,555</td>
+        <td class="tbl-num">24.1%</td>
+        <td class="tbl-num pnl-pos">+17.1%</td>
+        <td>
+          <span class="badge badge-WATCH">WATCH</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>2</td>
+        <td><b>BIL</b></td>
+        <td><span class="cls-tag cls-cash">CASH</span></td>
+        <td class="tbl-num">1,000</td>
+        <td class="tbl-num money" data-usd="82.81141">$82.81</td>
+        <td class="tbl-num money" data-usd="91.4">$91.40</td>
+        <td class="tbl-num money" data-usd="91400.0">$91,400</td>
+        <td class="tbl-num">20.6%</td>
+        <td class="tbl-num pnl-pos">+10.4%</td>
+        <td>
+          <span class="badge badge-CASH">CASH</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>3</td>
+        <td><b>QQQ</b></td>
+        <td><span class="cls-tag cls-etf">ETF</span></td>
+        <td class="tbl-num">136</td>
+        <td class="tbl-num money" data-usd="497.7316030429069">$497.73</td>
+        <td class="tbl-num money" data-usd="584.31">$584.31</td>
+        <td class="tbl-num money" data-usd="79257.90431997">$79,258</td>
+        <td class="tbl-num">17.9%</td>
+        <td class="tbl-num pnl-pos">+17.4%</td>
+        <td>
+          <span class="badge badge-WATCH">WATCH</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>4</td>
+        <td><b>SCHD</b></td>
+        <td><span class="cls-tag cls-etf">ETF</span></td>
+        <td class="tbl-num">1,512</td>
+        <td class="tbl-num money" data-usd="24.530437601752464">$24.53</td>
+        <td class="tbl-num money" data-usd="30.51">$30.51</td>
+        <td class="tbl-num money" data-usd="46131.42888324">$46,131</td>
+        <td class="tbl-num">10.4%</td>
+        <td class="tbl-num pnl-pos">+24.4%</td>
+        <td>
+          <span class="badge badge-HOLD">HOLD</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: WATCH)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>5</td>
+        <td><b>AAPL</b></td>
+        <td><span class="cls-tag cls-growth">Growth</span></td>
+        <td class="tbl-num">79.349</td>
+        <td class="tbl-num money" data-usd="170.84111407515323">$170.84</td>
+        <td class="tbl-num money" data-usd="255.63">$255.63</td>
+        <td class="tbl-num money" data-usd="20284.04238675">$20,284</td>
+        <td class="tbl-num">4.6%</td>
+        <td class="tbl-num pnl-pos">+49.6%</td>
+        <td>
+          <span class="badge badge-HOLD">HOLD</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: WATCH)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>6</td>
+        <td><b>O</b></td>
+        <td><span class="cls-tag cls-value">Value</span></td>
+        <td class="tbl-num">282</td>
+        <td class="tbl-num money" data-usd="51.00821211998635">$51.01</td>
+        <td class="tbl-num money" data-usd="61.88">$61.88</td>
+        <td class="tbl-num money" data-usd="17456.121581080002">$17,456</td>
+        <td class="tbl-num">3.9%</td>
+        <td class="tbl-num pnl-pos">+21.3%</td>
+        <td>
+          <span class="badge badge-HOLD">HOLD</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>7</td>
+        <td><b>JEPI</b></td>
+        <td><span class="cls-tag cls-etf">ETF</span></td>
+        <td class="tbl-num">254</td>
+        <td class="tbl-num money" data-usd="50.60920049911117">$50.61</td>
+        <td class="tbl-num money" data-usd="56.41">$56.41</td>
+        <td class="tbl-num money" data-usd="14331.910839269998">$14,332</td>
+        <td class="tbl-num">3.2%</td>
+        <td class="tbl-num pnl-pos">+11.5%</td>
+        <td>
+          <span class="badge badge-HOLD">HOLD</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: 1st_BUY)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>8</td>
+        <td><b>SOXX</b></td>
+        <td><span class="cls-tag cls-etf">ETF</span></td>
+        <td class="tbl-num">31.096</td>
+        <td class="tbl-num money" data-usd="184.1346085353947">$184.13</td>
+        <td class="tbl-num money" data-usd="338.54">$338.54</td>
+        <td class="tbl-num money" data-usd="10527.111533340001">$10,527</td>
+        <td class="tbl-num">2.4%</td>
+        <td class="tbl-num pnl-pos">+83.9%</td>
+        <td>
+          <span class="badge badge-BUY">2nd_BUY</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>9</td>
+        <td><b>TSLA</b></td>
+        <td><span class="cls-tag cls-growth">Growth</span></td>
+        <td class="tbl-num">26.932</td>
+        <td class="tbl-num money" data-usd="389.5364311394179">$389.54</td>
+        <td class="tbl-num money" data-usd="381.26">$381.26</td>
+        <td class="tbl-num money" data-usd="10267.93266576">$10,268</td>
+        <td class="tbl-num">2.3%</td>
+        <td class="tbl-num pnl-neg">-2.1%</td>
+        <td>
+          <span class="badge badge-WATCH">WATCH</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>10</td>
+        <td><b>TLT</b></td>
+        <td><span class="cls-tag cls-bond">Bond</span></td>
+        <td class="tbl-num">100</td>
+        <td class="tbl-num money" data-usd="83.9127">$83.91</td>
+        <td class="tbl-num money" data-usd="86.26">$86.26</td>
+        <td class="tbl-num money" data-usd="8626.0">$8,626</td>
+        <td class="tbl-num">1.9%</td>
+        <td class="tbl-num pnl-pos">+2.8%</td>
+        <td>
+          <span class="badge badge-WATCH">BOND_WATCH</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: HOLD)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>11</td>
+        <td><b>NVDA</b></td>
+        <td><span class="cls-tag cls-growth">Growth</span></td>
+        <td class="tbl-num">48.701</td>
+        <td class="tbl-num money" data-usd="164.66009275837723">$164.66</td>
+        <td class="tbl-num money" data-usd="175.75">$175.75</td>
+        <td class="tbl-num money" data-usd="8559.11410525">$8,559</td>
+        <td class="tbl-num">1.9%</td>
+        <td class="tbl-num pnl-pos">+6.7%</td>
+        <td>
+          <span class="badge badge-WATCH">WATCH</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>12</td>
+        <td><b>PLTR</b></td>
+        <td><span class="cls-tag cls-growth">Growth</span></td>
+        <td class="tbl-num">56.829</td>
+        <td class="tbl-num money" data-usd="137.37492739879767">$137.37</td>
+        <td class="tbl-num money" data-usd="146.49">$146.49</td>
+        <td class="tbl-num money" data-usd="8324.92313157">$8,325</td>
+        <td class="tbl-num">1.9%</td>
+        <td class="tbl-num pnl-pos">+6.6%</td>
+        <td>
+          <span class="badge badge-WATCH">WATCH</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>13</td>
+        <td><b>SPY</b></td>
+        <td><span class="cls-tag cls-etf">ETF</span></td>
+        <td class="tbl-num">8.888</td>
+        <td class="tbl-num money" data-usd="511.2902508963396">$511.29</td>
+        <td class="tbl-num money" data-usd="655.24">$655.24</td>
+        <td class="tbl-num money" data-usd="5823.4684334">$5,823</td>
+        <td class="tbl-num">1.3%</td>
+        <td class="tbl-num pnl-pos">+28.2%</td>
+        <td>
+          <span class="badge badge-WATCH">WATCH</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>14</td>
+        <td><b>UNH</b></td>
+        <td><span class="cls-tag cls-value">Value</span></td>
+        <td class="tbl-num">18.000</td>
+        <td class="tbl-num money" data-usd="280.8077777777778">$280.81</td>
+        <td class="tbl-num money" data-usd="273.98">$273.98</td>
+        <td class="tbl-num money" data-usd="4931.64">$4,932</td>
+        <td class="tbl-num">1.1%</td>
+        <td class="tbl-num pnl-neg">-2.4%</td>
+        <td>
+          <span class="badge badge-HOLD">HOLD</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>15</td>
+        <td><b>MSFT</b></td>
+        <td><span class="cls-tag cls-growth">Growth</span></td>
+        <td class="tbl-num">11.999</td>
+        <td class="tbl-num money" data-usd="392.09975020445427">$392.10</td>
+        <td class="tbl-num money" data-usd="369.37">$369.37</td>
+        <td class="tbl-num money" data-usd="4432.07543181">$4,432</td>
+        <td class="tbl-num">1.0%</td>
+        <td class="tbl-num pnl-neg">-5.8%</td>
+        <td>
+          <span class="badge badge-HOLD">HOLD</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>16</td>
+        <td><b>GOOGL</b></td>
+        <td><span class="cls-tag cls-growth">Growth</span></td>
+        <td class="tbl-num">10.677</td>
+        <td class="tbl-num money" data-usd="296.90426300726915">$296.90</td>
+        <td class="tbl-num money" data-usd="297.39">$297.39</td>
+        <td class="tbl-num money" data-usd="3175.19615364">$3,175</td>
+        <td class="tbl-num">0.7%</td>
+        <td class="tbl-num pnl-pos">+0.2%</td>
+        <td>
+          <span class="badge badge-WATCH">WATCH</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>17</td>
+        <td><b>SLV</b></td>
+        <td><span class="cls-tag cls-metal">Metal</span></td>
+        <td class="tbl-num">20.000</td>
+        <td class="tbl-num money" data-usd="64.19749999999999">$64.20</td>
+        <td class="tbl-num money" data-usd="68.14">$68.14</td>
+        <td class="tbl-num money" data-usd="1362.8">$1,363</td>
+        <td class="tbl-num">0.3%</td>
+        <td class="tbl-num pnl-pos">+6.1%</td>
+        <td>
+          <span class="badge badge-BUY">1st_BUY</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+      <tr>
+        <td>18</td>
+        <td><b>AMZN</b></td>
+        <td><span class="cls-tag cls-growth">Growth</span></td>
+        <td class="tbl-num">5.848</td>
+        <td class="tbl-num money" data-usd="208.25595830469172">$208.26</td>
+        <td class="tbl-num money" data-usd="210.57">$210.57</td>
+        <td class="tbl-num money" data-usd="1231.4428398">$1,231</td>
+        <td class="tbl-num">0.3%</td>
+        <td class="tbl-num pnl-pos">+1.1%</td>
+        <td>
+          <span class="badge badge-HOLD">HOLD</span>
+          
+          <span style="font-size:10px;color:#888;margin-left:4px">(어제: TAKE_PROFIT_2)</span>
+          
+        </td>
+      </tr>
+      
+    </tbody>
+  </table>
+
+  
+
+  
+
+  
+  <h2>✅ Opportunities — Entry / Watch</h2>
+  
+
+  
+  <h3 style="color:#27ae60; margin-bottom:12px;">BUY — 분할매수 검토 (2종목)</h3>
+  <div class="card-grid">
+    
+    <div class="ticker-card buy">
+      <div class="ticker">SOXX <span class="badge badge-BUY">2nd_BUY</span>
+        
+        <span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span>
+        
+      </div>
+      <div class="name">iShares Semiconductor ETF | 보유: 31.096주 | <span class="money" data-usd="10527.111533340001">$10,527</span></div>
+      <div><span class="price money" data-usd="338.54">$338.54</span><span class="chg up">▲ 3.01%</span></div>
+      <div class="metrics">
+        <span>RSI: 51.1</span>
+        <span>Drawdown: -1.9%</span>
+        <span>BB%: 63.7%</span>
+      </div>
+      <div class="reason">💡 [확인 대기 1/2일] RSI 51.1 > 42 + MA20 위에 있거나 근접해요 + Higher Low: 단기 하락멈춤 + 중기저점상승 ($332.51(2026-03-20) > $323.31(2026-03-06))</div>
+    </div>
+    
+    <div class="ticker-card buy">
+      <div class="ticker">SLV <span class="badge badge-BUY">1st_BUY</span>
+        
+        <span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span>
+        
+      </div>
+      <div class="name">iShares Silver Trust | 보유: 20.000주 | <span class="money" data-usd="1362.8">$1,363</span></div>
+      <div><span class="price money" data-usd="68.14">$68.14</span><span class="chg up">▲ 0.00%</span></div>
+      <div class="metrics">
+        <span>RSI: 47.4</span>
+        <span>Drawdown: -14.9%</span>
+        <span>BB%: 44.4%</span>
+      </div>
+      <div class="reason">💡 [확인 대기 1/2일] 가격 < MA20 + VIX 26.9 > 25</div>
+    </div>
+    
+  </div>
+  
+
+  
+  <h3 style="color:#1abc9c; margin:16px 0 12px;">BOND WATCH</h3>
+  <div class="card-grid">
+    
+    <div class="ticker-card bond">
+      <div class="ticker">TLT <span class="badge badge-BOND">BOND_WATCH</span></div>
+      <div class="name">iShares 20+ Year Treasury ETF</div>
+      <div><span class="price money" data-usd="86.26">$86.26</span></div>
+      <div class="metrics"><span>RSI: 45.5</span><span>30Y 금리: 4.9%</span></div>
+      <div class="reason">💡 30Y 4.900% — 트리거 직전 (4.9~5.0%)</div>
+    </div>
+    
+  </div>
+  
+
+  
+  <h3 style="color:#f39c12; margin:16px 0 12px;">WATCH — 관찰 (7종목)</h3>
+  <div class="card-grid">
+    
+    <div class="ticker-card watch">
+      <div class="ticker">VOO <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="name">Vanguard S&P 500 ETF</div>
+      <div><span class="price money" data-usd="602.3">$602.30</span><span class="chg up">▲ 0.79%</span></div>
+      <div class="metrics"><span>RSI: 46.0</span><span>Drawdown: -3.6%</span></div>
+      <div class="reason">💡 [필수] 52주 고점 대비 -5.5% ≤ -5% + 가격 < MA20 + BB 하단 거리 3.6%</div>
+    </div>
+    
+    <div class="ticker-card watch">
+      <div class="ticker">QQQ <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="name">Invesco QQQ Trust ETF</div>
+      <div><span class="price money" data-usd="584.31">$584.31</span><span class="chg up">▲ 1.24%</span></div>
+      <div class="metrics"><span>RSI: 46.5</span><span>Drawdown: -3.9%</span></div>
+      <div class="reason">💡 [필수] 52주 고점 대비 -7.9% ≤ -5% + 가격 < MA20 + BB 하단 거리 4.1%</div>
+    </div>
+    
+    <div class="ticker-card watch">
+      <div class="ticker">TSLA <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="name">Tesla Inc.</div>
+      <div><span class="price money" data-usd="381.26">$381.26</span><span class="chg up">▲ 2.56%</span></div>
+      <div class="metrics"><span>RSI: 46.4</span><span>Drawdown: -6.5%</span></div>
+      <div class="reason">💡 [필수] 가격 < MA20 + [필수] MACD hist 2일 증가: increasing_2d + 전일 대비 +2.6% ≥ +2%</div>
+    </div>
+    
+    <div class="ticker-card watch">
+      <div class="ticker">NVDA <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="name">NVIDIA Corp.</div>
+      <div><span class="price money" data-usd="175.75">$175.75</span><span class="chg up">▲ 0.77%</span></div>
+      <div class="metrics"><span>RSI: 47.3</span><span>Drawdown: -5.5%</span></div>
+      <div class="reason">💡 [필수] 가격 < MA20 + [필수] MACD hist 2일 증가: increasing_2d + ADX 22.0 ≤ 25</div>
+    </div>
+    
+    <div class="ticker-card watch">
+      <div class="ticker">PLTR <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="name">Palantir Technologies</div>
+      <div><span class="price money" data-usd="146.49">$146.49</span><span class="chg up">▲ 0.14%</span></div>
+      <div class="metrics"><span>RSI: 47.6</span><span>Drawdown: -8.9%</span></div>
+      <div class="reason">💡 [필수] 가격 < MA20 + [필수] MACD hist 2일 증가: increasing_2d + ADX 18.2 ≤ 25</div>
+    </div>
+    
+    <div class="ticker-card watch">
+      <div class="ticker">SPY <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="name">SPDR S&P 500 ETF</div>
+      <div><span class="price money" data-usd="655.24">$655.24</span><span class="chg up">▲ 0.75%</span></div>
+      <div class="metrics"><span>RSI: 46.0</span><span>Drawdown: -3.6%</span></div>
+      <div class="reason">💡 [필수] 52주 고점 대비 -5.5% ≤ -5% + 가격 < MA20 + BB 하단 거리 3.6%</div>
+    </div>
+    
+    <div class="ticker-card watch">
+      <div class="ticker">GOOGL <span class="badge badge-WATCH">WATCH</span></div>
+      <div class="name">Alphabet Inc. Class A</div>
+      <div><span class="price money" data-usd="297.39">$297.39</span><span class="chg up">▲ 3.42%</span></div>
+      <div class="metrics"><span>RSI: 48.9</span><span>Drawdown: -4.3%</span></div>
+      <div class="reason">💡 [필수] 가격 < MA20 + [필수] MACD hist 2일 증가: increasing_2d + 전일 대비 +3.4% ≥ +2%</div>
+    </div>
+    
+  </div>
+  
+
+  <h2>🔍 Signal Judgment Details</h2>
+  <div style="display:flex; flex-wrap:wrap; gap:10px;">
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>VOO — <span class="badge badge-WATCH">WATCH</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 46.0 > 35</li>
+        
+        <li class="cond-ok">[필수] 52주 고점 대비 -5.5% ≤ -5%</li>
+        
+        <li class="cond-ok">가격 < MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 3.6%</li>
+        
+        <li class="cond-ok">하락 모멘텀 둔화</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>BIL — <span class="badge badge-CASH">CASH</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-ok">현금성 자산 — 시그널 판정 대상 아님</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>QQQ — <span class="badge badge-WATCH">WATCH</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 46.5 > 35</li>
+        
+        <li class="cond-ok">[필수] 52주 고점 대비 -7.9% ≤ -5%</li>
+        
+        <li class="cond-ok">가격 < MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 4.1%</li>
+        
+        <li class="cond-ok">하락 모멘텀 둔화</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>SCHD — <span class="badge badge-HOLD">HOLD</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>AAPL — <span class="badge badge-HOLD">HOLD</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>O — <span class="badge badge-HOLD">HOLD</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>JEPI — <span class="badge badge-HOLD">HOLD</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>SOXX — <span class="badge badge-BUY">2nd_BUY</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-ok">RSI 51.1 > 42</li>
+        
+        <li class="cond-no">MACD 골든크로스 아직 미발생 (-3.9218 vs Signal -3.3576)</li>
+        
+        <li class="cond-ok">MA20 위에 있거나 근접해요</li>
+        
+        <li class="cond-ok">Higher Low: 단기 하락멈춤 + 중기저점상승 ($332.51(2026-03-20) > $323.31(2026-03-06))</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>TSLA — <span class="badge badge-WATCH">WATCH</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 46.4 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-no">ADX 27.2 > 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 6.8%)</li>
+        
+        <li class="cond-ok">전일 대비 +2.6% ≥ +2%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>TLT — <span class="badge badge-WATCH">BOND_WATCH</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-no">30Y 금리 4.900% < 5.0%</li>
+        
+        <li class="cond-no">RSI 45.5 > 35</li>
+        
+        <li class="cond-ok">30Y 4.900% — 트리거 직전 (4.9~5.0%)</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>NVDA — <span class="badge badge-WATCH">WATCH</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 47.3 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-ok">ADX 22.0 ≤ 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 5.6%)</li>
+        
+        <li class="cond-no">전일 대비 +0.8% < +2%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>PLTR — <span class="badge badge-WATCH">WATCH</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 47.6 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-ok">ADX 18.2 ≤ 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 3.9%)</li>
+        
+        <li class="cond-no">전일 대비 +0.1% < +2%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>SPY — <span class="badge badge-WATCH">WATCH</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 46.0 > 35</li>
+        
+        <li class="cond-ok">[필수] 52주 고점 대비 -5.5% ≤ -5%</li>
+        
+        <li class="cond-ok">가격 < MA20</li>
+        
+        <li class="cond-ok">BB 하단 거리 3.6%</li>
+        
+        <li class="cond-ok">하락 모멘텀 둔화</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>UNH — <span class="badge badge-HOLD">HOLD</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>MSFT — <span class="badge badge-HOLD">HOLD</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>GOOGL — <span class="badge badge-WATCH">WATCH</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-no">[필수] RSI 48.9 > 38</li>
+        
+        <li class="cond-ok">[필수] 가격 < MA20</li>
+        
+        <li class="cond-ok">[필수] MACD hist 2일 증가: increasing_2d</li>
+        
+        <li class="cond-no">ADX 30.6 > 25</li>
+        
+        <li class="cond-no">종가 > BB하단x1.02 (거리 8.0%)</li>
+        
+        <li class="cond-ok">전일 대비 +3.4% ≥ +2%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>SLV — <span class="badge badge-BUY">1st_BUY</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-no">RSI 47.4 > 40</li>
+        
+        <li class="cond-ok">가격 < MA20</li>
+        
+        <li class="cond-ok">VIX 26.9 > 25</li>
+        
+        <li class="cond-no">BB 하단 거리 19.5%</li>
+        
+      </ul>
+    </div>
+    
+    <div class="judge-block" style="flex:1; min-width:260px;">
+      <h4>AMZN — <span class="badge badge-HOLD">HOLD</span></h4>
+      <ul class="cond-list">
+        
+        <li class="cond-na">Exit/Entry 조건 미충족 — 보유 유지</li>
+        
+      </ul>
+    </div>
+    
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       SIGNAL REFERENCE — 포트폴리오 (Exit + Entry 전체)
+  ═══════════════════════════════════════════ -->
+  <div id="reference">
+  <h2>📖 Signal Reference — Portfolio</h2>
+  <div class="ref-section">
+    <h3>EXIT 시그널</h3>
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-exit">TOP_SIGNAL</span></td>
+          <td>즉시 일부 익절</td>
+          <td>아래 중 <b>1개</b> 충족 (고점 게이트 없음):
+            <ul><li>RSI ≥ 75</li><li>BB 상단 밖 2일 연속 마감</li><li>최근 3거래일 내 +10% 이상 급등</li></ul>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-exit">TAKE_PROFIT_2</span></td>
+          <td>대량 익절 (50%)</td>
+          <td>고점 게이트 (DD > -5%) 통과 후 아래 중 <b>1개</b> 충족:
+            <ul>
+              <li>MA20 이탈 2일 + MACD hist 감소</li>
+              <li>Higher Low 하향 돌파</li>
+              <li>MACD 데스크로스 + hist 3일 감소</li>
+            </ul>
+            MACD bullish / hist 회복 중이면 면제
+          </td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-tp1">TAKE_PROFIT_1</span></td>
+          <td>1차 익절 (30%)</td>
+          <td>고점 게이트 (DD > -5%) 통과 후 아래 중 <b>2개 이상</b> 충족:
+            <ul><li>MACD hist 3일 연속 감소</li><li>RSI 다이버전스</li><li>종가 MA20 1일 이탈</li></ul>
+            MACD bullish / hist 회복 중이면 면제
+          </td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-L1">L1_WARNING</span></td>
+          <td>신규 매수 금지</td>
+          <td>아래 중 <b>1개</b> 충족:
+            <ul><li>MACD hist 양수에서 감소 전환</li><li>RSI ≥ 60</li><li>BB% 60~95</li><li>거래량 다이버전스</li></ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>ENTRY — Growth / ETF / Value / Bond / Metal</h3>
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>20% 분할매수</td><td>Growth: [필수]MACD hist 2일↑ + 선택3/6 [거부]RSI&gt;50<br>ETF: Pick 3/5 [거부]RSI&gt;70<br>Bond: 30Y≥5.0% + RSI≤35</td></tr>
+        <tr><td><span class="badge badge-BUY">2nd_BUY</span></td><td>30% 추가매수</td><td>이중바닥 + RSI&gt;35 + MACD 골든크로스 + 거래량≥1.2x</td></tr>
+        <tr><td><span class="badge badge-BUY">3rd_BUY</span></td><td>50% 완성매수</td><td>MA20 위 2일 + 기울기↑ + MACD&gt;0 + 거래량≥1.3x</td></tr>
+        <tr><td><span class="badge badge-WATCH">WATCH</span></td><td>관찰</td><td>Entry 조건 일부만 충족</td></tr>
+        <tr><td><span class="badge badge-HOLD">HOLD</span></td><td>유지</td><td>Exit/Entry 미해당</td></tr>
+        <tr><td><span class="badge badge-CASH">CASH</span></td><td>현금</td><td>BIL 등 현금성 자산</td></tr>
+      </tbody>
+    </table>
+  </div>
+  </div>
+  <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
+
+  <!-- ═══════════════════════════════════════════
+       S&P 100 SCANNER RESULTS
+  ═══════════════════════════════════════════ -->
+  <div id="scanner" style="padding-top:16px;">
+  
+  <h2>🔍 S&P 100 Market Scanner</h2>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;">Growth v2.2 Entry 규칙 적용 | 101종목 스캔 | 2026-04-02 19:42</p>
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">4</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card" style="border-color:#27ae60;"><div class="num" style="color:#27ae60;">0</div><div class="lbl">1st BUY</div></div>
+    <div class="sum-card" style="border-color:#3498db;"><div class="num" style="color:#3498db;">4</div><div class="lbl">2nd BUY</div></div>
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">0</div><div class="lbl">3rd BUY</div></div>
+  </div>
+
+  
+
+  
+  <h3 style="color:#3498db;">2nd BUY — 반등 확인 진입 (4종목)</h3>
+  <div class="card-grid">
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">MA <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">Mastercard · $439B</div>
+      <div><span class="price">$491.65</span><span class="chg dn">▼ 1.60%</span></div>
+      <div class="reason">[확인 대기 1/2일] 이중바닥: 488.47(2026-03-18) vs 484.24(2026-03-27) 차이 0.9% + RSI 41.7 > 35 + MACD 골든크로스: -7.4336 > signal -7.8769</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">AMD <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">AMD · $343B</div>
+      <div><span class="price">$210.21</span><span class="chg up">▲ 3.33%</span></div>
+      <div class="reason">[확인 대기 1/2일] 이중바닥: 190.95(2026-03-03) vs 193.39(2026-03-13) 차이 1.3% + RSI 53.6 > 35 + MACD 골든크로스: -0.4879 > signal -1.6358</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">INTC <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">Intel · $241B</div>
+      <div><span class="price">$48.03</span><span class="chg up">▲ 8.84%</span></div>
+      <div class="reason">[확인 대기 1/2일] 이중바닥: 43.1(2026-03-03) vs 43.87(2026-03-20) 차이 1.8% + RSI 56.5 > 35 + MACD 골든크로스: -0.2594 > signal -0.3551</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">SCHW <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">Schwab · $164B</div>
+      <div><span class="price">$92.36</span><span class="chg dn">▼ 1.72%</span></div>
+      <div class="reason">[확인 대기 1/2일] 이중바닥: 91.24(2026-03-12) vs 92.36(2026-03-27) 차이 1.2% + RSI 41.6 > 35 + MACD 골든크로스: -0.7660 > signal -0.8171</div>
+    </div>
+    
+  </div>
+  
+
+  
+
+  
+  </div>
+
+  <h2>📖 Signal Reference — Growth v2.2 Entry</h2>
+  <div class="ref-section">
+    <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: S&P 100 대형주. 바닥 확인 후 분할매수 전략. 모멘텀 반전 신호에 집중.</p>
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b> 매수</td>
+          <td>
+            <b>[필수 조건]</b> — 반드시 충족해야 함<br>
+            MACD 히스토그램이 2일 연속 증가 중 (하락 모멘텀이 반전되기 시작)<br><br>
+            <b>[선택 조건]</b> — 아래 6개 중 <b>3개 이상</b> 충족<br>
+            <ul>
+              <li><b>RSI ≤ 38</b> — 과매도 영역 (저가 확인)</li>
+              <li><b>ADX ≤ 25</b> — 추세 약화 (바닥권 횡보)</li>
+              <li><b>종가 ≤ BB하단 × 1.02</b> — 볼린저밴드 하단 근접 (통계적 저점)</li>
+              <li><b>가격 &lt; MA20</b> — 20일 이동평균 하회 (단기 하락 추세)</li>
+              <li><b>3일 연속 저점 유지</b> — 더 이상 안 빠짐 (바닥 다짐)</li>
+              <li><b>전일 대비 +2% 이상 반등</b> — 매수세 유입 확인</li>
+            </ul>
+            <b>[거부 조건]</b> — 해당 시 매수 금지<br>
+            <ul>
+              <li>RSI &gt; 50 (이미 충분히 반등, 저가 아님)</li>
+              <li>당일 -5% 이상 급락 (떨어지는 칼날)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b> 추가</td>
+          <td>
+            <b>4개 조건 ALL 충족</b> — 바닥이 확인된 후 추가 진입<br>
+            <ul>
+              <li><b>이중 바닥 확인</b> — 두 저점 차이 ≤ 3% (바닥 다짐 완료)</li>
+              <li><b>RSI &gt; 35 + 3일 연속 상승</b> — 과매도 탈출 + 반등 지속</li>
+              <li><b>MACD 골든크로스</b> — MACD가 Signal선 상향 돌파 (or hist 3일 증가)</li>
+              <li><b>거래량 ≥ 20일 평균 × 1.2</b> — 매수세 동반 확인</li>
+            </ul>
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b> 완성</td>
+          <td>
+            <b>4개 조건 ALL 충족</b> — 상승 추세 확인 후 본격 진입<br>
+            <ul>
+              <li><b>가격 &gt; MA20 (2일 유지)</b> — 단기 추세 전환 확인</li>
+              <li><b>MA20 기울기 상승 전환</b> — 이동평균 방향 전환</li>
+              <li><b>MACD &gt; 0선 돌파</b> — 중기 모멘텀 양전환</li>
+              <li><b>거래량 ≥ 20일 평균 × 1.3</b> — 강한 매수세</li>
+            </ul>
+            <b>[거부]</b> RSI &gt; 75 (과매수 영역, 추격 금지)
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
+
+  <!-- ═══════════════════════════════════════════
+       ETF SCANNER RESULTS
+  ═══════════════════════════════════════════ -->
+  <div id="scanner-etf" style="padding-top:16px;">
+  
+  <h2>📊 ETF Scanner — Sector & Theme</h2>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;">ETF v2.4 Entry 규칙 적용 | 20개 ETF 스캔 | 2026-04-02 19:42</p>
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">7</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card" style="border-color:#27ae60;"><div class="num" style="color:#27ae60;">0</div><div class="lbl">1st BUY</div></div>
+    <div class="sum-card" style="border-color:#3498db;"><div class="num" style="color:#3498db;">7</div><div class="lbl">2nd BUY</div></div>
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">0</div><div class="lbl">3rd BUY</div></div>
+  </div>
+
+  
+
+  
+  <h3 style="color:#3498db;">2nd BUY — 반등 확인 (7개)</h3>
+  <div class="card-grid">
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">EFA <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">Intl Developed · $93B</div>
+      <div><span class="price">$98.61</span></div>
+      <div class="reason">[확인 대기 1/2일] RSI 52.2 > 42 + MACD 골든크로스 발생 (-1.3188 vs Signal -1.5444) + MA20 위에 있거나 근접해요</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">IWM <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">Russell 2000 · $70B</div>
+      <div><span class="price">$249.56</span></div>
+      <div class="reason">[확인 대기 1/2일] RSI 48.6 > 42 + MACD 골든크로스 발생 (-3.0943 vs Signal -3.4014) + MA20 위에 있거나 근접해요</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">XLF <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">Financial Select · $44B</div>
+      <div><span class="price">$49.44</span></div>
+      <div class="reason">[확인 대기 1/2일] RSI 46.9 > 42 + MACD 골든크로스 발생 (-0.6391 vs Signal -0.7826) + MA20 위에 있거나 근접해요</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">HYG <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">High Yield Bond · $16B</div>
+      <div><span class="price">$79.37</span></div>
+      <div class="reason">[확인 대기 1/2일] RSI 52.1 > 42 + MACD 골든크로스 발생 (-0.2257 vs Signal -0.2600) + MA20 위에 있거나 근접해요</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">XLB <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">Materials Select · $4B</div>
+      <div><span class="price">$50.46</span></div>
+      <div class="reason">[확인 대기 1/2일] RSI 56.2 > 42 + MACD 골든크로스 발생 (-0.3085 vs Signal -0.5295) + MA20 위에 있거나 근접해요</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">SOXX <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">Semiconductors · $3B</div>
+      <div><span class="price">$338.54</span></div>
+      <div class="reason">[확인 대기 1/2일] RSI 51.1 > 42 + MA20 위에 있거나 근접해요 + Higher Low: 단기 하락멈춤 + 중기저점상승 ($332.51(2026-03-20) > $323.31(2026-03-06))</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">TAN <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">Solar</div>
+      <div><span class="price">$56.27</span></div>
+      <div class="reason">[확인 대기 1/2일] RSI 52.0 > 42 + MA20 위에 있거나 근접해요 + Higher Low: 단기 하락멈춤 + 중기저점상승 ($54.99(2026-03-23) > $53.28(2026-03-06))</div>
+    </div>
+    
+  </div>
+  
+
+  
+
+  
+  </div>
+
+  <h2>📖 Signal Reference — ETF v2.4 Entry</h2>
+  <div class="ref-section">
+    <p style="font-size:12px;color:#888;margin-bottom:10px;">대상: 섹터/테마 ETF. 개별 종목 리스크 없이 섹터 로테이션 기회 포착. Pick N 방식으로 유연한 판정.</p>
+    <table class="ref-table">
+      <thead><tr><th class="signal-col">시그널</th><th class="action-col">액션</th><th>판정 조건</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-BUY">1st_BUY</span></td><td>목표금액의<br><b>20%</b> 매수</td>
+          <td>
+            <b>5개 조건 중 3개 이상 충족</b> (Pick 3 of 5)<br>
+            <ul>
+              <li><b>RSI ≤ 40</b> — 과매도 영역 (ETF는 개별주보다 완화된 기준)</li>
+              <li><b>가격 &lt; MA20</b> — 20일 이동평균 하회 (단기 약세)</li>
+              <li><b>BB 하단 근접</b> — 볼린저밴드 하단 5% 이내 (통계적 저점)</li>
+              <li><b>하락 모멘텀 둔화</b> — MACD hist 감소폭이 축소 중 (바닥 다짐)</li>
+              <li><b>52주 고점 대비 -5% 이상 조정</b> — 의미있는 조정폭 확인</li>
+            </ul>
+            <b>[거부]</b> RSI &gt; 70 → 전 단계 매수 금지 (과매수)
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span></td><td>목표금액의<br><b>30%</b> 추가</td>
+          <td>
+            <b>4개 조건 중 3개 이상 충족</b> (Pick 3 of 4)<br>
+            <ul>
+              <li><b>RSI &gt; 42</b> — 과매도 탈출 확인</li>
+              <li><b>MACD &gt; Signal</b> — 골든크로스 (모멘텀 반전)</li>
+              <li><b>가격 &gt; MA20</b> — 20일 이동평균 회복</li>
+              <li><b>Higher Low 형성</b> — 직전 저점보다 현재 저점이 높음 (추세 전환)</li>
+            </ul>
+          </td>
+        </tr>
+        <tr><td><span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span></td><td>목표금액의<br><b>50%</b> 완성</td>
+          <td>
+            <b>4개 조건 중 3개 이상 충족</b> (Pick 3 of 4)<br>
+            <ul>
+              <li><b>가격 &gt; MA20 (2일 유지)</b> — 단기 추세 전환 확인</li>
+              <li><b>MA20 기울기 상승 전환</b> — 이동평균 방향 전환</li>
+              <li><b>RSI &gt; 48</b> — 중립 이상 영역 진입</li>
+              <li><b>MACD &gt; 0선</b> — 중기 모멘텀 양전환</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
+
+  <!-- ═══════════════════════════════════════════
+       KOSPI SCANNER RESULTS
+  ═══════════════════════════════════════════ -->
+  <div id="scanner-kospi" style="padding-top:16px;">
+  
+  <h2>🇰🇷 KOSPI Scanner — 코스피 시총 상위 100</h2>
+  <p style="font-size:12px;color:#888;margin-bottom:12px;">Growth v2.2 Entry 규칙 적용 | 90종목 스캔 | 2026-04-02 19:42 | 가격: KRW(₩)</p>
+  <div class="summary-grid">
+    <div class="sum-card" style="border-color:#c0392b;"><div class="num" style="color:#c0392b;">3</div><div class="lbl">TOTAL</div></div>
+    <div class="sum-card" style="border-color:#27ae60;"><div class="num" style="color:#27ae60;">0</div><div class="lbl">1st BUY</div></div>
+    <div class="sum-card" style="border-color:#3498db;"><div class="num" style="color:#3498db;">1</div><div class="lbl">2nd BUY</div></div>
+    <div class="sum-card" style="border-color:#8e44ad;"><div class="num" style="color:#8e44ad;">2</div><div class="lbl">3rd BUY</div></div>
+  </div>
+
+  
+
+  
+  <h3 style="color:#3498db;">2nd BUY — 반등 확인 진입 (1종목)</h3>
+  <div class="card-grid">
+    
+    <div class="ticker-card" style="border-color:#3498db;">
+      <div class="ticker">005490 <span class="badge" style="background:#3498db;color:#fff;">2nd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">POSCO홀딩스 · 25.6조</div>
+      <div><span class="price">₩339,000</span><span class="chg dn">▼ 2.16%</span></div>
+      <div class="reason">[확인 대기 1/2일] 이중바닥: 333500.0(2026-03-16) vs 325000.0(2026-03-23) 차이 2.5% + RSI 46.8 > 35 + MACD 골든크로스: -4701.0577 > signal -5153.2940</div>
+    </div>
+    
+  </div>
+  
+
+  
+  <h3 style="color:#8e44ad;">3rd BUY — 상승 초기 진입 (2종목)</h3>
+  <div class="card-grid">
+    
+    <div class="ticker-card" style="border-color:#8e44ad;">
+      <div class="ticker">006400 <span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">삼성SDI · 34.5조</div>
+      <div><span class="price">₩438,000</span><span class="chg up">▲ 1.39%</span></div>
+      <div class="reason">[확인 대기 1/2일] 가격 > MA20 + MACD 9111.1720 > 0, > signal 6200.3742 + 거래량비 2.16x ≥ 1.3</div>
+    </div>
+    
+    <div class="ticker-card" style="border-color:#8e44ad;">
+      <div class="ticker">097950 <span class="badge" style="background:#8e44ad;color:#fff;">3rd_BUY</span><span style="background:#e67e22;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:6px;">확인 대기 1/2일 ⏳</span></div>
+      <div class="name">CJ제일제당 · 3.6조</div>
+      <div><span class="price">₩222,000</span><span class="chg up">▲ 1.14%</span></div>
+      <div class="reason">[확인 대기 1/2일] 가격 > MA20 + MACD 2943.8215 > 0, > signal 969.9419 + 거래량비 1.79x ≥ 1.3</div>
+    </div>
+    
+  </div>
+  
+
+  
+  </div>
+  <a href="#" style="display:block;text-align:center;padding:8px;font-size:13px;color:#3498db;text-decoration:none;">▲ 맨 위로</a>
+
+  <h2>📡 Data Sources</h2>
+  <table class="source-table">
+    <tr><th>구분</th><th>출처</th><th>수집 시간</th></tr>
+    <tr><td>포트폴리오 (보유수량·평균단가)</td><td>portfolio.md (C:\Users\DIT-969\Downloads\AI Trading Assistant\portfolio.md)</td><td>스크린샷 날짜</td></tr>
+    <tr><td>기술지표 (가격·MA·RSI·MACD·BB·ADX)</td><td>yfinance (fetch_market_data.py)</td><td>2026-04-02 19:42:50</td></tr>
+    <tr><td>VIX / 30Y 국채금리 / USD/KRW</td><td>yfinance (^VIX / ^TYX / KRW=X)</td><td>2026-04-02 19:42:50</td></tr>
+    <tr><td>배당 (TTM div/주 · 배당수익률)</td><td>yfinance ticker.dividends (최근 12개월)</td><td>2026-04-02 19:42:50</td></tr>
+  </table>
+
+  <p class="report-footer">
+    ⚠️ 본 리포트는 개인 투자 참고용 기술적 분석입니다. 투자 결정의 책임은 본인에게 있으며, 이 시그널은 투자 권유가 아닙니다.<br>
+    Generated by AI Trading Assistant v3.0 | 2026-04-02 | Data: yfinance (2026-04-02 19:42:50) | Portfolio: portfolio.md (C:\Users\DIT-969\Downloads\AI Trading Assistant\portfolio.md)
+  </p>
+
+</div>
+
+<script>
+let isKRW = false;
+function toggleCurrency() {
+  isKRW = !isKRW;
+  const rate = parseFloat(document.body.dataset.usdkrw) || 1;
+  const btn = document.getElementById('currencyToggle');
+  document.querySelectorAll('.money').forEach(el => {
+    const usd = parseFloat(el.dataset.usd);
+    if (isNaN(usd)) return;
+    if (isKRW) {
+      el.textContent = formatKRW(Math.round(usd * rate));
+    } else {
+      if (usd >= 1000) el.textContent = '$' + usd.toLocaleString('en-US', {maximumFractionDigits:0});
+      else el.textContent = '$' + usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+  });
+  btn.textContent = isKRW ? '💲 달러 보기' : '💱 ₩ 원화 보기';
+}
+
+function formatKRW(krw) {
+  const abs = Math.abs(krw);
+  const sign = krw < 0 ? '-' : '';
+  if (abs >= 100000000) return sign + '₩' + (abs/100000000).toFixed(1) + '억';
+  if (abs >= 10000) return sign + '₩' + Math.round(abs/10000).toLocaleString() + '만';
+  return sign + '₩' + abs.toLocaleString();
+}
+
+async function runPipeline() {
+  const btn = document.getElementById('updateBtn');
+  const status = document.getElementById('updateStatus');
+  btn.disabled = true; btn.textContent = '⏳ 실행 중...';
+  status.textContent = '데이터 수집 → 분석 → 리포트 생성';
+  try {
+    const res = await fetch('/api/run-pipeline', {method:'POST'});
+    const data = await res.json();
+    if (data.status === 'ok') {
+      status.textContent = '✅ 완료! 새로고침 중...';
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      status.textContent = '❌ ' + (data.error || 'Unknown error');
+      btn.disabled = false; btn.textContent = '🔄 업데이트';
+    }
+  } catch(e) {
+    status.textContent = '❌ 서버 연결 실패 (Flask 서버가 실행 중인지 확인하세요)';
+    btn.disabled = false; btn.textContent = '🔄 업데이트';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asset Trend Dashboard — {{ date }}</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{
+"surface-container":"rgb(var(--c-surface-container)/<alpha-value>)","surface-container-highest":"rgb(var(--c-surface-container-highest)/<alpha-value>)",
+"surface-dim":"rgb(var(--c-surface-dim)/<alpha-value>)","surface":"rgb(var(--c-surface)/<alpha-value>)",
+"surface-container-high":"rgb(var(--c-surface-container-high)/<alpha-value>)","surface-container-low":"rgb(var(--c-surface-container-low)/<alpha-value>)",
+"surface-bright":"rgb(var(--c-surface-bright)/<alpha-value>)","surface-variant":"rgb(var(--c-surface-variant)/<alpha-value>)",
+"background":"rgb(var(--c-background)/<alpha-value>)",
+"primary":"rgb(var(--c-primary)/<alpha-value>)","primary-dim":"rgb(var(--c-primary-dim)/<alpha-value>)",
+"primary-container":"rgb(var(--c-primary-container)/<alpha-value>)","on-primary":"rgb(var(--c-on-primary)/<alpha-value>)",
+"on-primary-container":"rgb(var(--c-on-primary-container)/<alpha-value>)",
+"secondary":"rgb(var(--c-secondary)/<alpha-value>)","secondary-dim":"rgb(var(--c-secondary-dim)/<alpha-value>)",
+"secondary-container":"rgb(var(--c-secondary-container)/<alpha-value>)","on-secondary":"rgb(var(--c-on-secondary)/<alpha-value>)",
+"tertiary":"rgb(var(--c-tertiary)/<alpha-value>)","tertiary-dim":"rgb(var(--c-tertiary-dim)/<alpha-value>)",
+"tertiary-container":"rgb(var(--c-tertiary-container)/<alpha-value>)","on-tertiary":"rgb(var(--c-on-tertiary)/<alpha-value>)",
+"on-surface":"rgb(var(--c-on-surface)/<alpha-value>)","on-surface-variant":"rgb(var(--c-on-surface-variant)/<alpha-value>)",
+"on-background":"rgb(var(--c-on-background)/<alpha-value>)",
+"outline":"rgb(var(--c-outline)/<alpha-value>)","outline-variant":"rgb(var(--c-outline-variant)/<alpha-value>)",
+"error":"rgb(var(--c-error)/<alpha-value>)","error-container":"rgb(var(--c-error-container)/<alpha-value>)",
+"inverse-surface":"rgb(var(--c-inverse-surface)/<alpha-value>)"
+},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+</script>
+<style>
+html.dark{--c-surface-container:15 25 48;--c-surface-container-highest:25 37 64;--c-surface-dim:6 14 32;--c-surface:6 14 32;--c-surface-container-high:20 31 56;--c-surface-container-low:9 19 40;--c-surface-bright:31 43 73;--c-surface-variant:25 37 64;--c-background:6 14 32;--c-primary:109 221 255;--c-primary-dim:0 195 235;--c-primary-container:0 210 253;--c-on-primary:0 76 94;--c-on-primary-container:0 67 82;--c-secondary:0 229 188;--c-secondary-dim:0 201 165;--c-secondary-container:16 110 0;--c-on-secondary:11 88 0;--c-tertiary:255 113 102;--c-tertiary-dim:229 26 34;--c-tertiary-container:245 40 43;--c-on-tertiary:74 0 3;--c-on-surface:222 229 255;--c-on-surface-variant:163 170 196;--c-on-background:222 229 255;--c-outline:109 117 140;--c-outline-variant:64 72 93;--c-error:255 113 108;--c-error-container:159 5 25;--c-inverse-surface:250 248 255}
+html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 232 240;--c-surface-dim:226 232 240;--c-surface:241 245 249;--c-surface-container-high:248 250 252;--c-surface-container-low:255 255 255;--c-surface-bright:248 250 252;--c-surface-variant:241 245 249;--c-background:241 245 249;--c-primary:2 132 199;--c-primary-dim:3 105 161;--c-primary-container:224 242 254;--c-on-primary:255 255 255;--c-on-primary-container:3 105 161;--c-secondary:5 150 105;--c-secondary-dim:4 120 87;--c-secondary-container:167 243 208;--c-on-secondary:255 255 255;--c-tertiary:220 38 38;--c-tertiary-dim:185 28 28;--c-tertiary-container:254 202 202;--c-on-tertiary:255 255 255;--c-on-surface:15 23 42;--c-on-surface-variant:71 85 105;--c-on-background:15 23 42;--c-outline:100 116 139;--c-outline-variant:148 163 184;--c-error:220 38 38;--c-error-container:254 226 226;--c-inverse-surface:15 23 42}
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body">
+
+<!-- Sidebar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center"><span class="material-symbols-outlined text-[#004352]" style="font-variation-settings:'FILL' 1;">dashboard_customize</span></div>
+    <div><h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p></div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_portfolio }}"><span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span></a>
+    {% if nav_wife %}
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_wife }}"><span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span></a>
+    {% endif %}
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_scanner }}"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_backtest }}"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="{{ nav_trend }}"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
+  </div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <button onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left" id="themeToggle"><span class="material-symbols-outlined">light_mode</span><span>Light Mode</span></button>
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">{{ date_ko }}</div>
+  </div>
+</nav>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<main class="md:ml-64 min-h-screen">
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">Asset Trend</span>
+      <span class="text-xs text-outline font-label hidden sm:block">{{ data_days }}일 추이</span>
+    </div>
+    <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme"><span class="material-symbols-outlined">light_mode</span></button>
+  </header>
+
+  <div class="p-8 space-y-8 max-w-[1600px] mx-auto">
+    {% if has_multi_owner %}
+    <!-- Owner 선택 토글 (최상단) -->
+    <div class="flex gap-2 items-center" id="ownerToggle" role="tablist">
+      <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-2">포트 선택</span>
+      <button data-owner="me" class="owner-btn px-4 py-2 rounded-md text-sm font-bold bg-primary/20 text-primary border border-primary/30">내 포트</button>
+      <button data-owner="wife" class="owner-btn px-4 py-2 rounded-md text-sm font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">와이프</button>
+      <button data-owner="combined" class="owner-btn px-4 py-2 rounded-md text-sm font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">합산</button>
+    </div>
+    {% endif %}
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary flex items-center gap-4">
+        <span class="material-symbols-outlined text-secondary/60 flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">account_balance</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Total Assets</span>
+          <div class="text-2xl font-headline font-bold text-secondary" id="sumTotal">&#8361;{{ latest.total_eok }}억</div>
+          <div class="text-xs mt-2 {{ 'text-secondary' if latest.pnl_krw >= 0 else 'text-tertiary' }}" id="sumPnl">&#8599; {{ '+' if latest.pnl_krw >= 0 else '' }}&#8361;{{ latest.pnl_eok }}억 ({{ '+' if latest.pnl_pct >= 0 else '' }}{{ latest.pnl_pct }}%)</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-primary flex items-center gap-4">
+        <span class="material-symbols-outlined text-primary/60 flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">savings</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Investment Principal</span>
+          <div class="text-2xl font-headline font-bold text-primary" id="sumCost">&#8361;{{ latest.cost_eok }}억</div>
+          <div class="text-xs mt-2 text-outline">투자 원금</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-tertiary flex items-center gap-4">
+        <span class="material-symbols-outlined text-tertiary/60 flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">payments</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Est. Annual Dividend</span>
+          <div class="text-2xl font-headline font-bold text-tertiary" id="sumDivAnnual">&#8361;{{ latest.div_annual_man }}만</div>
+          <div class="text-xs mt-2 text-secondary" id="sumDivYield">Yield: {{ latest.div_yield }}%</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-outline flex items-center gap-4">
+        <span class="material-symbols-outlined text-outline flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">currency_exchange</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Cash Liquidity</span>
+          <div class="text-2xl font-headline font-bold text-on-surface" id="sumCash">&#8361;{{ latest.cash_eok }}억</div>
+          <div class="text-xs mt-2 text-tertiary" id="sumCashPct">&#9679; {{ latest.cash_pct }}% Allocation</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- YTD Benchmark Cards -->
+    {% if latest.ytd_pct is not none and latest.spy_ytd_pct is not none %}
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-secondary' if latest.ytd_pct >= 0 else 'border-l-tertiary' }} flex items-center gap-4">
+        <span class="material-symbols-outlined {{ 'text-secondary/60' if latest.ytd_pct >= 0 else 'text-tertiary/60' }} flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">flag</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">2026 YTD (Portfolio)</span>
+          <div class="text-2xl font-headline font-bold {{ 'text-secondary' if latest.ytd_pct >= 0 else 'text-tertiary' }}" id="sumYtd">{{ '+' if latest.ytd_pct >= 0 else '' }}{{ '%.2f'|format(latest.ytd_pct) }}%</div>
+          <div class="text-xs mt-2 text-outline">기준: 2026-01-02</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-secondary' if latest.spy_ytd_pct >= 0 else 'border-l-tertiary' }} flex items-center gap-4">
+        <span class="material-symbols-outlined {{ 'text-secondary/60' if latest.spy_ytd_pct >= 0 else 'text-tertiary/60' }} flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">show_chart</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">S&amp;P 500 YTD (₩)</span>
+          <div class="text-2xl font-headline font-bold {{ 'text-secondary' if latest.spy_ytd_pct >= 0 else 'text-tertiary' }}" id="sumSpy">{{ '+' if latest.spy_ytd_pct >= 0 else '' }}{{ '%.2f'|format(latest.spy_ytd_pct) }}%</div>
+          <div class="text-xs mt-2 text-outline">SPY × USD/KRW</div>
+        </div>
+      </div>
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 {{ 'border-l-secondary' if latest.alpha_pp >= 0 else 'border-l-tertiary' }} flex items-center gap-4">
+        <span class="material-symbols-outlined {{ 'text-secondary/60' if latest.alpha_pp >= 0 else 'text-tertiary/60' }} flex-shrink-0" style="font-size:44px;font-variation-settings:'FILL' 1;">trending_up</span>
+        <div class="min-w-0 flex-1">
+          <span class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Alpha vs S&amp;P</span>
+          <div class="text-2xl font-headline font-bold {{ 'text-secondary' if latest.alpha_pp >= 0 else 'text-tertiary' }}" id="sumAlpha">{{ '+' if latest.alpha_pp >= 0 else '' }}{{ '%.2f'|format(latest.alpha_pp) }}pp</div>
+          <div class="text-xs mt-2 text-outline">초과수익</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Asset Allocation -->
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
+      <h2 class="text-lg font-headline font-bold mb-6" id="allocTitle">Asset Allocation</h2>
+      <div class="flex flex-col lg:flex-row items-center gap-8">
+        <div class="relative" style="width:260px;height:260px;flex-shrink:0;">
+          <canvas id="tickerPie"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" id="pieCenter"></div>
+        </div>
+        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full" id="tickerCards"></div>
+      </div>
+    </div>
+
+    {% if data_days >= 1 %}
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
+      <div class="flex gap-1 items-center" id="assetRangeToggle" role="tablist" aria-label="총 자산 Y축 범위">
+        <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-1">Y축</span>
+        <button data-mode="auto" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">Auto</button>
+        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">5~40억</button>
+      </div>
+    </div>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="assetTrendChart" style="max-height:320px;"></canvas></div>
+
+    {% if latest.ytd_pct is not none and latest.spy_ytd_pct is not none %}
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">compare_arrows</span> 포트폴리오 vs S&amp;P 500 (₩) — 2026 YTD</h2>
+      <div class="flex gap-1 items-center" id="ytdRangeToggle" role="tablist" aria-label="YTD 비교 Y축 범위">
+        <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-1">Y축</span>
+        <button data-mode="auto" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">Auto</button>
+        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">0~50%</button>
+      </div>
+    </div>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="ytdCompareChart" style="max-height:320px;"></canvas></div>
+    {% endif %}
+
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">payments</span> 예상 연 배당금 추이</h2>
+      <div class="flex gap-1 items-center" id="divRangeToggle" role="tablist" aria-label="예상 연 배당금 Y축 범위">
+        <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-1">Y축</span>
+        <button data-mode="auto" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">Auto</button>
+        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">1000만~1억</button>
+      </div>
+    </div>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="divTrendChart" style="max-height:320px;"></canvas></div>
+
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-error">show_chart</span> VIX (변동성 지수)</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="vixChart" style="max-height:320px;"></canvas></div>
+
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 30Y Treasury Yield (%)</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="yieldChart" style="max-height:320px;"></canvas></div>
+
+    <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">currency_exchange</span> USD/KRW 환율</h2>
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="fxChart" style="max-height:320px;"></canvas></div>
+    {% else %}
+    <div class="rounded-xl bg-surface-container border border-outline-variant/10 p-12 text-center text-on-surface-variant">데이터가 축적되면 추이 차트가 표시됩니다.</div>
+    {% endif %}
+
+    <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10">데이터 소스: 일별 파이프라인 스냅샷 | Chart.js 4.x | 총 자산 = USD x 환율 + KRW</p>
+  </div>
+</main>
+
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="{{ nav_portfolio }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
+  <a href="{{ nav_scanner }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="{{ nav_trend }}" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="{{ nav_backtest }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">history</span><span class="text-[10px] font-label">Backtest</span></a>
+</nav>
+
+<script>
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
+function toggleTheme(){const h=document.documentElement,d=h.classList.contains('dark');h.classList.remove('dark','light');const t=d?'light':'dark';h.classList.add(t);localStorage.setItem('theme',t);updateThemeIcons(t);}
+function updateThemeIcons(t){const i=t==='dark'?'light_mode':'dark_mode',l=t==='dark'?'Light Mode':'Dark Mode';const hb=document.getElementById('themeToggleHeader'),sb=document.getElementById('themeToggle');if(hb)hb.querySelector('.material-symbols-outlined').textContent=i;if(sb){sb.querySelector('.material-symbols-outlined').textContent=i;const ss=sb.querySelectorAll('span');if(ss.length>1)ss[1].textContent=l;}}
+document.addEventListener('DOMContentLoaded',function(){updateThemeIcons(document.documentElement.classList.contains('dark')?'dark':'light');});
+
+const isDark = document.documentElement.classList.contains('dark');
+Chart.defaults.color = isDark ? '#a3aac4' : '#64748b';
+Chart.defaults.borderColor = isDark ? '#40485d' : '#cbd5e1';
+Chart.defaults.plugins.legend.labels.color = isDark ? '#dee5ff' : '#0f172a';
+
+const trend = {{ trend_json }};
+const dates = trend.map(d => d.date.slice(5));
+const totalAsset = trend.map(d => d.total_eok);
+const costBasis = trend.map(d => d.cost_eok);
+const pnlAmount = trend.map(d => d.pnl_eok);
+const pnlPct = trend.map(d => d.pnl_pct);
+const divData = trend.map(d => d.div_annual_man);
+const divYieldData = trend.map(d => d.div_yield);
+const vixData = trend.map(d => d.vix);
+const yieldData = trend.map(d => d.yield_30y);
+const fxData = trend.map(d => d.usd_krw);
+const dso = { ticks: { color: isDark?'#a3aac4':'#64748b' }, grid: { color: isDark?'rgba(64,72,93,0.3)':'rgba(203,213,225,0.5)' } };
+
+{% if data_days >= 1 %}
+// ── 3-way 토글 지원: owner별 풀 페이로드 ──
+const ownersPayload = {{ owners_payload_json|default('{}') }};
+const ownerLabel = (o) => o==='combined' ? '합산' : (o==='me' ? '내 포트' : (o==='wife' ? '와이프' : o));
+
+let _assetChart = new Chart(document.getElementById('assetTrendChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'총 자산 (억원)', data:totalAsset, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2 },
+  { label:'투자 원금 (억원)', data:costBasis, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.05)', fill:false, borderDash:[5,5], tension:0.3, pointRadius:0 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'억원', color:'#a3aac4' }}}}});
+
+let _divChart = new Chart(document.getElementById('divTrendChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'예상 연 배당 (만원)', data:divData, borderColor:'#ff7166', backgroundColor:'rgba(255,113,102,0.08)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y' },
+  { label:'배당수익률 (%)', data:divYieldData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'만원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
+
+function _applyOwner(owner){
+  const p = ownersPayload[owner];
+  if(!p) return;
+  // Summary cards
+  const l = p.latest;
+  document.getElementById('sumTotal').innerHTML = '\u20a9' + l.total_eok + '억';
+  const pnlSign = l.pnl_krw >= 0 ? '+' : '';
+  const pctSign = l.pnl_pct >= 0 ? '+' : '';
+  const pnlEl = document.getElementById('sumPnl');
+  pnlEl.innerHTML = '\u2197 ' + pnlSign + '\u20a9' + l.pnl_eok + '억 (' + pctSign + l.pnl_pct + '%)';
+  pnlEl.classList.remove('text-secondary','text-tertiary');
+  pnlEl.classList.add(l.pnl_krw >= 0 ? 'text-secondary' : 'text-tertiary');
+  document.getElementById('sumCost').innerHTML = '\u20a9' + l.cost_eok + '억';
+  document.getElementById('sumDivAnnual').innerHTML = '\u20a9' + l.div_annual_man + '만';
+  document.getElementById('sumDivYield').innerHTML = 'Yield: ' + l.div_yield + '%';
+  document.getElementById('sumCash').innerHTML = '\u20a9' + l.cash_eok + '억';
+  document.getElementById('sumCashPct').innerHTML = '\u25cf ' + l.cash_pct + '% Allocation';
+  // Asset Allocation title
+  document.getElementById('allocTitle').textContent = ownerLabel(owner) + ' — Asset Allocation';
+  // Ticker pie + cards 재렌더
+  _renderTicker(p.ticker);
+  // Asset chart
+  const s = p.trend;
+  _assetChart.data.labels = s.map(d => d.date.slice(5));
+  _assetChart.data.datasets[0].data = s.map(d => d.total_eok);
+  _assetChart.data.datasets[1].data = s.map(d => d.cost_eok);
+  _assetChart.data.datasets[0].label = ownerLabel(owner) + ' 총 자산 (억원)';
+  _assetChart.data.datasets[1].label = ownerLabel(owner) + ' 투자 원금 (억원)';
+  _assetChart.update();
+  // Div chart
+  _divChart.data.labels = s.map(d => d.date.slice(5));
+  _divChart.data.datasets[0].data = s.map(d => d.div_annual_man);
+  _divChart.data.datasets[1].data = s.map(d => d.div_yield);
+  _divChart.update();
+  // YTD benchmark cards
+  const ytdEl = document.getElementById('sumYtd');
+  const spyEl = document.getElementById('sumSpy');
+  const alphaEl = document.getElementById('sumAlpha');
+  const fmt = (v) => v == null ? 'N/A' : ((v >= 0 ? '+' : '') + v.toFixed(2));
+  if (ytdEl) ytdEl.textContent = fmt(p.latest.ytd_pct) + (p.latest.ytd_pct == null ? '' : '%');
+  if (spyEl) spyEl.textContent = fmt(p.latest.spy_ytd_pct) + (p.latest.spy_ytd_pct == null ? '' : '%');
+  if (alphaEl) alphaEl.textContent = fmt(p.latest.alpha_pp) + (p.latest.alpha_pp == null ? '' : 'pp');
+  // YTD comparison chart
+  if (typeof _updateYtdChart === 'function') _updateYtdChart(p.trend);
+}
+document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#ownerToggle .owner-btn').forEach(b => {
+      b.classList.remove('bg-primary/20','text-primary','border-primary/30');
+      b.classList.add('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+    });
+    btn.classList.add('bg-primary/20','text-primary','border-primary/30');
+    btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+    _applyOwner(btn.dataset.owner);
+  });
+});
+
+// ── Y축 범위 토글: Auto vs 수동(자산 5~40억, 배당 1000~10000만원) ──
+function _applyRange(chart, mode, cfg){
+  const y = chart.options.scales.y;
+  if(mode === 'manual'){
+    y.min = cfg.min; y.max = cfg.max;
+  } else {
+    delete y.min; delete y.max;
+  }
+  chart.update();
+}
+function _wireRangeToggle(containerId, chart, cfg){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      el.querySelectorAll('.range-btn').forEach(b => {
+        b.classList.remove('bg-primary/20','text-primary','border-primary/30');
+        b.classList.add('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+      });
+      btn.classList.add('bg-primary/20','text-primary','border-primary/30');
+      btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+      _applyRange(chart, btn.dataset.mode, cfg);
+    });
+  });
+}
+_wireRangeToggle('assetRangeToggle', _assetChart, { min: 5, max: 40 });
+_wireRangeToggle('divRangeToggle',   _divChart,   { min: 1000, max: 10000 });
+
+// ── YTD Comparison Chart (다른 차트와 동일 패턴) ──
+let ytdChart = null;
+{% if latest.ytd_pct is not none and latest.spy_ytd_pct is not none %}
+const ytdPortData = trend.map(d => d.ytd_pct);
+const ytdSpyData  = trend.map(d => d.spy_ytd_pct);
+const _ytdYTickFn = function(v){ return (v>=0?'+':'') + v.toFixed(1) + '%'; };
+const _ytdTooltipFn = function(c){ const v=c.parsed.y; return c.dataset.label+': '+(v==null?'n/a':(v>=0?'+':'')+v.toFixed(2)+'%'); };
+ytdChart = new Chart(document.getElementById('ytdCompareChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'Portfolio (₩)', data:ytdPortData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 },
+  { label:'S&P 500 (₩)', data:ytdSpyData, borderColor:'#a3aac4', backgroundColor:'rgba(163,170,196,0.05)', borderDash:[6,4], fill:false, tension:0.3, pointRadius:2, borderWidth:2 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }, tooltip:{ callbacks:{ label:_ytdTooltipFn }}}, scales:{ y:{ ...dso, ticks:{ ...dso.ticks, callback:_ytdYTickFn }, title:{ display:true, text:'%', color:'#a3aac4' }}}}});
+_wireRangeToggle('ytdRangeToggle', ytdChart, { min: 0, max: 50 });
+{% endif %}
+function _updateYtdChart(trendArr){
+  if(!ytdChart) return;
+  if(!trendArr || trendArr.length === 0) return;
+  const portSeries = trendArr.map(d => d.ytd_pct);
+  const spySeries  = trendArr.map(d => d.spy_ytd_pct);
+  if(portSeries.every(v => v == null) || spySeries.every(v => v == null)) return;
+  ytdChart.data.labels = trendArr.map(d => d.date.slice(5));
+  ytdChart.data.datasets[0].data = portSeries;
+  ytdChart.data.datasets[1].data = spySeries;
+  ytdChart.update();
+}
+
+// ── 매크로 지표 (3개 별도 차트) ──
+new Chart(document.getElementById('vixChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'VIX', data:vixData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,108,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'VIX', color:'#a3aac4' }}}}});
+
+new Chart(document.getElementById('yieldChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'30Y Treasury (%)', data:yieldData, borderColor:'#6dddff', backgroundColor:'rgba(109,221,255,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'%', color:'#a3aac4' }}}}});
+
+new Chart(document.getElementById('fxChart'), { type:'line', data:{ labels:dates, datasets:[
+  { label:'USD/KRW', data:fxData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 }
+]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'KRW', color:'#a3aac4' }}}}});
+{% endif %}
+
+const tickerData = {{ ticker_json }};
+const tColors = ['#00E5BC','#6dddff','#ff716c','#fbbf24','#34d399','#a78bfa','#22d3ee','#475569','#e51a22','#f97316','#94a3b8'];
+let _currentTicker = tickerData;
+let _tickerPie = new Chart(document.getElementById('tickerPie'), { type:'doughnut', data:{ labels:tickerData.map(d=>d.name), datasets:[{ data:tickerData.map(d=>d.value), backgroundColor:tColors, borderWidth:0, spacing:2 }]}, options:{ responsive:true, cutout:'72%', plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ var d=_currentTicker[c.dataIndex],a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
+function _renderTicker(data){
+  _currentTicker = data;
+  _tickerPie.data.labels = data.map(d=>d.name);
+  _tickerPie.data.datasets[0].data = data.map(d=>d.value);
+  _tickerPie.update();
+  if(data.length>0){var topT=data[0]; document.getElementById('pieCenter').innerHTML='<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">'+topT.name+'</span><span class="text-3xl font-headline font-bold text-on-surface">'+Math.round(topT.value)+'%</span>';} else { document.getElementById('pieCenter').innerHTML=''; }
+  var cardsHtml='';
+  data.forEach(function(d,i){var a=d.amount_man,s=a>=10000?'\u20a9'+(a/10000).toFixed(1)+'\uc5b5':'\u20a9'+a.toLocaleString()+'\ub9cc';var c=tColors[i%tColors.length];cardsHtml+='<div class="rounded-lg bg-surface-container-high p-4" style="border-left:4px solid '+c+'"><div class="flex justify-between items-center"><span class="font-bold text-sm text-on-surface">'+d.name+'</span><div class="text-right"><div class="font-bold text-sm text-on-surface">'+s+'</div><div class="text-[10px] text-outline">'+d.value.toFixed(1)+'%</div></div></div></div>';});
+  document.getElementById('tickerCards').innerHTML=cardsHtml;
+}
+_renderTicker(tickerData);
+</script>
+</body>
+</html>

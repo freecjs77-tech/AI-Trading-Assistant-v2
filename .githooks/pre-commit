@@ -1,0 +1,22 @@
+#!/bin/sh
+# Pre-commit guard chain. Currently:
+#   - check_history_shrink.py: aborts when staged history/*.json loses dict keys
+#
+# Setup (one-time): git config core.hooksPath .githooks
+# Bypass: ALLOW_HISTORY_SHRINK=1 git commit ...
+
+set -e
+
+HOOK_DIR="$(dirname "$0")"
+
+# Resolve python: prefer "python" (Windows venv / Anaconda), fallback to python3.
+if command -v python >/dev/null 2>&1; then
+    PY=python
+elif command -v python3 >/dev/null 2>&1; then
+    PY=python3
+else
+    echo "pre-commit: python not found in PATH; skipping history guard." >&2
+    exit 0
+fi
+
+"$PY" "$HOOK_DIR/check_history_shrink.py"
