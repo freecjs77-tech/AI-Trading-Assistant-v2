@@ -139,3 +139,86 @@ def compute_leg_returns(leg: dict, closes: list[float],
     else:
         enriched["mdd_pct"] = None
     return enriched
+
+
+def _safe_avg(values: list[float | None]) -> float | None:
+    """리스트의 None 제외 평균."""
+    vs = [v for v in values if v is not None]
+    if not vs:
+        return None
+    return round(sum(vs) / len(vs), 2)
+
+
+def _win_rate(values: list[float | None], threshold: float = 0.0) -> float | None:
+    """threshold 초과 비율 (백분율)."""
+    vs = [v for v in values if v is not None]
+    if not vs:
+        return None
+    wins = sum(1 for v in vs if v > threshold)
+    return round(wins / len(vs) * 100, 1)
+
+
+def aggregate(legs: list[dict], as_of: str) -> dict:
+    """
+    Leg 리스트 → stage/streak 별 집계 + 연속 손실 alert.
+
+    Returns: {as_of, version, by_stage, by_streak, alerts}
+    """
+    # by_stage 집계
+    by_stage: dict[str, dict] = {}
+    for stage in ("MOMENTUM_1", "MOMENTUM_2", "MOMENTUM_3"):
+        s_legs = [L for L in legs if L.get("stage") == stage]
+        if not s_legs:
+            continue
+        by_stage[stage] = {
+            "leg_count": len(s_legs),
+            "win_rate_5d_pct": _win_rate([L.get("ret_5d_pct") for L in s_legs]),
+            "avg_ret_3d_pct": _safe_avg([L.get("ret_3d_pct") for L in s_legs]),
+            "avg_ret_5d_pct": _safe_avg([L.get("ret_5d_pct") for L in s_legs]),
+            "avg_ret_10d_pct": _safe_avg([L.get("ret_10d_pct") for L in s_legs]),
+            "avg_max_ret_pct": _safe_avg([L.get("max_ret_pct") for L in s_legs]),
+            "avg_min_ret_pct": _safe_avg([L.get("min_ret_pct") for L in s_legs]),
+            "avg_mdd_pct": _safe_avg([L.get("mdd_pct") for L in s_legs]),
+            "avg_duration_days": _safe_avg([float(L.get("duration_days") or 0)
+                                            for L in s_legs]),
+        }
+
+    # by_streak 집계 (1, 2, 3+)
+    by_streak: dict[str, dict] = {}
+    streak_groups = {"1": [], "2": [], "3+": []}
+    for L in legs:
+        s = (L.get("entry_context") or {}).get("streak", 1)
+        if s == 1:
+            streak_groups["1"].append(L)
+        elif s == 2:
+            streak_groups["2"].append(L)
+        else:
+            streak_groups["3+"].append(L)
+    for k, group in streak_groups.items():
+        if not group:
+            continue
+        by_streak[k] = {
+            "leg_count": len(group),
+            "avg_ret_5d": _safe_avg([L.get("ret_5d_pct") for L in group]),
+            "win_rate_pct": _win_rate([L.get("ret_5d_pct") for L in group]),
+        }
+
+    # 연속 손실 alert: 최근 5개 leg (exit_date 기준 정렬)
+    completed_sorted = sorted(
+        [L for L in legs if L.get("exit_date")],
+        key=lambda L: L.get("exit_date", "")
+    )
+    recent5 = completed_sorted[-5:]
+    loss_count = sum(1 for L in recent5
+                     if L.get("ret_5d_pct") is not None and L["ret_5d_pct"] < 0)
+
+    return {
+        "as_of": as_of,
+        "version": cfg.VERSION,
+        "by_stage": by_stage,
+        "by_streak": by_streak,
+        "alerts": {
+            "consecutive_loss_warning": loss_count >= cfg.CONSECUTIVE_LOSS_THRESHOLD,
+            "recent_5_legs_loss_count": loss_count,
+        },
+    }

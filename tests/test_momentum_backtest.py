@@ -107,6 +107,71 @@ def test_compute_leg_returns_short_window():
     assert enriched["ret_10d_pct"] is None
 
 
+def test_aggregate_legs_by_stage_and_streak():
+    legs = [
+        {"stage": "MOMENTUM_3", "ret_3d_pct": 2.0, "ret_5d_pct": 5.0,
+         "ret_10d_pct": 8.0, "max_ret_pct": 10.0, "min_ret_pct": -1.0,
+         "mdd_pct": -2.0, "duration_days": 6,
+         "entry_context": {"streak": 3}},
+        {"stage": "MOMENTUM_3", "ret_3d_pct": 1.0, "ret_5d_pct": 3.0,
+         "ret_10d_pct": 5.0, "max_ret_pct": 7.0, "min_ret_pct": -2.0,
+         "mdd_pct": -3.0, "duration_days": 5,
+         "entry_context": {"streak": 1}},
+        {"stage": "MOMENTUM_2", "ret_3d_pct": 0.5, "ret_5d_pct": 1.0,
+         "ret_10d_pct": 2.0, "max_ret_pct": 4.0, "min_ret_pct": -3.0,
+         "mdd_pct": -3.5, "duration_days": 4,
+         "entry_context": {"streak": 2}},
+    ]
+    agg = mb.aggregate(legs, as_of="2026-05-06")
+    assert agg["as_of"] == "2026-05-06"
+    assert agg["by_stage"]["MOMENTUM_3"]["leg_count"] == 2
+    # 두 leg ret_5d=5,3 → win_rate 100%, avg 4.0
+    assert abs(agg["by_stage"]["MOMENTUM_3"]["avg_ret_5d_pct"] - 4.0) < 0.01
+    assert agg["by_stage"]["MOMENTUM_3"]["win_rate_5d_pct"] == 100.0
+
+
+def test_aggregate_consecutive_loss_alert_triggered():
+    """최근 5개 leg 중 4개 이상 ret_5d < 0 → alert."""
+    legs = [
+        {"stage": "MOMENTUM_2", "ret_5d_pct": -3.0, "exit_date": "2026-05-01",
+         "ret_3d_pct": 0, "ret_10d_pct": 0, "max_ret_pct": 0, "min_ret_pct": 0,
+         "mdd_pct": 0, "duration_days": 1, "entry_context": {"streak": 1}},
+        {"stage": "MOMENTUM_2", "ret_5d_pct": -2.0, "exit_date": "2026-05-02",
+         "ret_3d_pct": 0, "ret_10d_pct": 0, "max_ret_pct": 0, "min_ret_pct": 0,
+         "mdd_pct": 0, "duration_days": 1, "entry_context": {"streak": 1}},
+        {"stage": "MOMENTUM_2", "ret_5d_pct": -1.0, "exit_date": "2026-05-03",
+         "ret_3d_pct": 0, "ret_10d_pct": 0, "max_ret_pct": 0, "min_ret_pct": 0,
+         "mdd_pct": 0, "duration_days": 1, "entry_context": {"streak": 1}},
+        {"stage": "MOMENTUM_2", "ret_5d_pct": 1.0, "exit_date": "2026-05-04",
+         "ret_3d_pct": 0, "ret_10d_pct": 0, "max_ret_pct": 0, "min_ret_pct": 0,
+         "mdd_pct": 0, "duration_days": 1, "entry_context": {"streak": 1}},
+        {"stage": "MOMENTUM_2", "ret_5d_pct": -4.0, "exit_date": "2026-05-05",
+         "ret_3d_pct": 0, "ret_10d_pct": 0, "max_ret_pct": 0, "min_ret_pct": 0,
+         "mdd_pct": 0, "duration_days": 1, "entry_context": {"streak": 1}},
+    ]
+    agg = mb.aggregate(legs, as_of="2026-05-06")
+    assert agg["alerts"]["consecutive_loss_warning"] is True
+    assert agg["alerts"]["recent_5_legs_loss_count"] >= 4
+
+
+def test_aggregate_streak_buckets():
+    legs = [
+        {"stage": "MOMENTUM_3", "ret_5d_pct": 1.2, "entry_context": {"streak": 1},
+         "ret_3d_pct": 0, "ret_10d_pct": 0, "max_ret_pct": 0, "min_ret_pct": 0,
+         "mdd_pct": 0, "duration_days": 1},
+        {"stage": "MOMENTUM_3", "ret_5d_pct": 3.4, "entry_context": {"streak": 2},
+         "ret_3d_pct": 0, "ret_10d_pct": 0, "max_ret_pct": 0, "min_ret_pct": 0,
+         "mdd_pct": 0, "duration_days": 1},
+        {"stage": "MOMENTUM_3", "ret_5d_pct": 5.7, "entry_context": {"streak": 3},
+         "ret_3d_pct": 0, "ret_10d_pct": 0, "max_ret_pct": 0, "min_ret_pct": 0,
+         "mdd_pct": 0, "duration_days": 1},
+    ]
+    agg = mb.aggregate(legs, as_of="2026-05-06")
+    assert "1" in agg["by_streak"]
+    assert "3+" in agg["by_streak"]
+    assert abs(agg["by_streak"]["3+"]["avg_ret_5d"] - 5.7) < 0.01
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):
