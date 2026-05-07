@@ -506,6 +506,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             benchmark_data=benchmark_by_owner.get("me"),
             momentum_us=momentum_us_result,    # Task 21
             momentum_kr=momentum_kr_result,    # Task 21
+            portfolio_stop_result=stop_result_me,
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -826,6 +827,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             from fetch_market_data import parse_portfolio_md as _parse_pmd_all
             from portfolio_data import is_kospi_ticker
             _owners = [(o, p) for o, p in discover_portfolios(project_dir) if o != PRIMARY_OWNER]
+            _wife_stop_results: dict = {}
             for _owner, _opath in _owners:
                 _owner_tickers, _ = _parse_pmd_all(_opath)
                 _owner_tickers_set = set(_owner_tickers)
@@ -867,6 +869,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     except Exception as e:
                         print(f"  WARN [4c3] {_owner} stop signals failed: {e}")
                         _owner_stop_result = None
+                _wife_stop_results[_owner] = _owner_stop_result
 
                 # Stop signal page for secondary owner
                 if _owner_stop_result and _owner_stop_result.get("status") == "ok":
@@ -896,6 +899,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     nav_portfolio=f"report_{today}.html",
                     active_nav=_owner,
                     benchmark_data=benchmark_by_owner.get(_owner),
+                    portfolio_stop_result=_owner_stop_result,
                 )
                 _sz = os.path.getsize(_owner_report)
                 print(f"  OK {_owner} report -> {_owner_report} ({_sz:,} bytes)")
@@ -933,6 +937,23 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             import traceback as _tb_sec
             _tb_sec.print_exc()
             print(f"  WARN secondary portfolio reports failed: {e} (pipeline continues)")
+
+        # Portfolio Risk Telegram (Step 5d 끝난 후 wife 결과 합산해서 1회 발송)
+        try:
+            from telegram_sender import send_portfolio_risk_summary
+            _base_url = os.environ.get(
+                "REPORT_BASE_URL",
+                "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2",
+            )
+            _wife_stop = (_wife_stop_results or {}).get("wife")
+            send_portfolio_risk_summary(
+                stop_me=stop_result_me,
+                stop_wife=_wife_stop,
+                base_url=_base_url,
+                date_str=today,
+            )
+        except Exception as e:
+            print(f"  WARN portfolio risk telegram failed: {e} (pipeline continues)")
 
         # Step 6: History update (비거래일 스킵)
         if is_trading_day:

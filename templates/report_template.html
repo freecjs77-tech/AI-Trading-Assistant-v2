@@ -137,6 +137,14 @@ tailwind.config = {
   .sig-watch::before { content:"◆ "; }
   .sig-hold::before { content:"■ "; }
   .sig-cash::before, .sig-bond::before { content:"● "; }
+  /* ── Stop Signal Badges (Phase 7) ── */
+  .stop-cell { white-space: nowrap; }
+  .stop-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .stop-badge.stop-hold { background: #064e3b; color: #6ee7b7; }
+  .stop-badge.stop-tight { background: #78350f; color: #fde68a; }
+  .stop-badge.stop-exit-ready { background: #9a3412; color: #fdba74; }
+  .stop-badge.stop-exit { background: #991b1b; color: #fecaca; }
+  .stop-badge.stop-none { background: #334155; color: #94a3b8; }
 </style>
 </head>
 <body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="{{ usd_krw_raw }}">
@@ -169,6 +177,11 @@ tailwind.config = {
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_backtest }}">
       <span class="material-symbols-outlined">history</span><span>Backtest</span>
     </a>
+    {% if portfolio_stop_summary %}
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ portfolio_stop_page }}">
+      <span class="material-symbols-outlined">shield</span><span>Portfolio Risk</span>
+    </a>
+    {% endif %}
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="{{ nav_trend }}">
       <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
     </a>
@@ -381,6 +394,7 @@ tailwind.config = {
                 <th class="px-6 py-4">P&amp;L %</th>
                 <th class="px-6 py-4">Dividend</th>
                 <th class="px-6 py-4">Signal</th>
+                <th class="px-6 py-4">Stop Signal</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
@@ -424,6 +438,17 @@ tailwind.config = {
                   <span class="text-[10px] text-outline ml-1">({{ prev_signal_map[h.ticker] }})</span>
                   {% endif %}
                 </td>
+                <td class="px-6 py-4 stop-cell">
+                  {% if h.stop_signal %}
+                    {% set _stop_badge_map = {'HOLD':'hold','TIGHT':'tight','EXIT_READY':'exit-ready','EXIT':'exit'} %}
+                    {% set _stop_label_map = {'HOLD':'🟢 HOLD','TIGHT':'🟡 TIGHT','EXIT_READY':'🟠 EXIT READY','EXIT':'🔴 EXIT'} %}
+                    {% set _stop_badge = _stop_badge_map.get(h.stop_signal, 'none') %}
+                    {% set _stop_label = _stop_label_map.get(h.stop_signal, h.stop_signal) %}
+                    <span class="stop-badge stop-{{ _stop_badge }}">{{ _stop_label }}{% if h.stop_is_new %} (new){% endif %}{% if h.stop_below_count %} ({{ h.stop_below_count }}d){% endif %}</span>
+                  {% else %}
+                    <span class="stop-badge stop-none">—</span>
+                  {% endif %}
+                </td>
               </tr>
               {% endfor %}
             </tbody>
@@ -443,6 +468,7 @@ tailwind.config = {
                 <th class="px-6 py-4">P&amp;L %</th>
                 <th class="px-6 py-4">Dividend</th>
                 <th class="px-6 py-4">Signal</th>
+                <th class="px-6 py-4">Stop Signal</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-outline-variant/10 font-label text-sm">
@@ -484,6 +510,17 @@ tailwind.config = {
                   {% endif %}
                   {% if prev_signal_map.get(h.ticker) and prev_signal_map[h.ticker] != h.signal %}
                   <span class="text-[10px] text-outline ml-1">({{ prev_signal_map[h.ticker] }})</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 stop-cell">
+                  {% if h.stop_signal %}
+                    {% set _stop_badge_map = {'HOLD':'hold','TIGHT':'tight','EXIT_READY':'exit-ready','EXIT':'exit'} %}
+                    {% set _stop_label_map = {'HOLD':'🟢 HOLD','TIGHT':'🟡 TIGHT','EXIT_READY':'🟠 EXIT READY','EXIT':'🔴 EXIT'} %}
+                    {% set _stop_badge = _stop_badge_map.get(h.stop_signal, 'none') %}
+                    {% set _stop_label = _stop_label_map.get(h.stop_signal, h.stop_signal) %}
+                    <span class="stop-badge stop-{{ _stop_badge }}">{{ _stop_label }}{% if h.stop_is_new %} (new){% endif %}{% if h.stop_below_count %} ({{ h.stop_below_count }}d){% endif %}</span>
+                  {% else %}
+                    <span class="stop-badge stop-none">—</span>
                   {% endif %}
                 </td>
               </tr>

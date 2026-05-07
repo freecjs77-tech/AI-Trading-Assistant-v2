@@ -242,6 +242,31 @@ def check_market_data(screenshots_dir: str, today: str) -> list:
     return errors
 
 
+def check_portfolio_stop_signals(project_dir: str, today: str) -> list:
+    """Stop signal 산출물 일관성 — JSON 있으면 페이지도 있어야."""
+    errors = []
+    me_json = os.path.join(project_dir, "history", "portfolio_stops.json")
+    me_html = os.path.join(project_dir, "reports",
+                            f"portfolio_stops_{today}.html")
+    if os.path.exists(me_json):
+        if not os.path.exists(me_html):
+            errors.append(
+                f"[WARN] portfolio_stops.json exists but page missing: "
+                f"{me_html}"
+            )
+    # wife는 선택 — 파일 부재는 정상 (wife portfolio가 없을 수도)
+    wife_json = os.path.join(project_dir, "history",
+                              "portfolio_stops_wife.json")
+    wife_html = os.path.join(project_dir, "reports",
+                              f"portfolio_stops_wife_{today}.html")
+    if os.path.exists(wife_json) and not os.path.exists(wife_html):
+        errors.append(
+            f"[WARN] portfolio_stops_wife.json exists but page missing: "
+            f"{wife_html}"
+        )
+    return errors
+
+
 # ═══════════════════════════════════════════════════════
 #  메인 실행
 # ═══════════════════════════════════════════════════════
@@ -274,6 +299,7 @@ def run_smoke_test(project_dir: str = None, today: str = None) -> dict:
         ("Signal Distribution", check_signal_distribution(reports_dir, today)),
         ("Scanner Pages", check_scanner_pages(reports_dir, today)),
         ("Scanner Detail History", check_scanner_detail_history(details_dir, project_dir, today)),
+        ("Portfolio Stop Signals", check_portfolio_stop_signals(project_dir, today)),
     ]
 
     results = {}
