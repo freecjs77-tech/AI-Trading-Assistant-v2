@@ -68,8 +68,8 @@ def test_generate_momentum_pages_returns_empty_when_both_none():
         teardown(tmp)
 
 
-def test_generate_momentum_pages_handles_failed_status():
-    """status='failed' 결과여도 페이지 생성 (alert 표시)."""
+def test_generate_momentum_pages_skips_failed_status():
+    """status='failed' 결과는 페이지 생성 skip (orphan 방지)."""
     from report_generator import generate_momentum_pages
     tmp = setup()
     try:
@@ -77,9 +77,6 @@ def test_generate_momentum_pages_handles_failed_status():
         result["error_message"] = "network down"
         files = generate_momentum_pages(momentum_us=result, momentum_kr=None,
                                          output_dir=tmp)
-        assert len(files) == 1
-        with open(files[0], encoding="utf-8") as f:
-            html = f.read()
-        assert "failed" in html.lower() or "network down" in html
+        assert files == []
     finally:
         teardown(tmp)

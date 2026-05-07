@@ -673,7 +673,7 @@ def generate_momentum_pages(
     ]
     output: list[str] = []
     for market, result, tmpl, label in pairs:
-        if result is None:
+        if result is None or result.get("status") == "failed":
             continue
         as_of = result.get("as_of", "unknown")
         path = os.path.join(output_dir, f"momentum_{market.lower()}_{as_of}.html")
