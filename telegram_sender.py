@@ -150,6 +150,83 @@ def send_report(signals: dict, market_data: dict, portfolio: list, report_path: 
     return ok
 
 
+def _format_ticker_with_tags(entry: dict) -> str:
+    """틱커 + 리스크 태그 아이콘 포매팅"""
+    t = entry.get("ticker", "?")
+    tags = entry.get("risk_tags") or []
+    icons = []
+    for tag in tags:
+        if tag == "OVERHEAT":
+            icons.append("🔴")
+        elif tag == "PARABOLIC":
+            icons.append("🟠")
+        elif tag == "EXTENDED":
+            icons.append("🟡")
+    return f"{t} {''.join(icons)}".strip()
+
+
+def _format_momentum_message(us_result: dict | None,
+                              kr_result: dict | None,
+                              as_of: str) -> str:
+    """모멘텀 결과 → Telegram 메시지 (≤3500자)."""
+    lines = [f"🔥 Momentum Scanner — {as_of}", ""]
+    for label, result, flag in [("US", us_result, "🇺🇸"), ("KR", kr_result, "🇰🇷")]:
+        if not result or result.get("status") != "ok":
+            continue
+        sigs = result.get("signals", {})
+        m3 = sigs.get("MOMENTUM_3", [])
+        m2 = sigs.get("MOMENTUM_2", [])
+        m1 = sigs.get("MOMENTUM_1", [])
+        top_secs = result.get("top_sectors", [])
+        sec_str = ", ".join(s.get("ticker", "?") for s in top_secs[:3])
+        lines.append(f"{flag} {label}  Top: {sec_str}")
+        if m3:
+            tickers_str = ", ".join(
+                _format_ticker_with_tags(e) for e in m3[:5]
+            )
+            lines.append(f"M3 ({len(m3)}): {tickers_str}")
+        if m2:
+            tickers_str = ", ".join(
+                _format_ticker_with_tags(e) for e in m2[:5]
+            )
+            lines.append(f"M2 ({len(m2)}): {tickers_str}")
+        if m1:
+            lines.append(f"M1 ({len(m1)}): see report")
+        lines.append("")
+
+    # Edge / Alert
+    for result in (us_result, kr_result):
+        if not result:
+            continue
+        bs = result.get("backtest_summary") or {}
+        edge = (bs.get("by_streak") or {}).get("3+", {}).get("avg_ret_5d")
+        if edge is not None:
+            lines.append(f"🔥 Edge: M3 streak 3+일 → 5d 평균 {edge:.1f}%")
+            break
+    for result in (us_result, kr_result):
+        if not result:
+            continue
+        alerts = (result.get("backtest_summary") or {}).get("alerts") or {}
+        if alerts.get("consecutive_loss_warning"):
+            lines.append(
+                f"⚠ 최근 5개 leg 중 {alerts.get('recent_5_legs_loss_count', '?')}개 손실"
+            )
+            break
+
+    msg = "\n".join(lines)
+    return msg[:3500]
+
+
+def send_momentum_brief(us_result: dict | None,
+                         kr_result: dict | None) -> bool:
+    """모멘텀 결과를 Telegram으로 전송. 둘 다 None이면 skip."""
+    if not us_result and not kr_result:
+        return False
+    as_of = (us_result or kr_result or {}).get("as_of", "unknown")
+    msg = _format_momentum_message(us_result, kr_result, as_of)
+    return _send_message(msg)
+
+
 if __name__ == "__main__":
     project_dir = os.path.dirname(os.path.abspath(__file__))
     today = date.today().strftime("%Y-%m-%d")

@@ -583,6 +583,16 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         except Exception as e:
             print(f"  WARN Telegram error: {e} (pipeline continues)")
 
+        # Step 5b momentum brief
+        try:
+            from telegram_sender import send_momentum_brief
+            if momentum_us_result or momentum_kr_result:
+                sent = send_momentum_brief(momentum_us_result, momentum_kr_result)
+                if sent:
+                    print("  OK momentum brief sent to Telegram")
+        except Exception as e:
+            print(f"  WARN momentum brief telegram failed: {e}")
+
         # Step 5c: Portfolio snapshot + Trend page
         print("[Step 5c] Saving portfolio snapshot & trend page...")
         try:
