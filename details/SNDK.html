@@ -184,7 +184,7 @@
     <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
       <span class="badge badge-signal badge-exit">TOP_SIGNAL</span>
       
-      <span style="font-size: 12px; color: var(--text-dim);">RSI >= 75 + BB 상단 2일 연속 + 3일 누적 >= +10%</span>
+      <span style="font-size: 12px; color: var(--text-dim);">RSI >= 75 + 3일 누적 >= +10%</span>
     </div>
     
     
@@ -229,7 +229,7 @@
     </div>
     <div class="metric-card">
       <div class="label">&#44144;&#47000;&#47049; &#48708;&#50984;</div>
-      <div class="value v-cyan">1.26x</div>
+      <div class="value v-cyan">1.30x</div>
       <div class="desc">20&#51068; &#54217;&#44512; &#45824;&#48708;</div>
     </div>
     <div class="metric-card">
@@ -258,19 +258,60 @@
   </div>
   
 
+  <!-- Momentum Status & History -->
+  
+  <div style="background:var(--panel);border-left:4px solid var(--orange);padding:1em;margin:1em 0;border-radius:10px;border:1px solid var(--border);">
+    <h2 style="color:var(--orange);margin-top:0;margin-bottom:1em;font-size:16px;">🔥 CURRENT STATUS</h2>
+    
+    <p style="margin-bottom:0.8em;">
+      <strong>Stage:</strong> MOMENTUM_3 (1일째)
+      | <strong>Entry:</strong> $1409.98 →
+      <strong>Now:</strong> $1409.98
+    </p>
+    
+    <p style="margin:0;">
+      <strong>Risk:</strong>
+      <span style="background:var(--red);color:#fff;padding:0 6px;margin-right:4px;border-radius:4px;font-size:0.85em;display:inline-block;">OVERHEAT</span><span style="background:var(--red);color:#fff;padding:0 6px;margin-right:4px;border-radius:4px;font-size:0.85em;display:inline-block;">EXTENDED</span>
+    </p>
+    
+  </div>
+
+  <div style="background:var(--panel);border:1px solid var(--border);padding:1em;margin:1em 0;border-radius:10px;">
+    <h2 style="color:var(--orange);margin-top:0;margin-bottom:1em;font-size:16px;">🔥 Momentum History (최근 30일)</h2>
+    <table class="history-table">
+      <thead><tr style="background:var(--panel2);">
+        <th style="padding:4px 8px;text-align:left;">Date</th>
+        <th>Stage</th><th>Change</th><th>Streak</th><th>Price</th><th>Risk</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:4px 8px;">2026-05-07</td>
+          <td>MOMENTUM_3</td>
+          <td>NEW</td>
+          <td>1</td>
+          <td>$1409.98</td>
+          <td style="font-size:0.85em;">OVERHEAT EXTENDED </td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+  
+
   <!-- Signal Judgment Detail -->
   <div class="signal-section">
     <div class="section-title">&#128269; &#54032;&#51221; &#44540;&#44144; &#49345;&#49464;</div>
     <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
       <span class="badge badge-signal badge-exit" style="font-size: 14px;">TOP_SIGNAL</span>
-      <span style="font-size: 13px; color: var(--text-dim);">RSI >= 75 + BB 상단 2일 연속 + 3일 누적 >= +10%</span>
+      <span style="font-size: 13px; color: var(--text-dim);">RSI >= 75 + 3일 누적 >= +10%</span>
     </div>
     
     
     <div class="judge-group exit-group">
       <div class="judge-group-header">
         <span class="group-name">TOP_SIGNAL — 과열 경보 (3개 중 2개 충족 시 발동)</span>
-        <span class="group-count cnt-full">3/3 충족</span>
+        <span class="group-count cnt-partial">2/3 충족</span>
       </div>
       
       <div class="condition-card-list">
@@ -290,13 +331,13 @@
         
         
         
-        <div class="cond-card cond-card-ok">
+        <div class="cond-card cond-card-no">
           
-          <span class="cond-icon cond-ok">&#10003;</span>
+          <span class="cond-icon cond-no">&#10007;</span>
           
           <div class="cond-card-body">
             <div class="cond-card-title">BB 상단 2일 연속</div>
-            <div class="cond-card-desc">오늘 107.1%, 전일 118.5% — 연속 돌파했어요</div>
+            <div class="cond-card-desc">오늘 107.1% — 전일 이력이 없어요</div>
           </div>
         </div>
         
@@ -435,7 +476,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">거래량비 >= 1.5x</div>
-            <div class="cond-card-desc">거래량비 1.26x - 아직 부족해요</div>
+            <div class="cond-card-desc">거래량비 1.30x - 아직 부족해요</div>
           </div>
         </div>
         
@@ -511,7 +552,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">거래량비 >= 1.5x</div>
-            <div class="cond-card-desc">거래량비 1.26x - 아직 부족해요</div>
+            <div class="cond-card-desc">거래량비 1.30x - 아직 부족해요</div>
           </div>
         </div>
         
@@ -590,7 +631,7 @@
   <!-- Signal History -->
   
   <div class="signal-section">
-    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 13&#51068;)</div>
+    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 1&#51068;)</div>
     <table class="history-table">
       <thead>
         <tr><th>&#45216;&#51676;</th><th>&#49884;&#44536;&#45328;</th><th>&#44032;&#44201;</th><th>RSI</th><th>MACD Hist</th><th>DD</th></tr>
@@ -598,119 +639,11 @@
       <tbody>
         
         <tr>
-          <td>2026-05-06</td>
+          <td>2026-05-07</td>
           <td class="sig-exit">TOP_SIGNAL</td>
           <td>$1409.98</td>
           <td>81.2</td>
           <td>38.9194</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-05-05</td>
-          <td class="sig-exit">TOP_SIGNAL</td>
-          <td>$1406.32</td>
-          <td>81.1</td>
-          <td>34.3095</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-05-04</td>
-          <td class="sig-exit">TOP_SIGNAL</td>
-          <td>$1255.86</td>
-          <td>76.5</td>
-          <td>22.9891</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-05-01</td>
-          <td class="sig-watch">WATCH</td>
-          <td>$1187.00</td>
-          <td>73.8</td>
-          <td>16.9809</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-30</td>
-          <td class="sig-watch">WATCH</td>
-          <td>$1096.51</td>
-          <td>69.5</td>
-          <td>11.7258</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-29</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$1064.21</td>
-          <td>67.8</td>
-          <td>10.3760</td>
-          <td>-0.6%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-28</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$1002.35</td>
-          <td>64.1</td>
-          <td>9.4875</td>
-          <td>-6.3%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-27</td>
-          <td class="sig-watch">WATCH</td>
-          <td>$1070.20</td>
-          <td>72.5</td>
-          <td>12.4569</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-26</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$989.90</td>
-          <td>67.9</td>
-          <td>8.1605</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-25</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$989.90</td>
-          <td>67.9</td>
-          <td>8.1605</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-24</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$989.90</td>
-          <td>67.9</td>
-          <td>8.1605</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-23</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$932.43</td>
-          <td>63.8</td>
-          <td>7.7610</td>
-          <td>-4.8%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-22</td>
-          <td class="sig-hold">HOLD</td>
-          <td>$979.07</td>
-          <td>70.5</td>
-          <td>11.3174</td>
           <td>-</td>
         </tr>
         
