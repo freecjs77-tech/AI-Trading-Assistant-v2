@@ -105,21 +105,21 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Stage new content (untracked in master, would survive checkout but
-          # safer to copy aside before branch switch).
+          # Stage deploy contents from master worktree before switching branches.
           STAGE=$(mktemp -d)
           cp -r history "$STAGE/" 2>/dev/null || true
           cp -r data    "$STAGE/" 2>/dev/null || true
           cp -r deploy  "$STAGE/" 2>/dev/null || true
 
-          # Always base our deploy on the latest origin/gh-pages tip.
-          # 같은 base에서 commit + push → fast-forward (no rebase, no force needed).
+          # Use a separate worktree so master's untracked/generated files
+          # cannot block the gh-pages checkout (prior bug: silent failure of
+          # 'git checkout -B gh-pages' fell through to '--orphan' and produced
+          # a root-commit, which got rejected as non-fast-forward).
           git fetch origin gh-pages
-          git checkout -B gh-pages origin/gh-pages 2>/dev/null \
-            || git checkout --orphan gh-pages
+          WT=$(mktemp -d)/gh-pages-wt
+          git worktree add "$WT" origin/gh-pages
+          cd "$WT"
 
-          # Replace history/data wholesale; deploy/ contents → repo root
-          # (HTML/details/charts/etc. accumulate to support archive.html).
           rm -rf history data
           mkdir -p history data
           cp -r "$STAGE/history/." history/ 2>/dev/null || true
@@ -129,4 +129,4 @@ jobs:
           git add -A
           git commit -m "data: $(date -u +%Y-%m-%d) daily report" \
             || { echo "no changes to commit"; exit 0; }
-          git push origin gh-pages
+          git push origin HEAD:gh-pages
