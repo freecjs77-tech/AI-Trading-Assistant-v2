@@ -267,3 +267,72 @@ def get_krx_etf_holdings(etf_code: str, force_refresh: bool = False) -> list[str
     return fetch_with_fallback(
         name, lambda: fetch_krx_etf_holdings(etf_code), source="krx"
     )
+
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Sector ETF Mapping (Task 6)
+# ───────────────────────────────────────────────────────────────────────────────
+
+def build_sector_mapping(holdings_by_etf: dict[str, list[str]],
+                         market: str = "us") -> dict[str, str]:
+    """
+    {etf_ticker: [stock_tickers]} → {stock_ticker: etf_ticker}.
+
+    한 종목이 여러 ETF에 포함되면 dict에 먼저 등장한 etf_ticker가 우선
+    (caller가 우선순위 ETF를 먼저 입력하도록 책임).
+    """
+    mapping: dict[str, str] = {}
+    for etf, tickers in holdings_by_etf.items():
+        for t in tickers:
+            if t not in mapping:
+                mapping[t] = etf
+    return mapping
+
+
+def get_us_sector_holdings(force_refresh: bool = False) -> dict[str, list[str]]:
+    """US 섹터 ETF holdings 일괄 fetch + 캐시.
+
+    yfinance Ticker.get_funds_data().top_holdings를 사용 (top 50 개씩).
+    실패한 ETF는 빈 리스트.
+    """
+    from momentum_config import US_SECTOR_ETFS, CACHE_TTL_DAYS
+    name = "sector_etf_holdings_us"
+    if not force_refresh and cache_age_days(name) < CACHE_TTL_DAYS:
+        cache = load_cache(name)
+        if cache and cache.get("fetch_status") in ("ok", "stale_fallback"):
+            return cache["data"]
+    out: dict[str, list[str]] = {}
+    for etf in US_SECTOR_ETFS:
+        try:
+            import yfinance as yf
+            t = yf.Ticker(etf)
+            holdings = t.get_funds_data().top_holdings
+            if holdings is not None and len(holdings) > 0:
+                out[etf] = holdings.index.tolist()[:50]
+            else:
+                out[etf] = []
+        except Exception as e:
+            print(f"[momentum_data] WARN {etf} holdings: {e}")
+            out[etf] = []
+    save_cache(name, out, source="yfinance", status="ok")
+    return out
+
+
+def get_kr_sector_holdings(force_refresh: bool = False) -> dict[str, list[str]]:
+    """KR 섹터 ETF holdings — KRX API 호출 (KODEX 시리즈)."""
+    from momentum_config import KR_SECTOR_ETFS, CACHE_TTL_DAYS
+    name = "sector_etf_holdings_kr"
+    if not force_refresh and cache_age_days(name) < CACHE_TTL_DAYS:
+        cache = load_cache(name)
+        if cache and cache.get("fetch_status") in ("ok", "stale_fallback"):
+            return cache["data"]
+    out: dict[str, list[str]] = {}
+    for etf in KR_SECTOR_ETFS:
+        code = etf.replace(".KS", "")
+        try:
+            out[etf] = fetch_krx_etf_holdings(code)
+        except Exception as e:
+            print(f"[momentum_data] WARN {etf} KRX holdings: {e}")
+            out[etf] = []
+    save_cache(name, out, source="krx", status="ok")
+    return out

@@ -174,6 +174,31 @@ def test_fetch_kosdaq_holdings_uses_kq_suffix():
     assert "110990.KQ" in tickers, f"KOSDAQ suffix wrong: {tickers}"
 
 
+def test_build_sector_mapping_us():
+    """SPDR 섹터 ETF holdings → ticker → sector dict."""
+    import momentum_data as md
+    fake_holdings = {
+        "XLK": ["AAPL", "MSFT", "NVDA"],
+        "XLF": ["JPM", "BAC", "WFC"],
+        "XLE": ["XOM", "CVX"],
+    }
+    mapping = md.build_sector_mapping(fake_holdings, market="us")
+    assert mapping["AAPL"] == "XLK"
+    assert mapping["JPM"] == "XLF"
+    assert mapping["XOM"] == "XLE"
+
+
+def test_build_sector_mapping_with_overlap_uses_priority():
+    """한 종목이 여러 섹터에 → 우선순위 ETF (먼저 등장한 것)."""
+    import momentum_data as md
+    holdings = {
+        "XLK": ["NVDA"],
+        "SOXX": ["NVDA"],          # NVDA가 둘 다에 있음
+    }
+    mapping = md.build_sector_mapping(holdings, market="us")
+    assert mapping["NVDA"] == "XLK"   # 첫 키 우선
+
+
 if __name__ == "__main__":
     test_save_and_load_cache()
     test_load_cache_missing_returns_none()
@@ -189,4 +214,6 @@ if __name__ == "__main__":
     test_fetch_kodex_holdings_parses_response()
     test_fetch_kodex_holdings_skips_invalid_rows()
     test_fetch_kosdaq_holdings_uses_kq_suffix()
+    test_build_sector_mapping_us()
+    test_build_sector_mapping_with_overlap_uses_priority()
     print("[OK] momentum_data tests passed.")
