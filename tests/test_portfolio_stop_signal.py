@@ -240,3 +240,44 @@ def test_generate_signals_returns_summary_shape(monkeypatch, tmp_path):
     assert set(out.keys()) >= {"status", "owner", "date", "summary",
                                 "positions", "changes"}
     assert set(out["summary"].keys()) >= {"HOLD", "TIGHT", "EXIT_READY", "EXIT"}
+
+
+def test_generate_signals_bootstrap_succeeds_but_market_data_missing(monkeypatch, tmp_path):
+    """Bootstrap이 NVDA에 대해 historical high를 가져왔지만 today price=0이면
+    new_seed에 NVDA 없음 → 등록 스킵, KeyError 발생 안 함 (회귀 가드)."""
+    import portfolio_stop_history as ph
+    import portfolio_stop_signal as pss
+
+    monkeypatch.setattr(
+        ph, "bootstrap_first_run",
+        lambda *a, **kw: {"NVDA": {"highest_close": 1000.0,
+                                    "highest_close_date": "2026-04-01"}},
+    )
+    market_data = {"data": {"NVDA": {"price": 0, "atr14": None}}}  # today price 무효
+    portfolio = [{"ticker": "NVDA", "shares": 50.0}]
+    out = pss.generate_portfolio_stop_signals(
+        project_dir=str(tmp_path), owner="me",
+        market_data=market_data, portfolio=portfolio,
+        today="2026-05-07", history_path=str(tmp_path / "stops.json"),
+    )
+    assert out["status"] == "ok"
+    # NVDA는 등록되지 않음 (또는 lifecycle에서 today=0으로 신규 처리됨, 어느 쪽이든 raise 없음)
+
+
+def test_generate_signals_no_ticker_pollution_in_saved_state(monkeypatch, tmp_path):
+    """update_highest_close_safe 호출 시 임시 ticker 키가 saved JSON에 남지 않아야."""
+    import json
+    import portfolio_stop_history as ph
+    import portfolio_stop_signal as pss
+
+    monkeypatch.setattr(ph, "bootstrap_first_run", lambda *a, **kw: {})
+    market_data = {"data": {"NVDA": {"price": 920.0, "atr14": 15.0, "prev_close": 915.0}}}
+    portfolio = [{"ticker": "NVDA", "shares": 50.0}]
+    history_path = str(tmp_path / "stops.json")
+    pss.generate_portfolio_stop_signals(
+        project_dir=str(tmp_path), owner="me",
+        market_data=market_data, portfolio=portfolio,
+        today="2026-05-07", history_path=history_path,
+    )
+    saved = json.load(open(history_path, encoding="utf-8"))
+    assert "ticker" not in saved["positions"]["NVDA"]

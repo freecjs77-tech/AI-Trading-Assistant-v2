@@ -123,7 +123,7 @@ def evaluate_signal(today_close: float, stop_price: float,
 import os
 from datetime import datetime
 from portfolio_stop_config import (
-    ANCHOR_DATE, NEW_POSITION_NOISE_DAYS, MAX_SNAPSHOT_DAYS,
+    ANCHOR_DATE, NEW_POSITION_NOISE_DAYS,
 )
 from portfolio_stop_history import (
     load_stop_history, save_stop_history,
@@ -205,8 +205,9 @@ def generate_portfolio_stop_signals(
                                    anchor_date=ANCHOR_DATE,
                                    today_str=today_str)
         for tk in portfolio_tickers:
-            if tk in boot:
-                # 첫 실행은 entry_date = ANCHOR_DATE 로 설정
+            if tk in boot and tk in new_seed:
+                # bootstrap 성공 + market data 유효 → ANCHOR_DATE 앵커로 등록
+                # (둘 중 하나라도 빠지면 lifecycle이 신규로 처리)
                 state["positions"][tk] = {
                     "status": "active",
                     "mode": new_seed[tk]["mode"],
@@ -243,9 +244,10 @@ def generate_portfolio_stop_signals(
         if today_close <= 0:
             continue
 
-        # 4a. highest_close 안전 갱신
-        pos["ticker"] = tk  # for WARN log
+        # 4a. highest_close 안전 갱신 (ticker는 WARN 로그용 — 끝나면 정리)
+        pos["ticker"] = tk
         update_highest_close_safe(pos, today_close, prev_close, today_str)
+        pos.pop("ticker", None)
         # 4b. shares 갱신 (변경 시만 last_size_change 업데이트)
         new_shares = float(new_seed.get(tk, {}).get("shares", pos.get("shares", 0)))
         if abs(new_shares - pos.get("shares", 0)) > 1e-9:
