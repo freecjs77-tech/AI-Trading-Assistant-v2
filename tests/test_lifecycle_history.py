@@ -84,3 +84,72 @@ def test_append_transition_event_id_format():
     assert t["event"] == "SETUP_CHANGE"
     assert t["from"] == "EXTENDED"
     assert t["to"] == "PULLBACK"
+
+
+# ---------------------------------------------------------------------------
+# Task 8: compute_active_set
+# ---------------------------------------------------------------------------
+from lifecycle_history import compute_active_set
+
+
+def test_active_set_includes_recent_m1_m2_m3():
+    momentum_history = {
+        "tickers": {
+            "NVDA": {"snapshots": [{"date": "2026-05-08", "stage": "MOMENTUM_2"}]},
+            "OLD":  {"snapshots": [{"date": "2026-04-01", "stage": "MOMENTUM_1"}]},  # >14d ago
+        }
+    }
+    lifecycle_state = {"tickers": {}}
+    portfolio = []
+    s = compute_active_set(momentum_history=momentum_history,
+                           lifecycle_state=lifecycle_state,
+                           portfolio_tickers=set(portfolio),
+                           today="2026-05-08")
+    assert "NVDA" in s
+    assert "OLD" not in s
+
+
+def test_active_set_keeps_recent_nonbroken_lifecycle_tickers():
+    momentum_history = {"tickers": {}}
+    lifecycle_state = {
+        "tickers": {
+            "PLTR": {"last_seen": "2026-05-05",
+                     "snapshots": [{"date": "2026-05-05", "setup": "PULLBACK"}]},
+            "DEAD": {"last_seen": "2026-04-01",
+                     "snapshots": [{"date": "2026-04-01", "setup": "TREND_OK"}]},
+            "BRKN": {"last_seen": "2026-05-07",
+                     "snapshots": [{"date": "2026-05-07", "setup": "BROKEN"}]},
+        }
+    }
+    s = compute_active_set(momentum_history=momentum_history,
+                           lifecycle_state=lifecycle_state,
+                           portfolio_tickers=set(),
+                           today="2026-05-08")
+    assert "PLTR" in s    # recent + non-broken
+    assert "DEAD" not in s   # >10d stale
+    assert "BRKN" not in s   # most-recent state was BROKEN — drops out
+
+
+def test_active_set_excludes_portfolio_tickers():
+    momentum_history = {"tickers": {
+        "AAPL": {"snapshots": [{"date": "2026-05-08", "stage": "MOMENTUM_3"}]},
+    }}
+    s = compute_active_set(momentum_history=momentum_history,
+                           lifecycle_state={"tickers": {}},
+                           portfolio_tickers={"AAPL"},
+                           today="2026-05-08")
+    assert "AAPL" not in s
+
+
+def test_active_set_truncates_to_max_size():
+    # Build 600 momentum-recent tickers; expect <=500 in active set.
+    momentum_history = {"tickers": {
+        f"T{i:04d}": {"snapshots": [{"date": "2026-05-08", "stage": "MOMENTUM_1"}]}
+        for i in range(600)
+    }}
+    s = compute_active_set(momentum_history=momentum_history,
+                           lifecycle_state={"tickers": {}},
+                           portfolio_tickers=set(),
+                           today="2026-05-08")
+    from lifecycle_config import ACTIVE_SET_MAX_SIZE
+    assert len(s) <= ACTIVE_SET_MAX_SIZE
