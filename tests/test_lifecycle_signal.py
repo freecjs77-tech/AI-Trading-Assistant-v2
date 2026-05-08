@@ -271,3 +271,57 @@ def test_failed_breakout_strict_form_requires_below_prior_low(monkeypatch):
 def test_failed_breakout_no_yesterday_snapshot_no_tag():
     today = {"close": 99.0, "ema9": 100.0}
     assert "FAILED_BREAKOUT" not in compute_risk_tags(today, yesterday_snapshot=None)
+
+
+from lifecycle_signal import process_universe
+
+
+def _market_data(ticker: str, **overrides) -> dict:
+    base = {
+        "close": 104.5, "high": 105.5, "low": 103.5, "prev_close": 99.0,
+        "ema9": 99.5, "ema21": 98.0, "ema65": 90.0,
+        "ema21_slope_5d": 0.5, "ema65_slope_5d": 0.4,
+        "rsi14": 60.0, "atr14_pct": 2.0, "volume_ratio": 1.0,
+        "change_pct": 1.0, "sector": "Technology",
+    }
+    base.update(overrides)
+    return {ticker: base}
+
+
+def test_process_universe_returns_per_ticker_evaluation():
+    md = _market_data("NVDA")
+    result = process_universe(active_set={"NVDA"}, market_data=md,
+                                yesterday_state={"tickers": {}}, today="2026-05-08")
+    assert "NVDA" in result["snapshots"]
+    snap = result["snapshots"]["NVDA"]
+    assert snap["setup"] == "TREND_OK"
+    assert snap["trigger"] == "WAIT"
+    assert snap["decision"] == "STAGING"
+    assert "raw" in snap and "close" in snap["raw"]
+
+
+def test_process_universe_skips_ticker_missing_from_market_data():
+    result = process_universe(active_set={"NVDA", "MISSING"}, market_data={},
+                                yesterday_state={"tickers": {}}, today="2026-05-08")
+    assert "skipped" in result and "MISSING" in result["skipped"]
+    assert "NVDA" in result["skipped"]
+
+
+def test_process_universe_uses_yesterday_for_failed_breakout():
+    """Yesterday CONFIRMED_TRIGGER + today close < ema9 → FAILED_BREAKOUT tag."""
+    md = _market_data("NVDA",
+                       close=99.0, ema9=100.0, ema21=98.0, ema65=90.0,
+                       low=98.5, change_pct=-0.5)
+    yesterday_state = {"tickers": {"NVDA": {
+        "first_seen": "2026-05-07", "last_seen": "2026-05-07",
+        "snapshots": [{"date": "2026-05-07",
+                        "setup": "PULLBACK",
+                        "trigger": "CONFIRMED_TRIGGER",
+                        "decision": "ENTER_OK",
+                        "raw": {"low": 98.0, "risk_tags": []}}],
+    }}}
+    result = process_universe(active_set={"NVDA"}, market_data=md,
+                                yesterday_state=yesterday_state, today="2026-05-08")
+    snap = result["snapshots"]["NVDA"]
+    assert "FAILED_BREAKOUT" in snap["raw"]["risk_tags"]
+    assert snap["decision"] == "AVOID"
