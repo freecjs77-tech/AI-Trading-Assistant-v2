@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lifecycle KR — {{ as_of }}</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", sans-serif; margin: 24px; color: #1a1a1a; }
+  h1 { margin-bottom: 4px; }
+  .as-of { color: #666; margin-bottom: 24px; }
+  .card { border-radius: 8px; padding: 12px 16px; margin: 8px 0; }
+  .card h3 { margin: 0 0 8px 0; }
+  .card.enter-ok { background: #ecfdf5; border-left: 4px solid #10b981; }
+  .card.early    { background: #fef3c7; border-left: 4px solid #f59e0b; }
+  .card.staging  { background: #f3f4f6; border-left: 4px solid #9ca3af; }
+  .card.avoid    { background: #fee2e2; border-left: 4px solid #ef4444; }
+  .new-confirmed { background: #dbeafe; border-left: 4px solid #2563eb; padding: 12px 16px; margin: 16px 0; border-radius: 8px; }
+  table { border-collapse: collapse; margin-top: 12px; width: 100%; font-size: 13px; }
+  th, td { border-bottom: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
+  th { background: #f9fafb; }
+  details summary { cursor: pointer; padding: 6px 0; color: #444; }
+  .placeholder { background: #fff7ed; border-left: 4px solid #fb923c; padding: 12px 16px; margin: 8px 0; color: #92400e; border-radius: 6px; }
+  .footer-note { color: #888; font-size: 12px; margin-top: 24px; }
+  .recommended-size { color: #888; font-style: italic; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>🇰🇷 Lifecycle KR</h1>
+<div class="as-of">As of {{ as_of }} · {{ version }}</div>
+
+<!-- Section [1]: MARKET STATE — Phase B placeholder -->
+<div class="placeholder">
+  <strong>[1] MARKET STATE</strong> — Market regime classifier coming in Phase B.
+</div>
+
+<!-- Section [3]: NEW CONFIRMED TODAY -->
+{% if new_confirmed %}
+<div class="new-confirmed">
+  <strong>🆕 NEW CONFIRMED TODAY ({{ new_confirmed|length }})</strong>:
+  {% for r in new_confirmed %}<a href="#row-{{ r.ticker }}">{{ r.ticker }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+</div>
+{% endif %}
+
+<!-- Section [2]: ACTION PANEL -->
+<div class="card enter-ok">
+  <h3>🟢 ENTER_OK ({{ enter_ok|length }})</h3>
+  {% if enter_ok %}{% for r in enter_ok %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}<br>
+  <span class="recommended-size">Recommended size: TBD — Phase C</span>
+  {% else %}<em>none</em>{% endif %}
+</div>
+<div class="card early">
+  <h3>🟡 EARLY ({{ early|length }})</h3>
+  {% if early %}{% for r in early %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}<em>none</em>{% endif %}
+</div>
+<details><summary>⚪ STAGING ({{ staging|length }})</summary>
+  <div class="card staging">{% for r in staging %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+</details>
+<details><summary>🔴 AVOID ({{ avoid|length }})</summary>
+  <div class="card avoid">{% for r in avoid %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+</details>
+
+<!-- Section [4]: STATE TRANSITIONS -->
+<h2>State transitions (last 50)</h2>
+{% if transitions %}
+<table>
+  <thead><tr><th>Date</th><th>Ticker</th><th>Event</th><th>From</th><th>To</th></tr></thead>
+  <tbody>
+  {% for t in transitions|reverse %}
+    <tr><td>{{ t.date }}</td><td>{{ t.ticker }}</td><td>{{ t.event }}</td>
+        <td>{{ t['from'] or '—' }}</td><td>{{ t['to'] or '—' }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p><em>No transitions yet.</em></p>{% endif %}
+
+<!-- Section [5]: MAIN TABLE -->
+<h2>Active set</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Ticker</th><th>Sector</th><th>Setup</th><th>Trigger</th><th>Decision</th>
+      <th>trig_age</th><th>dist_ema9 %</th><th>dist_ema21 %</th>
+      <th>vol_ratio</th><th>atr %</th><th>days_in_pb</th><th>setup_streak</th>
+      <th>risk_tags</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for group in [enter_ok, early, staging, avoid] %}{% for r in group %}
+    <tr id="row-{{ r.ticker }}">
+      <td><strong>{{ r.ticker }}</strong></td>
+      <td>{{ r.raw.sector or '—' }}</td>
+      <td>{{ r.setup }}</td>
+      <td>{{ r.trigger }}</td>
+      <td>{{ r.decision }}</td>
+      <td>{{ r.trigger_age_days if r.trigger_age_days is not none else '—' }}</td>
+      <td>{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
+      <td>{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>
+      <td>{{ '%.2f'|format(r.raw.volume_ratio) if r.raw.volume_ratio is not none else '—' }}</td>
+      <td>{{ '%.2f'|format(r.raw.atr_pct) if r.raw.atr_pct is not none else '—' }}</td>
+      <td>{{ r.days_in_pullback }}</td>
+      <td>{{ r.setup_streak }}</td>
+      <td>{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '—' }}</td>
+    </tr>
+  {% endfor %}{% endfor %}
+  </tbody>
+</table>
+
+<!-- Section [6]: FAILED / BROKEN -->
+{% if broken_table %}
+<details><summary>FAILED / BROKEN ({{ broken_table|length }})</summary>
+  <table>
+    <thead><tr><th>Ticker</th><th>Sector</th><th>Setup</th><th>dist_ema9 %</th>
+                <th>dist_ema21 %</th><th>risk_tags</th></tr></thead>
+    <tbody>
+    {% for r in broken_table %}
+      <tr><td>{{ r.ticker }}</td><td>{{ r.raw.sector or '—' }}</td>
+          <td>{{ r.setup }}</td>
+          <td>{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
+          <td>{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>
+          <td>{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '—' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</details>
+{% endif %}
+
+<p class="footer-note">
+  Page footer: each market's date stamp uses its own local close.
+  Lifecycle is advisory — no auto-trading. Composite scores are forbidden by design.
+</p>
+
+</body>
+</html>
