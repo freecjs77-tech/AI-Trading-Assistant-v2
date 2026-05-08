@@ -279,3 +279,27 @@ def test_transition_no_yesterday_emits_nothing():
                   "setup": "PULLBACK", "trigger": "WAIT", "decision": "STAGING",
                   "raw": {"risk_tags": []}}
     assert compute_transitions("NVDA", None, today) == []
+
+
+# ---------------------------------------------------------------------------
+# Task 11: bootstrap_active_set
+# ---------------------------------------------------------------------------
+from lifecycle_history import bootstrap_active_set
+
+
+def test_bootstrap_uses_supplied_fetcher_returns_seed_state():
+    """When lifecycle_history is missing on first run, bootstrap_active_set
+    builds seed state from a momentum-history-style input."""
+    momentum_history = {
+        "tickers": {
+            "NVDA": {"snapshots": [{"date": "2026-05-08", "stage": "MOMENTUM_2"}]},
+            "PLTR": {"snapshots": [{"date": "2026-05-07", "stage": "MOMENTUM_1"}]},
+        }
+    }
+    seed = bootstrap_active_set(market="US", momentum_history=momentum_history,
+                                  portfolio_tickers=set(), today="2026-05-08")
+    # Seed is a state dict ready to receive snapshots — empty tickers map but
+    # marker fields populated so subsequent process_universe knows it bootstrapped.
+    assert seed["schema_version"] == "1.0.0"
+    assert "_bootstrap_meta" in seed
+    assert set(seed["_bootstrap_meta"]["seed_tickers"]) == {"NVDA", "PLTR"}
