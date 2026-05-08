@@ -200,3 +200,29 @@ def test_trigger_close_in_lower_half_stays_wait():
         yesterday={"close": 99.8, "ema9": 99.5, "high": 100.0},  # was above ema9
     )
     assert evaluate_trigger_state(today, yesterday, setup_state="PULLBACK") == "WAIT"
+
+
+from lifecycle_signal import evaluate_decision
+
+
+@pytest.mark.parametrize("setup,trigger,expected", [
+    ("PULLBACK",     "CONFIRMED_TRIGGER", "ENTER_OK"),
+    ("BASE_FORMING", "CONFIRMED_TRIGGER", "ENTER_OK"),
+    ("PULLBACK",     "EARLY_TRIGGER",     "EARLY"),
+    ("BASE_FORMING", "EARLY_TRIGGER",     "EARLY"),
+    ("TREND_OK",     "WAIT",              "STAGING"),
+    ("EXTENDED",     "WAIT",              "AVOID"),
+    ("BROKEN",       "WAIT",              "AVOID"),
+])
+def test_decision_table(setup, trigger, expected):
+    assert evaluate_decision(setup, trigger) == expected
+
+
+def test_decision_failed_breakout_forces_avoid():
+    assert evaluate_decision("PULLBACK", "EARLY_TRIGGER",
+                             risk_tags=["FAILED_BREAKOUT"]) == "AVOID"
+
+
+def test_decision_regime_none_is_default_phase_b_hook():
+    # In Phase A regime=None should be a no-op. The function must accept it.
+    assert evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", regime=None) == "ENTER_OK"

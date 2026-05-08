@@ -162,3 +162,25 @@ def evaluate_trigger_state(today: dict, yesterday: dict, setup_state: str) -> st
     if _is_early_trigger(today, yesterday):
         return "EARLY_TRIGGER"
     return "WAIT"
+
+
+def evaluate_decision(
+    setup_state: str,
+    trigger_state: str,
+    *,
+    risk_tags: Optional[list[str]] = None,
+    regime: Optional[str] = None,  # Phase B hook — unused in A.
+) -> str:
+    risk_tags = risk_tags or []
+    if "FAILED_BREAKOUT" in risk_tags:
+        return "AVOID"
+    if setup_state in ("EXTENDED", "BROKEN"):
+        return "AVOID"
+    if setup_state in ("PULLBACK", "BASE_FORMING"):
+        if trigger_state == "CONFIRMED_TRIGGER":
+            return "ENTER_OK"
+        if trigger_state == "EARLY_TRIGGER":
+            return "EARLY"
+    if setup_state == "TREND_OK":
+        return "STAGING"
+    return "AVOID"
