@@ -153,3 +153,76 @@ def test_active_set_truncates_to_max_size():
                            today="2026-05-08")
     from lifecycle_config import ACTIVE_SET_MAX_SIZE
     assert len(s) <= ACTIVE_SET_MAX_SIZE
+
+
+# ---------------------------------------------------------------------------
+# Task 9: derive_fields
+# ---------------------------------------------------------------------------
+from lifecycle_history import derive_fields
+
+
+def _ticker_history(*items):
+    """items: list of (date, setup, trigger). Returns block in storage shape."""
+    return {
+        "first_seen": items[0][0],
+        "last_seen": items[-1][0],
+        "snapshots": [
+            {"date": d, "setup": s, "trigger": t, "decision": "X", "raw": {}}
+            for d, s, t in items
+        ],
+    }
+
+
+def test_derive_setup_streak():
+    block = _ticker_history(
+        ("2026-05-04", "TREND_OK", "WAIT"),
+        ("2026-05-05", "PULLBACK", "WAIT"),
+        ("2026-05-06", "PULLBACK", "WAIT"),
+        ("2026-05-07", "PULLBACK", "EARLY_TRIGGER"),
+        ("2026-05-08", "PULLBACK", "CONFIRMED_TRIGGER"),
+    )
+    out = derive_fields(block)
+    assert out["setup_streak"] == 4  # 4 consecutive PULLBACK days
+
+
+def test_derive_days_in_pullback_counts_base_forming_too():
+    block = _ticker_history(
+        ("2026-05-05", "TREND_OK",     "WAIT"),
+        ("2026-05-06", "PULLBACK",     "WAIT"),
+        ("2026-05-07", "BASE_FORMING", "WAIT"),
+        ("2026-05-08", "PULLBACK",     "CONFIRMED_TRIGGER"),
+    )
+    out = derive_fields(block)
+    assert out["days_in_pullback"] == 3
+
+
+def test_derive_trigger_age_days_zero_today():
+    block = _ticker_history(
+        ("2026-05-05", "PULLBACK", "WAIT"),
+        ("2026-05-06", "PULLBACK", "WAIT"),
+        ("2026-05-08", "PULLBACK", "CONFIRMED_TRIGGER"),
+    )
+    out = derive_fields(block)
+    assert out["trigger_age_days"] == 0
+
+
+def test_derive_trigger_age_counts_back_to_last_early_or_confirmed():
+    block = _ticker_history(
+        ("2026-05-04", "PULLBACK", "WAIT"),
+        ("2026-05-05", "PULLBACK", "EARLY_TRIGGER"),
+        ("2026-05-06", "PULLBACK", "WAIT"),
+        ("2026-05-07", "PULLBACK", "WAIT"),
+        ("2026-05-08", "PULLBACK", "WAIT"),
+    )
+    out = derive_fields(block)
+    # Today is 2026-05-08; last EARLY_TRIGGER was 2026-05-05 -> 3 days ago.
+    assert out["trigger_age_days"] == 3
+
+
+def test_derive_trigger_age_none_when_never_triggered():
+    block = _ticker_history(
+        ("2026-05-07", "PULLBACK", "WAIT"),
+        ("2026-05-08", "PULLBACK", "WAIT"),
+    )
+    out = derive_fields(block)
+    assert out["trigger_age_days"] is None
