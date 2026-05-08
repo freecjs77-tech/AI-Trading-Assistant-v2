@@ -226,3 +226,56 @@ def test_derive_trigger_age_none_when_never_triggered():
     )
     out = derive_fields(block)
     assert out["trigger_age_days"] is None
+
+
+# ---------------------------------------------------------------------------
+# Task 10: compute_transitions
+# ---------------------------------------------------------------------------
+from lifecycle_history import compute_transitions
+
+
+def test_transition_setup_change():
+    yesterday = {"setup": "EXTENDED", "trigger": "WAIT", "decision": "AVOID",
+                  "raw": {"risk_tags": []}}
+    today =     {"date": "2026-05-08",
+                  "setup": "PULLBACK", "trigger": "WAIT", "decision": "STAGING",
+                  "raw": {"risk_tags": []}}
+    events = compute_transitions("NVDA", yesterday, today)
+    types = {e["event"] for e in events}
+    assert "SETUP_CHANGE" in types
+    assert "DECISION_CHANGE" in types  # AVOID -> STAGING
+
+
+def test_transition_no_change_no_event():
+    same = {"date": "2026-05-08", "setup": "TREND_OK", "trigger": "WAIT",
+             "decision": "STAGING", "raw": {"risk_tags": []}}
+    events = compute_transitions("NVDA", same, same)
+    assert events == []
+
+
+def test_transition_failed_breakout_emitted_independently():
+    yesterday = {"setup": "PULLBACK", "trigger": "CONFIRMED_TRIGGER",
+                  "decision": "ENTER_OK", "raw": {"risk_tags": []}}
+    today =     {"date": "2026-05-08",
+                  "setup": "PULLBACK", "trigger": "WAIT", "decision": "AVOID",
+                  "raw": {"risk_tags": ["FAILED_BREAKOUT"]}}
+    events = compute_transitions("NVDA", yesterday, today)
+    assert any(e["event"] == "FAILED_BREAKOUT" for e in events)
+    assert any(e["event"] == "TRIGGER_CHANGE" for e in events)
+
+
+def test_transition_risk_escalation_when_extended_first_appears():
+    yesterday = {"setup": "TREND_OK", "trigger": "WAIT",
+                  "decision": "STAGING", "raw": {"risk_tags": []}}
+    today =     {"date": "2026-05-08",
+                  "setup": "EXTENDED", "trigger": "WAIT",
+                  "decision": "AVOID", "raw": {"risk_tags": ["EXTENDED"]}}
+    events = compute_transitions("NVDA", yesterday, today)
+    assert any(e["event"] == "RISK_ESCALATION" for e in events)
+
+
+def test_transition_no_yesterday_emits_nothing():
+    today =     {"date": "2026-05-08",
+                  "setup": "PULLBACK", "trigger": "WAIT", "decision": "STAGING",
+                  "raw": {"risk_tags": []}}
+    assert compute_transitions("NVDA", None, today) == []
