@@ -226,3 +226,48 @@ def test_decision_failed_breakout_forces_avoid():
 def test_decision_regime_none_is_default_phase_b_hook():
     # In Phase A regime=None should be a no-op. The function must accept it.
     assert evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", regime=None) == "ENTER_OK"
+
+
+from lifecycle_signal import compute_risk_tags
+
+
+def test_risk_overheat_when_rsi_ge_80():
+    today = {"rsi14": 80.5, "close": 100, "ema9": 95}
+    assert "OVERHEAT" in compute_risk_tags(today, yesterday_snapshot=None)
+
+
+def test_risk_parabolic_when_big_day_and_volume():
+    today = {"rsi14": 50, "close": 110, "ema9": 100,
+             "change_pct": 9.0, "volume_ratio": 2.5}
+    assert "PARABOLIC" in compute_risk_tags(today, yesterday_snapshot=None)
+
+
+def test_risk_extended_mirror():
+    today = {"rsi14": 78, "close": 120, "ema9": 100, "ema21": 95, "ema65": 90}
+    tags = compute_risk_tags(today, yesterday_snapshot=None)
+    assert "EXTENDED" in tags
+
+
+def test_failed_breakout_yesterday_confirmed_today_below_ema9():
+    today = {"close": 99.0, "ema9": 100.0, "low": 98.5}
+    yesterday_snapshot = {"trigger": "CONFIRMED_TRIGGER",
+                          "raw": {"low": 98.0}}
+    tags = compute_risk_tags(today, yesterday_snapshot=yesterday_snapshot)
+    assert "FAILED_BREAKOUT" in tags
+
+
+def test_failed_breakout_strict_form_requires_below_prior_low(monkeypatch):
+    # Toggle strict form on for this test.
+    import lifecycle_config
+    monkeypatch.setattr(lifecycle_config,
+                        "FAILED_BREAKOUT_REQUIRE_BELOW_PRIOR_LOW", True)
+    # Below ema9 but above yesterday_low → should NOT trigger under strict.
+    today = {"close": 99.0, "ema9": 100.0, "low": 98.5}
+    yesterday_snapshot = {"trigger": "CONFIRMED_TRIGGER",
+                          "raw": {"low": 98.0}}
+    assert "FAILED_BREAKOUT" not in compute_risk_tags(today, yesterday_snapshot=yesterday_snapshot)
+
+
+def test_failed_breakout_no_yesterday_snapshot_no_tag():
+    today = {"close": 99.0, "ema9": 100.0}
+    assert "FAILED_BREAKOUT" not in compute_risk_tags(today, yesterday_snapshot=None)

@@ -184,3 +184,37 @@ def evaluate_decision(
     if setup_state == "TREND_OK":
         return "STAGING"
     return "AVOID"
+
+
+def compute_risk_tags(today: dict, yesterday_snapshot: Optional[dict]) -> list[str]:
+    """Risk tags are derived metadata. Multiple may attach simultaneously."""
+    # Re-import inside the function to allow monkeypatch to work in tests.
+    from lifecycle_config import FAILED_BREAKOUT_REQUIRE_BELOW_PRIOR_LOW as STRICT
+    tags: list[str] = []
+
+    if (today.get("rsi14") or 0) >= RISK_OVERHEAT_RSI:
+        tags.append("OVERHEAT")
+
+    chg = today.get("change_pct")
+    vr = today.get("volume_ratio")
+    if (chg is not None and (chg / 100.0) >= RISK_PARABOLIC_RET_1D
+            and vr is not None and vr >= RISK_PARABOLIC_VOL_RATIO):
+        tags.append("PARABOLIC")
+
+    # EXTENDED mirror — same predicate as setup_state's EXTENDED.
+    if _is_extended(today):
+        tags.append("EXTENDED")
+
+    # FAILED_BREAKOUT — yesterday CONFIRMED + today close < ema9 (loose form).
+    if yesterday_snapshot and yesterday_snapshot.get("trigger") == "CONFIRMED_TRIGGER":
+        e9 = today.get("ema9")
+        c = today.get("close")
+        if e9 is not None and c is not None and c < e9:
+            ok = True
+            if STRICT:
+                yl = (yesterday_snapshot.get("raw") or {}).get("low")
+                ok = yl is not None and c < yl
+            if ok:
+                tags.append("FAILED_BREAKOUT")
+
+    return tags
