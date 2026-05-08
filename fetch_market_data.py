@@ -117,6 +117,11 @@ except ImportError as e:
     print("   pip install yfinance pandas numpy\n")
     sys.exit(1)
 
+from lifecycle_config import (
+    EMA_FAST, EMA_MEDIUM, EMA_LONG,
+    EMA_LONG_SLOPE_WINDOW, EMA_MEDIUM_SLOPE_WINDOW,
+)
+
 
 # ── 기술지표 계산 함수 ───────────────────────────────
 
@@ -406,10 +411,6 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
 
     # ── Phase A: lifecycle EMAs ──
     # EMA9/21/65 + 5-day slopes (used by lifecycle_signal state machine).
-    from lifecycle_config import (
-        EMA_FAST, EMA_MEDIUM, EMA_LONG,
-        EMA_LONG_SLOPE_WINDOW, EMA_MEDIUM_SLOPE_WINDOW,
-    )
     ema9_series  = close.ewm(span=EMA_FAST,   adjust=False).mean()
     ema21_series = close.ewm(span=EMA_MEDIUM, adjust=False).mean()
     ema65_series = close.ewm(span=EMA_LONG,   adjust=False).mean()
