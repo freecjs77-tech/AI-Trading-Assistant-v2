@@ -86,8 +86,6 @@ def append_transition(state: dict, *, ticker: str, date_str: str,
 # ---------------------------------------------------------------------------
 # Task 8: compute_active_set
 # ---------------------------------------------------------------------------
-from datetime import date as _date_t
-
 
 def _days_between(d1: str, d2: str) -> int:
     a = datetime.strptime(d1, "%Y-%m-%d").date()

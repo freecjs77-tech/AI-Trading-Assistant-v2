@@ -71,10 +71,15 @@ TRIGGER_CONFIRM_CLOSE_HIGH_RATIO = 0.8
 FAILED_BREAKOUT_REQUIRE_BELOW_PRIOR_LOW = False
 
 # ── Active set ─────────────────────────────────────────
-# 14d momentum lookback covers the typical EXTENDED→PULLBACK→TRIGGER cycle.
+# 14 CALENDAR days (~10 trading days) — momentum lookback covers the typical
+# EXTENDED→PULLBACK→TRIGGER cycle. Calendar-day arithmetic keeps the
+# implementation simple (no trading-calendar dependency); over long weekends
+# this does not stale a name early because we recompute daily and only need
+# any ONE recent qualifying day in the window.
 ACTIVE_M123_LOOKBACK_DAYS = 14
-# 10d non-broken lookback ensures recently-faded names stay in scope long
-# enough to capture a base, but drop out before zombie tickers accumulate.
+# 10 CALENDAR days (~7 trading days) — non-broken lookback keeps recently-
+# faded names in scope long enough to capture a base, while letting zombies
+# fall out. Same calendar-day rationale as above.
 ACTIVE_NONBROKEN_LOOKBACK_DAYS = 10
 
 # Hard ceiling on active-set size — protects against runaway growth.
