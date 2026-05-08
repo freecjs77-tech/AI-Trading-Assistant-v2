@@ -109,3 +109,56 @@ def evaluate_setup_state(raw: dict) -> str:
     if _is_trend_ok(raw):
         return "TREND_OK"
     return "BROKEN"  # No alignment + no break = degraded; treat as out-of-trend.
+
+
+def _close_in_upper_band(today: dict) -> bool:
+    """today_close >= today_high * ratio + today_low * (1-ratio)."""
+    h = today.get("high"); l = today.get("low"); c = today.get("close")
+    if h is None or l is None or c is None or h == l:
+        return False
+    threshold = h * TRIGGER_CONFIRM_CLOSE_HIGH_RATIO + l * (1 - TRIGGER_CONFIRM_CLOSE_HIGH_RATIO)
+    # Small float tolerance — boundary closes (e.g. close == high*0.8 + low*0.2) should qualify.
+    return c >= threshold - 1e-9
+
+
+def _is_early_trigger(today: dict, yesterday: dict) -> bool:
+    """EARLY_TRIGGER conditions per spec §4.3.
+
+    Two arms (OR-combined):
+      1. EMA9 reclaim — yesterday closed at-or-below ema9, today closes above.
+      2. Prior-day-high break — today's high exceeds yesterday's high AND today
+         closes in the upper band. The close-position gate on arm 2 prevents
+         exhaustion gap-ups (big intraday print, weak close) from falsely
+         registering as a trigger event. Spec §9 Golden #6.
+    """
+    e9 = today.get("ema9")
+    if (e9 is not None
+            and yesterday.get("close") is not None
+            and today.get("close") is not None
+            and yesterday["close"] <= e9 < today["close"]):
+        return True
+    if (today.get("high") is not None
+            and yesterday.get("high") is not None
+            and today["high"] > yesterday["high"]
+            and _close_in_upper_band(today)):
+        return True
+    return False
+
+
+def _is_confirmed_trigger(today: dict, yesterday: dict) -> bool:
+    if not _is_early_trigger(today, yesterday):
+        return False
+    if (today.get("volume_ratio") or 0) < TRIGGER_CONFIRM_VOL_RATIO_MIN:
+        return False
+    return _close_in_upper_band(today)
+
+
+def evaluate_trigger_state(today: dict, yesterday: dict, setup_state: str) -> str:
+    """Trigger only meaningful when setup ∈ {PULLBACK, BASE_FORMING}; else WAIT."""
+    if setup_state not in ("PULLBACK", "BASE_FORMING"):
+        return "WAIT"
+    if _is_confirmed_trigger(today, yesterday):
+        return "CONFIRMED_TRIGGER"
+    if _is_early_trigger(today, yesterday):
+        return "EARLY_TRIGGER"
+    return "WAIT"

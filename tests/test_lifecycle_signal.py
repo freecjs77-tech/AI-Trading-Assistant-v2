@@ -130,3 +130,73 @@ def test_close_below_ema21_in_pullback_demoted_to_trend_ok():
     raw = _raw(close=97.0, ema9=99.0, ema21=98.5, ema65=90.0)
     # close < ema21 → PULLBACK predicate fails. ema9>ema21>ema65 so TREND_OK.
     assert evaluate_setup_state(raw) == "TREND_OK"
+
+
+from lifecycle_signal import evaluate_trigger_state
+
+
+def _trig(**overrides):
+    """Today + yesterday raw — defaults are 'no trigger'."""
+    today = {
+        "close": 100.0, "high": 101.0, "low": 99.0,
+        "ema9": 99.5, "volume_ratio": 1.0,
+    }
+    yesterday = {"close": 99.0, "high": 100.0, "ema9": 99.5}
+    today.update(overrides.get("today", {}))
+    yesterday.update(overrides.get("yesterday", {}))
+    return today, yesterday
+
+
+def test_trigger_wait_when_setup_not_in_pullback_or_base():
+    today, yesterday = _trig()
+    assert evaluate_trigger_state(today, yesterday, setup_state="TREND_OK") == "WAIT"
+    assert evaluate_trigger_state(today, yesterday, setup_state="EXTENDED") == "WAIT"
+    assert evaluate_trigger_state(today, yesterday, setup_state="BROKEN") == "WAIT"
+
+
+def test_trigger_early_on_ema9_reclaim():
+    today, yesterday = _trig(
+        today={"close": 100.0, "ema9": 99.0},
+        yesterday={"close": 98.5, "ema9": 99.0},  # closed below ema9 yesterday
+    )
+    assert evaluate_trigger_state(today, yesterday, setup_state="PULLBACK") == "EARLY_TRIGGER"
+
+
+def test_trigger_early_on_prior_high_break():
+    today, yesterday = _trig(today={"high": 102.0}, yesterday={"high": 100.0})
+    assert evaluate_trigger_state(today, yesterday, setup_state="PULLBACK") == "EARLY_TRIGGER"
+
+
+def test_trigger_confirmed_volume_and_close_in_top_20pct():
+    today, yesterday = _trig(
+        today={
+            "close": 100.8, "high": 101.0, "low": 100.0, "ema9": 99.0,
+            "volume_ratio": 1.5,
+        },
+        yesterday={"close": 98.5, "ema9": 99.0, "high": 100.0},
+    )
+    assert evaluate_trigger_state(today, yesterday, setup_state="PULLBACK") == "CONFIRMED_TRIGGER"
+
+
+def test_trigger_volume_below_threshold_stays_early():
+    today, yesterday = _trig(
+        today={
+            "close": 100.8, "high": 101.0, "low": 100.0, "ema9": 99.0,
+            "volume_ratio": 0.9,
+        },
+        yesterday={"close": 98.5, "ema9": 99.0, "high": 100.0},
+    )
+    assert evaluate_trigger_state(today, yesterday, setup_state="PULLBACK") == "EARLY_TRIGGER"
+
+
+def test_trigger_close_in_lower_half_stays_wait():
+    # prior-high break BUT close in lower 50% — fails close gate AND fails
+    # ema9 reclaim (closed below ema9). Result: WAIT.
+    today, yesterday = _trig(
+        today={
+            "close": 99.5, "high": 102.0, "low": 99.0, "ema9": 100.0,
+            "volume_ratio": 1.5,
+        },
+        yesterday={"close": 99.8, "ema9": 99.5, "high": 100.0},  # was above ema9
+    )
+    assert evaluate_trigger_state(today, yesterday, setup_state="PULLBACK") == "WAIT"
