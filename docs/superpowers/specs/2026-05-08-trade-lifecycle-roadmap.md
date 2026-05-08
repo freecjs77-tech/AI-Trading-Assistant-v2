@@ -32,16 +32,16 @@ Phase D   Expectancy Engine (statistical validation, R-multiple journal)
 
 ## 3. Phase A — Trend Structure + Setup / Trigger lifecycle
 
-**Goal:** For every active US/KR ticker, produce a daily `setup_state ∈ {TREND_OK, PULLBACK, BASE_FORMING, EXTENDED, BROKEN}` + `trigger_state ∈ {WAIT, EARLY_TRIGGER, CONFIRMED_TRIGGER, FAILED_TRIGGER}` + `entry_decision ∈ {ENTER_OK, EARLY, STAGING, AVOID}`, persist a snapshot per ticker per day, and surface the result on a dedicated `lifecycle_us.html` / `lifecycle_kr.html` page plus a daily Telegram brief.
+**Goal:** For every active US/KR ticker, produce a daily `setup_state ∈ {TREND_OK, PULLBACK, BASE_FORMING, EXTENDED, BROKEN}` + `trigger_state ∈ {WAIT, EARLY_TRIGGER, CONFIRMED_TRIGGER}` + `entry_decision ∈ {ENTER_OK, EARLY, STAGING, AVOID}`, plus `FAILED_BREAKOUT` as a derived risk_tag + transition event (not a trigger_state — failure is not a forward-looking entry phase). Persist a snapshot per ticker per day, and surface the result on a dedicated `lifecycle_us.html` / `lifecycle_kr.html` page plus a daily Telegram brief.
 
-**Inputs:** `fetch_market_data.py` price/indicator output (extended with `ema9`, `ema21`, `ema65`, `ema65_slope_5d`); existing `momentum_signal.py` M1/M2/M3 output (used only to seed the active set); `portfolio.md` (only to *exclude* held tickers from the active set).
+**Inputs:** `fetch_market_data.py` price/indicator output (extended with `ema9`, `ema21`, `ema65`, `ema21_slope_5d`, `ema65_slope_5d`); existing `momentum_signal.py` M1/M2/M3 output (used only to seed the active set); `portfolio.md` (only to *exclude* held tickers from the active set).
 
 **Outputs:**
 - `history/lifecycle_history_us.json`, `history/lifecycle_history_kr.json` (ticker-keyed snapshots + transitions log)
 - `reports/lifecycle_us_<DATE>.html`, `reports/lifecycle_kr_<DATE>.html`
 - Telegram lifecycle brief (daily, US + KR sections, "🆕 New CONFIRMED Today" highlight)
 
-**Open questions deferred to detail spec:** active-set bootstrap behaviour on first run; FAILED_TRIGGER cooldown vs immediate re-evaluation; transition log archival cadence.
+**Open questions deferred to detail spec:** active-set bootstrap behaviour on first run; transition log archival cadence; whether `trigger_age_days` eventually splits into `confirmed_age_days` + `early_age_days` (Phase D decides).
 
 **Detail spec:** [`2026-05-08-trade-lifecycle-phase-a-design.md`](2026-05-08-trade-lifecycle-phase-a-design.md)
 

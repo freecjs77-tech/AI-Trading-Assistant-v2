@@ -92,6 +92,8 @@ BASE_FORMING:
     AND days_sideways in [5, 15]              # consolidation window
     AND atr14_pct_5d_avg < atr14_pct_20d_avg  # volatility contraction
     AND volume_5d_avg < volume_20d_avg * 0.85 # volume dry-up
+    AND ema21_slope_5d > 0                    # medium-term trend still rising
+                                              # — distinguishes healthy compression from dead sideways
 
 EXTENDED:
     ema9 > ema21 > ema65                      # alignment intact
@@ -111,7 +113,7 @@ BROKEN:
 
 ### 4.3 trigger_state evaluation
 
-trigger_state is only evaluated when `setup_state ∈ {PULLBACK, BASE_FORMING}`. For `TREND_OK / EXTENDED / BROKEN`, trigger_state is forced to `WAIT`.
+trigger_state has exactly three values: `WAIT / EARLY_TRIGGER / CONFIRMED_TRIGGER`. It is only evaluated when `setup_state ∈ {PULLBACK, BASE_FORMING}`. For `TREND_OK / EXTENDED / BROKEN`, trigger_state is forced to `WAIT`.
 
 ```python
 WAIT:
@@ -125,15 +127,11 @@ CONFIRMED_TRIGGER:
     EARLY_TRIGGER conditions hold
     AND volume_ratio_20d >= 1.2
     AND today_close >= today_high * 0.8 + today_low * 0.2   # closed in upper 20% of day's range
-
-FAILED_TRIGGER:
-    yesterday's trigger_state == CONFIRMED_TRIGGER
-    AND today_close < ema9
 ```
 
-**Optional strict variant** (`AND today_close < yesterday_low` added) is recorded in `lifecycle_config.py` as `FAILED_TRIGGER_REQUIRE_BELOW_PRIOR_LOW = False` for Phase A. Flip to True only if Phase D shows the loose form misclassifies recoveries. The threshold lives in config, not in code.
+**Trigger failure is NOT a trigger_state.** A failed CONFIRMED is detected and surfaced as a `FAILED_BREAKOUT` risk_tag (§4.5) and a `FAILED_BREAKOUT` transition event (§5.3) — both derived independently from yesterday's snapshot. This keeps trigger_state monotonic in the entry direction (WAIT → EARLY → CONFIRMED) and avoids ambiguity in `trigger_age_days` and expectancy queries.
 
-**FAILED_TRIGGER lifecycle:** lasts exactly one trading day. The next day's evaluation runs normally — usually returning to WAIT, sometimes back to EARLY if the ticker quickly recovers. There is no cooldown that blocks future triggers; expectancy data (Phase D) decides if repeated FAILED_TRIGGERs need policy treatment, not Phase A.
+The next day's trigger_state always re-evaluates from scratch — usually returning to WAIT, sometimes back to EARLY if the ticker recovers. There is no cooldown that blocks future triggers.
 
 ### 4.4 entry_decision
 
@@ -144,7 +142,7 @@ ENTER_OK:  setup ∈ {PULLBACK, BASE_FORMING} AND trigger == CONFIRMED_TRIGGER
 EARLY:     setup ∈ {PULLBACK, BASE_FORMING} AND trigger == EARLY_TRIGGER
 STAGING:   setup == TREND_OK AND trigger == WAIT
 AVOID:     setup ∈ {EXTENDED, BROKEN}
-           OR trigger == FAILED_TRIGGER
+           OR FAILED_BREAKOUT in risk_tags
 ```
 
 `evaluate_decision()` accepts `regime=None` parameter. In Phase A this is unused. Phase B will populate it; the function signature is the integration hook.
@@ -158,9 +156,11 @@ Risk tags are derived metadata, not state. Multiple tags can attach simultaneous
 | `OVERHEAT` | `rsi14 >= 80` |
 | `PARABOLIC` | 1-day return ≥ 8% AND volume_ratio ≥ 2.0 |
 | `EXTENDED` | matches setup_state EXTENDED criteria (mirrored, redundant by design — easier to query) |
-| `FAILED_BREAKOUT` | trigger_state == FAILED_TRIGGER (UI-friendly synonym) |
+| `FAILED_BREAKOUT` | yesterday's trigger_state == CONFIRMED_TRIGGER AND today_close < ema9 |
 
-`FAILED_BREAKOUT` is a UI/display alias of the FAILED_TRIGGER state. The state is the source of truth — the tag is rendered for human readability. Spec authors and Phase D queries should always use `trigger_state == FAILED_TRIGGER`, not the tag.
+`FAILED_BREAKOUT` is computed independently each day by inspecting yesterday's snapshot — it is **not** a derivation of any current trigger_state value (since trigger_state has only 3 values, all forward-looking). When fired, it both attaches to today's risk_tags array and emits a `FAILED_BREAKOUT` transition event (§5.3). It naturally lasts only one day — yesterday's CONFIRMED is gone after that.
+
+An optional strict variant (`AND today_close < yesterday_low`) is gated by `FAILED_BREAKOUT_REQUIRE_BELOW_PRIOR_LOW` in lifecycle_config.py, defaulting to `False` for Phase A. Phase D measures whether the strict form gives better expectancy.
 
 ### 4.6 Derived fields (not stored — recomputed on read)
 
@@ -169,6 +169,8 @@ These three appear in the UI but are NOT in the snapshot schema. They are comput
 - `setup_streak`: consecutive days with same `setup_state`
 - `days_in_pullback`: consecutive days with `setup_state ∈ {PULLBACK, BASE_FORMING}`
 - `trigger_age_days`: days since `trigger_state` last became EARLY or CONFIRMED (0 = today)
+
+**Future split (deferred — not implemented in Phase A):** Phase D may need to distinguish `confirmed_age_days` (days since last CONFIRMED only) from `early_age_days` (days since last EARLY only) for finer expectancy queries — e.g., "Is freshness more important for CONFIRMED than EARLY?". Both are derivable from the same snapshot history; the split happens in derived-field code, not in the schema. Phase A ships only `trigger_age_days`; the others are added later if expectancy data justifies the split.
 
 Storing these would create denormalized data that drifts during backfills. Computing on read is cheap and stays correct.
 
@@ -257,7 +259,7 @@ Five event types are written to the `transitions` array. **Only meaningful regim
 | `SETUP_CHANGE` | today's setup_state differs from yesterday's |
 | `TRIGGER_CHANGE` | today's trigger_state differs from yesterday's |
 | `DECISION_CHANGE` | today's entry_decision differs from yesterday's |
-| `FAILED_BREAKOUT` | trigger_state transitioned to FAILED_TRIGGER (subset of TRIGGER_CHANGE — emitted *additionally* for easier Phase D queries) |
+| `FAILED_BREAKOUT` | independent detection (§4.5 condition) — yesterday's CONFIRMED + today's close below EMA9. Emitted as its own event for direct Phase D queries; not derived from TRIGGER_CHANGE. |
 | `RISK_ESCALATION` | risk_tags newly contains EXTENDED (i.e., not present yesterday) |
 
 Risk_tag changes other than EXTENDED entry (e.g., OVERHEAT toggle) are **not** transitions. They're descriptive, not lifecycle.
@@ -294,7 +296,7 @@ Estimated size: ~200 active tickers × 250 trading days × ~250 bytes/snapshot �
 
 | File | Change |
 |---|---|
-| `fetch_market_data.py` | Add `ema9`, `ema21`, `ema65`, `ema65_slope_5d` per ticker. Compute from existing 200d price window. |
+| `fetch_market_data.py` | Add `ema9`, `ema21`, `ema65`, `ema21_slope_5d`, `ema65_slope_5d` per ticker. Compute from existing 200d price window. |
 | `pipeline.py` | New Step 4c4 (US lifecycle), Step 4c5 (KR lifecycle) — independent failure isolation |
 | `report_generator.py` | `generate_report()` accepts `lifecycle_result` arg; main report nav gets `→ Lifecycle US/KR` link |
 | `telegram_sender.py` | `send_lifecycle_brief(us, kr, base_url, date_str)` |
@@ -348,7 +350,8 @@ EMA_MEDIUM = 21  # medium-term swing support; standard institutional reference
 EMA_LONG   = 65  # long-term trend filter
                  # 65 chosen over 50 (too common, less differentiation) and 75 (too slow for growth names)
                  # Roughly 13 weeks — aligns with quarterly earnings rhythm
-EMA_LONG_SLOPE_WINDOW = 5  # ema65 must have positive slope over 5 trading days for TREND_OK
+EMA_LONG_SLOPE_WINDOW = 5   # ema65 must have positive slope over 5 trading days for TREND_OK
+EMA_MEDIUM_SLOPE_WINDOW = 5 # ema21 slope window for BASE_FORMING — same length, different EMA
 
 # ── PULLBACK ───────────────────────────────────────────
 PULLBACK_MAX_DIST_FROM_EMA9 = 0.03
@@ -396,7 +399,8 @@ TRIGGER_CONFIRM_CLOSE_HIGH_RATIO = 0.8
 # close >= today_high * 0.8 + today_low * 0.2
 # Rejects gap-up-then-fade patterns (the classic exhaustion shape).
 
-FAILED_TRIGGER_REQUIRE_BELOW_PRIOR_LOW = False
+FAILED_BREAKOUT_REQUIRE_BELOW_PRIOR_LOW = False
+# Controls the FAILED_BREAKOUT risk_tag detection (§4.5).
 # False = loose form (close < ema9 only) — Phase A default.
 # True  = strict form (also requires close < yesterday_low).
 # Phase D measures whether the strict form gives better expectancy. Toggle there, not here.
@@ -424,7 +428,7 @@ The test `test_lifecycle_config.py` includes a check that every threshold has at
 |---|---|---|---|
 | 1 | `cooling_off` | Strong uptrend that runs to EMA9 distance >12% with RSI>72, then pulls back into 3% band | `EXTENDED → TREND_OK → PULLBACK` |
 | 2 | `clean_entry` | Healthy trend → 3-day pullback → EMA9 reclaim with 1.5x volume + close in top 20% | `TREND_OK → PULLBACK → EARLY_TRIGGER → CONFIRMED_TRIGGER` |
-| 3 | `failed_breakout` | Same as #2 through CONFIRMED, then next day close drops below EMA9 below yesterday's low | `... → CONFIRMED → FAILED_TRIGGER` (with FAILED_BREAKOUT event written to transitions) |
+| 3 | `failed_breakout` | Same as #2 through CONFIRMED, then next day close drops below EMA9 | yesterday CONFIRMED, today trigger_state back to WAIT, FAILED_BREAKOUT risk_tag set, FAILED_BREAKOUT transition event emitted |
 | 4 | `structure_break` | Trend fades; ema21 crosses below ema65 | `TREND_OK → BROKEN` (skips intermediate states — BROKEN takes precedence) |
 | 5 | `weak_volume` | PULLBACK + EMA9 reclaim but volume_ratio = 0.9 (below 1.2 threshold) | `PULLBACK → EARLY_TRIGGER` (does NOT advance to CONFIRMED) — verifies volume gate is enforced |
 | 6 | `gap_up_exhaustion` | Big gap up, today_high > yesterday_high, but close in lower half of day's range | trigger stays at `WAIT` despite price-action criteria — verifies close-in-upper-20% gate |
