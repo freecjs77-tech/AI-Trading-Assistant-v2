@@ -375,6 +375,160 @@ def fetch_div_ttm(ticker: "yf.Ticker", current_price: float) -> tuple[float, flo
     return 0.0, 0.0
 
 
+def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> dict:
+    """Compute all technical indicators from a yfinance-shaped DataFrame.
+
+    df must have columns: Open, High, Low, Close, Volume (yfinance Ticker.history shape).
+    Returns the same dict that fetch_ticker returned previously, plus the new
+    Phase A EMA fields (ema9/ema21/ema65/ema21_slope_5d/ema65_slope_5d).
+    """
+    close  = df["Close"]
+    high   = df["High"]
+    low    = df["Low"]
+    volume = df["Volume"]
+
+    rsi                       = calc_rsi(close)
+    macd, sig_line, hist      = calc_macd(close)
+    bb_upper, bb_mid, bb_lower = calc_bollinger(close)
+    ma20  = close.rolling(20).mean()
+    ma50  = close.rolling(50).mean()
+    ma200 = close.rolling(200).mean() if len(close) >= 200 else pd.Series([np.nan] * len(close), index=close.index)
+    vol_ma20 = volume.rolling(20).mean()
+    adx  = calc_adx(high, low, close) if len(df) >= 28 else pd.Series([np.nan] * len(df), index=df.index)
+    atr14_series = calc_atr(high, low, close, period=14)
+    atr14_val = (
+        float(atr14_series.iloc[-1])
+        if len(atr14_series) > 0
+        and not pd.isna(atr14_series.iloc[-1])
+        and np.isfinite(atr14_series.iloc[-1])
+        else None
+    )
+
+    # ── Phase A: lifecycle EMAs ──
+    # EMA9/21/65 + 5-day slopes (used by lifecycle_signal state machine).
+    from lifecycle_config import (
+        EMA_FAST, EMA_MEDIUM, EMA_LONG,
+        EMA_LONG_SLOPE_WINDOW, EMA_MEDIUM_SLOPE_WINDOW,
+    )
+    ema9_series  = close.ewm(span=EMA_FAST,   adjust=False).mean()
+    ema21_series = close.ewm(span=EMA_MEDIUM, adjust=False).mean()
+    ema65_series = close.ewm(span=EMA_LONG,   adjust=False).mean()
+
+    def _slope(series, window: int):
+        if len(series) <= window:
+            return None
+        cur = series.iloc[-1]
+        prev = series.iloc[-1 - window]
+        if pd.isna(cur) or pd.isna(prev) or not np.isfinite(cur) or not np.isfinite(prev):
+            return None
+        return round(float(cur - prev), 6)
+
+    ema21_slope = _slope(ema21_series, EMA_MEDIUM_SLOPE_WINDOW)
+    ema65_slope = _slope(ema65_series, EMA_LONG_SLOPE_WINDOW)
+
+    last_close  = float(close.iloc[-1])
+    recent_high = float(close.iloc[-20:].max())
+    drawdown    = (last_close - recent_high) / recent_high * 100
+    high_52w    = float(close.max())  # 전체 기간(~1년) 최고점
+    low_52w     = float(close.min())  # 전체 기간(~1년) 최저점
+    drawdown_52w = (last_close - high_52w) / high_52w * 100
+
+    # 이중 바닥 패턴 탐지
+    dbl_bottom = find_double_bottom(close)
+
+    # 시가총액은 현재 사용되지 않으므로 제거 (ticker.info 호출 회피 — rate limit)
+    market_cap = 0
+
+    # 배당 수집 — forward(yfinance.dividendRate) 우선, TTM 합산 폴백
+    # 세금/연간 예상 수입 계산에는 forward가 더 정확 (특별배당·분기 신설 반영)
+    # forward_div는 main()에서 사전에 yf.Ticker.info로 조회해 전달 (배당 이력 있는 종목만)
+    ttm_actual = _ttm_sum_from_divs(cached_divs)
+    if forward_div is not None and forward_div > 0:
+        div_annual = round(float(forward_div), 4)
+        div_source = "forward"
+    elif ttm_actual > 0:
+        div_annual = ttm_actual
+        div_source = "ttm"
+    else:
+        div_annual = 0.0
+        div_source = "none"
+    div_yield_annual = round(div_annual / last_close * 100, 4) if (div_annual > 0 and last_close > 0) else 0.0
+
+    # 구 필드명 유지 (pipeline.py, report_generator.py 등 다운스트림 호환)
+    div_ttm = div_annual
+    div_yield_ttm = div_yield_annual
+
+    def safe(series, idx=-1):
+        v = series.iloc[idx]
+        return round(float(v), 4) if not (pd.isna(v) or np.isinf(v)) else None
+
+    hist_vals = [round(float(x), 4) for x in hist.dropna().iloc[-3:].tolist()]
+
+    return {
+        "price":             round(last_close, 2),
+        "prev_close":        round(float(close.iloc[-2]), 2) if len(close) >= 2 else None,
+        "change_pct":        round((last_close / float(close.iloc[-2]) - 1) * 100, 2) if len(close) >= 2 else None,
+        "change_3d_pct":     round((last_close / float(close.iloc[-4]) - 1) * 100, 2) if len(close) >= 4 else None,
+        **_compute_returns(close),     # change_5d_pct + change_20d_pct
+        # 이동평균
+        "ma20":              safe(ma20),
+        "ma50":              safe(ma50),
+        "ma200":             safe(ma200),
+        "price_vs_ma20":     "above" if last_close > (safe(ma20) or 0) else "below",
+        "price_vs_ma200":    "above" if (safe(ma200) and last_close > safe(ma200)) else ("below" if safe(ma200) else "N/A"),
+        # RSI
+        "rsi14":             safe(rsi),
+        # MACD
+        "macd":              safe(macd),
+        "macd_signal":       safe(sig_line),
+        "macd_hist":         safe(hist),
+        "macd_hist_3d":      hist_vals,
+        "macd_hist_trend":   macd_hist_trend(hist),
+        "macd_vs_signal":    "above" if (safe(macd) or 0) > (safe(sig_line) or 0) else "below",
+        # Bollinger Bands
+        "bb_upper":          safe(bb_upper),
+        "bb_mid":            safe(bb_mid),
+        "bb_lower":          safe(bb_lower),
+        "bb_pct":            round((last_close - (safe(bb_lower) or 0)) / ((safe(bb_upper) or 1) - (safe(bb_lower) or 0)) * 100, 1) if safe(bb_upper) and safe(bb_lower) else None,
+        # ADX
+        "adx":               safe(adx),
+        # ATR — trailing stop 시스템에서 사용
+        "atr14":     round(atr14_val, 4) if atr14_val is not None else None,
+        "atr14_pct": round((atr14_val / last_close) * 100, 2)
+                     if atr14_val is not None and last_close > 0
+                     else None,
+        # 거래량
+        "volume":            int(volume.iloc[-1]),
+        "volume_ma20":       int(vol_ma20.iloc[-1]) if safe(vol_ma20) else None,
+        "volume_ratio":      round(float(volume.iloc[-1]) / float(vol_ma20.iloc[-1]), 2) if safe(vol_ma20) else None,
+        # 기타
+        "drawdown_20d_pct":  round(drawdown, 2),
+        "drawdown_52w_pct":  round(drawdown_52w, 2),
+        "high_52w":          round(high_52w, 2),
+        "low_52w":           round(low_52w, 2),
+        "market_cap":        market_cap,
+        "data_days":         len(df),
+        "fetched_at":        datetime.now(KST).strftime("%Y-%m-%d %H:%M"),
+        # 하락 멈춤: 오늘 종가 >= 최근 3일 최저 종가 (저점 갱신 없음)
+        "sig_low_stopped":   bool(len(close) >= 4 and float(close.iloc[-1]) >= min(float(p) for p in close.iloc[-4:-1])),
+        # 이중 바닥 패턴
+        "double_bottom":     dbl_bottom,
+        # 배당 (연간 예상 — forward 우선, TTM 폴백)
+        "div_ttm":           div_ttm,       # 연간 배당/주 (forward 우선값 — 필드명은 호환용)
+        "div_yield_ttm":     div_yield_ttm, # 배당수익률 (%)
+        "div_annual":        div_annual,    # div_ttm의 명시적 alias (forward 의미)
+        "div_yield_annual":  div_yield_annual,
+        "div_source":        div_source,    # "forward" | "ttm" | "none"
+        "_last_date":        df.index[-1].strftime("%Y-%m-%d"),  # 마지막 거래일
+        # Phase A: lifecycle EMAs
+        "ema9":              safe(ema9_series),
+        "ema21":             safe(ema21_series),
+        "ema65":             safe(ema65_series),
+        "ema21_slope_5d":    ema21_slope,
+        "ema65_slope_5d":    ema65_slope,
+    }
+
+
 def fetch_ticker(symbol: str, cached_df=None, cached_divs=None, forward_div=None) -> dict:
     """yfinance로 종목 데이터 수집 후 기술지표 계산 (배당 포함).
 
@@ -403,123 +557,7 @@ def fetch_ticker(symbol: str, cached_df=None, cached_divs=None, forward_div=None
         if len(df) < 26:
             return {"error": f"데이터 부족 ({len(df)}일, 최소 26일 필요)"}
 
-        close  = df["Close"]
-        high   = df["High"]
-        low    = df["Low"]
-        volume = df["Volume"]
-
-        rsi                       = calc_rsi(close)
-        macd, sig_line, hist      = calc_macd(close)
-        bb_upper, bb_mid, bb_lower = calc_bollinger(close)
-        ma20  = close.rolling(20).mean()
-        ma50  = close.rolling(50).mean()
-        ma200 = close.rolling(200).mean() if len(close) >= 200 else pd.Series([np.nan] * len(close), index=close.index)
-        vol_ma20 = volume.rolling(20).mean()
-        adx  = calc_adx(high, low, close) if len(df) >= 28 else pd.Series([np.nan] * len(df), index=df.index)
-        atr14_series = calc_atr(high, low, close, period=14)
-        atr14_val = (
-            float(atr14_series.iloc[-1])
-            if len(atr14_series) > 0
-            and not pd.isna(atr14_series.iloc[-1])
-            and np.isfinite(atr14_series.iloc[-1])
-            else None
-        )
-
-        last_close  = float(close.iloc[-1])
-        recent_high = float(close.iloc[-20:].max())
-        drawdown    = (last_close - recent_high) / recent_high * 100
-        high_52w    = float(close.max())  # 전체 기간(~1년) 최고점
-        low_52w     = float(close.min())  # 전체 기간(~1년) 최저점
-        drawdown_52w = (last_close - high_52w) / high_52w * 100
-
-        # 이중 바닥 패턴 탐지
-        dbl_bottom = find_double_bottom(close)
-
-        # 시가총액은 현재 사용되지 않으므로 제거 (ticker.info 호출 회피 — rate limit)
-        market_cap = 0
-
-        # 배당 수집 — forward(yfinance.dividendRate) 우선, TTM 합산 폴백
-        # 세금/연간 예상 수입 계산에는 forward가 더 정확 (특별배당·분기 신설 반영)
-        # forward_div는 main()에서 사전에 yf.Ticker.info로 조회해 전달 (배당 이력 있는 종목만)
-        ttm_actual = _ttm_sum_from_divs(cached_divs)
-        if forward_div is not None and forward_div > 0:
-            div_annual = round(float(forward_div), 4)
-            div_source = "forward"
-        elif ttm_actual > 0:
-            div_annual = ttm_actual
-            div_source = "ttm"
-        else:
-            div_annual = 0.0
-            div_source = "none"
-        div_yield_annual = round(div_annual / last_close * 100, 4) if (div_annual > 0 and last_close > 0) else 0.0
-
-        # 구 필드명 유지 (pipeline.py, report_generator.py 등 다운스트림 호환)
-        div_ttm = div_annual
-        div_yield_ttm = div_yield_annual
-
-        def safe(series, idx=-1):
-            v = series.iloc[idx]
-            return round(float(v), 4) if not (pd.isna(v) or np.isinf(v)) else None
-
-        hist_vals = [round(float(x), 4) for x in hist.dropna().iloc[-3:].tolist()]
-
-        return {
-            "price":             round(last_close, 2),
-            "prev_close":        round(float(close.iloc[-2]), 2) if len(close) >= 2 else None,
-            "change_pct":        round((last_close / float(close.iloc[-2]) - 1) * 100, 2) if len(close) >= 2 else None,
-            "change_3d_pct":     round((last_close / float(close.iloc[-4]) - 1) * 100, 2) if len(close) >= 4 else None,
-            **_compute_returns(close),     # change_5d_pct + change_20d_pct
-            # 이동평균
-            "ma20":              safe(ma20),
-            "ma50":              safe(ma50),
-            "ma200":             safe(ma200),
-            "price_vs_ma20":     "above" if last_close > (safe(ma20) or 0) else "below",
-            "price_vs_ma200":    "above" if (safe(ma200) and last_close > safe(ma200)) else ("below" if safe(ma200) else "N/A"),
-            # RSI
-            "rsi14":             safe(rsi),
-            # MACD
-            "macd":              safe(macd),
-            "macd_signal":       safe(sig_line),
-            "macd_hist":         safe(hist),
-            "macd_hist_3d":      hist_vals,
-            "macd_hist_trend":   macd_hist_trend(hist),
-            "macd_vs_signal":    "above" if (safe(macd) or 0) > (safe(sig_line) or 0) else "below",
-            # Bollinger Bands
-            "bb_upper":          safe(bb_upper),
-            "bb_mid":            safe(bb_mid),
-            "bb_lower":          safe(bb_lower),
-            "bb_pct":            round((last_close - (safe(bb_lower) or 0)) / ((safe(bb_upper) or 1) - (safe(bb_lower) or 0)) * 100, 1) if safe(bb_upper) and safe(bb_lower) else None,
-            # ADX
-            "adx":               safe(adx),
-            # ATR — trailing stop 시스템에서 사용
-            "atr14":     round(atr14_val, 4) if atr14_val is not None else None,
-            "atr14_pct": round((atr14_val / last_close) * 100, 2)
-                         if atr14_val is not None and last_close > 0
-                         else None,
-            # 거래량
-            "volume":            int(volume.iloc[-1]),
-            "volume_ma20":       int(vol_ma20.iloc[-1]) if safe(vol_ma20) else None,
-            "volume_ratio":      round(float(volume.iloc[-1]) / float(vol_ma20.iloc[-1]), 2) if safe(vol_ma20) else None,
-            # 기타
-            "drawdown_20d_pct":  round(drawdown, 2),
-            "drawdown_52w_pct":  round(drawdown_52w, 2),
-            "high_52w":          round(high_52w, 2),
-            "low_52w":           round(low_52w, 2),
-            "market_cap":        market_cap,
-            "data_days":         len(df),
-            "fetched_at":        datetime.now(KST).strftime("%Y-%m-%d %H:%M"),
-            # 하락 멈춤: 오늘 종가 >= 최근 3일 최저 종가 (저점 갱신 없음)
-            "sig_low_stopped":   bool(len(close) >= 4 and float(close.iloc[-1]) >= min(float(p) for p in close.iloc[-4:-1])),
-            # 이중 바닥 패턴
-            "double_bottom":     dbl_bottom,
-            # 배당 (연간 예상 — forward 우선, TTM 폴백)
-            "div_ttm":           div_ttm,       # 연간 배당/주 (forward 우선값 — 필드명은 호환용)
-            "div_yield_ttm":     div_yield_ttm, # 배당수익률 (%)
-            "div_annual":        div_annual,    # div_ttm의 명시적 alias (forward 의미)
-            "div_yield_annual":  div_yield_annual,
-            "div_source":        div_source,    # "forward" | "ttm" | "none"
-            "_last_date":        df.index[-1].strftime("%Y-%m-%d"),  # 마지막 거래일
-        }
+        return compute_indicators(df, forward_div=forward_div, cached_divs=cached_divs)
 
     except Exception as e:
         # 진단성 강화 — 동일 에러 재발 시 워크플로우 로그에서 traceback 확인 가능
