@@ -4,23 +4,63 @@
 <meta charset="utf-8">
 <title>Lifecycle US — {{ as_of }}</title>
 <style>
-  body { font-family: -apple-system, "Segoe UI", sans-serif; margin: 24px; color: #1a1a1a; }
+  body { font-family: -apple-system, "Segoe UI", sans-serif; margin: 24px; color: #1a1a1a; max-width: 1400px; }
   h1 { margin-bottom: 4px; }
+  h2 { margin-top: 32px; padding-bottom: 6px; border-bottom: 2px solid #e5e7eb; }
   .as-of { color: #666; margin-bottom: 24px; }
-  .card { border-radius: 8px; padding: 12px 16px; margin: 8px 0; }
-  .card h3 { margin: 0 0 8px 0; }
+
+  /* 도입 박스 — 페이지 전체 사용법 */
+  .intro {
+    background: #f8fafc;
+    border-left: 4px solid #475569;
+    padding: 16px 20px;
+    margin: 16px 0 24px 0;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .intro strong { color: #0f172a; }
+  .intro .legend-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 8px 24px; margin-top: 12px;
+  }
+  .intro .legend-item { display: flex; gap: 8px; }
+  .intro .legend-item .key { font-weight: 600; min-width: 110px; }
+
+  /* 카드 — 결정 그룹별 */
+  .card { border-radius: 8px; padding: 14px 18px; margin: 10px 0; }
+  .card h3 { margin: 0 0 6px 0; }
+  .card .desc {
+    font-size: 13px; color: #475569; margin-bottom: 10px; line-height: 1.5;
+  }
+  .card .tickers { font-weight: 500; }
   .card.enter-ok { background: #ecfdf5; border-left: 4px solid #10b981; }
   .card.early    { background: #fef3c7; border-left: 4px solid #f59e0b; }
   .card.staging  { background: #f3f4f6; border-left: 4px solid #9ca3af; }
   .card.avoid    { background: #fee2e2; border-left: 4px solid #ef4444; }
-  .new-confirmed { background: #dbeafe; border-left: 4px solid #2563eb; padding: 12px 16px; margin: 16px 0; border-radius: 8px; }
+
+  .new-confirmed {
+    background: #dbeafe; border-left: 4px solid #2563eb;
+    padding: 12px 16px; margin: 16px 0; border-radius: 8px;
+  }
+  .new-confirmed .desc { font-size: 12px; color: #475569; margin-top: 4px; }
+
+  /* 메인 테이블 */
   table { border-collapse: collapse; margin-top: 12px; width: 100%; font-size: 13px; }
   th, td { border-bottom: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
   th { background: #f9fafb; }
+  th[title] { cursor: help; border-bottom: 1px dotted #94a3b8; }
   details summary { cursor: pointer; padding: 6px 0; color: #444; }
-  .placeholder { background: #fff7ed; border-left: 4px solid #fb923c; padding: 12px 16px; margin: 8px 0; color: #92400e; border-radius: 6px; }
+
+  .placeholder {
+    background: #fff7ed; border-left: 4px solid #fb923c;
+    padding: 12px 16px; margin: 8px 0; color: #92400e; border-radius: 6px;
+  }
   .footer-note { color: #888; font-size: 12px; margin-top: 24px; }
   .recommended-size { color: #888; font-style: italic; font-size: 12px; }
+  .table-help {
+    color: #475569; font-size: 12px; margin-bottom: 6px; line-height: 1.6;
+  }
 </style>
 </head>
 <body>
@@ -28,9 +68,24 @@
 <h1>🇺🇸 Lifecycle US</h1>
 <div class="as-of">As of {{ as_of }} · {{ version }}</div>
 
+<!-- 도입 박스: 페이지 전체 사용법 -->
+<div class="intro">
+  <strong>이 페이지는 무엇인가요?</strong><br>
+  보유하지 않은 종목 중 momentum scanner 가 추세 후보로 발견한 종목들을 매일 추적하여,
+  <strong>지금 진입할 만한가</strong> / <strong>아직 기다려야 하는가</strong> / <strong>피해야 하는가</strong> 를 판단해 주는 페이지입니다.
+  자동 매매가 아닌 <em>매수 판단 보조</em> 도구입니다.
+
+  <div class="legend-grid">
+    <div class="legend-item"><span class="key">🟢 ENTER_OK</span><span>진입해도 OK — 좋은 zone(PULLBACK/BASE)에서 거래량·종가 게이트까지 통과한 확정 trigger.</span></div>
+    <div class="legend-item"><span class="key">🟡 EARLY</span><span>조기 진입 — 진입 zone 안에서 약한 trigger 발화. 작게 시도하거나 확정 대기.</span></div>
+    <div class="legend-item"><span class="key">⚪ STAGING</span><span>대기 — 추세는 정상이지만 진입 신호 아직 없음. 모니터링 대상.</span></div>
+    <div class="legend-item"><span class="key">🔴 AVOID</span><span>회피 — 과확장(EXTENDED)·구조 깨짐(BROKEN)·실패한 trigger(FAILED_BREAKOUT) 중 하나 이상.</span></div>
+  </div>
+</div>
+
 <!-- Section [1]: MARKET STATE — Phase B placeholder -->
 <div class="placeholder">
-  <strong>[1] MARKET STATE</strong> — Market regime classifier coming in Phase B.
+  <strong>[1] MARKET STATE</strong> — 시장 국면 분류기는 Phase B 에서 추가 예정 (RISK_ON / TRENDING / CHOPPY / RISK_OFF).
 </div>
 
 <!-- Section [3]: NEW CONFIRMED TODAY -->
@@ -38,32 +93,59 @@
 <div class="new-confirmed">
   <strong>🆕 NEW CONFIRMED TODAY ({{ new_confirmed|length }})</strong>:
   {% for r in new_confirmed %}<a href="#row-{{ r.ticker }}">{{ r.ticker }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+  <div class="desc">오늘 처음 ENTER_OK 가 발화한 종목 — 가장 시의성이 높은 진입 후보.</div>
 </div>
 {% endif %}
 
 <!-- Section [2]: ACTION PANEL -->
+<h2>오늘의 결정 그룹</h2>
+
 <div class="card enter-ok">
   <h3>🟢 ENTER_OK ({{ enter_ok|length }})</h3>
-  {% if enter_ok %}{% for r in enter_ok %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}<br>
-  <span class="recommended-size">Recommended size: TBD — Phase C</span>
-  {% else %}<em>none</em>{% endif %}
+  <div class="desc">
+    <strong>진입해도 OK</strong> — PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (전일 종가 ≤ EMA9, 오늘 EMA9 돌파 또는 전일 고점 돌파 + 거래량 1.2x + 종가가 일중 상위 20%).
+  </div>
+  {% if enter_ok %}<div class="tickers">{% for r in enter_ok %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div><br>
+  <span class="recommended-size">권장 포지션 크기: TBD — Phase C 에서 ATR 기반 sizing 추가 예정</span>
+  {% else %}<em>해당 없음</em>{% endif %}
 </div>
+
 <div class="card early">
   <h3>🟡 EARLY ({{ early|length }})</h3>
-  {% if early %}{% for r in early %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}<em>none</em>{% endif %}
+  <div class="desc">
+    <strong>조기 진입 — 작게 시도 가능</strong> — 진입 zone 안에서 trigger 발화는 있으나 거래량·종가 게이트 중 하나 이상 미달. 다음 거래일에 CONFIRMED 로 승급될 수 있음.
+  </div>
+  {% if early %}<div class="tickers">{% for r in early %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% else %}<em>해당 없음</em>{% endif %}
 </div>
-<details><summary>⚪ STAGING ({{ staging|length }})</summary>
-  <div class="card staging">{% for r in staging %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+
+<details>
+  <summary>⚪ STAGING ({{ staging|length }}) — 추세 정상, 신호 없음 (모니터링)</summary>
+  <div class="card staging">
+    <div class="desc">
+      <strong>지금 진입 신호 없음</strong> — TREND_OK / PULLBACK / BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 EARLY 또는 ENTER_OK 로 자동 승격.
+    </div>
+    <div class="tickers">{% for r in staging %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+  </div>
 </details>
-<details><summary>🔴 AVOID ({{ avoid|length }})</summary>
-  <div class="card avoid">{% for r in avoid %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+
+<details>
+  <summary>🔴 AVOID ({{ avoid|length }}) — 회피 사유 있음</summary>
+  <div class="card avoid">
+    <div class="desc">
+      <strong>지금 진입 부적합</strong> — EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN 직전 단계 또는 risk_tags 에 FAILED_BREAKOUT (어제 CONFIRMED → 오늘 EMA9 하회).
+    </div>
+    <div class="tickers">{% for r in avoid %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+  </div>
 </details>
 
 <!-- Section [4]: STATE TRANSITIONS -->
-<h2>State transitions (last 50)</h2>
+<h2>최근 상태 변화 (last 50)</h2>
+<div class="table-help">
+  종목별 setup / trigger / decision 상태가 어제 대비 변한 이력. 첫 실행일에는 비교 대상이 없어 비어 있음 — 다음 거래일부터 누적 시작.
+</div>
 {% if transitions %}
 <table>
-  <thead><tr><th>Date</th><th>Ticker</th><th>Event</th><th>From</th><th>To</th></tr></thead>
+  <thead><tr><th>날짜</th><th>티커</th><th>이벤트</th><th>From</th><th>To</th></tr></thead>
   <tbody>
   {% for t in transitions|reverse %}
     <tr><td>{{ t.date }}</td><td>{{ t.ticker }}</td><td>{{ t.event }}</td>
@@ -71,17 +153,34 @@
   {% endfor %}
   </tbody>
 </table>
-{% else %}<p><em>No transitions yet.</em></p>{% endif %}
+{% else %}<p><em>아직 transition 이력 없음 (첫 거래일).</em></p>{% endif %}
 
 <!-- Section [5]: MAIN TABLE -->
-<h2>Active set</h2>
+<h2>전체 active set 상세</h2>
+<div class="table-help">
+  컬럼 의미: <strong>Setup</strong> = 추세 구조 진단 ·
+  <strong>Trigger</strong> = 진입 신호 발화 여부 ·
+  <strong>Decision</strong> = 위 둘을 조합한 실행 권고.<br>
+  <strong>trig_age</strong> = 마지막 trigger 발화로부터 경과 일수 (0 = 오늘) ·
+  <strong>days_in_pb</strong> = PULLBACK/BASE_FORMING 에 머문 연속 일수 ·
+  <strong>setup_streak</strong> = 같은 setup 유지 연속 일수.
+</div>
 <table>
   <thead>
     <tr>
-      <th>Ticker</th><th>Sector</th><th>Setup</th><th>Trigger</th><th>Decision</th>
-      <th>trig_age</th><th>dist_ema9 %</th><th>dist_ema21 %</th>
-      <th>vol_ratio</th><th>atr %</th><th>days_in_pb</th><th>setup_streak</th>
-      <th>risk_tags</th>
+      <th>티커</th>
+      <th>섹터</th>
+      <th title="구조 진단: TREND_OK · PULLBACK · BASE_FORMING · EXTENDED · BROKEN">Setup</th>
+      <th title="진입 신호: WAIT · EARLY_TRIGGER · CONFIRMED_TRIGGER">Trigger</th>
+      <th title="실행 권고: ENTER_OK · EARLY · STAGING · AVOID">Decision</th>
+      <th title="마지막 trigger 로부터 경과 일수 (0 = 오늘)">trig_age</th>
+      <th title="EMA9 와의 거리 (%)">dist_ema9 %</th>
+      <th title="EMA21 과의 거리 (%)">dist_ema21 %</th>
+      <th title="20일 평균 대비 거래량 비율 (1.0 = 평균)">vol_ratio</th>
+      <th title="ATR 14 (% of close) — 변동성 지표">atr %</th>
+      <th title="PULLBACK 또는 BASE_FORMING 에 머문 연속 일수">days_in_pb</th>
+      <th title="같은 setup 유지 연속 일수">setup_streak</th>
+      <th title="OVERHEAT(RSI≥80) · PARABOLIC(1d≥+8% & vol≥2x) · EXTENDED · FAILED_BREAKOUT">risk_tags</th>
     </tr>
   </thead>
   <tbody>
@@ -107,10 +206,14 @@
 
 <!-- Section [6]: FAILED / BROKEN -->
 {% if broken_table %}
-<details><summary>FAILED / BROKEN ({{ broken_table|length }})</summary>
+<details>
+  <summary>FAILED / BROKEN ({{ broken_table|length }}) — 추세 깨진 종목 (참고용)</summary>
+  <div class="table-help">
+    중기 추세 (EMA21 < EMA65) 또는 장기 필터 (close < EMA65) 가 깨진 종목들. 진입 후보에서 제외되며 Phase D 의 expectancy 분석을 위해 보존됨.
+  </div>
   <table>
-    <thead><tr><th>Ticker</th><th>Sector</th><th>Setup</th><th>dist_ema9 %</th>
-                <th>dist_ema21 %</th><th>risk_tags</th></tr></thead>
+    <thead><tr><th>티커</th><th>섹터</th><th>Setup</th>
+                <th>dist_ema9 %</th><th>dist_ema21 %</th><th>risk_tags</th></tr></thead>
     <tbody>
     {% for r in broken_table %}
       <tr><td>{{ r.ticker }}</td><td>{{ r.raw.sector or '—' }}</td>
@@ -126,8 +229,9 @@
 {% endif %}
 
 <p class="footer-note">
-  Page footer: each market's date stamp uses its own local close.
-  Lifecycle is advisory — no auto-trading. Composite scores are forbidden by design.
+  각 시장은 자체 마감일 기준 — US 와 KR 페이지의 날짜 스탬프가 일시적으로 다를 수 있음.
+  Lifecycle 은 <strong>매수 판단 보조</strong> 도구이며 자동매매를 수행하지 않습니다.
+  합성 점수 (composite score) 는 의도적으로 제공하지 않으며, raw 수치만 노출합니다.
 </p>
 
 </body>
