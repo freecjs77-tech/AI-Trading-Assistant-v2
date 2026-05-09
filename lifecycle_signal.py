@@ -340,6 +340,7 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
         load_lifecycle_history, save_lifecycle_history,
         compute_active_set, append_snapshot, append_transition,
         compute_transitions, bootstrap_active_set,
+        normalize_momentum_history,
     )
 
     history_dir = _os.path.join(project_dir, "history")
@@ -347,11 +348,14 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
     state_path = _os.path.join(history_dir, f"lifecycle_history_{market.lower()}.json")
 
     # Momentum history (read-only seed for active set).
+    # momentum_scanner writes a date-keyed dict ({"data": {TICKER: {DATE: ...}}});
+    # active-set logic expects a snapshot-list shape — normalize at the boundary.
     momentum_state = {"tickers": {}}
     if _os.path.exists(momentum_history_path):
         try:
             with open(momentum_history_path, "rb") as f:
-                momentum_state = json.loads(f.read().rstrip(b" \t\n\r\x00").decode("utf-8"))
+                raw_momentum = json.loads(f.read().rstrip(b" \t\n\r\x00").decode("utf-8"))
+            momentum_state = normalize_momentum_history(raw_momentum)
         except Exception as e:
             print(f"[lifecycle:{market}] WARN momentum history load failed ({e})")
 

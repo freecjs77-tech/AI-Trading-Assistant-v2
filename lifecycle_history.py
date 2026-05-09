@@ -93,6 +93,40 @@ def _days_between(d1: str, d2: str) -> int:
     return (a - b).days
 
 
+def normalize_momentum_history(raw: dict) -> dict:
+    """Normalize momentum_scanner's history shape to active-set's expected shape.
+
+    momentum_history.py writes:
+        {"_meta": {...}, "data": {TICKER: {DATE_STR: entry, ...}}}
+
+    compute_active_set() expects:
+        {"tickers": {TICKER: {"snapshots": [{"date": ..., "stage": ...}, ...]}}}
+
+    This adapter converts the date-keyed dict to a date-sorted snapshot list.
+    Already-normalized inputs (the "tickers" form) pass through unchanged.
+    """
+    if not isinstance(raw, dict):
+        return {"tickers": {}}
+    if "tickers" in raw and "data" not in raw:
+        return raw  # already normalized
+    src = raw.get("data") or {}
+    out: dict = {"tickers": {}}
+    for tk, by_date in src.items():
+        if not isinstance(by_date, dict):
+            continue
+        snapshots = []
+        for date_str in sorted(by_date.keys()):
+            entry = by_date[date_str]
+            if not isinstance(entry, dict):
+                continue
+            snap = dict(entry)
+            snap["date"] = date_str
+            snapshots.append(snap)
+        if snapshots:
+            out["tickers"][tk] = {"snapshots": snapshots}
+    return out
+
+
 def compute_active_set(*, momentum_history: dict,
                         lifecycle_state: dict,
                         portfolio_tickers: set,

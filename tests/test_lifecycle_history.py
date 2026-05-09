@@ -303,3 +303,61 @@ def test_bootstrap_uses_supplied_fetcher_returns_seed_state():
     assert seed["schema_version"] == "1.0.0"
     assert "_bootstrap_meta" in seed
     assert set(seed["_bootstrap_meta"]["seed_tickers"]) == {"NVDA", "PLTR"}
+
+
+# ---------------------------------------------------------------------------
+# Schema adapter: momentum_scanner shape → active_set shape
+# ---------------------------------------------------------------------------
+
+from lifecycle_history import normalize_momentum_history
+
+
+def test_normalize_momentum_history_converts_data_keyed():
+    raw = {
+        "_meta": {"scanner": "momentum_us"},
+        "data": {
+            "NVDA": {
+                "2026-05-07": {"stage": "MOMENTUM_2", "streak": 1},
+                "2026-05-08": {"stage": "MOMENTUM_3", "streak": 2},
+            },
+            "PLTR": {
+                "2026-05-08": {"stage": "MOMENTUM_1"},
+            },
+        },
+    }
+    out = normalize_momentum_history(raw)
+    assert "tickers" in out
+    nvda_snaps = out["tickers"]["NVDA"]["snapshots"]
+    assert [s["date"] for s in nvda_snaps] == ["2026-05-07", "2026-05-08"]
+    assert nvda_snaps[1]["stage"] == "MOMENTUM_3"
+    assert out["tickers"]["PLTR"]["snapshots"][0]["date"] == "2026-05-08"
+
+
+def test_normalize_passthrough_when_already_tickers_shape():
+    raw = {"tickers": {"NVDA": {"snapshots": [{"date": "2026-05-08", "stage": "MOMENTUM_2"}]}}}
+    out = normalize_momentum_history(raw)
+    assert out is raw  # passthrough
+
+
+def test_normalize_handles_empty_or_garbage():
+    assert normalize_momentum_history({}) == {"tickers": {}}
+    assert normalize_momentum_history({"data": {}}) == {"tickers": {}}
+    assert normalize_momentum_history(None) == {"tickers": {}}
+    # Non-dict ticker entry skipped, not crashed.
+    assert normalize_momentum_history({"data": {"NVDA": "garbage"}}) == {"tickers": {}}
+
+
+def test_active_set_uses_normalized_momentum_history():
+    raw = {
+        "data": {
+            "NVDA": {"2026-05-08": {"stage": "MOMENTUM_2"}},
+            "OLD":  {"2026-04-01": {"stage": "MOMENTUM_1"}},  # >14d ago
+        }
+    }
+    normalized = normalize_momentum_history(raw)
+    s = compute_active_set(momentum_history=normalized,
+                            lifecycle_state={"tickers": {}},
+                            portfolio_tickers=set(),
+                            today="2026-05-08")
+    assert "NVDA" in s
+    assert "OLD" not in s
