@@ -565,6 +565,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             momentum_us=momentum_us_result,    # Task 21
             momentum_kr=momentum_kr_result,    # Task 21
             portfolio_stop_result=stop_result_me,
+            lifecycle_us=lifecycle_us_result,
+            lifecycle_kr=lifecycle_kr_result,
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -591,6 +593,20 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             print(f"  OK {len(momentum_files)} momentum pages generated")
         except Exception as e:
             print(f"  WARN momentum pages failed: {e}")
+
+        # Lifecycle pages (US + KR)
+        try:
+            from lifecycle_report import generate_lifecycle_pages
+            _lc_paths = generate_lifecycle_pages(
+                us_result=lifecycle_us_result, kr_result=lifecycle_kr_result,
+                output_dir=os.path.join(project_dir, "reports"),
+                us_state=(lifecycle_us_result or {}).get("state"),
+                kr_state=(lifecycle_kr_result or {}).get("state"),
+            )
+            for m, p in _lc_paths.items():
+                print(f"  Generated {m}: {p}")
+        except Exception as e:
+            print(f"  WARN lifecycle page render failed: {e}")
 
         # Step 5a: Charts + Detail pages
         print("[Step 5a] Generating charts...")
@@ -958,6 +974,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     active_nav=_owner,
                     benchmark_data=benchmark_by_owner.get(_owner),
                     portfolio_stop_result=_owner_stop_result,
+                    lifecycle_us=lifecycle_us_result,
+                    lifecycle_kr=lifecycle_kr_result,
                 )
                 _sz = os.path.getsize(_owner_report)
                 print(f"  OK {_owner} report -> {_owner_report} ({_sz:,} bytes)")
