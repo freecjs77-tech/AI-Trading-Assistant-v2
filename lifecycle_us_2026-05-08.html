@@ -61,6 +61,67 @@
   .table-help {
     color: #475569; font-size: 12px; margin-bottom: 6px; line-height: 1.6;
   }
+
+  /* 용어집 박스 */
+  .glossary {
+    background: #fafbfc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin: 0 0 24px 0;
+  }
+  .glossary > summary {
+    cursor: pointer;
+    font-size: 14px;
+    color: #334155;
+    padding: 4px 0;
+    list-style: none;
+  }
+  .glossary > summary::before { content: "▸ "; color: #94a3b8; }
+  .glossary[open] > summary::before { content: "▾ "; }
+  .glossary-body { margin-top: 14px; font-size: 13px; line-height: 1.55; }
+  .glossary-intro { color: #475569; margin: 0 0 14px 0; }
+  .glossary-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; margin-bottom: 8px;
+  }
+  .glossary-col h4 { margin: 0 0 6px 0; color: #0f172a; font-size: 13px; }
+  .glossary-note { color: #64748b; font-size: 12px; margin: 0 0 8px 0; }
+  .state-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px; line-height: 1.5;
+  }
+  .state-table td {
+    padding: 6px 8px; border-bottom: 1px solid #eef2f7; vertical-align: top;
+  }
+  .state-table th {
+    background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 12px;
+  }
+  .state {
+    font-weight: 700; font-family: ui-monospace, monospace;
+    white-space: nowrap; padding: 2px 6px; border-radius: 4px;
+    font-size: 11px;
+  }
+  .state-trend-ok  { background: #dcfce7; color: #14532d; }
+  .state-pullback  { background: #dbeafe; color: #1e3a8a; }
+  .state-base      { background: #ede9fe; color: #4c1d95; }
+  .state-extended  { background: #fef3c7; color: #78350f; }
+  .state-broken    { background: #fee2e2; color: #7f1d1d; }
+  .state-wait      { background: #f1f5f9; color: #334155; }
+  .state-early     { background: #fef3c7; color: #78350f; }
+  .state-confirmed { background: #dcfce7; color: #14532d; }
+  .state-tag       { background: #f1f5f9; color: #475569; }
+  .state-tag-bad   { background: #fee2e2; color: #7f1d1d; }
+
+  .decision-matrix th, .decision-matrix td {
+    text-align: center; padding: 8px 10px;
+  }
+  .decision-matrix td:first-child { text-align: left; background: #f8fafc; }
+  .decision-matrix .dim { color: #94a3b8; font-size: 11px; }
+
+  @media (max-width: 720px) {
+    .glossary-grid { grid-template-columns: 1fr; }
+    .intro .legend-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -82,6 +143,78 @@
     <div class="legend-item"><span class="key">🔴 AVOID</span><span>회피 — 과확장(EXTENDED)·구조 깨짐(BROKEN)·실패한 trigger(FAILED_BREAKOUT) 중 하나 이상.</span></div>
   </div>
 </div>
+
+<!-- 상태 용어집 — 어떻게 결정에 도달하는지 -->
+<details class="glossary" open>
+  <summary><strong>상태 용어집</strong> — Setup × Trigger 가 어떻게 Decision 으로 연결되는가</summary>
+
+  <div class="glossary-body">
+    <p class="glossary-intro">
+      Decision (위 4가지) 은 두 가지 raw 상태의 조합 결과입니다:
+      <strong>Setup</strong> 은 종목의 추세 구조를 5단계로 진단하고,
+      <strong>Trigger</strong> 는 그 안에서 진입 신호의 발화 강도를 3단계로 표시합니다.
+    </p>
+
+    <div class="glossary-grid">
+      <!-- Setup states -->
+      <div class="glossary-col">
+        <h4>Setup (구조 진단) — 5단계</h4>
+        <p class="glossary-note">
+          평가 우선순위:
+          <strong>BROKEN > EXTENDED > BASE_FORMING > PULLBACK > TREND_OK</strong>.
+          한 종목이 여러 조건을 동시에 만족하면 위에 있는 것이 우선 — 추세가 깨졌다면 다른 조건과 무관하게 BROKEN 으로 분류됩니다.
+        </p>
+        <table class="state-table">
+          <tr><td class="state state-trend-ok">TREND_OK</td><td>정상 상승 추세 — EMA9 > EMA21 > EMA65 정렬 + EMA65 5일 기울기 양수.</td></tr>
+          <tr><td class="state state-pullback">PULLBACK</td><td>추세 안의 단기 하락 — TREND_OK 조건 + EMA9 와의 거리 ≤ 3% + EMA21 위. <em>진입 zone</em>.</td></tr>
+          <tr><td class="state state-base">BASE_FORMING</td><td>5–15일 횡보 + 변동성 수축 (5d ATR < 20d ATR) + 거래량 수축 (5d 평균 < 20d × 0.85) + EMA21 5일 기울기 양수. <em>VCP 식 압축 베이스 — 가장 시의성 높은 zone</em>.</td></tr>
+          <tr><td class="state state-extended">EXTENDED</td><td>과확장 — 정렬 유지 + EMA9 와의 거리 > 12% + RSI > 72. 진입 시 손익비 나쁨, 하락 위험 큼.</td></tr>
+          <tr><td class="state state-broken">BROKEN</td><td>구조 깨짐 — EMA21 < EMA65 (중기 추세 이탈) 또는 종가 < EMA65 (장기 필터 이탈). 추세 자체가 무너진 상태.</td></tr>
+        </table>
+      </div>
+
+      <!-- Trigger states + Risk tags -->
+      <div class="glossary-col">
+        <h4>Trigger (진입 신호) — 3단계</h4>
+        <p class="glossary-note">
+          Setup 이 PULLBACK 또는 BASE_FORMING 일 때만 의미 있음 (그 외에는 항상 WAIT).
+        </p>
+        <table class="state-table">
+          <tr><td class="state state-wait">WAIT</td><td>진입 신호 없음.</td></tr>
+          <tr><td class="state state-early">EARLY_TRIGGER</td><td>EMA9 reclaim (전일 종가 ≤ EMA9, 오늘 종가 > EMA9) 또는 전일 고점 돌파 + 종가가 일중 상위 20%.</td></tr>
+          <tr><td class="state state-confirmed">CONFIRMED_TRIGGER</td><td>EARLY 조건 + 거래량 1.2× (vs 20일 평균) + 종가가 일중 상위 20% (high·low 기준 가중평균).</td></tr>
+        </table>
+
+        <h4 style="margin-top: 18px;">risk_tags (보조 경고)</h4>
+        <p class="glossary-note">
+          중복 부착 가능. 단순 정보용 (FAILED_BREAKOUT 만 Decision 을 강제 AVOID).
+        </p>
+        <table class="state-table">
+          <tr><td class="state state-tag">OVERHEAT</td><td>RSI ≥ 80.</td></tr>
+          <tr><td class="state state-tag">PARABOLIC</td><td>1일 수익률 ≥ +8% 동시에 거래량 ≥ 2.0× 평균.</td></tr>
+          <tr><td class="state state-tag">EXTENDED</td><td>setup EXTENDED 와 동일 조건 (mirror).</td></tr>
+          <tr><td class="state state-tag-bad">FAILED_BREAKOUT</td><td>어제 CONFIRMED → 오늘 종가 < EMA9. 가짜 돌파 — 강제로 AVOID 처리.</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Decision matrix -->
+    <h4 style="margin-top: 18px;">결정 매트릭스 — Setup × Trigger → Decision</h4>
+    <table class="state-table decision-matrix">
+      <thead><tr><th>Setup \ Trigger</th><th>WAIT</th><th>EARLY_TRIGGER</th><th>CONFIRMED_TRIGGER</th></tr></thead>
+      <tbody>
+        <tr><td><strong>TREND_OK</strong></td><td>⚪ STAGING</td><td colspan="2" class="dim">— (Trigger 평가 안 함)</td></tr>
+        <tr><td><strong>PULLBACK</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
+        <tr><td><strong>BASE_FORMING</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
+        <tr><td><strong>EXTENDED</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
+        <tr><td><strong>BROKEN</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
+      </tbody>
+    </table>
+    <p class="glossary-note" style="margin-top: 8px;">
+      추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup·Trigger 무관하게 🔴 AVOID 강제.
+    </p>
+  </div>
+</details>
 
 <!-- Section [1]: MARKET STATE — Phase B placeholder -->
 <div class="placeholder">
@@ -179,7 +312,7 @@
       <td>1.24</td>
       <td>4.96</td>
       <td>0</td>
-      <td>2</td>
+      <td>3</td>
       <td>OVERHEAT, EXTENDED</td>
     </tr>
   
@@ -195,7 +328,7 @@
       <td>1.53</td>
       <td>5.40</td>
       <td>0</td>
-      <td>2</td>
+      <td>3</td>
       <td>OVERHEAT, EXTENDED</td>
     </tr>
   
@@ -211,7 +344,7 @@
       <td>1.51</td>
       <td>5.26</td>
       <td>0</td>
-      <td>2</td>
+      <td>3</td>
       <td>OVERHEAT, EXTENDED</td>
     </tr>
   
