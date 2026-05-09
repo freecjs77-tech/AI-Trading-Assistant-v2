@@ -1031,6 +1031,15 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         except Exception as e:
             print(f"  WARN portfolio risk telegram failed: {e} (pipeline continues)")
 
+        try:
+            from telegram_sender import send_lifecycle_brief
+            _base = os.environ.get("REPORT_BASE_URL",
+                                  "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/")
+            send_lifecycle_brief(lifecycle_us_result, lifecycle_kr_result,
+                                  base_url=_base, date_str=today)
+        except Exception as e:
+            print(f"  WARN lifecycle telegram brief failed: {e}")
+
         # Step 6: History update (비거래일 스킵)
         if is_trading_day:
             print("[Step 6] Updating history...")
