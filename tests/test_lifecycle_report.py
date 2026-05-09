@@ -21,7 +21,7 @@ def _result(market: str, snapshots: dict, transitions=None):
 def test_build_page_context_groups_by_decision():
     snaps = {
         "NVDA": {"date": "2026-05-08", "setup": "PULLBACK", "trigger": "CONFIRMED_TRIGGER",
-                  "decision": "ENTER_OK",
+                  "decision": "ENTER",
                   "raw": {"close": 100, "ema9": 99, "ema21": 95, "ema65": 90,
                            "dist_ema9_pct": 1.0, "dist_ema21_pct": 5.0,
                            "volume_ratio": 1.5, "atr_pct": 2.0,
@@ -34,7 +34,7 @@ def test_build_page_context_groups_by_decision():
                            "sector": "Energy", "risk_tags": []}},
     }
     ctx = build_page_context(_result("US", snaps))
-    assert {r["ticker"] for r in ctx["enter_ok"]} == {"NVDA"}
+    assert {r["ticker"] for r in ctx["enter"]} == {"NVDA"}
     # BROKEN/AVOID gets routed to broken_table per spec §10.1 [6].
     assert {r["ticker"] for r in ctx["broken_table"]} == {"BAD"}
     assert ctx["new_confirmed"][0]["ticker"] == "NVDA"  # trigger_age 0
@@ -44,13 +44,13 @@ def test_build_page_context_sorts_enter_ok_by_trigger_age_then_volume():
     # Two ENTER_OK tickers — newer trigger appears first.
     snaps = {
         "OLD": {"date": "2026-05-08", "setup": "PULLBACK", "trigger": "CONFIRMED_TRIGGER",
-                 "decision": "ENTER_OK",
+                 "decision": "ENTER",
                  "raw": {"close": 100, "ema9": 99, "ema21": 95, "ema65": 90,
                           "dist_ema9_pct": 1.0, "dist_ema21_pct": 5.0,
                           "volume_ratio": 1.3, "atr_pct": 2.0,
                           "sector": "Tech", "risk_tags": []}},
         "NEW": {"date": "2026-05-08", "setup": "PULLBACK", "trigger": "CONFIRMED_TRIGGER",
-                 "decision": "ENTER_OK",
+                 "decision": "ENTER",
                  "raw": {"close": 100, "ema9": 99, "ema21": 95, "ema65": 90,
                           "dist_ema9_pct": 1.0, "dist_ema21_pct": 5.0,
                           "volume_ratio": 2.0, "atr_pct": 2.0,
@@ -61,25 +61,25 @@ def test_build_page_context_sorts_enter_ok_by_trigger_age_then_volume():
         "OLD": {"first_seen": "2026-05-06", "last_seen": "2026-05-08",
                  "snapshots": [
                     {"date": "2026-05-06", "setup": "PULLBACK", "trigger": "CONFIRMED_TRIGGER",
-                      "decision": "ENTER_OK", "raw": {}},
+                      "decision": "ENTER", "raw": {}},
                     {"date": "2026-05-07", "setup": "PULLBACK", "trigger": "WAIT",
-                      "decision": "EARLY", "raw": {}},
+                      "decision": "WATCH", "raw": {}},
                     {"date": "2026-05-08", "setup": "PULLBACK", "trigger": "CONFIRMED_TRIGGER",
-                      "decision": "ENTER_OK", "raw": {}},
+                      "decision": "ENTER", "raw": {}},
                  ]},
         "NEW": {"first_seen": "2026-05-08", "last_seen": "2026-05-08",
                  "snapshots": [
                     {"date": "2026-05-08", "setup": "PULLBACK", "trigger": "CONFIRMED_TRIGGER",
-                      "decision": "ENTER_OK", "raw": {}},
+                      "decision": "ENTER", "raw": {}},
                  ]},
     }}
     ctx = build_page_context(_result("US", snaps), lifecycle_state=lifecycle_state)
-    assert [r["ticker"] for r in ctx["enter_ok"]] == ["NEW", "OLD"]
+    assert [r["ticker"] for r in ctx["enter"]] == ["NEW", "OLD"]
 
 
 def test_generate_lifecycle_pages_writes_html(tmp_path: Path):
     snaps = {"NVDA": {"date": "2026-05-08", "setup": "TREND_OK", "trigger": "WAIT",
-                       "decision": "STAGING",
+                       "decision": "TRENDING",
                        "raw": {"close": 100, "ema9": 99, "ema21": 95, "ema65": 90,
                                 "dist_ema9_pct": 1.0, "dist_ema21_pct": 5.0,
                                 "volume_ratio": 1.0, "atr_pct": 2.0,
@@ -91,7 +91,7 @@ def test_generate_lifecycle_pages_writes_html(tmp_path: Path):
     assert os.path.exists(paths["us"])
     html = Path(paths["us"]).read_text(encoding="utf-8")
     assert "NVDA" in html
-    assert "STAGING" in html
+    assert "눌림 대기" in html
 
 
 def test_generate_lifecycle_pages_skips_when_result_none(tmp_path: Path):

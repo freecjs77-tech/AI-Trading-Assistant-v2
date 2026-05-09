@@ -372,7 +372,7 @@ def _summarize_lifecycle(result: dict | None) -> dict:
     nc, ok, early, fb = [], 0, 0, 0
     state = result.get("state") or {}
     for tk, s in snaps.items():
-        if s["decision"] == "ENTER_OK":
+        if s["decision"] == "ENTER":
             ok += 1
             # New confirmed = trigger_age == 0. Cheaply derive from yesterday absence.
             y = ((state.get("tickers") or {}).get(tk) or {}).get("snapshots", [])
@@ -380,7 +380,7 @@ def _summarize_lifecycle(result: dict | None) -> dict:
                                          for x in y[:-1])
             if not had_prior_confirmed and s["trigger"] == "CONFIRMED_TRIGGER":
                 nc.append(tk)
-        elif s["decision"] == "EARLY":
+        elif s["decision"] == "PROBE":
             early += 1
         if "FAILED_BREAKOUT" in (s.get("raw") or {}).get("risk_tags", []):
             fb += 1
@@ -396,11 +396,11 @@ def _format_lifecycle_section(result: dict | None, flag: str, market: str,
     if summary["new_confirmed"]:
         nc = " / ".join(summary["new_confirmed"][:5])
         more = "" if len(summary["new_confirmed"]) <= 5 else f" (+{len(summary['new_confirmed']) - 5})"
-        lines.append(f"\U0001f195 New CONFIRMED ({len(summary['new_confirmed'])}): {nc}{more}")
+        lines.append(f"\U0001f195 New 본 진입 ({len(summary['new_confirmed'])}): {nc}{more}")
     if summary["enter_ok"]:
-        lines.append(f"\U0001f7e2 ENTER_OK total: {summary['enter_ok']}")
+        lines.append(f"\U0001f7e2 본 진입 total: {summary['enter_ok']}")
     if summary["early"]:
-        lines.append(f"\U0001f7e1 EARLY: {summary['early']}")
+        lines.append(f"\U0001f7e1 분할 진입: {summary['early']}")
     if summary["failed_breakout"]:
         lines.append(f"\U0001f534 FAILED_BREAKOUT: {summary['failed_breakout']}")
     base = base_url.rstrip("/") + "/" if base_url else ""

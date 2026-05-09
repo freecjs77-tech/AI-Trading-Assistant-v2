@@ -4,7 +4,14 @@
 State machines:
   setup_state    ∈ {TREND_OK, PULLBACK, BASE_FORMING, EXTENDED, BROKEN}
   trigger_state  ∈ {WAIT, EARLY_TRIGGER, CONFIRMED_TRIGGER}
-  entry_decision ∈ {ENTER_OK, EARLY, STAGING, AVOID}
+  entry_decision ∈ {ENTER, PROBE, WATCH, TRENDING, AVOID}
+
+  Decision semantics (Korean display via DECISION_LABELS):
+    ENTER    = 본 진입       (CONFIRMED_TRIGGER on PULLBACK/BASE_FORMING)
+    PROBE    = 분할 진입     (EARLY_TRIGGER on PULLBACK/BASE_FORMING)
+    WATCH    = 진입 대기     (good setup PULLBACK/BASE_FORMING but no trigger yet)
+    TRENDING = 눌림 대기     (TREND_OK — already in trend, wait for next pullback)
+    AVOID    = 매수 금지     (EXTENDED, BROKEN, or FAILED_BREAKOUT — real risk)
 
 setup_state evaluation order is strict (first match wins):
   1. BROKEN  2. EXTENDED  3. BASE_FORMING  4. PULLBACK  5. TREND_OK
@@ -164,6 +171,26 @@ def evaluate_trigger_state(today: dict, yesterday: dict, setup_state: str) -> st
     return "WAIT"
 
 
+# ── Decision display labels (Korean) ──────────────────────────────
+# Internal keys are stable English (used by CSS classes, tests, history).
+# Templates and Telegram render via this mapping for action-clear UX.
+DECISION_LABELS = {
+    "ENTER":    "본 진입",
+    "PROBE":    "분할 진입",
+    "WATCH":    "진입 대기",
+    "TRENDING": "눌림 대기",
+    "AVOID":    "매수 금지",
+}
+
+DECISION_TOOLTIPS = {
+    "ENTER":    "본 진입: 확정 트리거 (vol 확장 + 종가 일중 상위 20%) — 풀 포지션 가능",
+    "PROBE":    "분할 진입: 초기 트리거 (EMA9 reclaim 또는 prior-high break) — 50% 부분 진입 가능",
+    "WATCH":    "진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰",
+    "TRENDING": "눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제",
+    "AVOID":    "매수 금지: EXTENDED 과열 / BROKEN 추세 깨짐 / FAILED_BREAKOUT 가짜 돌파 — 진입 시 손실 위험 큼",
+}
+
+
 def evaluate_decision(
     setup_state: str,
     trigger_state: str,
@@ -171,6 +198,10 @@ def evaluate_decision(
     risk_tags: Optional[list[str]] = None,
     regime: Optional[str] = None,  # Phase B hook — unused in A.
 ) -> str:
+    """Decision keys: ENTER, PROBE, WATCH, TRENDING, AVOID.
+
+    See module docstring + DECISION_LABELS for Korean display strings.
+    """
     risk_tags = risk_tags or []
     if "FAILED_BREAKOUT" in risk_tags:
         return "AVOID"
@@ -178,12 +209,13 @@ def evaluate_decision(
         return "AVOID"
     if setup_state in ("PULLBACK", "BASE_FORMING"):
         if trigger_state == "CONFIRMED_TRIGGER":
-            return "ENTER_OK"
+            return "ENTER"
         if trigger_state == "EARLY_TRIGGER":
-            return "EARLY"
+            return "PROBE"
+        return "WATCH"  # good setup zone, trigger not yet fired
     if setup_state == "TREND_OK":
-        return "STAGING"
-    return "AVOID"
+        return "TRENDING"
+    return "AVOID"  # unknown setup — safe default
 
 
 def compute_risk_tags(today: dict, yesterday_snapshot: Optional[dict]) -> list[str]:

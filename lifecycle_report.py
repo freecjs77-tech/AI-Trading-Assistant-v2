@@ -12,6 +12,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from lifecycle_config import LIFECYCLE_VERSION
 from lifecycle_history import derive_fields
+from lifecycle_signal import DECISION_LABELS, DECISION_TOOLTIPS
 
 
 def _lookup_ticker_name(ticker: str, market: str) -> str:
@@ -54,7 +55,7 @@ def _attach_derived(snap: dict, ticker: str,
 def build_page_context(result: dict,
                          lifecycle_state: Optional[dict] = None) -> dict:
     market = result.get("market", "US")
-    enter_ok, early, staging, avoid, broken_table = [], [], [], [], []
+    enter, probe, watch, trending, avoid, broken_table = [], [], [], [], [], []
     new_confirmed = []
     for ticker, snap in (result.get("snapshots") or {}).items():
         row = _attach_derived(snap, ticker, lifecycle_state)
@@ -66,33 +67,39 @@ def build_page_context(result: dict,
         if s == "BROKEN":
             broken_table.append(row)
             continue
-        if d == "ENTER_OK":
-            enter_ok.append(row)
+        if d == "ENTER":
+            enter.append(row)
             if (row["trigger_age_days"] == 0) and snap["trigger"] == "CONFIRMED_TRIGGER":
                 new_confirmed.append(row)
-        elif d == "EARLY":
-            early.append(row)
-        elif d == "STAGING":
-            staging.append(row)
+        elif d == "PROBE":
+            probe.append(row)
+        elif d == "WATCH":
+            watch.append(row)
+        elif d == "TRENDING":
+            trending.append(row)
         else:
             avoid.append(row)
 
-    enter_ok.sort(key=lambda r: ((r["trigger_age_days"] if r["trigger_age_days"] is not None else 999),
-                                   -(r["raw"].get("volume_ratio") or 0)))
-    early.sort(key=lambda r: -(r["raw"].get("volume_ratio") or 0))
-    staging.sort(key=lambda r: -(r["setup_streak"] or 0))
+    enter.sort(key=lambda r: ((r["trigger_age_days"] if r["trigger_age_days"] is not None else 999),
+                               -(r["raw"].get("volume_ratio") or 0)))
+    probe.sort(key=lambda r: -(r["raw"].get("volume_ratio") or 0))
+    watch.sort(key=lambda r: -(r["setup_streak"] or 0))
+    trending.sort(key=lambda r: -(r["setup_streak"] or 0))
 
     return {
         "market":       result.get("market", "US"),
         "as_of":        result.get("as_of"),
         "version":      LIFECYCLE_VERSION,
         "new_confirmed": new_confirmed,
-        "enter_ok":     enter_ok,
-        "early":        early,
-        "staging":      staging,
+        "enter":        enter,
+        "probe":        probe,
+        "watch":        watch,
+        "trending":     trending,
         "avoid":        avoid,
         "broken_table": broken_table,
         "transitions":  (result.get("transitions") or [])[-50:],
+        "DECISION_LABELS":   DECISION_LABELS,
+        "DECISION_TOOLTIPS": DECISION_TOOLTIPS,
     }
 
 

@@ -206,11 +206,13 @@ from lifecycle_signal import evaluate_decision
 
 
 @pytest.mark.parametrize("setup,trigger,expected", [
-    ("PULLBACK",     "CONFIRMED_TRIGGER", "ENTER_OK"),
-    ("BASE_FORMING", "CONFIRMED_TRIGGER", "ENTER_OK"),
-    ("PULLBACK",     "EARLY_TRIGGER",     "EARLY"),
-    ("BASE_FORMING", "EARLY_TRIGGER",     "EARLY"),
-    ("TREND_OK",     "WAIT",              "STAGING"),
+    ("PULLBACK",     "CONFIRMED_TRIGGER", "ENTER"),
+    ("BASE_FORMING", "CONFIRMED_TRIGGER", "ENTER"),
+    ("PULLBACK",     "EARLY_TRIGGER",     "PROBE"),
+    ("BASE_FORMING", "EARLY_TRIGGER",     "PROBE"),
+    ("PULLBACK",     "WAIT",              "WATCH"),
+    ("BASE_FORMING", "WAIT",              "WATCH"),
+    ("TREND_OK",     "WAIT",              "TRENDING"),
     ("EXTENDED",     "WAIT",              "AVOID"),
     ("BROKEN",       "WAIT",              "AVOID"),
 ])
@@ -225,7 +227,7 @@ def test_decision_failed_breakout_forces_avoid():
 
 def test_decision_regime_none_is_default_phase_b_hook():
     # In Phase A regime=None should be a no-op. The function must accept it.
-    assert evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", regime=None) == "ENTER_OK"
+    assert evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", regime=None) == "ENTER"
 
 
 from lifecycle_signal import compute_risk_tags
@@ -296,7 +298,7 @@ def test_process_universe_returns_per_ticker_evaluation():
     snap = result["snapshots"]["NVDA"]
     assert snap["setup"] == "TREND_OK"
     assert snap["trigger"] == "WAIT"
-    assert snap["decision"] == "STAGING"
+    assert snap["decision"] == "TRENDING"
     assert "raw" in snap and "close" in snap["raw"]
 
 
@@ -317,7 +319,7 @@ def test_process_universe_uses_yesterday_for_failed_breakout():
         "snapshots": [{"date": "2026-05-07",
                         "setup": "PULLBACK",
                         "trigger": "CONFIRMED_TRIGGER",
-                        "decision": "ENTER_OK",
+                        "decision": "ENTER",
                         "raw": {"low": 98.0, "risk_tags": []}}],
     }}}
     result = process_universe(active_set={"NVDA"}, market_data=md,

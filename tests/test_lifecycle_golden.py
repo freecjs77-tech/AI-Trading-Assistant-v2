@@ -66,7 +66,7 @@ def test_golden_clean_entry():
     assert trig_d3 == "EARLY_TRIGGER"  # day-2 close 97.5 ≤ ema9 99, day-3 close 99.6 > 99
     trig_d4 = evaluate_trigger_state(days[3], days[2], setups[3])
     assert trig_d4 == "CONFIRMED_TRIGGER"  # vol 1.5x + close in upper 20% (101.5 vs high 101.8/low 100)
-    assert evaluate_decision(setups[3], trig_d4) == "ENTER_OK"
+    assert evaluate_decision(setups[3], trig_d4) == "ENTER"
 
 
 # ── Scenario 3: failed_breakout ───────────────────────────────────────
