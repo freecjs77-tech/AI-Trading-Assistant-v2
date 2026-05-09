@@ -192,32 +192,21 @@ def classify_stage(stock_data: dict) -> str | None:
     return stage
 
 
-def compute_risk_tags(stock_data: dict, stage: str) -> list[str]:
+def compute_risk_tags(stock_data: dict, stage: str | None = None) -> list[str]:
     """
-    종목 risk tag 계산 (출력 전용 — 단계 영향 없음).
+    Risk tag — v1.5 정리: OVERHEAT, PARABOLIC만 emit.
 
-    🔴 OVERHEAT:  RSI ≥ 80
-    🟠 PARABOLIC: change_pct ≥ +8%
-    🟡 EXTENDED:  (close - ma20) / ma20 ≥ 0.10
-    ⚪ EARLY:     stage == M1 AND 60 ≤ RSI < 65
+    EXTENDED / EARLY는 Maturity 차원으로 이동 (compute_risk_tags 미발행).
+    `stage` 인자는 backwards-compat 시그니처 — 새 로직에서는 미사용.
     """
     tags: list[str] = []
     rsi = _safe_float(stock_data.get("rsi14"))
     chg = _safe_float(stock_data.get("change_pct"))
-    close = _safe_float(stock_data.get("close"))
-    ma20 = _safe_float(stock_data.get("ma20"))
 
     if rsi is not None and rsi >= cfg.RISK_OVERHEAT_RSI:
         tags.append("OVERHEAT")
     if chg is not None and chg >= cfg.RISK_PARABOLIC_PCT:
         tags.append("PARABOLIC")
-    if close is not None and ma20 is not None and ma20 > 0:
-        ext = (close - ma20) / ma20 * 100
-        if ext >= cfg.RISK_EXTENDED_MA20_PCT:
-            tags.append("EXTENDED")
-    if (stage == "MOMENTUM_1" and rsi is not None
-            and cfg.RISK_EARLY_RSI_MIN <= rsi < cfg.RISK_EARLY_RSI_MAX):
-        tags.append("EARLY")
     return tags
 
 
@@ -313,31 +302,50 @@ def classify_tier(stock_data: dict) -> str | None:
     return None
 
 
-def position_hint(risk_tags: list[str]) -> str:
+def position_hint(maturity: str | None = None,
+                  risk_tags: list[str] | None = None) -> str:
     """
-    Risk tag → 포지션 힌트 (한글).
-    Priority: OVERHEAT > PARABOLIC > EXTENDED > EARLY > (none → "적극")
+    Position hint — Maturity (위치) + Risk Tag (위험) 2-axis 결합.
+
+    Priority:
+      OVERHEAT > PARABOLIC > Maturity=EXTENDED > Maturity=EARLY > 적극(MID/없음)
     """
-    for tag in cfg.RISK_PRIORITY:
-        if tag in risk_tags:
-            return cfg.POSITION_HINT[tag]
+    risk_tags = risk_tags or []
+    if "OVERHEAT" in risk_tags:
+        return cfg.POSITION_HINT["OVERHEAT"]
+    if "PARABOLIC" in risk_tags:
+        return cfg.POSITION_HINT["PARABOLIC"]
+    if maturity == "EXTENDED":
+        return cfg.POSITION_HINT["MAT_EXTENDED"]
+    if maturity == "EARLY":
+        return cfg.POSITION_HINT["MAT_EARLY"]
     return cfg.POSITION_HINT[None]
 
 
-def evaluate_stock(stock_data: dict, sector_5d_return: float | None = None) -> dict | None:
+def filter_legacy_tags(risk_tags: list[str]) -> list[str]:
+    """Remove legacy EARLY/EXTENDED risk tags (now Maturity dimension)."""
+    if not risk_tags:
+        return []
+    return [t for t in risk_tags if t not in cfg.LEGACY_RISK_TAGS]
+
+
+def evaluate_stock(stock_data: dict, sector_5d_return: float | None = None,
+                   sector_top_rank: int | None = None) -> dict | None:
     """
-    한 종목 종합 평가 — pre-filter는 caller가 사전 적용.
+    Evaluate stock — Tier(M+/EM) + Maturity + Risk Tags.
 
     Returns:
-        None — M1 미달 (시그널 없음)
-        dict — {ticker, stage, risk_tags, hint, rs_vs_sector, ...}
+      None — no signal (no tier qualifies)
+      dict — {ticker, stage(=tier), maturity, risk_tags, hint, rs_vs_sector,
+              sector, sector_top_rank, price, rsi, ret_*, dist_ema9_pct}
     """
-    stage = classify_stage(stock_data)
-    if stage is None:
+    tier = classify_tier(stock_data)
+    if tier is None:
         return None
 
-    risk_tags = compute_risk_tags(stock_data, stage)
-    hint = position_hint(risk_tags)
+    risk_tags = compute_risk_tags(stock_data, tier)
+    maturity = classify_maturity(stock_data)
+    hint = position_hint(maturity=maturity, risk_tags=risk_tags)
 
     rs_vs_sector = None
     stock_5d = _safe_float(stock_data.get("ret_5d_pct"))
@@ -346,14 +354,19 @@ def evaluate_stock(stock_data: dict, sector_5d_return: float | None = None) -> d
 
     return {
         "ticker": stock_data.get("ticker"),
-        "stage": stage,
+        "stage": tier,                   # backwards-compat: history reads "stage"
+        "tier": tier,
+        "maturity": maturity,
         "risk_tags": risk_tags,
         "hint": hint,
         "rs_vs_sector": rs_vs_sector,
         "sector": stock_data.get("sector"),
+        "sector_top_rank": sector_top_rank,
         "price": _safe_float(stock_data.get("close")),
         "rsi": _safe_float(stock_data.get("rsi14")),
         "ret_1d_pct": _safe_float(stock_data.get("change_pct")),
         "ret_3d_pct": _safe_float(stock_data.get("ret_3d_pct")),
         "ret_5d_pct": stock_5d,
+        "ret_20d_pct": _safe_float(stock_data.get("ret_20d_pct")),
+        "dist_ema9_pct": _safe_float(stock_data.get("dist_ema9_pct")),
     }

@@ -170,21 +170,21 @@ def test_risk_tags_parabolic():
 
 
 def test_risk_tags_extended():
-    """close가 MA20 대비 +12% → EXTENDED."""
+    """v1.5: EXTENDED is no longer a risk tag (Maturity dimension). Not emitted."""
     s = _stock(close=112, ma20=100)
     tags = ms.compute_risk_tags(s, stage="MOMENTUM_2")
-    assert "EXTENDED" in tags
+    assert "EXTENDED" not in tags
 
 
 def test_risk_tags_early():
-    """M1 + 60 ≤ RSI < 65 → EARLY."""
+    """v1.5: EARLY is no longer a risk tag (Maturity dimension). Not emitted."""
     s = _stock(rsi=62)
     tags = ms.compute_risk_tags(s, stage="MOMENTUM_1")
-    assert "EARLY" in tags
+    assert "EARLY" not in tags
 
 
 def test_risk_tags_early_only_for_m1():
-    """M2 / M3는 EARLY 부여 안 됨."""
+    """v1.5: EARLY never emitted regardless of stage."""
     s = _stock(rsi=62)
     assert "EARLY" not in ms.compute_risk_tags(s, stage="MOMENTUM_2")
 
@@ -198,11 +198,15 @@ def test_risk_tags_multiple():
 
 
 def test_position_hint_priority():
-    """OVERHEAT > PARABOLIC > EXTENDED > EARLY."""
-    assert ms.position_hint(["EXTENDED", "PARABOLIC"]) == "눌림"
-    assert ms.position_hint(["EXTENDED", "EARLY", "OVERHEAT"]) == "신중"
-    assert ms.position_hint([]) == "적극"
-    assert ms.position_hint(["EARLY"]) == "조기"
+    """OVERHEAT > PARABOLIC > MAT_EXTENDED > MAT_EARLY > 적극 (2-axis v1.5 signature)."""
+    # PARABOLIC wins over EXTENDED maturity
+    assert ms.position_hint(maturity="EXTENDED", risk_tags=["PARABOLIC"]) == "눌림"
+    # OVERHEAT wins over PARABOLIC and EXTENDED maturity
+    assert ms.position_hint(maturity="EXTENDED", risk_tags=["PARABOLIC", "OVERHEAT"]) == "신중"
+    # No risk tags, no maturity → 적극
+    assert ms.position_hint(maturity=None, risk_tags=[]) == "적극"
+    # EARLY maturity only → 관찰
+    assert ms.position_hint(maturity="EARLY", risk_tags=[]) == "관찰"
 
 
 def test_evaluate_stock_returns_full_dict():
@@ -401,6 +405,62 @@ def test_classify_tier_returns_none_when_neither_qualifies():
     s = {"ticker": "X", "ret_3d_pct": 2.0, "rsi14": 50.0,
          "close": 100.0, "ma20": 105.0}
     assert ms.classify_tier(s) is None
+
+
+def test_compute_risk_tags_only_overheat_and_parabolic():
+    s = {"ticker": "T", "rsi14": 82.0, "change_pct": 9.0,
+         "close": 120.0, "ma20": 100.0,
+         "dist_ema9_pct": 12.0}  # would have been EXTENDED in v1.0
+    tags = ms.compute_risk_tags(s, "MOMENTUM_1")
+    assert "OVERHEAT" in tags
+    assert "PARABOLIC" in tags
+    assert "EXTENDED" not in tags  # removed in v1.5
+    assert "EARLY" not in tags     # removed in v1.5
+
+
+def test_compute_risk_tags_no_legacy_early_emitted():
+    s = {"ticker": "T", "rsi14": 62.0, "change_pct": 1.0,
+         "close": 100.0, "ma20": 99.0}
+    tags = ms.compute_risk_tags(s, "MOMENTUM_1")
+    assert "EARLY" not in tags  # legacy tag never emitted
+
+
+def test_position_hint_overheat_priority():
+    assert ms.position_hint(maturity="EARLY",
+                             risk_tags=["OVERHEAT"]) == "신중"
+
+
+def test_position_hint_parabolic_after_overheat():
+    assert ms.position_hint(maturity="MID",
+                             risk_tags=["PARABOLIC"]) == "눌림"
+
+
+def test_position_hint_maturity_extended_when_no_risk():
+    assert ms.position_hint(maturity="EXTENDED",
+                             risk_tags=[]) == "분할"
+
+
+def test_position_hint_maturity_early_when_no_risk():
+    assert ms.position_hint(maturity="EARLY",
+                             risk_tags=[]) == "관찰"
+
+
+def test_position_hint_active_when_mid_no_risk():
+    assert ms.position_hint(maturity="MID",
+                             risk_tags=[]) == "적극"
+
+
+def test_position_hint_none_maturity_no_risk():
+    assert ms.position_hint(maturity=None,
+                             risk_tags=[]) == "적극"
+
+
+def test_filter_legacy_tags_removes_early_extended():
+    assert ms.filter_legacy_tags(["EARLY", "OVERHEAT", "EXTENDED"]) == ["OVERHEAT"]
+
+
+def test_filter_legacy_tags_passes_through_modern():
+    assert ms.filter_legacy_tags(["OVERHEAT", "PARABOLIC"]) == ["OVERHEAT", "PARABOLIC"]
 
 
 if __name__ == "__main__":
