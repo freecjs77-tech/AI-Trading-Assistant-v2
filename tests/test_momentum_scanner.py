@@ -71,3 +71,26 @@ def test_scan_momentum_kr_uses_kr_universe():
         assert result["market"] == "KR"
     finally:
         teardown(tmp)
+
+
+def test_fetch_indicators_includes_ema_fields(monkeypatch):
+    """_fetch_indicators output dict has all EMA fields."""
+    import pandas as pd
+    import momentum_scanner as msc
+    import momentum_data as md
+
+    n = 90
+    closes = pd.DataFrame({"AAA": [100 + i * 0.5 for i in range(n)]})
+    volumes = pd.DataFrame({"AAA": [1_000_000] * n})
+
+    def _fake_bulk(tickers, period="90d"):
+        return closes, volumes
+    monkeypatch.setattr(md, "fetch_yf_bulk", _fake_bulk)
+
+    result = msc._fetch_indicators(["AAA"])
+    assert "AAA" in result
+    for key in ("ema9", "ema21", "ema65",
+                "dist_ema9_pct", "dist_ema21_pct",
+                "ema21_slope_3d_pct", "ema65_slope_5d_pct"):
+        assert key in result["AAA"], f"missing {key}"
+        assert result["AAA"][key] is not None  # 90 day series has all

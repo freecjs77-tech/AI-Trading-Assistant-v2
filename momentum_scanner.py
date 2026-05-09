@@ -127,6 +127,7 @@ def _fetch_indicators(tickers: list[str]) -> dict[str, dict]:
         high_20d = float(s.tail(20).max())
         high_52w_window = s.tail(252) if len(s) >= 252 else s
         high_52w = float(high_52w_window.max())
+        ema_fields = md.compute_ema_fields(s)
 
         out[t] = {
             "ticker": t,
@@ -138,6 +139,13 @@ def _fetch_indicators(tickers: list[str]) -> dict[str, dict]:
             "ret_3d_pct": round((last / prev3 - 1) * 100, 2) if prev3 else None,
             "ret_5d_pct": round((last / prev5 - 1) * 100, 2) if prev5 else None,
             "ret_20d_pct": round((last / prev20 - 1) * 100, 2) if prev20 else None,
+            "ema9": ema_fields["ema9"],
+            "ema21": ema_fields["ema21"],
+            "ema65": ema_fields["ema65"],
+            "dist_ema9_pct": ema_fields["dist_ema9_pct"],
+            "dist_ema21_pct": ema_fields["dist_ema21_pct"],
+            "ema21_slope_3d_pct": ema_fields["ema21_slope_3d_pct"],
+            "ema65_slope_5d_pct": ema_fields["ema65_slope_5d_pct"],
         }
     return out
 
