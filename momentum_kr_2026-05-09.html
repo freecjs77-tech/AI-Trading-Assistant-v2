@@ -28,20 +28,27 @@
   .alert { background: #3d2020; border-left: 3px solid #ff4444; padding: 8px 12px; margin: 1em 0; color: #ffb3b3; }
   .pos { color: #4caf50; font-weight: bold; }
   .neg { color: #ff6b6b; font-weight: bold; }
-  .M3 { color: #ff5722; font-weight: bold; }
-  .M2 { color: #ffa500; font-weight: bold; }
-  .M1 { color: #ffeb3b; }
+  .tier-MOMENTUM_3, .M3 { color: #ff5722; font-weight: bold; }
+  .tier-MOMENTUM_2, .M2 { color: #ffa500; font-weight: bold; }
+  .tier-MOMENTUM_1, .M1 { color: #ffeb3b; }
+  .tier-em { background: #2a3540; color: #cbd5e1; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+  .maturity-early    { color: #22c55e; font-weight: bold; }
+  .maturity-mid      { color: #eab308; }
+  .maturity-extended { color: #ef4444; font-weight: bold; }
   .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 12px; margin: 0 2px 2px 0; }
   .badge-OVERHEAT { background: #d32f2f; color: #fff; }
   .badge-PARABOLIC { background: #ff9800; color: #fff; }
-  .badge-EXTENDED { background: #ffc107; color: #222; }
-  .badge-EARLY { background: #9e9e9e; color: #fff; }
   .empty-state { text-align: center; padding: 2em 0; color: #888; }
   .empty-state-icon { font-size: 48px; margin-bottom: 0.5em; }
   .footer { margin-top: 2em; padding-top: 1em; border-top: 1px dashed #444; font-size: 12px; color: #888; }
   .sector-leader { background: #242424; border-left: 4px solid #ffa500; padding: 0.8em; margin: 0.5em 0; }
   .sr-ticker { color: #4db8ff; font-weight: bold; font-size: 13px; }
   .sr-score { color: #ffb84d; }
+  .rotation-radar { background: #1f2a35; border-left: 3px solid #4db8ff; padding: 0.8em 1em; margin: 0.8em 0; }
+  .rotation-radar h4 { color: #99d9ff; font-size: 13px; margin-bottom: 0.4em; }
+  .rotation-radar .row { color: #cfe8ff; font-size: 13px; margin: 2px 0; }
+  .rotation-radar .row.strong { color: #ffeb3b; font-weight: bold; }
+  .star-top { color: #ffd54f; }
   @media (max-width: 768px) {
     body { padding: 1em; }
     table { font-size: 12px; }
@@ -52,21 +59,29 @@
 <body>
 <div class="container">
 
-<nav><a href="index.html">📊 Portfolio</a> | 🔥 Momentum Scanner</nav>
+<nav><a href="index.html">&#128202; Portfolio</a> | &#128293; Momentum Scanner</nav>
 
-<h1>🔥 🇰🇷 KR Momentum — 2026-05-09</h1>
-<p style="color: #aaa;">Scanned: 101 tickers · ⏱ 8.9s · Momentum v1.0</p>
+<h1>&#128293; 🇰🇷 KR Momentum &#8212; 2026-05-09</h1>
+<p style="color: #aaa;">Scanned: 101 tickers · &#9201; 9.4s · Momentum v1.5</p>
 
 
 
-<p style="margin: 1em 0; color: #ccc;">Signals detected: <span class="M3">M3=3</span> | <span class="M2">M2=10</span> | <span class="M1">M1=1</span></p>
+
+
+<p style="margin: 1em 0; color: #ccc;">
+  Leaders: <span class="M3">M3=3</span> /
+  <span class="M2">M2=10</span> /
+  <span class="M1">M1=1</span>
+  &nbsp;&#183;&nbsp; Emerging: <span class="tier-em">8</span>
+</p>
 
 <h2>Sector Leaders</h2>
 
-<p style="color: #666;">— No sector qualifies for momentum today.</p>
+<p style="color: #666;">&#8212; No sector qualifies for momentum today.</p>
 
 
-<h2>Signals</h2>
+
+<h2>&#128293; Momentum Leaders (M1/M2/M3)</h2>
 
   
   <h3 class="M3">M3 (3)</h3>
@@ -75,12 +90,15 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Price</th>
-        <th>1d %</th>
-        <th>3d %</th>
-        <th>5d %</th>
-        <th>RSI</th>
+        <th>Tier</th>
+        <th>Maturity</th>
+        <th>Streak</th>
         <th>Sector</th>
+        <th>RSI</th>
+        <th>dist_ema9</th>
+        <th>1d %</th>
+        <th>5d %</th>
+        <th>20d %</th>
         <th>Sec_RS</th>
         <th>Risk Tags</th>
         <th>Hint</th>
@@ -89,41 +107,50 @@
     <tbody>
     
       <tr>
-        <td><a href="details/000660.KS.html" style="color: #4db8ff;" title="000660.KS">SK하이닉스</a><span style="color:#888;font-size:0.82em;margin-left:6px;">000660.KS</span></td>
-        <td>1686000.00</td>
-        <td class="pos">1.93%</td>
-        <td class="pos">16.52%</td>
-        <td class="pos">30.39%</td>
-        <td>92.8</td>
+        <td><a href="details/000660.KS.html" title="000660.KS">SK하이닉스</a><span style="color:#888;font-size:0.82em;margin-left:6px;">000660.KS</span></td>
+        <td><span class="tier-MOMENTUM_3">M3</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
         <td>Technology</td>
-        <td>—</td>
-        <td><span class="badge badge-OVERHEAT">OVERHEAT</span><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>92.8</td>
+        <td>+15.2%</td>
+        <td class="pos">1.93%</td>
+        <td class="pos">30.39%</td>
+        <td class="pos">63.21%</td>
+        <td>&#8212;</td>
+        <td><span class="badge badge-OVERHEAT">OVERHEAT</span></td>
         <td>신중</td>
       </tr>
     
       <tr>
-        <td><a href="details/028260.KS.html" style="color: #4db8ff;" title="028260.KS">삼성물산</a><span style="color:#888;font-size:0.82em;margin-left:6px;">028260.KS</span></td>
-        <td>422500.00</td>
-        <td class="pos">4.32%</td>
-        <td class="pos">32.03%</td>
-        <td class="pos">36.95%</td>
+        <td><a href="details/028260.KS.html" title="028260.KS">삼성물산</a><span style="color:#888;font-size:0.82em;margin-left:6px;">028260.KS</span></td>
+        <td><span class="tier-MOMENTUM_3">M3</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
+        <td>Industrials</td>
         <td>82.6</td>
-        <td>Industrials</td>
-        <td>—</td>
-        <td><span class="badge badge-OVERHEAT">OVERHEAT</span><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>+18.9%</td>
+        <td class="pos">4.32%</td>
+        <td class="pos">36.95%</td>
+        <td class="pos">36.73%</td>
+        <td>&#8212;</td>
+        <td><span class="badge badge-OVERHEAT">OVERHEAT</span></td>
         <td>신중</td>
       </tr>
     
       <tr>
-        <td><a href="details/034730.KS.html" style="color: #4db8ff;" title="034730.KS">SK</a><span style="color:#888;font-size:0.82em;margin-left:6px;">034730.KS</span></td>
-        <td>550000.00</td>
-        <td class="pos">1.29%</td>
-        <td class="pos">15.67%</td>
-        <td class="pos">29.41%</td>
-        <td>96.1</td>
+        <td><a href="details/034730.KS.html" title="034730.KS">SK</a><span style="color:#888;font-size:0.82em;margin-left:6px;">034730.KS</span></td>
+        <td><span class="tier-MOMENTUM_3">M3</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
         <td>Industrials</td>
-        <td>—</td>
-        <td><span class="badge badge-OVERHEAT">OVERHEAT</span><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>96.1</td>
+        <td>+15.2%</td>
+        <td class="pos">1.29%</td>
+        <td class="pos">29.41%</td>
+        <td class="pos">60.82%</td>
+        <td>&#8212;</td>
+        <td><span class="badge badge-OVERHEAT">OVERHEAT</span></td>
         <td>신중</td>
       </tr>
     
@@ -138,12 +165,15 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Price</th>
-        <th>1d %</th>
-        <th>3d %</th>
-        <th>5d %</th>
-        <th>RSI</th>
+        <th>Tier</th>
+        <th>Maturity</th>
+        <th>Streak</th>
         <th>Sector</th>
+        <th>RSI</th>
+        <th>dist_ema9</th>
+        <th>1d %</th>
+        <th>5d %</th>
+        <th>20d %</th>
         <th>Sec_RS</th>
         <th>Risk Tags</th>
         <th>Hint</th>
@@ -152,132 +182,162 @@
     <tbody>
     
       <tr>
-        <td><a href="details/003490.KS.html" style="color: #4db8ff;" title="003490.KS">대한항공</a><span style="color:#888;font-size:0.82em;margin-left:6px;">003490.KS</span></td>
-        <td>27050.00</td>
-        <td class="pos">2.66%</td>
-        <td class="pos">10.41%</td>
-        <td class="pos">7.77%</td>
-        <td>65.5</td>
+        <td><a href="details/003490.KS.html" title="003490.KS">대한항공</a><span style="color:#888;font-size:0.82em;margin-left:6px;">003490.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-mid">MID</span></td>
+        <td>8d</td>
         <td>Industrials</td>
-        <td>—</td>
+        <td>65.5</td>
+        <td>+6.4%</td>
+        <td class="pos">2.66%</td>
+        <td class="pos">7.77%</td>
+        <td class="pos">8.42%</td>
+        <td>&#8212;</td>
         <td></td>
         <td>적극</td>
       </tr>
     
       <tr>
-        <td><a href="details/004800.KS.html" style="color: #4db8ff;" title="004800.KS">효성</a><span style="color:#888;font-size:0.82em;margin-left:6px;">004800.KS</span></td>
-        <td>263000.00</td>
-        <td class="neg">-4.71%</td>
-        <td class="pos">19.00%</td>
-        <td class="pos">17.15%</td>
-        <td>83.4</td>
+        <td><a href="details/004800.KS.html" title="004800.KS">효성</a><span style="color:#888;font-size:0.82em;margin-left:6px;">004800.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
         <td>Basic Materials</td>
-        <td>—</td>
-        <td><span class="badge badge-OVERHEAT">OVERHEAT</span><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>83.4</td>
+        <td>+12.7%</td>
+        <td class="neg">-4.71%</td>
+        <td class="pos">17.15%</td>
+        <td class="pos">72.91%</td>
+        <td>&#8212;</td>
+        <td><span class="badge badge-OVERHEAT">OVERHEAT</span></td>
         <td>신중</td>
       </tr>
     
       <tr>
-        <td><a href="details/005380.KS.html" style="color: #4db8ff;" title="005380.KS">현대자동차</a><span style="color:#888;font-size:0.82em;margin-left:6px;">005380.KS</span></td>
-        <td>613000.00</td>
-        <td class="pos">7.17%</td>
-        <td class="pos">13.73%</td>
-        <td class="pos">10.25%</td>
+        <td><a href="details/005380.KS.html" title="005380.KS">현대자동차</a><span style="color:#888;font-size:0.82em;margin-left:6px;">005380.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
+        <td>Consumer Cyclical</td>
         <td>68.2</td>
-        <td>Consumer Cyclical</td>
-        <td>—</td>
-        <td><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>+9.8%</td>
+        <td class="pos">7.17%</td>
+        <td class="pos">10.25%</td>
+        <td class="pos">20.67%</td>
+        <td>&#8212;</td>
+        <td></td>
         <td>분할</td>
       </tr>
     
       <tr>
-        <td><a href="details/005930.KS.html" style="color: #4db8ff;" title="005930.KS">삼성전자</a><span style="color:#888;font-size:0.82em;margin-left:6px;">005930.KS</span></td>
-        <td>268500.00</td>
-        <td class="neg">-1.10%</td>
-        <td class="pos">15.48%</td>
-        <td class="pos">18.81%</td>
-        <td>77.7</td>
+        <td><a href="details/005930.KS.html" title="005930.KS">삼성전자</a><span style="color:#888;font-size:0.82em;margin-left:6px;">005930.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
         <td>Technology</td>
-        <td>—</td>
-        <td><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>77.7</td>
+        <td>+9.6%</td>
+        <td class="neg">-1.10%</td>
+        <td class="pos">18.81%</td>
+        <td class="pos">27.55%</td>
+        <td>&#8212;</td>
+        <td></td>
         <td>분할</td>
       </tr>
     
       <tr>
-        <td><a href="details/006800.KS.html" style="color: #4db8ff;" title="006800.KS">미래에셋증권</a><span style="color:#888;font-size:0.82em;margin-left:6px;">006800.KS</span></td>
-        <td>79600.00</td>
-        <td class="pos">0.76%</td>
-        <td class="pos">13.23%</td>
-        <td class="pos">17.58%</td>
+        <td><a href="details/006800.KS.html" title="006800.KS">미래에셋증권</a><span style="color:#888;font-size:0.82em;margin-left:6px;">006800.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-mid">MID</span></td>
+        <td>8d</td>
+        <td>Financial Services</td>
         <td>61.8</td>
-        <td>Financial Services</td>
-        <td>—</td>
-        <td><span class="badge badge-EXTENDED">EXTENDED</span></td>
-        <td>분할</td>
+        <td>+7.3%</td>
+        <td class="pos">0.76%</td>
+        <td class="pos">17.58%</td>
+        <td class="pos">17.58%</td>
+        <td>&#8212;</td>
+        <td></td>
+        <td>적극</td>
       </tr>
     
       <tr>
-        <td><a href="details/007070.KS.html" style="color: #4db8ff;" title="007070.KS">GS리테일</a><span style="color:#888;font-size:0.82em;margin-left:6px;">007070.KS</span></td>
-        <td>25800.00</td>
-        <td class="pos">9.55%</td>
-        <td class="pos">11.93%</td>
-        <td class="pos">9.55%</td>
-        <td>63.3</td>
+        <td><a href="details/007070.KS.html" title="007070.KS">GS리테일</a><span style="color:#888;font-size:0.82em;margin-left:6px;">007070.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
         <td>Consumer Defensive</td>
-        <td>—</td>
-        <td><span class="badge badge-PARABOLIC">PARABOLIC</span><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>63.3</td>
+        <td>+8.7%</td>
+        <td class="pos">9.55%</td>
+        <td class="pos">9.55%</td>
+        <td class="pos">19.72%</td>
+        <td>&#8212;</td>
+        <td><span class="badge badge-PARABOLIC">PARABOLIC</span></td>
         <td>눌림</td>
       </tr>
     
       <tr>
-        <td><a href="details/011790.KS.html" style="color: #4db8ff;" title="011790.KS">SKC</a><span style="color:#888;font-size:0.82em;margin-left:6px;">011790.KS</span></td>
-        <td>159900.00</td>
-        <td class="neg">-8.16%</td>
-        <td class="pos">28.95%</td>
-        <td class="pos">30.00%</td>
-        <td>66.8</td>
+        <td><a href="details/011790.KS.html" title="011790.KS">SKC</a><span style="color:#888;font-size:0.82em;margin-left:6px;">011790.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
         <td>Basic Materials</td>
-        <td>—</td>
-        <td><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>66.8</td>
+        <td>+13.3%</td>
+        <td class="neg">-8.16%</td>
+        <td class="pos">30.00%</td>
+        <td class="pos">66.39%</td>
+        <td>&#8212;</td>
+        <td></td>
         <td>분할</td>
       </tr>
     
       <tr>
-        <td><a href="details/012330.KS.html" style="color: #4db8ff;" title="012330.KS">현대모비스</a><span style="color:#888;font-size:0.82em;margin-left:6px;">012330.KS</span></td>
-        <td>509000.00</td>
-        <td class="pos">15.29%</td>
-        <td class="pos">17.96%</td>
-        <td class="pos">15.95%</td>
-        <td>69.7</td>
+        <td><a href="details/012330.KS.html" title="012330.KS">현대모비스</a><span style="color:#888;font-size:0.82em;margin-left:6px;">012330.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
         <td>Consumer Cyclical</td>
-        <td>—</td>
-        <td><span class="badge badge-PARABOLIC">PARABOLIC</span><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>69.7</td>
+        <td>+13.3%</td>
+        <td class="pos">15.29%</td>
+        <td class="pos">15.95%</td>
+        <td class="pos">25.06%</td>
+        <td>&#8212;</td>
+        <td><span class="badge badge-PARABOLIC">PARABOLIC</span></td>
         <td>눌림</td>
       </tr>
     
       <tr>
-        <td><a href="details/032830.KS.html" style="color: #4db8ff;" title="032830.KS">삼성생명</a><span style="color:#888;font-size:0.82em;margin-left:6px;">032830.KS</span></td>
-        <td>295000.00</td>
-        <td class="neg">-1.67%</td>
-        <td class="pos">11.32%</td>
-        <td class="pos">17.06%</td>
-        <td>68.5</td>
+        <td><a href="details/032830.KS.html" title="032830.KS">삼성생명</a><span style="color:#888;font-size:0.82em;margin-left:6px;">032830.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-mid">MID</span></td>
+        <td>8d</td>
         <td>Financial Services</td>
-        <td>—</td>
-        <td><span class="badge badge-EXTENDED">EXTENDED</span></td>
-        <td>분할</td>
+        <td>68.5</td>
+        <td>+7.4%</td>
+        <td class="neg">-1.67%</td>
+        <td class="pos">17.06%</td>
+        <td class="pos">23.69%</td>
+        <td>&#8212;</td>
+        <td></td>
+        <td>적극</td>
       </tr>
     
       <tr>
-        <td><a href="details/086280.KS.html" style="color: #4db8ff;" title="086280.KS">현대글로비스</a><span style="color:#888;font-size:0.82em;margin-left:6px;">086280.KS</span></td>
-        <td>251000.00</td>
-        <td class="pos">8.89%</td>
-        <td class="pos">11.31%</td>
-        <td class="pos">5.24%</td>
-        <td>62.1</td>
+        <td><a href="details/086280.KS.html" title="086280.KS">현대글로비스</a><span style="color:#888;font-size:0.82em;margin-left:6px;">086280.KS</span></td>
+        <td><span class="tier-MOMENTUM_2">M2</span></td>
+        <td><span class="maturity-mid">MID</span></td>
+        <td>8d</td>
         <td>Industrials</td>
-        <td>—</td>
-        <td><span class="badge badge-PARABOLIC">PARABOLIC</span><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>62.1</td>
+        <td>+8.0%</td>
+        <td class="pos">8.89%</td>
+        <td class="pos">5.24%</td>
+        <td class="pos">13.83%</td>
+        <td>&#8212;</td>
+        <td><span class="badge badge-PARABOLIC">PARABOLIC</span></td>
         <td>눌림</td>
       </tr>
     
@@ -292,12 +352,15 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Price</th>
-        <th>1d %</th>
-        <th>3d %</th>
-        <th>5d %</th>
-        <th>RSI</th>
+        <th>Tier</th>
+        <th>Maturity</th>
+        <th>Streak</th>
         <th>Sector</th>
+        <th>RSI</th>
+        <th>dist_ema9</th>
+        <th>1d %</th>
+        <th>5d %</th>
+        <th>20d %</th>
         <th>Sec_RS</th>
         <th>Risk Tags</th>
         <th>Hint</th>
@@ -306,21 +369,190 @@
     <tbody>
     
       <tr>
-        <td><a href="details/003670.KS.html" style="color: #4db8ff;" title="003670.KS">포스코퓨처엠</a><span style="color:#888;font-size:0.82em;margin-left:6px;">003670.KS</span></td>
-        <td>290000.00</td>
-        <td class="neg">-2.03%</td>
-        <td class="pos">8.61%</td>
-        <td class="pos">11.11%</td>
-        <td>75.9</td>
+        <td><a href="details/003670.KS.html" title="003670.KS">포스코퓨처엠</a><span style="color:#888;font-size:0.82em;margin-left:6px;">003670.KS</span></td>
+        <td><span class="tier-MOMENTUM_1">M1</span></td>
+        <td><span class="maturity-extended">EXTENDED</span></td>
+        <td>8d</td>
         <td>Basic Materials</td>
-        <td>—</td>
-        <td><span class="badge badge-EXTENDED">EXTENDED</span></td>
+        <td>75.9</td>
+        <td>+6.6%</td>
+        <td class="neg">-2.03%</td>
+        <td class="pos">11.11%</td>
+        <td class="pos">33.33%</td>
+        <td>&#8212;</td>
+        <td></td>
         <td>분할</td>
       </tr>
     
     </tbody>
   </table>
   
+
+
+
+<h2>&#127807; Emerging Momentum (EM)</h2>
+
+<div class="rotation-radar">
+  <h4>Potential Sector Rotation</h4>
+  
+  <div class="row strong">
+    Consumer Defensive (3 EM, non-Top)
+  </div>
+  
+  <div class="row ">
+    Consumer Cyclical (2 EM, non-Top)
+  </div>
+  
+  <div class="row ">
+    Industrials (2 EM, non-Top)
+  </div>
+  
+</div>
+
+
+<h3 class="tier-em" style="display:inline-block;">EM (8)</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Tier</th>
+      <th>Maturity</th>
+      <th>Streak</th>
+      <th>Sector</th>
+      <th>RSI</th>
+      <th>dist_ema9</th>
+      <th>1d %</th>
+      <th>5d %</th>
+      <th>20d %</th>
+      <th>Risk Tags</th>
+      <th>Hint</th>
+    </tr>
+  </thead>
+  <tbody>
+  
+    <tr>
+      <td><a href="details/000270.KS.html" title="000270.KS">기아</a><span style="color:#888;font-size:0.82em;margin-left:6px;">000270.KS</span></td>
+      <td><span class="tier-em">EM</span></td>
+      <td><span class="maturity-mid">MID</span></td>
+      <td>1d</td>
+      <td>Consumer Cyclical</td>
+      <td>59.4</td>
+      <td>+4.7%</td>
+      <td class="pos">4.38%</td>
+      <td class="pos">4.84%</td>
+      <td class="pos">3.33%</td>
+      <td></td>
+      <td>적극</td>
+    </tr>
+  
+    <tr>
+      <td><a href="details/010140.KS.html" title="010140.KS">삼성중공업</a><span style="color:#888;font-size:0.82em;margin-left:6px;">010140.KS</span></td>
+      <td><span class="tier-em">EM</span></td>
+      <td><span class="maturity-early">EARLY</span></td>
+      <td>1d</td>
+      <td>Industrials</td>
+      <td>62.6</td>
+      <td>-1.2%</td>
+      <td class="neg">-5.19%</td>
+      <td class="neg">-3.18%</td>
+      <td class="pos">12.90%</td>
+      <td></td>
+      <td>관찰</td>
+    </tr>
+  
+    <tr>
+      <td><a href="details/011780.KS.html" title="011780.KS">금호석유</a><span style="color:#888;font-size:0.82em;margin-left:6px;">011780.KS</span></td>
+      <td><span class="tier-em">EM</span></td>
+      <td><span class="maturity-mid">MID</span></td>
+      <td>1d</td>
+      <td>Basic Materials</td>
+      <td>59.3</td>
+      <td>+6.8%</td>
+      <td class="pos">14.42%</td>
+      <td class="pos">0.40%</td>
+      <td class="pos">16.09%</td>
+      <td><span class="badge badge-PARABOLIC">PARABOLIC</span></td>
+      <td>눌림</td>
+    </tr>
+  
+    <tr>
+      <td><a href="details/023530.KS.html" title="023530.KS">롯데쇼핑</a><span style="color:#888;font-size:0.82em;margin-left:6px;">023530.KS</span></td>
+      <td><span class="tier-em">EM</span></td>
+      <td><span class="maturity-mid">MID</span></td>
+      <td>1d</td>
+      <td>Consumer Cyclical</td>
+      <td>71.1</td>
+      <td>+3.9%</td>
+      <td class="pos">1.47%</td>
+      <td class="pos">2.83%</td>
+      <td class="pos">28.82%</td>
+      <td></td>
+      <td>적극</td>
+    </tr>
+  
+    <tr>
+      <td><a href="details/033780.KS.html" title="033780.KS">KT&G</a><span style="color:#888;font-size:0.82em;margin-left:6px;">033780.KS</span></td>
+      <td><span class="tier-em">EM</span></td>
+      <td><span class="maturity-mid">MID</span></td>
+      <td>1d</td>
+      <td>Consumer Defensive</td>
+      <td>69.7</td>
+      <td>+2.3%</td>
+      <td class="pos">2.43%</td>
+      <td class="pos">2.55%</td>
+      <td class="pos">14.20%</td>
+      <td></td>
+      <td>적극</td>
+    </tr>
+  
+    <tr>
+      <td><a href="details/078930.KS.html" title="078930.KS">GS</a><span style="color:#888;font-size:0.82em;margin-left:6px;">078930.KS</span></td>
+      <td><span class="tier-em">EM</span></td>
+      <td><span class="maturity-early">EARLY</span></td>
+      <td>1d</td>
+      <td>Industrials</td>
+      <td>63.7</td>
+      <td>+1.6%</td>
+      <td class="pos">1.02%</td>
+      <td class="neg">-3.29%</td>
+      <td class="pos">15.74%</td>
+      <td></td>
+      <td>관찰</td>
+    </tr>
+  
+    <tr>
+      <td><a href="details/139480.KS.html" title="139480.KS">이마트</a><span style="color:#888;font-size:0.82em;margin-left:6px;">139480.KS</span></td>
+      <td><span class="tier-em">EM</span></td>
+      <td><span class="maturity-mid">MID</span></td>
+      <td>1d</td>
+      <td>Consumer Defensive</td>
+      <td>69.4</td>
+      <td>+5.6%</td>
+      <td class="pos">4.15%</td>
+      <td class="pos">4.44%</td>
+      <td class="pos">20.49%</td>
+      <td></td>
+      <td>적극</td>
+    </tr>
+  
+    <tr>
+      <td><a href="details/192820.KS.html" title="192820.KS">코스맥스</a><span style="color:#888;font-size:0.82em;margin-left:6px;">192820.KS</span></td>
+      <td><span class="tier-em">EM</span></td>
+      <td><span class="maturity-early">EARLY</span></td>
+      <td>1d</td>
+      <td>Consumer Defensive</td>
+      <td>56.2</td>
+      <td>-0.9%</td>
+      <td class="pos">0.96%</td>
+      <td class="neg">-5.41%</td>
+      <td class="pos">13.27%</td>
+      <td></td>
+      <td>관찰</td>
+    </tr>
+  
+  </tbody>
+</table>
 
 
 
@@ -338,6 +570,7 @@
       <th>Avg 10d %</th>
       <th>MDD %</th>
       <th>Avg dur (days)</th>
+      <th>EM&#8594;M1 %</th>
     </tr>
   </thead>
   <tbody>
@@ -346,6 +579,21 @@
   
     
   
+    
+  
+    
+    
+    <tr>
+      <td>EM</td>
+      <td>8</td>
+      <td>0.0%</td>
+      <td>0.00%</td>
+      <td>0.00%</td>
+      <td>0.00%</td>
+      <td class="neg">0.00%</td>
+      <td>0.0</td>
+      <td>&#8212;</td>
+    </tr>
     
   
   </tbody>
@@ -357,8 +605,8 @@
 
 <div class="footer">
 
-<p>Universe: 101 | Version: Momentum v1.0</p>
-<p>⚠ Backtest assumes close entry — slippage expected in live trading</p>
+<p>Universe: 101 | Version: Momentum v1.5</p>
+<p>&#9888; Backtest assumes close entry &#8212; slippage expected in live trading</p>
 
 </div>
 
