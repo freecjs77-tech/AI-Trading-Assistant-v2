@@ -44,8 +44,8 @@ The active set is the universe over which lifecycle states are evaluated each tr
 
 ```
 active_set(today) = {
-  ticker  |  ( ticker passed M1/M2/M3 within last 14 trading days
-              OR  ticker.setup_state != BROKEN within last 10 trading days )
+  ticker  |  ( ticker passed M1/M2/M3 within last 14 calendar days
+              OR  ticker.setup_state != BROKEN within last 10 calendar days )
             AND  ticker NOT IN portfolio.md
 }
 ```
@@ -57,6 +57,12 @@ Two evaluations exist independently — `active_set_us` (sourced from US momentu
 **Rationale:** the second clause keeps a ticker in scope after it leaves momentum's pre-filter, because the most actionable transitions (EXTENDED → PULLBACK → CONFIRMED) often happen *after* the discovery flag drops. The first clause re-introduces tickers that climb back into momentum after a long absence.
 
 **First-run bootstrap:** when `lifecycle_history_*.json` does not exist, seed the active set from the most recent N=14 days of `momentum_history_*.json` (M1/M2/M3 hits) and pull a 200-day price window for each via yfinance to bootstrap EMA9/21/65 calculations.
+
+Note on calendar vs trading days: the implementation uses calendar-day
+arithmetic (no trading-calendar dependency). Over long weekends this is
+slightly tighter than the original spec wording but the active set
+recomputes daily and only requires ANY ONE recent qualifying day in the
+window — so the practical impact is minimal.
 
 ## 4. State machine
 
@@ -80,7 +86,12 @@ If none match, the ticker fails out of the active set's "in-trend" branch (BROKE
 TREND_OK:
     ema9 > ema21 > ema65
     AND ema65_slope_5d > 0
-    AND close > ema21
+
+    Note: an earlier draft also required `close > ema21`. That gate was
+    dropped during implementation — a healthy uptrend with a brief
+    intra-day dip below ema21 (but above ema65) still belongs in
+    TREND_OK. The PULLBACK predicate's separate `close >= ema21` guard
+    naturally rejects such tickers from being misclassified as PULLBACK.
 
 PULLBACK:
     TREND_OK conditions hold

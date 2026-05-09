@@ -37,6 +37,10 @@ BASE_FORMING_DAYS_MIN = 5
 BASE_FORMING_DAYS_MAX = 15
 # (high-low)/median_price ≤ 8% over the sideways window — roughly 1.5x typical
 # large-cap ATR. Admits slow consolidations, rejects choppy ranges.
+# NOTE: not yet consumed by _is_base_forming — fetch_market_data does not
+# currently emit a `range_pct_5d` field. Same status as days_sideways /
+# atr14_pct_5d_avg / volume_5d_avg (see _build_today_raw_for_signal
+# docstring). Wired in a follow-up once fetch_market_data emits the field.
 BASE_RANGE_MAX_PCT = 0.08
 # 5d avg volume must be < 85% of 20d avg. Tighter (0.7) too restrictive;
 # looser (0.95) admits non-contractions.

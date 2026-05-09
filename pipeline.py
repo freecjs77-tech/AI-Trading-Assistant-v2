@@ -425,13 +425,16 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         # Pure-additive. Failure must NOT block Step 5.
         skip_lifecycle = os.environ.get("SKIP_LIFECYCLE", "").lower() in ("1", "true", "yes")
         lifecycle_us_result = None
+        lifecycle_kr_result = None
+        if not skip_lifecycle:
+            from lifecycle_signal import run_lifecycle
+            _portfolio_tickers = {h["ticker"] for h in _parse_portfolio_for_report(portfolio_path)}
+
         if skip_lifecycle:
             print("[Step 4c4] SKIP_LIFECYCLE=1 — lifecycle US 스킵")
         else:
             print("[Step 4c4] Lifecycle US (setup/trigger/decision)...")
             try:
-                from lifecycle_signal import run_lifecycle
-                _portfolio_tickers = {h["ticker"] for h in _parse_portfolio_for_report(portfolio_path)}
                 _mom_us = os.path.join(project_dir, "history", "scanner_momentum_us_history.json")
                 lifecycle_us_result = run_lifecycle(
                     "US", project_dir=project_dir,
@@ -452,14 +455,11 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 lifecycle_us_result = None
 
         # Step 4c5: Lifecycle KR
-        lifecycle_kr_result = None
         if skip_lifecycle:
             print("[Step 4c5] SKIP_LIFECYCLE=1 — lifecycle KR 스킵")
         else:
             print("[Step 4c5] Lifecycle KR (setup/trigger/decision)...")
             try:
-                from lifecycle_signal import run_lifecycle
-                _portfolio_tickers = {h["ticker"] for h in _parse_portfolio_for_report(portfolio_path)}
                 _mom_kr = os.path.join(project_dir, "history", "scanner_momentum_kr_history.json")
                 lifecycle_kr_result = run_lifecycle(
                     "KR", project_dir=project_dir,
