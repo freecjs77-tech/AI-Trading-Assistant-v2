@@ -132,9 +132,10 @@
 <!-- 도입 박스: 페이지 전체 사용법 -->
 <div class="intro">
   <strong>이 페이지는 무엇인가요?</strong><br>
-  보유하지 않은 종목 중 momentum scanner 가 추세 후보로 발견한 종목들을 매일 추적하여,
+  Momentum scanner 가 추세 후보로 발견한 종목들 (<strong>보유 여부 무관</strong>) 의 setup / trigger / decision 을 매일 추적하여,
   <strong>지금 진입할 만한가</strong> / <strong>아직 기다려야 하는가</strong> / <strong>피해야 하는가</strong> 를 판단해 주는 페이지입니다.
   자동 매매가 아닌 <em>매수 판단 보조</em> 도구입니다.
+  <br><small style="color:#64748b">보유 종목의 매도 판단(trailing stop)은 Portfolio Risk 페이지를 별도로 참조하세요.</small>
 
   <div class="legend-grid">
     <div class="legend-item"><span class="key">🟢 ENTER_OK</span><span>진입해도 OK — 좋은 zone(PULLBACK/BASE)에서 거래량·종가 게이트까지 통과한 확정 trigger.</span></div>
@@ -244,12 +245,12 @@
 </div>
 
 <details>
-  <summary>⚪ STAGING (0) — 추세 정상, 신호 없음 (모니터링)</summary>
+  <summary>⚪ STAGING (1) — 추세 정상, 신호 없음 (모니터링)</summary>
   <div class="card staging">
     <div class="desc">
       <strong>지금 진입 신호 없음</strong> — TREND_OK / PULLBACK / BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 EARLY 또는 ENTER_OK 로 자동 승격.
     </div>
-    <div class="tickers"></div>
+    <div class="tickers">NVDA</div>
   </div>
 </details>
 
@@ -300,6 +301,22 @@
   </thead>
   <tbody>
   
+    <tr id="row-NVDA">
+      <td><strong>NVDA</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td>STAGING</td>
+      <td>—</td>
+      <td>4.21</td>
+      <td>6.97</td>
+      <td>0.90</td>
+      <td>3.08</td>
+      <td>0</td>
+      <td>1</td>
+      <td>—</td>
+    </tr>
+  
     <tr id="row-AMD">
       <td><strong>AMD</strong></td>
       <td>—</td>
@@ -312,7 +329,7 @@
       <td>1.24</td>
       <td>4.96</td>
       <td>0</td>
-      <td>4</td>
+      <td>5</td>
       <td>OVERHEAT, EXTENDED</td>
     </tr>
   
@@ -328,7 +345,7 @@
       <td>1.53</td>
       <td>5.40</td>
       <td>0</td>
-      <td>4</td>
+      <td>5</td>
       <td>OVERHEAT, EXTENDED</td>
     </tr>
   
@@ -344,7 +361,7 @@
       <td>1.51</td>
       <td>5.26</td>
       <td>0</td>
-      <td>4</td>
+      <td>5</td>
       <td>OVERHEAT, EXTENDED</td>
     </tr>
   
