@@ -317,6 +317,71 @@ def send_momentum_brief(us_result: dict | None,
     return _send_message(msg)
 
 
+def _summarize_lifecycle(result: dict | None) -> dict:
+    if not result or not result.get("snapshots"):
+        return {"new_confirmed": [], "enter_ok": 0, "early": 0, "failed_breakout": 0}
+    snaps = result["snapshots"]
+    nc, ok, early, fb = [], 0, 0, 0
+    state = result.get("state") or {}
+    for tk, s in snaps.items():
+        if s["decision"] == "ENTER_OK":
+            ok += 1
+            # New confirmed = trigger_age == 0. Cheaply derive from yesterday absence.
+            y = ((state.get("tickers") or {}).get(tk) or {}).get("snapshots", [])
+            had_prior_confirmed = any(x.get("trigger") == "CONFIRMED_TRIGGER"
+                                         for x in y[:-1])
+            if not had_prior_confirmed and s["trigger"] == "CONFIRMED_TRIGGER":
+                nc.append(tk)
+        elif s["decision"] == "EARLY":
+            early += 1
+        if "FAILED_BREAKOUT" in (s.get("raw") or {}).get("risk_tags", []):
+            fb += 1
+    return {"new_confirmed": nc, "enter_ok": ok, "early": early, "failed_breakout": fb}
+
+
+def _format_lifecycle_section(result: dict | None, flag: str, market: str,
+                                  base_url: str, date_str: str) -> str:
+    if not result or not result.get("snapshots"):
+        return ""
+    summary = result.get("_brief_summary") or _summarize_lifecycle(result)
+    lines = [f"{flag} {market}"]
+    if summary["new_confirmed"]:
+        nc = " / ".join(summary["new_confirmed"][:5])
+        more = "" if len(summary["new_confirmed"]) <= 5 else f" (+{len(summary['new_confirmed']) - 5})"
+        lines.append(f"\U0001f195 New CONFIRMED ({len(summary['new_confirmed'])}): {nc}{more}")
+    if summary["enter_ok"]:
+        lines.append(f"\U0001f7e2 ENTER_OK total: {summary['enter_ok']}")
+    if summary["early"]:
+        lines.append(f"\U0001f7e1 EARLY: {summary['early']}")
+    if summary["failed_breakout"]:
+        lines.append(f"\U0001f534 FAILED_BREAKOUT: {summary['failed_breakout']}")
+    base = base_url.rstrip("/") + "/" if base_url else ""
+    lines.append(f"\U0001f517 {base}lifecycle_{market.lower()}_{date_str}.html")
+    return "\n".join(lines)
+
+
+def _format_lifecycle_message(us_result: dict | None, kr_result: dict | None,
+                                  base_url: str, date_str: str) -> str:
+    parts: list[str] = []
+    us_section = _format_lifecycle_section(us_result, "\U0001f1fa\U0001f1f8", "US", base_url, date_str)
+    kr_section = _format_lifecycle_section(kr_result, "\U0001f1f0\U0001f1f7", "KR", base_url, date_str)
+    if us_section:
+        parts.append(us_section)
+    if kr_section:
+        parts.append(kr_section)
+    if not parts:
+        return ""
+    return f"[Lifecycle Brief — {date_str}]\n\n" + "\n\n".join(parts)
+
+
+def send_lifecycle_brief(us_result: dict | None, kr_result: dict | None,
+                            base_url: str, date_str: str) -> bool:
+    msg = _format_lifecycle_message(us_result, kr_result, base_url, date_str)
+    if not msg.strip():
+        return False
+    return _send_message(msg)
+
+
 if __name__ == "__main__":
     project_dir = os.path.dirname(os.path.abspath(__file__))
     today = date.today().strftime("%Y-%m-%d")

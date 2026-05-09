@@ -421,6 +421,71 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 print(f"  WARN [4c3] me stop signals failed: {e}")
                 stop_result_me = None
 
+        # Step 4c4: Lifecycle US (Phase A — Trend Structure + Setup/Trigger)
+        # Pure-additive. Failure must NOT block Step 5.
+        skip_lifecycle = os.environ.get("SKIP_LIFECYCLE", "").lower() in ("1", "true", "yes")
+        lifecycle_us_result = None
+        lifecycle_kr_result = None
+        if not skip_lifecycle:
+            from lifecycle_signal import run_lifecycle
+            # User decision (2026-05-09): include portfolio holdings in
+            # lifecycle's active set. Original spec excluded them on the
+            # principle that portfolio_stops covers the "should I sell?"
+            # question while lifecycle covers "should I buy?" — but both
+            # views are useful for held tickers too (the setup/trigger
+            # state machine answers "is this still in a healthy zone?").
+            # Pass empty set to disable the portfolio-exclusion rule.
+            _portfolio_tickers = set()
+
+        if skip_lifecycle:
+            print("[Step 4c4] SKIP_LIFECYCLE=1 — lifecycle US 스킵")
+        else:
+            print("[Step 4c4] Lifecycle US (setup/trigger/decision)...")
+            try:
+                _mom_us = os.path.join(project_dir, "history", "scanner_momentum_us_history.json")
+                lifecycle_us_result = run_lifecycle(
+                    "US", project_dir=project_dir,
+                    market_data=market_data,
+                    momentum_history_path=_mom_us,
+                    portfolio_tickers=_portfolio_tickers,
+                    today=today,
+                )
+                if lifecycle_us_result.get("status") == "ok":
+                    n_snap = len(lifecycle_us_result["snapshots"])
+                    n_trans = len(lifecycle_us_result["transitions"])
+                    print(f"  OK [4c4] US: snapshots={n_snap} transitions={n_trans} "
+                          f"active_set={lifecycle_us_result['active_set_size']}")
+            except Exception as e:
+                import traceback as _tb
+                _tb.print_exc()
+                print(f"  WARN [4c4] lifecycle US failed: {e}")
+                lifecycle_us_result = None
+
+        # Step 4c5: Lifecycle KR
+        if skip_lifecycle:
+            print("[Step 4c5] SKIP_LIFECYCLE=1 — lifecycle KR 스킵")
+        else:
+            print("[Step 4c5] Lifecycle KR (setup/trigger/decision)...")
+            try:
+                _mom_kr = os.path.join(project_dir, "history", "scanner_momentum_kr_history.json")
+                lifecycle_kr_result = run_lifecycle(
+                    "KR", project_dir=project_dir,
+                    market_data=market_data,
+                    momentum_history_path=_mom_kr,
+                    portfolio_tickers=_portfolio_tickers,
+                    today=today,
+                )
+                if lifecycle_kr_result.get("status") == "ok":
+                    n_snap = len(lifecycle_kr_result["snapshots"])
+                    n_trans = len(lifecycle_kr_result["transitions"])
+                    print(f"  OK [4c5] KR: snapshots={n_snap} transitions={n_trans} "
+                          f"active_set={lifecycle_kr_result['active_set_size']}")
+            except Exception as e:
+                import traceback as _tb
+                _tb.print_exc()
+                print(f"  WARN [4c5] lifecycle KR failed: {e}")
+                lifecycle_kr_result = None
+
         # Step 4d: YTD benchmark (vs S&P KRW) — per owner
         print("[Step 4d] Computing YTD benchmark vs S&P (KRW)...")
         from benchmark_ytd import compute_owner_benchmark
@@ -507,6 +572,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             momentum_us=momentum_us_result,    # Task 21
             momentum_kr=momentum_kr_result,    # Task 21
             portfolio_stop_result=stop_result_me,
+            lifecycle_us=lifecycle_us_result,
+            lifecycle_kr=lifecycle_kr_result,
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -533,6 +600,20 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             print(f"  OK {len(momentum_files)} momentum pages generated")
         except Exception as e:
             print(f"  WARN momentum pages failed: {e}")
+
+        # Lifecycle pages (US + KR)
+        try:
+            from lifecycle_report import generate_lifecycle_pages
+            _lc_paths = generate_lifecycle_pages(
+                us_result=lifecycle_us_result, kr_result=lifecycle_kr_result,
+                output_dir=os.path.join(project_dir, "reports"),
+                us_state=(lifecycle_us_result or {}).get("state"),
+                kr_state=(lifecycle_kr_result or {}).get("state"),
+            )
+            for m, p in _lc_paths.items():
+                print(f"  Generated {m}: {p}")
+        except Exception as e:
+            print(f"  WARN lifecycle page render failed: {e}")
 
         # Step 5a: Charts + Detail pages
         print("[Step 5a] Generating charts...")
@@ -900,6 +981,8 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     active_nav=_owner,
                     benchmark_data=benchmark_by_owner.get(_owner),
                     portfolio_stop_result=_owner_stop_result,
+                    lifecycle_us=lifecycle_us_result,
+                    lifecycle_kr=lifecycle_kr_result,
                 )
                 _sz = os.path.getsize(_owner_report)
                 print(f"  OK {_owner} report -> {_owner_report} ({_sz:,} bytes)")
@@ -954,6 +1037,15 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             )
         except Exception as e:
             print(f"  WARN portfolio risk telegram failed: {e} (pipeline continues)")
+
+        try:
+            from telegram_sender import send_lifecycle_brief
+            _base = os.environ.get("REPORT_BASE_URL",
+                                  "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/")
+            send_lifecycle_brief(lifecycle_us_result, lifecycle_kr_result,
+                                  base_url=_base, date_str=today)
+        except Exception as e:
+            print(f"  WARN lifecycle telegram brief failed: {e}")
 
         # Step 6: History update (비거래일 스킵)
         if is_trading_day:

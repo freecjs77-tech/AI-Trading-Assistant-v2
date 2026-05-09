@@ -24,16 +24,26 @@ jobs:
         run: |
           # master의 history를 백업
           cp -r history/ /tmp/history_master 2>/dev/null || mkdir -p /tmp/history_master
-          # gh-pages의 history + data를 복원 (momentum_*.json 포함)
+          # gh-pages의 history + data를 복원 (momentum_*.json 포함).
+          # 파일별 개별 checkout — 어느 한 파일이 gh-pages 에 부재해도 다른
+          # 파일들은 정상 restore 되도록. (체이닝 single command 는 한 개라도
+          # 부재하면 전체 실패해서 momentum_history 누적이 끊겼던 버그 fix.)
           git fetch origin gh-pages --depth=1 2>/dev/null || true
-          git checkout origin/gh-pages -- \
-            history/scanner_momentum_us_history.json \
-            history/scanner_momentum_kr_history.json \
-            history/momentum_backtest_us.json \
-            history/momentum_backtest_kr.json \
-            history/portfolio_stops.json \
-            history/portfolio_stops_wife.json \
-            history/ data/ 2>/dev/null || mkdir -p history data
+          mkdir -p history data
+          for f in scanner_momentum_us_history.json \
+                   scanner_momentum_kr_history.json \
+                   momentum_backtest_us.json \
+                   momentum_backtest_kr.json \
+                   portfolio_stops.json \
+                   portfolio_stops_wife.json \
+                   lifecycle_history_us.json \
+                   lifecycle_history_kr.json; do
+            git checkout origin/gh-pages -- "history/$f" 2>/dev/null \
+              && echo "  restored $f" \
+              || echo "  skip $f (not on gh-pages yet)"
+          done
+          # 나머지 history/ 와 data/ 전체 트리도 best-effort 로 가져옴
+          git checkout origin/gh-pages -- history/ data/ 2>/dev/null || true
           # JSON 히스토리 파일 병합: gh-pages + master (master 우선)
           python3 -c "
           import json, glob, os

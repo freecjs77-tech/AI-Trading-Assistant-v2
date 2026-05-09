@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lifecycle KR — {{ as_of }}</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", sans-serif; margin: 24px; color: #1a1a1a; max-width: 1400px; }
+  h1 { margin-bottom: 4px; }
+  h2 { margin-top: 32px; padding-bottom: 6px; border-bottom: 2px solid #e5e7eb; }
+  .as-of { color: #666; margin-bottom: 24px; }
+
+  /* 도입 박스 — 페이지 전체 사용법 */
+  .intro {
+    background: #f8fafc;
+    border-left: 4px solid #475569;
+    padding: 16px 20px;
+    margin: 16px 0 24px 0;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .intro strong { color: #0f172a; }
+  .intro .legend-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 8px 24px; margin-top: 12px;
+  }
+  .intro .legend-item { display: flex; gap: 8px; }
+  .intro .legend-item .key { font-weight: 600; min-width: 110px; }
+
+  /* 카드 — 결정 그룹별 */
+  .card { border-radius: 8px; padding: 14px 18px; margin: 10px 0; }
+  .card h3 { margin: 0 0 6px 0; }
+  .card .desc {
+    font-size: 13px; color: #475569; margin-bottom: 10px; line-height: 1.5;
+  }
+  .card .tickers { font-weight: 500; }
+  .card.enter-ok { background: #ecfdf5; border-left: 4px solid #10b981; }
+  .card.early    { background: #fef3c7; border-left: 4px solid #f59e0b; }
+  .card.staging  { background: #f3f4f6; border-left: 4px solid #9ca3af; }
+  .card.avoid    { background: #fee2e2; border-left: 4px solid #ef4444; }
+
+  .new-confirmed {
+    background: #dbeafe; border-left: 4px solid #2563eb;
+    padding: 12px 16px; margin: 16px 0; border-radius: 8px;
+  }
+  .new-confirmed .desc { font-size: 12px; color: #475569; margin-top: 4px; }
+
+  /* 메인 테이블 */
+  table { border-collapse: collapse; margin-top: 12px; width: 100%; font-size: 13px; }
+  th, td { border-bottom: 1px solid #e5e7eb; padding: 6px 8px; text-align: left; }
+  th { background: #f9fafb; }
+  th[title] { cursor: help; border-bottom: 1px dotted #94a3b8; }
+  details summary { cursor: pointer; padding: 6px 0; color: #444; }
+
+  .placeholder {
+    background: #fff7ed; border-left: 4px solid #fb923c;
+    padding: 12px 16px; margin: 8px 0; color: #92400e; border-radius: 6px;
+  }
+  .footer-note { color: #888; font-size: 12px; margin-top: 24px; }
+  .recommended-size { color: #888; font-style: italic; font-size: 12px; }
+  .table-help {
+    color: #475569; font-size: 12px; margin-bottom: 6px; line-height: 1.6;
+  }
+
+  /* 용어집 박스 */
+  .glossary {
+    background: #fafbfc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin: 0 0 24px 0;
+  }
+  .glossary > summary {
+    cursor: pointer;
+    font-size: 14px;
+    color: #334155;
+    padding: 4px 0;
+    list-style: none;
+  }
+  .glossary > summary::before { content: "▸ "; color: #94a3b8; }
+  .glossary[open] > summary::before { content: "▾ "; }
+  .glossary-body { margin-top: 14px; font-size: 13px; line-height: 1.55; }
+  .glossary-intro { color: #475569; margin: 0 0 14px 0; }
+  .glossary-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; margin-bottom: 8px;
+  }
+  .glossary-col h4 { margin: 0 0 6px 0; color: #0f172a; font-size: 13px; }
+  .glossary-note { color: #64748b; font-size: 12px; margin: 0 0 8px 0; }
+  .state-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px; line-height: 1.5;
+  }
+  .state-table td {
+    padding: 6px 8px; border-bottom: 1px solid #eef2f7; vertical-align: top;
+  }
+  .state-table th {
+    background: #f1f5f9; padding: 6px 8px; text-align: left; font-size: 12px;
+  }
+  .state {
+    font-weight: 700; font-family: ui-monospace, monospace;
+    white-space: nowrap; padding: 2px 6px; border-radius: 4px;
+    font-size: 11px;
+  }
+  .state-trend-ok  { background: #dcfce7; color: #14532d; }
+  .state-pullback  { background: #dbeafe; color: #1e3a8a; }
+  .state-base      { background: #ede9fe; color: #4c1d95; }
+  .state-extended  { background: #fef3c7; color: #78350f; }
+  .state-broken    { background: #fee2e2; color: #7f1d1d; }
+  .state-wait      { background: #f1f5f9; color: #334155; }
+  .state-early     { background: #fef3c7; color: #78350f; }
+  .state-confirmed { background: #dcfce7; color: #14532d; }
+  .state-tag       { background: #f1f5f9; color: #475569; }
+  .state-tag-bad   { background: #fee2e2; color: #7f1d1d; }
+
+  .decision-matrix th, .decision-matrix td {
+    text-align: center; padding: 8px 10px;
+  }
+  .decision-matrix td:first-child { text-align: left; background: #f8fafc; }
+  .decision-matrix .dim { color: #94a3b8; font-size: 11px; }
+
+  @media (max-width: 720px) {
+    .glossary-grid { grid-template-columns: 1fr; }
+    .intro .legend-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🇰🇷 Lifecycle KR</h1>
+<div class="as-of">As of {{ as_of }} · {{ version }}</div>
+
+<!-- 도입 박스: 페이지 전체 사용법 -->
+<div class="intro">
+  <strong>이 페이지는 무엇인가요?</strong><br>
+  Momentum scanner 가 추세 후보로 발견한 종목들 (<strong>보유 여부 무관</strong>) 의 setup / trigger / decision 을 매일 추적하여,
+  <strong>지금 진입할 만한가</strong> / <strong>아직 기다려야 하는가</strong> / <strong>피해야 하는가</strong> 를 판단해 주는 페이지입니다.
+  자동 매매가 아닌 <em>매수 판단 보조</em> 도구입니다.
+  <br><small style="color:#64748b">보유 종목의 매도 판단(trailing stop)은 Portfolio Risk 페이지를 별도로 참조하세요.</small>
+
+  <div class="legend-grid">
+    <div class="legend-item"><span class="key">🟢 ENTER_OK</span><span>진입해도 OK — 좋은 zone(PULLBACK/BASE)에서 거래량·종가 게이트까지 통과한 확정 trigger.</span></div>
+    <div class="legend-item"><span class="key">🟡 EARLY</span><span>조기 진입 — 진입 zone 안에서 약한 trigger 발화. 작게 시도하거나 확정 대기.</span></div>
+    <div class="legend-item"><span class="key">⚪ STAGING</span><span>대기 — 추세는 정상이지만 진입 신호 아직 없음. 모니터링 대상.</span></div>
+    <div class="legend-item"><span class="key">🔴 AVOID</span><span>회피 — 과확장(EXTENDED)·구조 깨짐(BROKEN)·실패한 trigger(FAILED_BREAKOUT) 중 하나 이상.</span></div>
+  </div>
+</div>
+
+<!-- 상태 용어집 — 어떻게 결정에 도달하는지 -->
+<details class="glossary" open>
+  <summary><strong>상태 용어집</strong> — Setup × Trigger 가 어떻게 Decision 으로 연결되는가</summary>
+
+  <div class="glossary-body">
+    <p class="glossary-intro">
+      Decision (위 4가지) 은 두 가지 raw 상태의 조합 결과입니다:
+      <strong>Setup</strong> 은 종목의 추세 구조를 5단계로 진단하고,
+      <strong>Trigger</strong> 는 그 안에서 진입 신호의 발화 강도를 3단계로 표시합니다.
+    </p>
+
+    <div class="glossary-grid">
+      <!-- Setup states -->
+      <div class="glossary-col">
+        <h4>Setup (구조 진단) — 5단계</h4>
+        <p class="glossary-note">
+          평가 우선순위:
+          <strong>BROKEN > EXTENDED > BASE_FORMING > PULLBACK > TREND_OK</strong>.
+          한 종목이 여러 조건을 동시에 만족하면 위에 있는 것이 우선 — 추세가 깨졌다면 다른 조건과 무관하게 BROKEN 으로 분류됩니다.
+        </p>
+        <table class="state-table">
+          <tr><td class="state state-trend-ok">TREND_OK</td><td>정상 상승 추세 — EMA9 > EMA21 > EMA65 정렬 + EMA65 5일 기울기 양수.</td></tr>
+          <tr><td class="state state-pullback">PULLBACK</td><td>추세 안의 단기 하락 — TREND_OK 조건 + EMA9 와의 거리 ≤ 3% + EMA21 위. <em>진입 zone</em>.</td></tr>
+          <tr><td class="state state-base">BASE_FORMING</td><td>5–15일 횡보 + 변동성 수축 (5d ATR < 20d ATR) + 거래량 수축 (5d 평균 < 20d × 0.85) + EMA21 5일 기울기 양수. <em>VCP 식 압축 베이스 — 가장 시의성 높은 zone</em>.</td></tr>
+          <tr><td class="state state-extended">EXTENDED</td><td>과확장 — 정렬 유지 + EMA9 와의 거리 > 12% + RSI > 72. 진입 시 손익비 나쁨, 하락 위험 큼.</td></tr>
+          <tr><td class="state state-broken">BROKEN</td><td>구조 깨짐 — EMA21 < EMA65 (중기 추세 이탈) 또는 종가 < EMA65 (장기 필터 이탈). 추세 자체가 무너진 상태.</td></tr>
+        </table>
+      </div>
+
+      <!-- Trigger states + Risk tags -->
+      <div class="glossary-col">
+        <h4>Trigger (진입 신호) — 3단계</h4>
+        <p class="glossary-note">
+          Setup 이 PULLBACK 또는 BASE_FORMING 일 때만 의미 있음 (그 외에는 항상 WAIT).
+        </p>
+        <table class="state-table">
+          <tr><td class="state state-wait">WAIT</td><td>진입 신호 없음.</td></tr>
+          <tr><td class="state state-early">EARLY_TRIGGER</td><td>EMA9 reclaim (전일 종가 ≤ EMA9, 오늘 종가 > EMA9) 또는 전일 고점 돌파 + 종가가 일중 상위 20%.</td></tr>
+          <tr><td class="state state-confirmed">CONFIRMED_TRIGGER</td><td>EARLY 조건 + 거래량 1.2× (vs 20일 평균) + 종가가 일중 상위 20% (high·low 기준 가중평균).</td></tr>
+        </table>
+
+        <h4 style="margin-top: 18px;">risk_tags (보조 경고)</h4>
+        <p class="glossary-note">
+          중복 부착 가능. 단순 정보용 (FAILED_BREAKOUT 만 Decision 을 강제 AVOID).
+        </p>
+        <table class="state-table">
+          <tr><td class="state state-tag">OVERHEAT</td><td>RSI ≥ 80.</td></tr>
+          <tr><td class="state state-tag">PARABOLIC</td><td>1일 수익률 ≥ +8% 동시에 거래량 ≥ 2.0× 평균.</td></tr>
+          <tr><td class="state state-tag">EXTENDED</td><td>setup EXTENDED 와 동일 조건 (mirror).</td></tr>
+          <tr><td class="state state-tag-bad">FAILED_BREAKOUT</td><td>어제 CONFIRMED → 오늘 종가 < EMA9. 가짜 돌파 — 강제로 AVOID 처리.</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Decision matrix -->
+    <h4 style="margin-top: 18px;">결정 매트릭스 — Setup × Trigger → Decision</h4>
+    <table class="state-table decision-matrix">
+      <thead><tr><th>Setup \ Trigger</th><th>WAIT</th><th>EARLY_TRIGGER</th><th>CONFIRMED_TRIGGER</th></tr></thead>
+      <tbody>
+        <tr><td><strong>TREND_OK</strong></td><td>⚪ STAGING</td><td colspan="2" class="dim">— (Trigger 평가 안 함)</td></tr>
+        <tr><td><strong>PULLBACK</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
+        <tr><td><strong>BASE_FORMING</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
+        <tr><td><strong>EXTENDED</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
+        <tr><td><strong>BROKEN</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
+      </tbody>
+    </table>
+    <p class="glossary-note" style="margin-top: 8px;">
+      추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup·Trigger 무관하게 🔴 AVOID 강제.
+    </p>
+  </div>
+</details>
+
+<!-- Section [1]: MARKET STATE — Phase B placeholder -->
+<div class="placeholder">
+  <strong>[1] MARKET STATE</strong> — 시장 국면 분류기는 Phase B 에서 추가 예정 (RISK_ON / TRENDING / CHOPPY / RISK_OFF).
+</div>
+
+<!-- Section [3]: NEW CONFIRMED TODAY -->
+{% if new_confirmed %}
+<div class="new-confirmed">
+  <strong>🆕 NEW CONFIRMED TODAY ({{ new_confirmed|length }})</strong>:
+  {% for r in new_confirmed %}<a href="#row-{{ r.ticker }}">{{ r.name or r.ticker }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+  <div class="desc">오늘 처음 ENTER_OK 가 발화한 종목 — 가장 시의성이 높은 진입 후보.</div>
+</div>
+{% endif %}
+
+<!-- Section [2]: ACTION PANEL -->
+<h2>오늘의 결정 그룹</h2>
+
+<div class="card enter-ok">
+  <h3>🟢 ENTER_OK ({{ enter_ok|length }})</h3>
+  <div class="desc">
+    <strong>진입해도 OK</strong> — PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (전일 종가 ≤ EMA9, 오늘 EMA9 돌파 또는 전일 고점 돌파 + 거래량 1.2x + 종가가 일중 상위 20%).
+  </div>
+  {% if enter_ok %}<div class="tickers">{% for r in enter_ok %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div><br>
+  <span class="recommended-size">권장 포지션 크기: TBD — Phase C 에서 ATR 기반 sizing 추가 예정</span>
+  {% else %}<em>해당 없음</em>{% endif %}
+</div>
+
+<div class="card early">
+  <h3>🟡 EARLY ({{ early|length }})</h3>
+  <div class="desc">
+    <strong>조기 진입 — 작게 시도 가능</strong> — 진입 zone 안에서 trigger 발화는 있으나 거래량·종가 게이트 중 하나 이상 미달. 다음 거래일에 CONFIRMED 로 승급될 수 있음.
+  </div>
+  {% if early %}<div class="tickers">{% for r in early %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% else %}<em>해당 없음</em>{% endif %}
+</div>
+
+<details>
+  <summary>⚪ STAGING ({{ staging|length }}) — 추세 정상, 신호 없음 (모니터링)</summary>
+  <div class="card staging">
+    <div class="desc">
+      <strong>지금 진입 신호 없음</strong> — TREND_OK / PULLBACK / BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 EARLY 또는 ENTER_OK 로 자동 승격.
+    </div>
+    <div class="tickers">{% for r in staging %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+  </div>
+</details>
+
+<details>
+  <summary>🔴 AVOID ({{ avoid|length }}) — 회피 사유 있음</summary>
+  <div class="card avoid">
+    <div class="desc">
+      <strong>지금 진입 부적합</strong> — EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN 직전 단계 또는 risk_tags 에 FAILED_BREAKOUT (어제 CONFIRMED → 오늘 EMA9 하회).
+    </div>
+    <div class="tickers">{% for r in avoid %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+  </div>
+</details>
+
+<!-- Section [4]: STATE TRANSITIONS -->
+<h2>최근 상태 변화 (last 50)</h2>
+<div class="table-help">
+  종목별 setup / trigger / decision 상태가 어제 대비 변한 이력. 첫 실행일에는 비교 대상이 없어 비어 있음 — 다음 거래일부터 누적 시작.
+</div>
+{% if transitions %}
+<table>
+  <thead><tr><th>날짜</th><th>티커</th><th>이벤트</th><th>From</th><th>To</th></tr></thead>
+  <tbody>
+  {% for t in transitions|reverse %}
+    <tr><td>{{ t.date }}</td><td>{{ t.ticker }}</td><td>{{ t.event }}</td>
+        <td>{{ t['from'] or '—' }}</td><td>{{ t['to'] or '—' }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p><em>아직 transition 이력 없음 (첫 거래일).</em></p>{% endif %}
+
+<!-- Section [5]: MAIN TABLE -->
+<h2>전체 active set 상세</h2>
+<div class="table-help">
+  컬럼 의미: <strong>Setup</strong> = 추세 구조 진단 ·
+  <strong>Trigger</strong> = 진입 신호 발화 여부 ·
+  <strong>Decision</strong> = 위 둘을 조합한 실행 권고.<br>
+  <strong>trig_age</strong> = 마지막 trigger 발화로부터 경과 일수 (0 = 오늘) ·
+  <strong>days_in_pb</strong> = PULLBACK/BASE_FORMING 에 머문 연속 일수 ·
+  <strong>setup_streak</strong> = 같은 setup 유지 연속 일수.
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>티커</th>
+      <th>섹터</th>
+      <th title="구조 진단: TREND_OK · PULLBACK · BASE_FORMING · EXTENDED · BROKEN">Setup</th>
+      <th title="진입 신호: WAIT · EARLY_TRIGGER · CONFIRMED_TRIGGER">Trigger</th>
+      <th title="실행 권고: ENTER_OK · EARLY · STAGING · AVOID">Decision</th>
+      <th title="마지막 trigger 로부터 경과 일수 (0 = 오늘)">trig_age</th>
+      <th title="EMA9 와의 거리 (%)">dist_ema9 %</th>
+      <th title="EMA21 과의 거리 (%)">dist_ema21 %</th>
+      <th title="20일 평균 대비 거래량 비율 (1.0 = 평균)">vol_ratio</th>
+      <th title="ATR 14 (% of close) — 변동성 지표">atr %</th>
+      <th title="PULLBACK 또는 BASE_FORMING 에 머문 연속 일수">days_in_pb</th>
+      <th title="같은 setup 유지 연속 일수">setup_streak</th>
+      <th title="OVERHEAT(RSI≥80) · PARABOLIC(1d≥+8% & vol≥2x) · EXTENDED · FAILED_BREAKOUT">risk_tags</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for group in [enter_ok, early, staging, avoid] %}{% for r in group %}
+    <tr id="row-{{ r.ticker }}">
+      <td><strong>{{ r.name or r.ticker }}</strong>{% if r.name and r.name != r.ticker %}<br><small style="color:#94a3b8;font-weight:normal">{{ r.ticker }}</small>{% endif %}</td>
+      <td>{{ r.raw.sector or '—' }}</td>
+      <td>{{ r.setup }}</td>
+      <td>{{ r.trigger }}</td>
+      <td>{{ r.decision }}</td>
+      <td>{{ r.trigger_age_days if r.trigger_age_days is not none else '—' }}</td>
+      <td>{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
+      <td>{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>
+      <td>{{ '%.2f'|format(r.raw.volume_ratio) if r.raw.volume_ratio is not none else '—' }}</td>
+      <td>{{ '%.2f'|format(r.raw.atr_pct) if r.raw.atr_pct is not none else '—' }}</td>
+      <td>{{ r.days_in_pullback }}</td>
+      <td>{{ r.setup_streak }}</td>
+      <td>{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '—' }}</td>
+    </tr>
+  {% endfor %}{% endfor %}
+  </tbody>
+</table>
+
+<!-- Section [6]: FAILED / BROKEN -->
+{% if broken_table %}
+<details>
+  <summary>FAILED / BROKEN ({{ broken_table|length }}) — 추세 깨진 종목 (참고용)</summary>
+  <div class="table-help">
+    중기 추세 (EMA21 < EMA65) 또는 장기 필터 (close < EMA65) 가 깨진 종목들. 진입 후보에서 제외되며 Phase D 의 expectancy 분석을 위해 보존됨.
+  </div>
+  <table>
+    <thead><tr><th>티커</th><th>섹터</th><th>Setup</th>
+                <th>dist_ema9 %</th><th>dist_ema21 %</th><th>risk_tags</th></tr></thead>
+    <tbody>
+    {% for r in broken_table %}
+      <tr><td>{{ r.name or r.ticker }}{% if r.name and r.name != r.ticker %} <small style="color:#94a3b8">({{ r.ticker }})</small>{% endif %}</td><td>{{ r.raw.sector or '—' }}</td>
+          <td>{{ r.setup }}</td>
+          <td>{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
+          <td>{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>
+          <td>{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '—' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</details>
+{% endif %}
+
+<p class="footer-note">
+  각 시장은 자체 마감일 기준 — US 와 KR 페이지의 날짜 스탬프가 일시적으로 다를 수 있음.
+  Lifecycle 은 <strong>매수 판단 보조</strong> 도구이며 자동매매를 수행하지 않습니다.
+  합성 점수 (composite score) 는 의도적으로 제공하지 않으며, raw 수치만 노출합니다.
+</p>
+
+</body>
+</html>

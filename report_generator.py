@@ -270,6 +270,8 @@ def generate_report(
     momentum_us: dict | None = None,
     momentum_kr: dict | None = None,
     portfolio_stop_result=None,  # Phase 7 next PR will consume; accepted now to allow pipeline kwargs
+    lifecycle_us: dict | None = None,
+    lifecycle_kr: dict | None = None,
 ) -> str:
     """
     Jinja2 템플릿으로 HTML 리포트 생성.
@@ -517,6 +519,19 @@ def generate_report(
         )
     else:
         context["portfolio_stop_page"] = None
+
+    # ── Lifecycle pages ────────────────────────
+    _lc_date = (lifecycle_us or {}).get("as_of") or (lifecycle_kr or {}).get("as_of") or date_str
+    context["lifecycle_us_page"] = (
+        f"lifecycle_us_{_lc_date}.html"
+        if lifecycle_us and lifecycle_us.get("status") == "ok" and lifecycle_us.get("snapshots")
+        else None
+    )
+    context["lifecycle_kr_page"] = (
+        f"lifecycle_kr_{_lc_date}.html"
+        if lifecycle_kr and lifecycle_kr.get("status") == "ok" and lifecycle_kr.get("snapshots")
+        else None
+    )
 
     html = template.render(**context)
 
