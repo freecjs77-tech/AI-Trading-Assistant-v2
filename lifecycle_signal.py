@@ -375,6 +375,34 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
                 "snapshots": {}, "transitions": [], "skipped": [],
                 "active_set_size": 0}
 
+    # Active set may contain tickers absent from main market_data (which only
+    # holds portfolio.md tickers). Lifecycle's active set comes from momentum
+    # scanner's universe (SP100/IWB/KOSPI200) which uses a separate fetch
+    # pipeline that doesn't emit ema9/21/65. Fetch the missing tickers
+    # directly here so process_universe has the indicators it needs.
+    flat = market_data.get("data") if isinstance(market_data, dict) and "data" in market_data else market_data
+    flat = flat or {}
+    missing = sorted(tk for tk in active if tk not in flat)
+    if missing:
+        print(f"[lifecycle:{market}] fetching {len(missing)} active-set tickers absent from market_data...")
+        from fetch_market_data import fetch_ticker
+        fetched_count = 0
+        merged = dict(flat)
+        for tk in missing:
+            try:
+                row = fetch_ticker(tk)
+                if row and "error" not in row:
+                    merged[tk] = row
+                    fetched_count += 1
+            except Exception as fetch_err:
+                print(f"  WARN [lifecycle:{market}] fetch {tk}: {fetch_err}")
+        print(f"[lifecycle:{market}] fetched {fetched_count}/{len(missing)} successfully")
+        # Rebuild market_data envelope so process_universe sees the merge.
+        if isinstance(market_data, dict) and "data" in market_data:
+            market_data = {**market_data, "data": merged}
+        else:
+            market_data = merged
+
     proc = process_universe(active_set=active, market_data=market_data,
                             yesterday_state=state, today=today)
 
