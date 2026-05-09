@@ -221,6 +221,37 @@ def compute_risk_tags(stock_data: dict, stage: str) -> list[str]:
     return tags
 
 
+def classify_maturity(stock_data: dict) -> str | None:
+    """
+    Maturity 분류 — EARLY / MID / EXTENDED 중 하나, 또는 None.
+
+    EXTENDED 우선:  dist_ema9_pct >= 8% OR rsi14 >= 75
+    EARLY:          dist_ema9_pct < 3% AND rsi14 < 68 AND ema9 > ema21
+    MID:            그 외 (둘 다 아닌 경우)
+
+    Returns None if dist_ema9_pct or rsi14 missing.
+    """
+    dist = _safe_float(stock_data.get("dist_ema9_pct"))
+    rsi = _safe_float(stock_data.get("rsi14"))
+    if dist is None or rsi is None:
+        return None
+
+    # EXTENDED first
+    if dist >= cfg.MATURITY_EXT_DIST_PCT or rsi >= cfg.MATURITY_EXT_RSI:
+        return "EXTENDED"
+
+    # EARLY: all three required
+    ema9 = _safe_float(stock_data.get("ema9"))
+    ema21 = _safe_float(stock_data.get("ema21"))
+    if (dist < cfg.MATURITY_EARLY_DIST_PCT
+            and rsi < cfg.MATURITY_EARLY_RSI
+            and ema9 is not None and ema21 is not None
+            and ema9 > ema21):
+        return "EARLY"
+
+    return "MID"
+
+
 def position_hint(risk_tags: list[str]) -> str:
     """
     Risk tag → 포지션 힌트 (한글).

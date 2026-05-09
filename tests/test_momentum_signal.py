@@ -225,6 +225,78 @@ def test_evaluate_stock_no_signal_when_below_m1():
     assert result is None
 
 
+def _stock_basic(dist_ema9=4.0, rsi=65, ema9=110, ema21=108):
+    return {
+        "ticker": "TEST",
+        "dist_ema9_pct": dist_ema9, "rsi14": rsi,
+        "ema9": ema9, "ema21": ema21,
+    }
+
+
+# EXTENDED — dist OR rsi
+def test_maturity_extended_by_dist():
+    s = _stock_basic(dist_ema9=8.0, rsi=60)  # at boundary
+    assert ms.classify_maturity(s) == "EXTENDED"
+
+
+def test_maturity_not_extended_just_below_dist():
+    s = _stock_basic(dist_ema9=7.99, rsi=60)
+    assert ms.classify_maturity(s) != "EXTENDED"
+
+
+def test_maturity_extended_by_rsi():
+    s = _stock_basic(dist_ema9=4.0, rsi=75.0)  # at boundary
+    assert ms.classify_maturity(s) == "EXTENDED"
+
+
+def test_maturity_not_extended_just_below_rsi():
+    s = _stock_basic(dist_ema9=4.0, rsi=74.99)
+    assert ms.classify_maturity(s) != "EXTENDED"
+
+
+# EARLY — dist AND rsi AND ema9>ema21
+def test_maturity_early_all_three_satisfied():
+    s = _stock_basic(dist_ema9=2.0, rsi=64, ema9=110, ema21=108)
+    assert ms.classify_maturity(s) == "EARLY"
+
+
+def test_maturity_not_early_dist_at_boundary():
+    s = _stock_basic(dist_ema9=3.0, rsi=64, ema9=110, ema21=108)  # < 3 strict
+    assert ms.classify_maturity(s) != "EARLY"
+
+
+def test_maturity_not_early_rsi_at_boundary():
+    s = _stock_basic(dist_ema9=2.0, rsi=68.0, ema9=110, ema21=108)  # < 68 strict
+    assert ms.classify_maturity(s) != "EARLY"
+
+
+def test_maturity_not_early_when_ema9_below_ema21():
+    s = _stock_basic(dist_ema9=2.0, rsi=64, ema9=108, ema21=110)
+    assert ms.classify_maturity(s) != "EARLY"
+
+
+# MID — fallback
+def test_maturity_mid_fallback():
+    s = _stock_basic(dist_ema9=5.0, rsi=70, ema9=110, ema21=108)
+    assert ms.classify_maturity(s) == "MID"
+
+
+def test_maturity_mid_when_ema9_below_ema21_but_not_extended():
+    s = _stock_basic(dist_ema9=2.0, rsi=64, ema9=108, ema21=110)
+    assert ms.classify_maturity(s) == "MID"
+
+
+def test_maturity_none_when_required_fields_missing():
+    s = {"ticker": "TEST", "rsi14": 65}  # no dist_ema9_pct
+    assert ms.classify_maturity(s) is None
+
+
+def test_maturity_extended_takes_precedence_over_early():
+    """if both EXTENDED conditions true, EXTENDED wins (eval order)."""
+    s = _stock_basic(dist_ema9=8.0, rsi=64, ema9=110, ema21=108)
+    assert ms.classify_maturity(s) == "EXTENDED"
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):
