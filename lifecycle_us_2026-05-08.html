@@ -34,10 +34,18 @@
     font-size: 13px; color: #475569; margin-bottom: 10px; line-height: 1.5;
   }
   .card .tickers { font-weight: 500; }
-  .card.enter-ok { background: #ecfdf5; border-left: 4px solid #10b981; }
-  .card.early    { background: #fef3c7; border-left: 4px solid #f59e0b; }
-  .card.staging  { background: #f3f4f6; border-left: 4px solid #9ca3af; }
-  .card.avoid    { background: #fee2e2; border-left: 4px solid #ef4444; }
+  .card.enter-ok  { background: #ecfdf5; border-left: 4px solid #10b981; }
+  .card.probe     { background: #fef3c7; border-left: 4px solid #f59e0b; }
+  .card.watch     { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .card.trending  { background: #f3f4f6; border-left: 4px solid #9ca3af; }
+  .card.avoid     { background: #fee2e2; border-left: 4px solid #ef4444; }
+
+  /* Decision cell colors */
+  .decision-enter    { color: #22c55e; font-weight: bold; }
+  .decision-probe    { color: #eab308; }
+  .decision-watch    { color: #3b82f6; }
+  .decision-trending { color: #94a3b8; }
+  .decision-avoid    { color: #ef4444; font-weight: bold; }
 
   .new-confirmed {
     background: #dbeafe; border-left: 4px solid #2563eb;
@@ -138,10 +146,11 @@
   <br><small style="color:#64748b">보유 종목의 매도 판단(trailing stop)은 Portfolio Risk 페이지를 별도로 참조하세요.</small>
 
   <div class="legend-grid">
-    <div class="legend-item"><span class="key">🟢 ENTER_OK</span><span>진입해도 OK — 좋은 zone(PULLBACK/BASE)에서 거래량·종가 게이트까지 통과한 확정 trigger.</span></div>
-    <div class="legend-item"><span class="key">🟡 EARLY</span><span>조기 진입 — 진입 zone 안에서 약한 trigger 발화. 작게 시도하거나 확정 대기.</span></div>
-    <div class="legend-item"><span class="key">⚪ STAGING</span><span>대기 — 추세는 정상이지만 진입 신호 아직 없음. 모니터링 대상.</span></div>
-    <div class="legend-item"><span class="key">🔴 AVOID</span><span>회피 — 과확장(EXTENDED)·구조 깨짐(BROKEN)·실패한 trigger(FAILED_BREAKOUT) 중 하나 이상.</span></div>
+    <div class="legend-item"><span class="key">🟢 본 진입 (ENTER)</span><span>진입해도 OK — 좋은 zone(PULLBACK/BASE)에서 거래량·종가 게이트까지 통과한 확정 trigger. 풀 포지션 가능.</span></div>
+    <div class="legend-item"><span class="key">🟡 분할 진입 (PROBE)</span><span>조기 진입 — 진입 zone 안에서 약한 trigger 발화. 50% 부분 진입 가능, 확정 대기.</span></div>
+    <div class="legend-item"><span class="key">🔵 진입 대기 (WATCH)</span><span>좋은 setup, 트리거 미발생 — PULLBACK/BASE_FORMING zone이나 아직 진입 신호 없음. 반등 신호 관찰.</span></div>
+    <div class="legend-item"><span class="key">⚪ 눌림 대기 (TRENDING)</span><span>추세 진행 중 — TREND_OK지만 setup 압축 부족. 다음 PULLBACK까지 추격 자제.</span></div>
+    <div class="legend-item"><span class="key">🔴 매수 금지 (AVOID)</span><span>회피 — 과확장(EXTENDED)·구조 깨짐(BROKEN)·실패한 trigger(FAILED_BREAKOUT). 진입 시 손실 위험 큼.</span></div>
   </div>
 </div>
 
@@ -151,7 +160,7 @@
 
   <div class="glossary-body">
     <p class="glossary-intro">
-      Decision (위 4가지) 은 두 가지 raw 상태의 조합 결과입니다:
+      Decision (위 5가지) 은 두 가지 raw 상태의 조합 결과입니다:
       <strong>Setup</strong> 은 종목의 추세 구조를 5단계로 진단하고,
       <strong>Trigger</strong> 는 그 안에서 진입 신호의 발화 강도를 3단계로 표시합니다.
     </p>
@@ -204,15 +213,15 @@
     <table class="state-table decision-matrix">
       <thead><tr><th>Setup \ Trigger</th><th>WAIT</th><th>EARLY_TRIGGER</th><th>CONFIRMED_TRIGGER</th></tr></thead>
       <tbody>
-        <tr><td><strong>TREND_OK</strong></td><td>⚪ STAGING</td><td colspan="2" class="dim">— (Trigger 평가 안 함)</td></tr>
-        <tr><td><strong>PULLBACK</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
-        <tr><td><strong>BASE_FORMING</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
-        <tr><td><strong>EXTENDED</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
-        <tr><td><strong>BROKEN</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
+        <tr><td><strong>TREND_OK</strong></td><td>⚪ 눌림 대기 (TRENDING)</td><td colspan="2" class="dim">— (Trigger 평가 안 함)</td></tr>
+        <tr><td><strong>PULLBACK</strong></td><td>🔵 진입 대기 (WATCH)</td><td>🟡 분할 진입 (PROBE)</td><td>🟢 본 진입 (ENTER)</td></tr>
+        <tr><td><strong>BASE_FORMING</strong></td><td>🔵 진입 대기 (WATCH)</td><td>🟡 분할 진입 (PROBE)</td><td>🟢 본 진입 (ENTER)</td></tr>
+        <tr><td><strong>EXTENDED</strong></td><td colspan="3">🔴 매수 금지 (AVOID) — Trigger 무시</td></tr>
+        <tr><td><strong>BROKEN</strong></td><td colspan="3">🔴 매수 금지 (AVOID) — Trigger 무시</td></tr>
       </tbody>
     </table>
     <p class="glossary-note" style="margin-top: 8px;">
-      추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup·Trigger 무관하게 🔴 AVOID 강제.
+      추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup·Trigger 무관하게 🔴 매수 금지 (AVOID) 강제.
     </p>
   </div>
 </details>
@@ -229,38 +238,49 @@
 <h2>오늘의 결정 그룹</h2>
 
 <div class="card enter-ok">
-  <h3>🟢 ENTER_OK (0)</h3>
+  <h3>🟢 본 진입 — ENTER (0)</h3>
   <div class="desc">
-    <strong>진입해도 OK</strong> — PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (전일 종가 ≤ EMA9, 오늘 EMA9 돌파 또는 전일 고점 돌파 + 거래량 1.2x + 종가가 일중 상위 20%).
+    <strong>진입해도 OK — 풀 포지션 가능</strong> — PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (거래량 1.2x + 종가가 일중 상위 20%).
   </div>
   <em>해당 없음</em>
 </div>
 
-<div class="card early">
-  <h3>🟡 EARLY (0)</h3>
+<div class="card probe">
+  <h3>🟡 분할 진입 — PROBE (0)</h3>
   <div class="desc">
-    <strong>조기 진입 — 작게 시도 가능</strong> — 진입 zone 안에서 trigger 발화는 있으나 거래량·종가 게이트 중 하나 이상 미달. 다음 거래일에 CONFIRMED 로 승급될 수 있음.
+    <strong>조기 진입 — 50% 부분 진입 가능</strong> — 진입 zone 안에서 trigger 발화는 있으나 거래량·종가 게이트 중 하나 이상 미달. 다음 거래일에 ENTER 로 승급될 수 있음.
   </div>
   <em>해당 없음</em>
 </div>
 
 <details>
-  <summary>⚪ STAGING (26) — 추세 정상, 신호 없음 (모니터링)</summary>
-  <div class="card staging">
+  <summary>🔵 진입 대기 — WATCH (19) — 좋은 setup, 트리거 대기</summary>
+  <div class="card watch">
     <div class="desc">
-      <strong>지금 진입 신호 없음</strong> — TREND_OK / PULLBACK / BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 EARLY 또는 ENTER_OK 로 자동 승격.
+      <strong>좋은 setup, 아직 트리거 미발생</strong> — PULLBACK/BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 PROBE 또는 ENTER 로 자동 승격.
+      AVGO 같은 "눌림 압축 중" 종목이 여기에 위치합니다.
+    </div>
+    <div class="tickers">AFRM · ALGM · AVGO · BAM · CACC · CRUS · DV · EPR · HIW · JBL · MP · MPWR · NWS · NWSA · Q · RNG · SWKS · TTWO · VIRT</div>
+  </div>
+</details>
+
+<details>
+  <summary>⚪ 눌림 대기 — TRENDING (26) — 추세 진행 중, setup 압축 대기</summary>
+  <div class="card trending">
+    <div class="desc">
+      <strong>추세는 살아있으나 setup 압축 부족</strong> — TREND_OK 상태. 다음 PULLBACK/BASE_FORMING 까지 추격 자제. 매일 재평가되며 눌림 발생 시 WATCH 로 이동.
     </div>
     <div class="tickers">NVDA · AAPL · ADI · ALB · AMAT · APO · BA · BLSH · BWA · CRCL · CSCO · DD · FWONA · FWONK · GWW · HPE · HWM · IFF · KLAC · LINE · LSCC · MKSI · NTAP · ROK · S · XYZ</div>
   </div>
 </details>
 
 <details>
-  <summary>🔴 AVOID (22) — 회피 사유 있음</summary>
+  <summary>🔴 매수 금지 — AVOID (3) — 실제 위험 사유 있음</summary>
   <div class="card avoid">
     <div class="desc">
-      <strong>지금 진입 부적합</strong> — EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN 직전 단계 또는 risk_tags 에 FAILED_BREAKOUT (어제 CONFIRMED → 오늘 EMA9 하회).
+      <strong>지금 진입 부적합</strong> — EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN (추세 깨짐) 또는 risk_tags 에 FAILED_BREAKOUT (어제 CONFIRMED → 오늘 EMA9 하회).
     </div>
-    <div class="tickers">AFRM · ALGM · AMD · AVGO · BAM · CACC · CRUS · DV · EPR · HIW · INTC · JBL · MP · MPWR · MU · NWS · NWSA · Q · RNG · SWKS · TTWO · VIRT</div>
+    <div class="tickers">AMD · INTC · MU</div>
   </div>
 </details>
 
@@ -269,7 +289,149 @@
 <div class="table-help">
   종목별 setup / trigger / decision 상태가 어제 대비 변한 이력. 첫 실행일에는 비교 대상이 없어 비어 있음 — 다음 거래일부터 누적 시작.
 </div>
-<p><em>아직 transition 이력 없음 (첫 거래일).</em></p>
+
+<table>
+  <thead><tr><th>날짜</th><th>티커</th><th>이벤트</th><th>From</th><th>To</th></tr></thead>
+  <tbody>
+  
+    <tr><td>2026-05-08</td><td>XYZ</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>VIRT</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>TTWO</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>SWKS</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>S</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>ROK</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>RNG</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>Q</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>NWSA</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>NWS</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>NVDA</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>NTAP</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>MPWR</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>MP</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>MKSI</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>LSCC</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>LINE</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>KLAC</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>JBL</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>IFF</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>HWM</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>HPE</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>HIW</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>GWW</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>FWONK</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>FWONA</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>EPR</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>DV</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>DD</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>CSCO</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>CRUS</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>CRCL</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>CACC</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>BWA</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>BLSH</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>BAM</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>BA</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>AVGO</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>APO</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>AMAT</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>ALGM</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>ALB</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>AFRM</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>ADI</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>AAPL</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+  </tbody>
+</table>
+
 
 <!-- Section [5]: MAIN TABLE -->
 <h2>전체 active set 상세</h2>
@@ -288,7 +450,7 @@
       <th>섹터</th>
       <th title="구조 진단: TREND_OK · PULLBACK · BASE_FORMING · EXTENDED · BROKEN">Setup</th>
       <th title="진입 신호: WAIT · EARLY_TRIGGER · CONFIRMED_TRIGGER">Trigger</th>
-      <th title="실행 권고: ENTER_OK · EARLY · STAGING · AVOID">Decision</th>
+      <th title="실행 권고: 본 진입(ENTER) · 분할 진입(PROBE) · 진입 대기(WATCH) · 눌림 대기(TRENDING) · 매수 금지(AVOID)">Decision</th>
       <th title="마지막 trigger 로부터 경과 일수 (0 = 오늘)">trig_age</th>
       <th title="EMA9 와의 거리 (%)">dist_ema9 %</th>
       <th title="EMA21 과의 거리 (%)">dist_ema21 %</th>
@@ -301,435 +463,21 @@
   </thead>
   <tbody>
   
-    <tr id="row-NVDA">
-      <td><strong>NVDA</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.21</td>
-      <td>6.97</td>
-      <td>0.90</td>
-      <td>3.08</td>
-      <td>0</td>
-      <td>3</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-AAPL">
-      <td><strong>AAPL</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>3.92</td>
-      <td>6.87</td>
-      <td>1.08</td>
-      <td>2.28</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-ADI">
-      <td><strong>ADI</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>3.29</td>
-      <td>8.03</td>
-      <td>1.14</td>
-      <td>2.68</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-ALB">
-      <td><strong>ALB</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>3.88</td>
-      <td>6.08</td>
-      <td>1.36</td>
-      <td>5.70</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-AMAT">
-      <td><strong>AMAT</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>6.07</td>
-      <td>9.33</td>
-      <td>1.36</td>
-      <td>3.93</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-APO">
-      <td><strong>APO</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>3.54</td>
-      <td>7.06</td>
-      <td>1.06</td>
-      <td>3.51</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-BA">
-      <td><strong>BA</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>3.42</td>
-      <td>5.19</td>
-      <td>1.19</td>
-      <td>2.82</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-BLSH">
-      <td><strong>BLSH</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.28</td>
-      <td>7.29</td>
-      <td>1.28</td>
-      <td>6.41</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-BWA">
-      <td><strong>BWA</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>5.96</td>
-      <td>8.73</td>
-      <td>1.41</td>
-      <td>3.23</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-CRCL">
-      <td><strong>CRCL</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>3.52</td>
-      <td>8.02</td>
-      <td>1.21</td>
-      <td>7.66</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-CSCO">
-      <td><strong>CSCO</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.69</td>
-      <td>8.38</td>
-      <td>1.37</td>
-      <td>2.40</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-DD">
-      <td><strong>DD</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>3.83</td>
-      <td>5.62</td>
-      <td>1.13</td>
-      <td>3.02</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-FWONA">
-      <td><strong>FWONA</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.07</td>
-      <td>5.43</td>
-      <td>1.17</td>
-      <td>2.86</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-FWONK">
-      <td><strong>FWONK</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>5.00</td>
-      <td>6.50</td>
-      <td>1.38</td>
-      <td>2.83</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-GWW">
-      <td><strong>GWW</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.39</td>
-      <td>6.27</td>
-      <td>1.10</td>
-      <td>2.67</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-HPE">
-      <td><strong>HPE</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>6.15</td>
-      <td>11.72</td>
-      <td>1.22</td>
-      <td>3.34</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-HWM">
-      <td><strong>HWM</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>6.36</td>
-      <td>8.60</td>
-      <td>1.28</td>
-      <td>3.39</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-IFF">
-      <td><strong>IFF</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>7.26</td>
-      <td>10.10</td>
-      <td>1.30</td>
-      <td>3.68</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-KLAC">
-      <td><strong>KLAC</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.28</td>
-      <td>6.37</td>
-      <td>1.25</td>
-      <td>4.19</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-LINE">
-      <td><strong>LINE</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>5.68</td>
-      <td>8.52</td>
-      <td>1.30</td>
-      <td>3.82</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-LSCC">
-      <td><strong>LSCC</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.20</td>
-      <td>8.90</td>
-      <td>1.16</td>
-      <td>5.05</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-MKSI">
-      <td><strong>MKSI</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>7.28</td>
-      <td>12.22</td>
-      <td>1.35</td>
-      <td>5.16</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-NTAP">
-      <td><strong>NTAP</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.93</td>
-      <td>8.20</td>
-      <td>1.45</td>
-      <td>2.94</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-ROK">
-      <td><strong>ROK</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>5.20</td>
-      <td>9.44</td>
-      <td>1.14</td>
-      <td>3.10</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-S">
-      <td><strong>S</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>7.38</td>
-      <td>12.46</td>
-      <td>1.15</td>
-      <td>4.28</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-XYZ">
-      <td><strong>XYZ</strong></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.68</td>
-      <td>7.68</td>
-      <td>2.37</td>
-      <td>3.82</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
     <tr id="row-AFRM">
       <td><strong>AFRM</strong></td>
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>1.92</td>
       <td>2.94</td>
       <td>1.69</td>
       <td>5.44</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -738,31 +486,17 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.57</td>
       <td>10.85</td>
       <td>1.09</td>
       <td>5.17</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
-    </tr>
-  
-    <tr id="row-AMD">
-      <td><strong>AMD</strong></td>
-      <td>—</td>
-      <td>EXTENDED</td>
-      <td>WAIT</td>
-      <td>AVOID</td>
-      <td>—</td>
-      <td>19.09</td>
-      <td>36.29</td>
-      <td>1.24</td>
-      <td>4.96</td>
-      <td>0</td>
-      <td>7</td>
-      <td>OVERHEAT, EXTENDED</td>
     </tr>
   
     <tr id="row-AVGO">
@@ -770,14 +504,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.68</td>
       <td>6.82</td>
       <td>1.10</td>
       <td>3.42</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -786,14 +522,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.84</td>
       <td>4.48</td>
       <td>1.83</td>
       <td>2.80</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -802,14 +540,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.29</td>
       <td>4.94</td>
       <td>1.40</td>
       <td>3.89</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -818,14 +558,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.06</td>
       <td>4.51</td>
       <td>1.11</td>
       <td>3.59</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -834,14 +576,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>0.05</td>
       <td>2.26</td>
       <td>1.35</td>
       <td>3.91</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -850,14 +594,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.97</td>
       <td>4.73</td>
       <td>1.41</td>
       <td>2.05</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -866,31 +612,17 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>1.91</td>
       <td>5.29</td>
       <td>1.16</td>
       <td>2.74</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
-    </tr>
-  
-    <tr id="row-INTC">
-      <td><strong>INTC</strong></td>
-      <td>—</td>
-      <td>EXTENDED</td>
-      <td>WAIT</td>
-      <td>AVOID</td>
-      <td>—</td>
-      <td>20.33</td>
-      <td>42.42</td>
-      <td>1.53</td>
-      <td>5.40</td>
-      <td>0</td>
-      <td>7</td>
-      <td>OVERHEAT, EXTENDED</td>
     </tr>
   
     <tr id="row-JBL">
@@ -898,14 +630,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.52</td>
       <td>7.49</td>
       <td>1.06</td>
       <td>4.01</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -914,14 +648,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>0.46</td>
       <td>5.35</td>
       <td>1.83</td>
       <td>6.85</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -930,31 +666,17 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>1.23</td>
       <td>6.60</td>
       <td>1.09</td>
       <td>4.07</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
-    </tr>
-  
-    <tr id="row-MU">
-      <td><strong>MU</strong></td>
-      <td>—</td>
-      <td>EXTENDED</td>
-      <td>WAIT</td>
-      <td>AVOID</td>
-      <td>—</td>
-      <td>21.21</td>
-      <td>37.58</td>
-      <td>1.51</td>
-      <td>5.26</td>
-      <td>0</td>
-      <td>7</td>
-      <td>OVERHEAT, EXTENDED</td>
     </tr>
   
     <tr id="row-NWS">
@@ -962,14 +684,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.91</td>
       <td>4.66</td>
       <td>2.16</td>
       <td>2.44</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -978,14 +702,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.44</td>
       <td>4.06</td>
       <td>2.12</td>
       <td>2.57</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -994,14 +720,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.32</td>
       <td>6.24</td>
       <td>1.23</td>
       <td>4.07</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -1010,14 +738,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.70</td>
       <td>8.22</td>
       <td>2.59</td>
       <td>6.21</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -1026,14 +756,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>0.89</td>
       <td>5.20</td>
       <td>1.28</td>
       <td>4.54</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -1042,14 +774,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>0.42</td>
       <td>2.54</td>
       <td>1.16</td>
       <td>2.73</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -1058,15 +792,539 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.81</td>
       <td>4.81</td>
       <td>1.20</td>
       <td>3.29</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
+    </tr>
+  
+    <tr id="row-NVDA">
+      <td><strong>NVDA</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.21</td>
+      <td>6.97</td>
+      <td>0.90</td>
+      <td>3.08</td>
+      <td>0</td>
+      <td>4</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-AAPL">
+      <td><strong>AAPL</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>3.92</td>
+      <td>6.87</td>
+      <td>1.08</td>
+      <td>2.28</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-ADI">
+      <td><strong>ADI</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>3.29</td>
+      <td>8.03</td>
+      <td>1.14</td>
+      <td>2.68</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-ALB">
+      <td><strong>ALB</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>3.88</td>
+      <td>6.08</td>
+      <td>1.36</td>
+      <td>5.70</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-AMAT">
+      <td><strong>AMAT</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>6.07</td>
+      <td>9.33</td>
+      <td>1.36</td>
+      <td>3.93</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-APO">
+      <td><strong>APO</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>3.54</td>
+      <td>7.06</td>
+      <td>1.06</td>
+      <td>3.51</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-BA">
+      <td><strong>BA</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>3.42</td>
+      <td>5.19</td>
+      <td>1.19</td>
+      <td>2.82</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-BLSH">
+      <td><strong>BLSH</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.28</td>
+      <td>7.29</td>
+      <td>1.28</td>
+      <td>6.41</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-BWA">
+      <td><strong>BWA</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>5.96</td>
+      <td>8.73</td>
+      <td>1.41</td>
+      <td>3.23</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-CRCL">
+      <td><strong>CRCL</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>3.52</td>
+      <td>8.02</td>
+      <td>1.21</td>
+      <td>7.66</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-CSCO">
+      <td><strong>CSCO</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.69</td>
+      <td>8.38</td>
+      <td>1.37</td>
+      <td>2.40</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-DD">
+      <td><strong>DD</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>3.83</td>
+      <td>5.62</td>
+      <td>1.13</td>
+      <td>3.02</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-FWONA">
+      <td><strong>FWONA</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.07</td>
+      <td>5.43</td>
+      <td>1.17</td>
+      <td>2.86</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-FWONK">
+      <td><strong>FWONK</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>5.00</td>
+      <td>6.50</td>
+      <td>1.38</td>
+      <td>2.83</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-GWW">
+      <td><strong>GWW</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.39</td>
+      <td>6.27</td>
+      <td>1.10</td>
+      <td>2.67</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-HPE">
+      <td><strong>HPE</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>6.15</td>
+      <td>11.72</td>
+      <td>1.22</td>
+      <td>3.34</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-HWM">
+      <td><strong>HWM</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>6.36</td>
+      <td>8.60</td>
+      <td>1.28</td>
+      <td>3.39</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-IFF">
+      <td><strong>IFF</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>7.26</td>
+      <td>10.10</td>
+      <td>1.30</td>
+      <td>3.68</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-KLAC">
+      <td><strong>KLAC</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.28</td>
+      <td>6.37</td>
+      <td>1.25</td>
+      <td>4.19</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-LINE">
+      <td><strong>LINE</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>5.68</td>
+      <td>8.52</td>
+      <td>1.30</td>
+      <td>3.82</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-LSCC">
+      <td><strong>LSCC</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.20</td>
+      <td>8.90</td>
+      <td>1.16</td>
+      <td>5.05</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-MKSI">
+      <td><strong>MKSI</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>7.28</td>
+      <td>12.22</td>
+      <td>1.35</td>
+      <td>5.16</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-NTAP">
+      <td><strong>NTAP</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.93</td>
+      <td>8.20</td>
+      <td>1.45</td>
+      <td>2.94</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-ROK">
+      <td><strong>ROK</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>5.20</td>
+      <td>9.44</td>
+      <td>1.14</td>
+      <td>3.10</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-S">
+      <td><strong>S</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>7.38</td>
+      <td>12.46</td>
+      <td>1.15</td>
+      <td>4.28</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-XYZ">
+      <td><strong>XYZ</strong></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.68</td>
+      <td>7.68</td>
+      <td>2.37</td>
+      <td>3.82</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-AMD">
+      <td><strong>AMD</strong></td>
+      <td>—</td>
+      <td>EXTENDED</td>
+      <td>WAIT</td>
+      <td class="decision decision-avoid"
+          title="매수 금지: EXTENDED 과열 / BROKEN 추세 깨짐 / FAILED_BREAKOUT 가짜 돌파 — 진입 시 손실 위험 큼">
+        매수 금지</td>
+      <td>—</td>
+      <td>19.09</td>
+      <td>36.29</td>
+      <td>1.24</td>
+      <td>4.96</td>
+      <td>0</td>
+      <td>8</td>
+      <td>OVERHEAT, EXTENDED</td>
+    </tr>
+  
+    <tr id="row-INTC">
+      <td><strong>INTC</strong></td>
+      <td>—</td>
+      <td>EXTENDED</td>
+      <td>WAIT</td>
+      <td class="decision decision-avoid"
+          title="매수 금지: EXTENDED 과열 / BROKEN 추세 깨짐 / FAILED_BREAKOUT 가짜 돌파 — 진입 시 손실 위험 큼">
+        매수 금지</td>
+      <td>—</td>
+      <td>20.33</td>
+      <td>42.42</td>
+      <td>1.53</td>
+      <td>5.40</td>
+      <td>0</td>
+      <td>8</td>
+      <td>OVERHEAT, EXTENDED</td>
+    </tr>
+  
+    <tr id="row-MU">
+      <td><strong>MU</strong></td>
+      <td>—</td>
+      <td>EXTENDED</td>
+      <td>WAIT</td>
+      <td class="decision decision-avoid"
+          title="매수 금지: EXTENDED 과열 / BROKEN 추세 깨짐 / FAILED_BREAKOUT 가짜 돌파 — 진입 시 손실 위험 큼">
+        매수 금지</td>
+      <td>—</td>
+      <td>21.21</td>
+      <td>37.58</td>
+      <td>1.51</td>
+      <td>5.26</td>
+      <td>0</td>
+      <td>8</td>
+      <td>OVERHEAT, EXTENDED</td>
     </tr>
   
   </tbody>

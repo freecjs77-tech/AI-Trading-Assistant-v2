@@ -34,10 +34,18 @@
     font-size: 13px; color: #475569; margin-bottom: 10px; line-height: 1.5;
   }
   .card .tickers { font-weight: 500; }
-  .card.enter-ok { background: #ecfdf5; border-left: 4px solid #10b981; }
-  .card.early    { background: #fef3c7; border-left: 4px solid #f59e0b; }
-  .card.staging  { background: #f3f4f6; border-left: 4px solid #9ca3af; }
-  .card.avoid    { background: #fee2e2; border-left: 4px solid #ef4444; }
+  .card.enter-ok  { background: #ecfdf5; border-left: 4px solid #10b981; }
+  .card.probe     { background: #fef3c7; border-left: 4px solid #f59e0b; }
+  .card.watch     { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .card.trending  { background: #f3f4f6; border-left: 4px solid #9ca3af; }
+  .card.avoid     { background: #fee2e2; border-left: 4px solid #ef4444; }
+
+  /* Decision cell colors */
+  .decision-enter    { color: #22c55e; font-weight: bold; }
+  .decision-probe    { color: #eab308; }
+  .decision-watch    { color: #3b82f6; }
+  .decision-trending { color: #94a3b8; }
+  .decision-avoid    { color: #ef4444; font-weight: bold; }
 
   .new-confirmed {
     background: #dbeafe; border-left: 4px solid #2563eb;
@@ -138,10 +146,11 @@
   <br><small style="color:#64748b">보유 종목의 매도 판단(trailing stop)은 Portfolio Risk 페이지를 별도로 참조하세요.</small>
 
   <div class="legend-grid">
-    <div class="legend-item"><span class="key">🟢 ENTER_OK</span><span>진입해도 OK — 좋은 zone(PULLBACK/BASE)에서 거래량·종가 게이트까지 통과한 확정 trigger.</span></div>
-    <div class="legend-item"><span class="key">🟡 EARLY</span><span>조기 진입 — 진입 zone 안에서 약한 trigger 발화. 작게 시도하거나 확정 대기.</span></div>
-    <div class="legend-item"><span class="key">⚪ STAGING</span><span>대기 — 추세는 정상이지만 진입 신호 아직 없음. 모니터링 대상.</span></div>
-    <div class="legend-item"><span class="key">🔴 AVOID</span><span>회피 — 과확장(EXTENDED)·구조 깨짐(BROKEN)·실패한 trigger(FAILED_BREAKOUT) 중 하나 이상.</span></div>
+    <div class="legend-item"><span class="key">🟢 본 진입 (ENTER)</span><span>진입해도 OK — 좋은 zone(PULLBACK/BASE)에서 거래량·종가 게이트까지 통과한 확정 trigger. 풀 포지션 가능.</span></div>
+    <div class="legend-item"><span class="key">🟡 분할 진입 (PROBE)</span><span>조기 진입 — 진입 zone 안에서 약한 trigger 발화. 50% 부분 진입 가능, 확정 대기.</span></div>
+    <div class="legend-item"><span class="key">🔵 진입 대기 (WATCH)</span><span>좋은 setup, 트리거 미발생 — PULLBACK/BASE_FORMING zone이나 아직 진입 신호 없음. 반등 신호 관찰.</span></div>
+    <div class="legend-item"><span class="key">⚪ 눌림 대기 (TRENDING)</span><span>추세 진행 중 — TREND_OK지만 setup 압축 부족. 다음 PULLBACK까지 추격 자제.</span></div>
+    <div class="legend-item"><span class="key">🔴 매수 금지 (AVOID)</span><span>회피 — 과확장(EXTENDED)·구조 깨짐(BROKEN)·실패한 trigger(FAILED_BREAKOUT). 진입 시 손실 위험 큼.</span></div>
   </div>
 </div>
 
@@ -151,7 +160,7 @@
 
   <div class="glossary-body">
     <p class="glossary-intro">
-      Decision (위 4가지) 은 두 가지 raw 상태의 조합 결과입니다:
+      Decision (위 5가지) 은 두 가지 raw 상태의 조합 결과입니다:
       <strong>Setup</strong> 은 종목의 추세 구조를 5단계로 진단하고,
       <strong>Trigger</strong> 는 그 안에서 진입 신호의 발화 강도를 3단계로 표시합니다.
     </p>
@@ -204,15 +213,15 @@
     <table class="state-table decision-matrix">
       <thead><tr><th>Setup \ Trigger</th><th>WAIT</th><th>EARLY_TRIGGER</th><th>CONFIRMED_TRIGGER</th></tr></thead>
       <tbody>
-        <tr><td><strong>TREND_OK</strong></td><td>⚪ STAGING</td><td colspan="2" class="dim">— (Trigger 평가 안 함)</td></tr>
-        <tr><td><strong>PULLBACK</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
-        <tr><td><strong>BASE_FORMING</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
-        <tr><td><strong>EXTENDED</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
-        <tr><td><strong>BROKEN</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
+        <tr><td><strong>TREND_OK</strong></td><td>⚪ 눌림 대기 (TRENDING)</td><td colspan="2" class="dim">— (Trigger 평가 안 함)</td></tr>
+        <tr><td><strong>PULLBACK</strong></td><td>🔵 진입 대기 (WATCH)</td><td>🟡 분할 진입 (PROBE)</td><td>🟢 본 진입 (ENTER)</td></tr>
+        <tr><td><strong>BASE_FORMING</strong></td><td>🔵 진입 대기 (WATCH)</td><td>🟡 분할 진입 (PROBE)</td><td>🟢 본 진입 (ENTER)</td></tr>
+        <tr><td><strong>EXTENDED</strong></td><td colspan="3">🔴 매수 금지 (AVOID) — Trigger 무시</td></tr>
+        <tr><td><strong>BROKEN</strong></td><td colspan="3">🔴 매수 금지 (AVOID) — Trigger 무시</td></tr>
       </tbody>
     </table>
     <p class="glossary-note" style="margin-top: 8px;">
-      추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup·Trigger 무관하게 🔴 AVOID 강제.
+      추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup·Trigger 무관하게 🔴 매수 금지 (AVOID) 강제.
     </p>
   </div>
 </details>
@@ -229,38 +238,48 @@
 <h2>오늘의 결정 그룹</h2>
 
 <div class="card enter-ok">
-  <h3>🟢 ENTER_OK (0)</h3>
+  <h3>🟢 본 진입 — ENTER (0)</h3>
   <div class="desc">
-    <strong>진입해도 OK</strong> — PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (전일 종가 ≤ EMA9, 오늘 EMA9 돌파 또는 전일 고점 돌파 + 거래량 1.2x + 종가가 일중 상위 20%).
+    <strong>진입해도 OK — 풀 포지션 가능</strong> — PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (거래량 1.2x + 종가가 일중 상위 20%).
   </div>
   <em>해당 없음</em>
 </div>
 
-<div class="card early">
-  <h3>🟡 EARLY (0)</h3>
+<div class="card probe">
+  <h3>🟡 분할 진입 — PROBE (0)</h3>
   <div class="desc">
-    <strong>조기 진입 — 작게 시도 가능</strong> — 진입 zone 안에서 trigger 발화는 있으나 거래량·종가 게이트 중 하나 이상 미달. 다음 거래일에 CONFIRMED 로 승급될 수 있음.
+    <strong>조기 진입 — 50% 부분 진입 가능</strong> — 진입 zone 안에서 trigger 발화는 있으나 거래량·종가 게이트 중 하나 이상 미달. 다음 거래일에 ENTER 로 승급될 수 있음.
   </div>
   <em>해당 없음</em>
 </div>
 
 <details>
-  <summary>⚪ STAGING (14) — 추세 정상, 신호 없음 (모니터링)</summary>
-  <div class="card staging">
+  <summary>🔵 진입 대기 — WATCH (4) — 좋은 setup, 트리거 대기</summary>
+  <div class="card watch">
     <div class="desc">
-      <strong>지금 진입 신호 없음</strong> — TREND_OK / PULLBACK / BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 EARLY 또는 ENTER_OK 로 자동 승격.
+      <strong>좋은 setup, 아직 트리거 미발생</strong> — PULLBACK/BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 PROBE 또는 ENTER 로 자동 승격.
+    </div>
+    <div class="tickers">삼성중공업 · KT&amp;G · GS · 코스맥스</div>
+  </div>
+</details>
+
+<details>
+  <summary>⚪ 눌림 대기 — TRENDING (14) — 추세 진행 중, setup 압축 대기</summary>
+  <div class="card trending">
+    <div class="desc">
+      <strong>추세는 살아있으나 setup 압축 부족</strong> — TREND_OK 상태. 다음 PULLBACK/BASE_FORMING 까지 추격 자제. 매일 재평가되며 눌림 발생 시 WATCH 로 이동.
     </div>
     <div class="tickers">대한항공 · 포스코퓨처엠 · 현대자동차 · 삼성전자 · 미래에셋증권 · GS리테일 · SKC · 현대모비스 · 삼성생명 · 현대글로비스 · 기아 · 금호석유 · 롯데쇼핑 · 이마트</div>
   </div>
 </details>
 
 <details>
-  <summary>🔴 AVOID (8) — 회피 사유 있음</summary>
+  <summary>🔴 매수 금지 — AVOID (4) — 실제 위험 사유 있음</summary>
   <div class="card avoid">
     <div class="desc">
-      <strong>지금 진입 부적합</strong> — EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN 직전 단계 또는 risk_tags 에 FAILED_BREAKOUT (어제 CONFIRMED → 오늘 EMA9 하회).
+      <strong>지금 진입 부적합</strong> — EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN (추세 깨짐) 또는 risk_tags 에 FAILED_BREAKOUT (어제 CONFIRMED → 오늘 EMA9 하회).
     </div>
-    <div class="tickers">SK하이닉스 · 효성 · 삼성중공업 · 삼성물산 · KT&amp;G · SK · GS · 코스맥스</div>
+    <div class="tickers">SK하이닉스 · 효성 · 삼성물산 · SK</div>
   </div>
 </details>
 
@@ -269,7 +288,68 @@
 <div class="table-help">
   종목별 setup / trigger / decision 상태가 어제 대비 변한 이력. 첫 실행일에는 비교 대상이 없어 비어 있음 — 다음 거래일부터 누적 시작.
 </div>
-<p><em>아직 transition 이력 없음 (첫 거래일).</em></p>
+
+<table>
+  <thead><tr><th>날짜</th><th>티커</th><th>이벤트</th><th>From</th><th>To</th></tr></thead>
+  <tbody>
+  
+    <tr><td>2026-05-08</td><td>192820.KS</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>139480.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>086280.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>078930.KS</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>033780.KS</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>032830.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>023530.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>012330.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>011790.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>011780.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>010140.KS</td><td>DECISION_CHANGE</td>
+        <td>AVOID</td><td>WATCH</td></tr>
+  
+    <tr><td>2026-05-08</td><td>007070.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>006800.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>005930.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>005380.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>003670.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>003490.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+    <tr><td>2026-05-08</td><td>000270.KS</td><td>DECISION_CHANGE</td>
+        <td>STAGING</td><td>TRENDING</td></tr>
+  
+  </tbody>
+</table>
+
 
 <!-- Section [5]: MAIN TABLE -->
 <h2>전체 active set 상세</h2>
@@ -288,7 +368,7 @@
       <th>섹터</th>
       <th title="구조 진단: TREND_OK · PULLBACK · BASE_FORMING · EXTENDED · BROKEN">Setup</th>
       <th title="진입 신호: WAIT · EARLY_TRIGGER · CONFIRMED_TRIGGER">Trigger</th>
-      <th title="실행 권고: ENTER_OK · EARLY · STAGING · AVOID">Decision</th>
+      <th title="실행 권고: 본 진입(ENTER) · 분할 진입(PROBE) · 진입 대기(WATCH) · 눌림 대기(TRENDING) · 매수 금지(AVOID)">Decision</th>
       <th title="마지막 trigger 로부터 경과 일수 (0 = 오늘)">trig_age</th>
       <th title="EMA9 와의 거리 (%)">dist_ema9 %</th>
       <th title="EMA21 과의 거리 (%)">dist_ema21 %</th>
@@ -301,292 +381,22 @@
   </thead>
   <tbody>
   
-    <tr id="row-003490.KS">
-      <td><strong>대한항공</strong><br><small style="color:#94a3b8;font-weight:normal">003490.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>6.43</td>
-      <td>8.32</td>
-      <td>2.03</td>
-      <td>3.45</td>
-      <td>0</td>
-      <td>7</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-003670.KS">
-      <td><strong>포스코퓨처엠</strong><br><small style="color:#94a3b8;font-weight:normal">003670.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>6.64</td>
-      <td>14.80</td>
-      <td>0.75</td>
-      <td>5.27</td>
-      <td>0</td>
-      <td>7</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-005380.KS">
-      <td><strong>현대자동차</strong><br><small style="color:#94a3b8;font-weight:normal">005380.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>9.79</td>
-      <td>14.11</td>
-      <td>3.79</td>
-      <td>4.96</td>
-      <td>0</td>
-      <td>7</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-005930.KS">
-      <td><strong>삼성전자</strong><br><small style="color:#94a3b8;font-weight:normal">005930.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>9.55</td>
-      <td>18.07</td>
-      <td>1.02</td>
-      <td>4.32</td>
-      <td>0</td>
-      <td>7</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-006800.KS">
-      <td><strong>미래에셋증권</strong><br><small style="color:#94a3b8;font-weight:normal">006800.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>7.35</td>
-      <td>12.45</td>
-      <td>1.22</td>
-      <td>6.52</td>
-      <td>0</td>
-      <td>7</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-007070.KS">
-      <td><strong>GS리테일</strong><br><small style="color:#94a3b8;font-weight:normal">007070.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>8.67</td>
-      <td>11.41</td>
-      <td>4.98</td>
-      <td>4.38</td>
-      <td>0</td>
-      <td>7</td>
-      <td>PARABOLIC</td>
-    </tr>
-  
-    <tr id="row-011790.KS">
-      <td><strong>SKC</strong><br><small style="color:#94a3b8;font-weight:normal">011790.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>13.33</td>
-      <td>28.13</td>
-      <td>1.82</td>
-      <td>6.88</td>
-      <td>0</td>
-      <td>7</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-012330.KS">
-      <td><strong>현대모비스</strong><br><small style="color:#94a3b8;font-weight:normal">012330.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>13.35</td>
-      <td>17.19</td>
-      <td>4.48</td>
-      <td>4.95</td>
-      <td>0</td>
-      <td>7</td>
-      <td>PARABOLIC</td>
-    </tr>
-  
-    <tr id="row-032830.KS">
-      <td><strong>삼성생명</strong><br><small style="color:#94a3b8;font-weight:normal">032830.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>7.43</td>
-      <td>14.10</td>
-      <td>0.90</td>
-      <td>4.63</td>
-      <td>0</td>
-      <td>7</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-086280.KS">
-      <td><strong>현대글로비스</strong><br><small style="color:#94a3b8;font-weight:normal">086280.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>7.99</td>
-      <td>9.83</td>
-      <td>4.92</td>
-      <td>5.17</td>
-      <td>0</td>
-      <td>7</td>
-      <td>PARABOLIC</td>
-    </tr>
-  
-    <tr id="row-000270.KS">
-      <td><strong>기아</strong><br><small style="color:#94a3b8;font-weight:normal">000270.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>4.68</td>
-      <td>5.44</td>
-      <td>2.96</td>
-      <td>3.93</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-011780.KS">
-      <td><strong>금호석유</strong><br><small style="color:#94a3b8;font-weight:normal">011780.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>6.80</td>
-      <td>9.69</td>
-      <td>3.37</td>
-      <td>5.28</td>
-      <td>0</td>
-      <td>1</td>
-      <td>PARABOLIC</td>
-    </tr>
-  
-    <tr id="row-023530.KS">
-      <td><strong>롯데쇼핑</strong><br><small style="color:#94a3b8;font-weight:normal">023530.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>3.85</td>
-      <td>10.39</td>
-      <td>1.08</td>
-      <td>5.36</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-139480.KS">
-      <td><strong>이마트</strong><br><small style="color:#94a3b8;font-weight:normal">139480.KS</small></td>
-      <td>—</td>
-      <td>TREND_OK</td>
-      <td>WAIT</td>
-      <td>STAGING</td>
-      <td>—</td>
-      <td>5.61</td>
-      <td>9.17</td>
-      <td>1.63</td>
-      <td>3.61</td>
-      <td>0</td>
-      <td>1</td>
-      <td>—</td>
-    </tr>
-  
-    <tr id="row-000660.KS">
-      <td><strong>SK하이닉스</strong><br><small style="color:#94a3b8;font-weight:normal">000660.KS</small></td>
-      <td>—</td>
-      <td>EXTENDED</td>
-      <td>WAIT</td>
-      <td>AVOID</td>
-      <td>—</td>
-      <td>15.22</td>
-      <td>30.17</td>
-      <td>1.05</td>
-      <td>4.49</td>
-      <td>0</td>
-      <td>7</td>
-      <td>OVERHEAT, EXTENDED</td>
-    </tr>
-  
-    <tr id="row-004800.KS">
-      <td><strong>효성</strong><br><small style="color:#94a3b8;font-weight:normal">004800.KS</small></td>
-      <td>—</td>
-      <td>EXTENDED</td>
-      <td>WAIT</td>
-      <td>AVOID</td>
-      <td>—</td>
-      <td>12.74</td>
-      <td>30.83</td>
-      <td>1.25</td>
-      <td>7.29</td>
-      <td>0</td>
-      <td>7</td>
-      <td>EXTENDED</td>
-    </tr>
-  
     <tr id="row-010140.KS">
       <td><strong>삼성중공업</strong><br><small style="color:#94a3b8;font-weight:normal">010140.KS</small></td>
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>1.19</td>
       <td>2.55</td>
       <td>1.13</td>
       <td>4.88</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
-    </tr>
-  
-    <tr id="row-028260.KS">
-      <td><strong>삼성물산</strong><br><small style="color:#94a3b8;font-weight:normal">028260.KS</small></td>
-      <td>—</td>
-      <td>EXTENDED</td>
-      <td>WAIT</td>
-      <td>AVOID</td>
-      <td>—</td>
-      <td>18.92</td>
-      <td>29.22</td>
-      <td>1.87</td>
-      <td>4.91</td>
-      <td>0</td>
-      <td>7</td>
-      <td>EXTENDED</td>
     </tr>
   
     <tr id="row-033780.KS">
@@ -594,31 +404,17 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>2.30</td>
       <td>4.89</td>
       <td>1.26</td>
       <td>2.67</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
-    </tr>
-  
-    <tr id="row-034730.KS">
-      <td><strong>SK</strong><br><small style="color:#94a3b8;font-weight:normal">034730.KS</small></td>
-      <td>—</td>
-      <td>EXTENDED</td>
-      <td>WAIT</td>
-      <td>AVOID</td>
-      <td>—</td>
-      <td>15.23</td>
-      <td>29.24</td>
-      <td>0.90</td>
-      <td>5.25</td>
-      <td>0</td>
-      <td>7</td>
-      <td>OVERHEAT, EXTENDED</td>
     </tr>
   
     <tr id="row-078930.KS">
@@ -626,14 +422,16 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>1.64</td>
       <td>5.61</td>
       <td>1.06</td>
       <td>4.23</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
     </tr>
   
@@ -642,15 +440,341 @@
       <td>—</td>
       <td>PULLBACK</td>
       <td>WAIT</td>
-      <td>AVOID</td>
+      <td class="decision decision-watch"
+          title="진입 대기: PULLBACK/BASE_FORMING zone, 트리거 미발생 — 반등 신호 관찰">
+        진입 대기</td>
       <td>—</td>
       <td>0.90</td>
       <td>0.88</td>
       <td>1.18</td>
       <td>5.05</td>
-      <td>1</td>
-      <td>1</td>
+      <td>2</td>
+      <td>2</td>
       <td>—</td>
+    </tr>
+  
+    <tr id="row-003490.KS">
+      <td><strong>대한항공</strong><br><small style="color:#94a3b8;font-weight:normal">003490.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>6.43</td>
+      <td>8.32</td>
+      <td>2.03</td>
+      <td>3.45</td>
+      <td>0</td>
+      <td>8</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-003670.KS">
+      <td><strong>포스코퓨처엠</strong><br><small style="color:#94a3b8;font-weight:normal">003670.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>6.64</td>
+      <td>14.80</td>
+      <td>0.75</td>
+      <td>5.27</td>
+      <td>0</td>
+      <td>8</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-005380.KS">
+      <td><strong>현대자동차</strong><br><small style="color:#94a3b8;font-weight:normal">005380.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>9.79</td>
+      <td>14.11</td>
+      <td>3.79</td>
+      <td>4.96</td>
+      <td>0</td>
+      <td>8</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-005930.KS">
+      <td><strong>삼성전자</strong><br><small style="color:#94a3b8;font-weight:normal">005930.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>9.55</td>
+      <td>18.07</td>
+      <td>1.02</td>
+      <td>4.32</td>
+      <td>0</td>
+      <td>8</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-006800.KS">
+      <td><strong>미래에셋증권</strong><br><small style="color:#94a3b8;font-weight:normal">006800.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>7.35</td>
+      <td>12.45</td>
+      <td>1.22</td>
+      <td>6.52</td>
+      <td>0</td>
+      <td>8</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-007070.KS">
+      <td><strong>GS리테일</strong><br><small style="color:#94a3b8;font-weight:normal">007070.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>8.67</td>
+      <td>11.41</td>
+      <td>4.98</td>
+      <td>4.38</td>
+      <td>0</td>
+      <td>8</td>
+      <td>PARABOLIC</td>
+    </tr>
+  
+    <tr id="row-011790.KS">
+      <td><strong>SKC</strong><br><small style="color:#94a3b8;font-weight:normal">011790.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>13.33</td>
+      <td>28.13</td>
+      <td>1.82</td>
+      <td>6.88</td>
+      <td>0</td>
+      <td>8</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-012330.KS">
+      <td><strong>현대모비스</strong><br><small style="color:#94a3b8;font-weight:normal">012330.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>13.35</td>
+      <td>17.19</td>
+      <td>4.48</td>
+      <td>4.95</td>
+      <td>0</td>
+      <td>8</td>
+      <td>PARABOLIC</td>
+    </tr>
+  
+    <tr id="row-032830.KS">
+      <td><strong>삼성생명</strong><br><small style="color:#94a3b8;font-weight:normal">032830.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>7.43</td>
+      <td>14.10</td>
+      <td>0.90</td>
+      <td>4.63</td>
+      <td>0</td>
+      <td>8</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-086280.KS">
+      <td><strong>현대글로비스</strong><br><small style="color:#94a3b8;font-weight:normal">086280.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>7.99</td>
+      <td>9.83</td>
+      <td>4.92</td>
+      <td>5.17</td>
+      <td>0</td>
+      <td>8</td>
+      <td>PARABOLIC</td>
+    </tr>
+  
+    <tr id="row-000270.KS">
+      <td><strong>기아</strong><br><small style="color:#94a3b8;font-weight:normal">000270.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>4.68</td>
+      <td>5.44</td>
+      <td>2.96</td>
+      <td>3.93</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-011780.KS">
+      <td><strong>금호석유</strong><br><small style="color:#94a3b8;font-weight:normal">011780.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>6.80</td>
+      <td>9.69</td>
+      <td>3.37</td>
+      <td>5.28</td>
+      <td>0</td>
+      <td>2</td>
+      <td>PARABOLIC</td>
+    </tr>
+  
+    <tr id="row-023530.KS">
+      <td><strong>롯데쇼핑</strong><br><small style="color:#94a3b8;font-weight:normal">023530.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>3.85</td>
+      <td>10.39</td>
+      <td>1.08</td>
+      <td>5.36</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-139480.KS">
+      <td><strong>이마트</strong><br><small style="color:#94a3b8;font-weight:normal">139480.KS</small></td>
+      <td>—</td>
+      <td>TREND_OK</td>
+      <td>WAIT</td>
+      <td class="decision decision-trending"
+          title="눌림 대기: 추세 살아있으나 setup 압축 부족 — 다음 PULLBACK까지 추격 자제">
+        눌림 대기</td>
+      <td>—</td>
+      <td>5.61</td>
+      <td>9.17</td>
+      <td>1.63</td>
+      <td>3.61</td>
+      <td>0</td>
+      <td>2</td>
+      <td>—</td>
+    </tr>
+  
+    <tr id="row-000660.KS">
+      <td><strong>SK하이닉스</strong><br><small style="color:#94a3b8;font-weight:normal">000660.KS</small></td>
+      <td>—</td>
+      <td>EXTENDED</td>
+      <td>WAIT</td>
+      <td class="decision decision-avoid"
+          title="매수 금지: EXTENDED 과열 / BROKEN 추세 깨짐 / FAILED_BREAKOUT 가짜 돌파 — 진입 시 손실 위험 큼">
+        매수 금지</td>
+      <td>—</td>
+      <td>15.22</td>
+      <td>30.17</td>
+      <td>1.05</td>
+      <td>4.49</td>
+      <td>0</td>
+      <td>8</td>
+      <td>OVERHEAT, EXTENDED</td>
+    </tr>
+  
+    <tr id="row-004800.KS">
+      <td><strong>효성</strong><br><small style="color:#94a3b8;font-weight:normal">004800.KS</small></td>
+      <td>—</td>
+      <td>EXTENDED</td>
+      <td>WAIT</td>
+      <td class="decision decision-avoid"
+          title="매수 금지: EXTENDED 과열 / BROKEN 추세 깨짐 / FAILED_BREAKOUT 가짜 돌파 — 진입 시 손실 위험 큼">
+        매수 금지</td>
+      <td>—</td>
+      <td>12.74</td>
+      <td>30.83</td>
+      <td>1.25</td>
+      <td>7.29</td>
+      <td>0</td>
+      <td>8</td>
+      <td>EXTENDED</td>
+    </tr>
+  
+    <tr id="row-028260.KS">
+      <td><strong>삼성물산</strong><br><small style="color:#94a3b8;font-weight:normal">028260.KS</small></td>
+      <td>—</td>
+      <td>EXTENDED</td>
+      <td>WAIT</td>
+      <td class="decision decision-avoid"
+          title="매수 금지: EXTENDED 과열 / BROKEN 추세 깨짐 / FAILED_BREAKOUT 가짜 돌파 — 진입 시 손실 위험 큼">
+        매수 금지</td>
+      <td>—</td>
+      <td>18.92</td>
+      <td>29.22</td>
+      <td>1.87</td>
+      <td>4.91</td>
+      <td>0</td>
+      <td>8</td>
+      <td>EXTENDED</td>
+    </tr>
+  
+    <tr id="row-034730.KS">
+      <td><strong>SK</strong><br><small style="color:#94a3b8;font-weight:normal">034730.KS</small></td>
+      <td>—</td>
+      <td>EXTENDED</td>
+      <td>WAIT</td>
+      <td class="decision decision-avoid"
+          title="매수 금지: EXTENDED 과열 / BROKEN 추세 깨짐 / FAILED_BREAKOUT 가짜 돌파 — 진입 시 손실 위험 큼">
+        매수 금지</td>
+      <td>—</td>
+      <td>15.23</td>
+      <td>29.24</td>
+      <td>0.90</td>
+      <td>5.25</td>
+      <td>0</td>
+      <td>8</td>
+      <td>OVERHEAT, EXTENDED</td>
     </tr>
   
   </tbody>
