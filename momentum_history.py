@@ -32,36 +32,49 @@ if sys.platform == "win32":
 
 import momentum_config as cfg
 
-RANK = {"MOMENTUM_1": 1, "MOMENTUM_2": 2, "MOMENTUM_3": 3}
+RANK = {"EM": 0, "MOMENTUM_1": 1, "MOMENTUM_2": 2, "MOMENTUM_3": 3}
 
 
 def load_history(path: str, scanner_name: str = "momentum_us") -> dict:
-    """JSON history 파일 로드. 없으면 skeleton 반환."""
+    """JSON history 파일 로드. 없으면 skeleton. Legacy EARLY/EXTENDED risk tags filtered."""
     if not os.path.exists(path):
-        return {
-            "_meta": {
-                "scanner": scanner_name,
-                "schema_version": 1,
-                "version": cfg.VERSION,
-                "last_updated": None,
-            },
-            "data": {},
-        }
+        return _empty_skeleton(scanner_name)
     try:
         with open(path, "rb") as f:
             raw = f.read().rstrip(b" \t\n\r\x00").decode("utf-8")
-        return json.loads(raw)
+        history = json.loads(raw)
     except (json.JSONDecodeError, OSError) as e:
         print(f"[momentum_history] WARN corrupt history {path}: {e}")
-        return {"_meta": {"scanner": scanner_name, "schema_version": 1,
-                          "version": cfg.VERSION, "last_updated": None},
-                "data": {}}
+        return _empty_skeleton(scanner_name)
+
+    # Legacy tag filter on active entries (read-time)
+    legacy = cfg.LEGACY_RISK_TAGS
+    for ticker, dates in history.get("data", {}).items():
+        for d, entry in dates.items():
+            tags = entry.get("risk_tags")
+            if isinstance(tags, list) and any(t in legacy for t in tags):
+                entry["risk_tags"] = [t for t in tags if t not in legacy]
+    return history
+
+
+def _empty_skeleton(scanner_name: str) -> dict:
+    return {
+        "_meta": {
+            "scanner": scanner_name,
+            "schema_version": cfg.HISTORY_SCHEMA_VERSION,
+            "version": cfg.VERSION,
+            "last_updated": None,
+        },
+        "data": {},
+    }
 
 
 def save_history(path: str, history: dict):
     history.setdefault("_meta", {})
     history["_meta"]["last_updated"] = datetime.now(
         timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
+    history["_meta"]["schema_version"] = cfg.HISTORY_SCHEMA_VERSION
+    history["_meta"]["version"] = cfg.VERSION
     os.makedirs(os.path.dirname(os.path.abspath(path)) or ".", exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(history, f, ensure_ascii=False, indent=2)
@@ -131,14 +144,18 @@ def update_history(history: dict, today_signals: list[dict], today: str) -> dict
             "streak": streak,
             "prev_stage": prev_stage,
             "change": change,
+            "maturity": sig.get("maturity"),
             "risk_tags": sig.get("risk_tags", []),
             "price": sig.get("price"),
             "rsi": sig.get("rsi"),
             "ret_1d_pct": sig.get("ret_1d_pct"),
             "ret_3d_pct": sig.get("ret_3d_pct"),
             "ret_5d_pct": sig.get("ret_5d_pct"),
+            "ret_20d_pct": sig.get("ret_20d_pct"),
+            "dist_ema9_pct": sig.get("dist_ema9_pct"),
             "name": sig.get("name"),
             "sector": sig.get("sector"),
+            "sector_top_rank": sig.get("sector_top_rank"),
             "rs_vs_sector": sig.get("rs_vs_sector"),
             "entry_price": entry_price,
             "entry_date": entry_date,
@@ -146,6 +163,7 @@ def update_history(history: dict, today_signals: list[dict], today: str) -> dict
             "entry_context": {
                 "sector": sig.get("sector"),
                 "streak": streak,
+                "maturity": sig.get("maturity"),
                 "risk_tags": sig.get("risk_tags", []),
             },
         }
