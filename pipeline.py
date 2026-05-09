@@ -428,7 +428,14 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         lifecycle_kr_result = None
         if not skip_lifecycle:
             from lifecycle_signal import run_lifecycle
-            _portfolio_tickers = {h["ticker"] for h in _parse_portfolio_for_report(portfolio_path)}
+            # User decision (2026-05-09): include portfolio holdings in
+            # lifecycle's active set. Original spec excluded them on the
+            # principle that portfolio_stops covers the "should I sell?"
+            # question while lifecycle covers "should I buy?" — but both
+            # views are useful for held tickers too (the setup/trigger
+            # state machine answers "is this still in a healthy zone?").
+            # Pass empty set to disable the portfolio-exclusion rule.
+            _portfolio_tickers = set()
 
         if skip_lifecycle:
             print("[Step 4c4] SKIP_LIFECYCLE=1 — lifecycle US 스킵")

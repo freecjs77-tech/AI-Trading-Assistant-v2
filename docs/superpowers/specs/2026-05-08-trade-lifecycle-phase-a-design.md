@@ -44,13 +44,12 @@ The active set is the universe over which lifecycle states are evaluated each tr
 
 ```
 active_set(today) = {
-  ticker  |  ( ticker passed M1/M2/M3 within last 14 calendar days
-              OR  ticker.setup_state != BROKEN within last 10 calendar days )
-            AND  ticker NOT IN portfolio.md
+  ticker  |  ticker passed M1/M2/M3 within last 14 calendar days
+            OR  ticker.setup_state != BROKEN within last 10 calendar days
 }
 ```
 
-The parentheses are part of the spec — the portfolio exclusion applies to *both* recruitment paths.
+**User decision (2026-05-09):** the original draft also required `AND ticker NOT IN portfolio.md`, on the principle that portfolio_stops covers the "should I sell?" question and lifecycle covers "should I buy?". The exclusion was dropped after first production run — the setup/trigger state machine is also useful for held tickers (it answers "is this still in a healthy zone?"), and excluding them produced an unintuitively sparse page. The pipeline now passes `portfolio_tickers=set()` to disable the exclusion. The `compute_active_set` function still accepts the parameter for tests and future use.
 
 Two evaluations exist independently — `active_set_us` (sourced from US momentum scanner) and `active_set_kr` (sourced from KR momentum scanner).
 
