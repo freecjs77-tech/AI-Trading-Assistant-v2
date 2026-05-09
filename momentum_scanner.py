@@ -57,7 +57,8 @@ def _empty_result(market: str, status: str = "ok",
         "as_of": _today_kst(),
         "scanned_count": 0,
         "top_sectors": [],
-        "signals": {"MOMENTUM_3": [], "MOMENTUM_2": [], "MOMENTUM_1": []},
+        "signals": {"MOMENTUM_3": [], "MOMENTUM_2": [], "MOMENTUM_1": [], "EM": []},
+        "rotation_radar": [],
         "backtest_summary": None,
         "status": status,
         "error_message": error_message,
@@ -215,35 +216,85 @@ def _scan_market(market: str, build_universe_fn, sector_etfs: list[str],
             top_sectors = []
             result["top_sectors"] = top_sectors
 
-        # bulk indicators
-        stock_data_map = _fetch_indicators(top_tickers)
+        # MOMENTUM_DISABLE_EM=1 → fall back to v1.0 behavior (M+ only, no EM, no rotation radar).
+        em_enabled = os.environ.get("MOMENTUM_DISABLE_EM", "").strip() not in ("1", "true", "yes")
 
-        # pre-filter + evaluate
-        signals = {"MOMENTUM_3": [], "MOMENTUM_2": [], "MOMENTUM_1": []}
+        # Bulk indicators on the full evaluation universe
+        if market == "US" and em_enabled:
+            # M+ uses Top sectors only; EM uses Full IWB.
+            # We fetch indicators for the union (full universe) once.
+            eval_universe = list(set(top_tickers) | set(universe))
+        else:
+            eval_universe = list(top_tickers)
+        stock_data_map = _fetch_indicators(eval_universe)
+
+        # sector_top_rank_map: sector ETF ticker → 1-based rank in top_sectors
+        sector_top_rank_map: dict[str, int] = {
+            s["ticker"]: idx + 1 for idx, s in enumerate(top_sectors)
+        }
+
+        # Pre-filter + evaluate per stock — both M+ and EM tracks
+        signals = {"MOMENTUM_3": [], "MOMENTUM_2": [], "MOMENTUM_1": [], "EM": []}
         today_signal_list: list[dict] = []
         for ticker, sd in stock_data_map.items():
-            if not msig.passes_prefilter(sd):
-                continue
             sector_etf = ticker_sector_map.get(ticker)
+            sector_top_rank = sector_top_rank_map.get(sector_etf)
+            in_top_sector = sector_top_rank is not None
             sector_5d = None
             if sector_etf and sector_etf in sector_data:
                 sector_5d = sector_data[sector_etf].get("ret_5d_pct")
             sd["ticker"] = ticker
             sd["sector"] = sector_etf
-            evaluation = msig.evaluate_stock(sd, sector_5d_return=sector_5d)
+
+            evaluation = None
+            # Track 1 — M+ scan: only top-sector stocks (US) or all (KR), prefilter required
+            if (in_top_sector or market == "KR") and msig.passes_prefilter(sd):
+                evaluation = msig.evaluate_stock(
+                    sd, sector_5d_return=sector_5d, sector_top_rank=sector_top_rank
+                )
+            # Track 2 — EM scan: full universe, no sector gate, lighter check (skip if disabled)
+            if evaluation is None and em_enabled:
+                if msig.classify_em(sd):
+                    evaluation = msig.evaluate_stock(
+                        sd, sector_5d_return=sector_5d, sector_top_rank=sector_top_rank
+                    )
+
             if evaluation is None:
                 continue
             evaluation["name"] = _lookup_name(ticker, market)
-            signals[evaluation["stage"]].append(evaluation)
+            stage = evaluation["stage"]
+            if stage in signals:
+                signals[stage].append(evaluation)
             today_signal_list.append(evaluation)
 
         result["signals"] = signals
+
+        # Sector Rotation Radar — non-Top sectors with EM count >= 2
+        from collections import Counter
+        em_sector_counter: Counter = Counter()
+        for s in signals.get("EM", []):
+            if s.get("sector_top_rank") is None and s.get("sector"):
+                em_sector_counter[s["sector"]] += 1
+        rotation_radar = sorted(
+            [(sector, count) for sector, count in em_sector_counter.items()
+             if count >= 2],
+            key=lambda x: -x[1]
+        )[:5]
+        result["rotation_radar"] = [list(item) for item in rotation_radar]
 
         # History update + save
         history = mh.load_history(history_path,
                                    scanner_name=f"momentum_{market.lower()}")
         history = mh.update_history(history, today_signal_list, today=result["as_of"])
         mh.save_history(history_path, history)
+
+        # Enrich signals with streak/change from the just-saved history
+        # (signals share refs with result['signals'] entries — mutation propagates).
+        for sig in today_signal_list:
+            today_entry = (history.get("data", {}).get(sig["ticker"], {}) or {}).get(result["as_of"])
+            if today_entry:
+                sig["streak"] = today_entry.get("streak")
+                sig["change"] = today_entry.get("change")
 
         # Backtest
         legs = mb.extract_legs(history)
