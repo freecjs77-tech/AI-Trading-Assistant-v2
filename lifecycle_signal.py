@@ -325,3 +325,74 @@ def process_universe(*, active_set: set[str], market_data: dict,
                                            decision, risk_tags)
 
     return {"as_of": today, "snapshots": snapshots, "skipped": skipped}
+
+
+def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
+                  momentum_history_path: str, portfolio_tickers: set,
+                  today: str) -> dict:
+    """One-call entry: load history, compute active set, evaluate, write back.
+
+    Returns: { status, market, as_of, snapshots, transitions, skipped, ... }
+    """
+    import json
+    import os as _os
+    from lifecycle_history import (
+        load_lifecycle_history, save_lifecycle_history,
+        compute_active_set, append_snapshot, append_transition,
+        compute_transitions, bootstrap_active_set,
+    )
+
+    history_dir = _os.path.join(project_dir, "history")
+    _os.makedirs(history_dir, exist_ok=True)
+    state_path = _os.path.join(history_dir, f"lifecycle_history_{market.lower()}.json")
+
+    # Momentum history (read-only seed for active set).
+    momentum_state = {"tickers": {}}
+    if _os.path.exists(momentum_history_path):
+        try:
+            with open(momentum_history_path, "rb") as f:
+                momentum_state = json.loads(f.read().rstrip(b" \t\n\r\x00").decode("utf-8"))
+        except Exception as e:
+            print(f"[lifecycle:{market}] WARN momentum history load failed ({e})")
+
+    state = load_lifecycle_history(state_path, market=market)
+    if not state["tickers"] and not state.get("_bootstrap_meta"):
+        state = bootstrap_active_set(market=market,
+                                     momentum_history=momentum_state,
+                                     portfolio_tickers=portfolio_tickers,
+                                     today=today)
+
+    active = compute_active_set(momentum_history=momentum_state,
+                                lifecycle_state=state,
+                                portfolio_tickers=portfolio_tickers,
+                                today=today)
+    if not active:
+        return {"status": "ok", "market": market, "as_of": today,
+                "snapshots": {}, "transitions": [], "skipped": [],
+                "active_set_size": 0}
+
+    proc = process_universe(active_set=active, market_data=market_data,
+                            yesterday_state=state, today=today)
+
+    new_transitions: list[dict] = []
+    for ticker, today_snap in proc["snapshots"].items():
+        y_block = (state.get("tickers") or {}).get(ticker)
+        y_snap_list = (y_block or {}).get("snapshots", [])
+        y_snap = y_snap_list[-1] if y_snap_list else None
+        events = compute_transitions(ticker, y_snap, today_snap)
+        new_transitions.extend(events)
+        append_snapshot(state, ticker, today_snap)
+
+    state["transitions"].extend(new_transitions)
+    save_lifecycle_history(state, state_path)
+
+    return {
+        "status": "ok",
+        "market": market,
+        "as_of":  today,
+        "snapshots":   proc["snapshots"],
+        "transitions": new_transitions,
+        "skipped":     proc["skipped"],
+        "active_set_size": len(active),
+        "state":       state,  # for the report renderer
+    }

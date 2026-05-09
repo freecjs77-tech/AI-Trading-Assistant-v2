@@ -421,6 +421,64 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 print(f"  WARN [4c3] me stop signals failed: {e}")
                 stop_result_me = None
 
+        # Step 4c4: Lifecycle US (Phase A — Trend Structure + Setup/Trigger)
+        # Pure-additive. Failure must NOT block Step 5.
+        skip_lifecycle = os.environ.get("SKIP_LIFECYCLE", "").lower() in ("1", "true", "yes")
+        lifecycle_us_result = None
+        if skip_lifecycle:
+            print("[Step 4c4] SKIP_LIFECYCLE=1 — lifecycle US 스킵")
+        else:
+            print("[Step 4c4] Lifecycle US (setup/trigger/decision)...")
+            try:
+                from lifecycle_signal import run_lifecycle
+                _portfolio_tickers = {h["ticker"] for h in _parse_portfolio_for_report(portfolio_path)}
+                _mom_us = os.path.join(project_dir, "history", "scanner_momentum_us_history.json")
+                lifecycle_us_result = run_lifecycle(
+                    "US", project_dir=project_dir,
+                    market_data=market_data,
+                    momentum_history_path=_mom_us,
+                    portfolio_tickers=_portfolio_tickers,
+                    today=today,
+                )
+                if lifecycle_us_result.get("status") == "ok":
+                    n_snap = len(lifecycle_us_result["snapshots"])
+                    n_trans = len(lifecycle_us_result["transitions"])
+                    print(f"  OK [4c4] US: snapshots={n_snap} transitions={n_trans} "
+                          f"active_set={lifecycle_us_result['active_set_size']}")
+            except Exception as e:
+                import traceback as _tb
+                _tb.print_exc()
+                print(f"  WARN [4c4] lifecycle US failed: {e}")
+                lifecycle_us_result = None
+
+        # Step 4c5: Lifecycle KR
+        lifecycle_kr_result = None
+        if skip_lifecycle:
+            print("[Step 4c5] SKIP_LIFECYCLE=1 — lifecycle KR 스킵")
+        else:
+            print("[Step 4c5] Lifecycle KR (setup/trigger/decision)...")
+            try:
+                from lifecycle_signal import run_lifecycle
+                _portfolio_tickers = {h["ticker"] for h in _parse_portfolio_for_report(portfolio_path)}
+                _mom_kr = os.path.join(project_dir, "history", "scanner_momentum_kr_history.json")
+                lifecycle_kr_result = run_lifecycle(
+                    "KR", project_dir=project_dir,
+                    market_data=market_data,
+                    momentum_history_path=_mom_kr,
+                    portfolio_tickers=_portfolio_tickers,
+                    today=today,
+                )
+                if lifecycle_kr_result.get("status") == "ok":
+                    n_snap = len(lifecycle_kr_result["snapshots"])
+                    n_trans = len(lifecycle_kr_result["transitions"])
+                    print(f"  OK [4c5] KR: snapshots={n_snap} transitions={n_trans} "
+                          f"active_set={lifecycle_kr_result['active_set_size']}")
+            except Exception as e:
+                import traceback as _tb
+                _tb.print_exc()
+                print(f"  WARN [4c5] lifecycle KR failed: {e}")
+                lifecycle_kr_result = None
+
         # Step 4d: YTD benchmark (vs S&P KRW) — per owner
         print("[Step 4d] Computing YTD benchmark vs S&P (KRW)...")
         from benchmark_ytd import compute_owner_benchmark
