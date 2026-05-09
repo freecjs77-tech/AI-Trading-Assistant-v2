@@ -5,6 +5,7 @@ Market Momentum Scanner — Data access layer.
   1. yfinance bulk fetch (Task 4-7에서 추가)
   2. iShares CSV / KRX API 호출 (Task 4-5)
   3. 캐시 I/O 공통 (load/save/age + fallback helper) ← Task 2
+  4. EMA 필드 계산 공통 헬퍼 (compute_ema_fields — EMA9/21/65 + dist + slope)
 
 캐시 메타 스키마:
   {
@@ -471,10 +472,10 @@ def compute_ema_fields(close: "pd.Series") -> dict:
             return None
         return round((close_v - ema_v) / ema_v * 100, 2)
 
-    if len(s) >= 9:
-        ema9 = s.ewm(span=9, adjust=False).mean()
-        out["ema9"] = _last_or_none(ema9)
-        out["dist_ema9_pct"] = _dist_pct(last, out["ema9"])
+    # ema9 (always computed — len(s) >= 9 guaranteed by top guard)
+    ema9 = s.ewm(span=9, adjust=False).mean()
+    out["ema9"] = _last_or_none(ema9)
+    out["dist_ema9_pct"] = _dist_pct(last, out["ema9"])
 
     if len(s) >= 21:
         ema21 = s.ewm(span=21, adjust=False).mean()

@@ -301,8 +301,13 @@ def test_compute_ema_fields_handles_nan_in_tail():
     # ema computed on dropna in caller; helper expects clean input.
     # This test documents that helper handles NaN-containing series gracefully:
     # any None-yielding output should be None (no exception).
-    # No assertion on specific value, just no exception.
+    # 82 inputs - 2 NaN tail = 80 valid points (>= 65) — all fields populated.
     assert isinstance(out, dict)
+    assert out["ema9"] is not None
+    assert out["ema21"] is not None
+    assert out["ema65"] is not None
+    assert out["ema21_slope_3d_pct"] is not None
+    assert out["ema65_slope_5d_pct"] is not None
 
 
 def test_compute_ema_fields_zero_division_guard():
