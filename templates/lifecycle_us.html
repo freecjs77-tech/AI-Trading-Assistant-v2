@@ -225,7 +225,7 @@
 {% if new_confirmed %}
 <div class="new-confirmed">
   <strong>🆕 NEW CONFIRMED TODAY ({{ new_confirmed|length }})</strong>:
-  {% for r in new_confirmed %}<a href="#row-{{ r.ticker }}">{{ r.ticker }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+  {% for r in new_confirmed %}<a href="#row-{{ r.ticker }}">{{ r.name or r.ticker }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
   <div class="desc">오늘 처음 ENTER_OK 가 발화한 종목 — 가장 시의성이 높은 진입 후보.</div>
 </div>
 {% endif %}
@@ -238,7 +238,7 @@
   <div class="desc">
     <strong>진입해도 OK</strong> — PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (전일 종가 ≤ EMA9, 오늘 EMA9 돌파 또는 전일 고점 돌파 + 거래량 1.2x + 종가가 일중 상위 20%).
   </div>
-  {% if enter_ok %}<div class="tickers">{% for r in enter_ok %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div><br>
+  {% if enter_ok %}<div class="tickers">{% for r in enter_ok %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div><br>
   <span class="recommended-size">권장 포지션 크기: TBD — Phase C 에서 ATR 기반 sizing 추가 예정</span>
   {% else %}<em>해당 없음</em>{% endif %}
 </div>
@@ -248,7 +248,7 @@
   <div class="desc">
     <strong>조기 진입 — 작게 시도 가능</strong> — 진입 zone 안에서 trigger 발화는 있으나 거래량·종가 게이트 중 하나 이상 미달. 다음 거래일에 CONFIRMED 로 승급될 수 있음.
   </div>
-  {% if early %}<div class="tickers">{% for r in early %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% else %}<em>해당 없음</em>{% endif %}
+  {% if early %}<div class="tickers">{% for r in early %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% else %}<em>해당 없음</em>{% endif %}
 </div>
 
 <details>
@@ -257,7 +257,7 @@
     <div class="desc">
       <strong>지금 진입 신호 없음</strong> — TREND_OK / PULLBACK / BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 EARLY 또는 ENTER_OK 로 자동 승격.
     </div>
-    <div class="tickers">{% for r in staging %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+    <div class="tickers">{% for r in staging %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
   </div>
 </details>
 
@@ -267,7 +267,7 @@
     <div class="desc">
       <strong>지금 진입 부적합</strong> — EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN 직전 단계 또는 risk_tags 에 FAILED_BREAKOUT (어제 CONFIRMED → 오늘 EMA9 하회).
     </div>
-    <div class="tickers">{% for r in avoid %}{{ r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+    <div class="tickers">{% for r in avoid %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
   </div>
 </details>
 
@@ -319,7 +319,7 @@
   <tbody>
   {% for group in [enter_ok, early, staging, avoid] %}{% for r in group %}
     <tr id="row-{{ r.ticker }}">
-      <td><strong>{{ r.ticker }}</strong></td>
+      <td><strong>{{ r.name or r.ticker }}</strong>{% if r.name and r.name != r.ticker %}<br><small style="color:#94a3b8;font-weight:normal">{{ r.ticker }}</small>{% endif %}</td>
       <td>{{ r.raw.sector or '—' }}</td>
       <td>{{ r.setup }}</td>
       <td>{{ r.trigger }}</td>
@@ -349,7 +349,7 @@
                 <th>dist_ema9 %</th><th>dist_ema21 %</th><th>risk_tags</th></tr></thead>
     <tbody>
     {% for r in broken_table %}
-      <tr><td>{{ r.ticker }}</td><td>{{ r.raw.sector or '—' }}</td>
+      <tr><td>{{ r.name or r.ticker }}{% if r.name and r.name != r.ticker %} <small style="color:#94a3b8">({{ r.ticker }})</small>{% endif %}</td><td>{{ r.raw.sector or '—' }}</td>
           <td>{{ r.setup }}</td>
           <td>{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
           <td>{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>

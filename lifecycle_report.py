@@ -14,6 +14,22 @@ from lifecycle_config import LIFECYCLE_VERSION
 from lifecycle_history import derive_fields
 
 
+def _lookup_ticker_name(ticker: str, market: str) -> str:
+    """Resolve ticker → human-readable name. Falls back to ticker on miss.
+
+    KR uses market_scanner.KOSPI_NAMES (한글). US returns ticker as-is —
+    name maps exist (SP100_NAMES etc.) but tickers are already the more
+    recognized identifier in US markets.
+    """
+    try:
+        if market == "KR":
+            from market_scanner import KOSPI_NAMES
+            return KOSPI_NAMES.get(ticker, ticker)
+    except ImportError:
+        pass
+    return ticker
+
+
 def _attach_derived(snap: dict, ticker: str,
                      lifecycle_state: Optional[dict]) -> dict:
     out = dict(snap)
@@ -37,11 +53,14 @@ def _attach_derived(snap: dict, ticker: str,
 
 def build_page_context(result: dict,
                          lifecycle_state: Optional[dict] = None) -> dict:
+    market = result.get("market", "US")
     enter_ok, early, staging, avoid, broken_table = [], [], [], [], []
     new_confirmed = []
     for ticker, snap in (result.get("snapshots") or {}).items():
         row = _attach_derived(snap, ticker, lifecycle_state)
         row["ticker"] = ticker
+        # KR: 종목명 (한글) — fallback to ticker. US: ticker as-is.
+        row["name"] = _lookup_ticker_name(ticker, market)
         d = snap["decision"]
         s = snap["setup"]
         if s == "BROKEN":
