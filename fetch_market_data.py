@@ -427,6 +427,11 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
     ema21_slope = _slope(ema21_series, EMA_MEDIUM_SLOPE_WINDOW)
     ema65_slope = _slope(ema65_series, EMA_LONG_SLOPE_WINDOW)
 
+    # ── Momentum v1.5: dist (%) + 3-day slope (%) via shared helper ──
+    # momentum_signal.classify_em / classify_maturity consume these fields.
+    from momentum_data import compute_ema_fields
+    ema_fields = compute_ema_fields(close)
+
     last_close  = float(close.iloc[-1])
     recent_high = float(close.iloc[-20:].max())
     drawdown    = (last_close - recent_high) / recent_high * 100
@@ -521,12 +526,17 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
         "div_yield_annual":  div_yield_annual,
         "div_source":        div_source,    # "forward" | "ttm" | "none"
         "_last_date":        df.index[-1].strftime("%Y-%m-%d"),  # 마지막 거래일
-        # Phase A: lifecycle EMAs
+        # Phase A: lifecycle EMAs (raw values, 5-day slopes)
         "ema9":              safe(ema9_series),
         "ema21":             safe(ema21_series),
         "ema65":             safe(ema65_series),
         "ema21_slope_5d":    ema21_slope,
         "ema65_slope_5d":    ema65_slope,
+        # Momentum v1.5: dist (%) + 3-day slope (%) for EM/Maturity gates
+        "dist_ema9_pct":      ema_fields["dist_ema9_pct"],
+        "dist_ema21_pct":     ema_fields["dist_ema21_pct"],
+        "ema21_slope_3d_pct": ema_fields["ema21_slope_3d_pct"],
+        "ema65_slope_5d_pct": ema_fields["ema65_slope_5d_pct"],
     }
 
 

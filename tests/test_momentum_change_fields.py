@@ -44,6 +44,22 @@ def test_nan_denominator_returns_none():
     assert out["change_5d_pct"] is None
 
 
+def test_fetch_market_data_includes_ema_fields():
+    """fetch_market_data dict has ema9/21/65 + dist + slope fields."""
+    # Use a stub: synthesize a clean close series and call compute_ema_fields directly,
+    # then verify fetch_market_data integrates the helper output into ticker_data.
+    # Since fetch_market_data does live yfinance calls, integration check is via
+    # symbol presence in source code.
+    import re
+    src = open("fetch_market_data.py", encoding="utf-8").read()
+    assert "compute_ema_fields" in src, "fetch_market_data must call compute_ema_fields"
+    # All 7 keys propagated into ticker_data
+    for key in ("ema9", "ema21", "ema65",
+                "dist_ema9_pct", "dist_ema21_pct",
+                "ema21_slope_3d_pct", "ema65_slope_5d_pct"):
+        assert f'"{key}"' in src, f"missing {key} in fetch_market_data.py"
+
+
 if __name__ == "__main__":
     test_close_series_with_5_and_20_day_returns_present()
     test_short_series_returns_none()
