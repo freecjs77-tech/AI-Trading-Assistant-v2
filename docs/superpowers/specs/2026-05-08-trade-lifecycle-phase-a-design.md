@@ -49,7 +49,11 @@ active_set(today) = {
 }
 ```
 
-**User decision (2026-05-09):** the original draft also required `AND ticker NOT IN portfolio.md`, on the principle that portfolio_stops covers the "should I sell?" question and lifecycle covers "should I buy?". The exclusion was dropped after first production run — the setup/trigger state machine is also useful for held tickers (it answers "is this still in a healthy zone?"), and excluding them produced an unintuitively sparse page. The pipeline now passes `portfolio_tickers=set()` to disable the exclusion. The `compute_active_set` function still accepts the parameter for tests and future use.
+**User decision (2026-05-09):** the original draft also required `AND ticker NOT IN portfolio.md`, on the principle that portfolio_stops covers the "should I sell?" question and lifecycle covers "should I buy?".
+
+The first production run exposed an inconsistency: `_parse_portfolio_for_report` in `pipeline.py` extracts the ticker via the regex `^\|\s*([A-Z0-9]{1,10})\s*\|` which strips dots — so US tickers like `NVDA` matched and were excluded, but KR tickers like `005930.KS` (yfinance format) became `005930` in the parsed set and never matched the lifecycle active-set form. As a result, the US lifecycle page hid all US holdings while the KR page showed all KR holdings. The asymmetry was confusing, and the user requested both markets behave the same.
+
+Two ways to make them consistent: (a) normalize ticker forms before exclusion (drop `.KS` from active-set side, or append `.KS` to portfolio side based on heuristics), or (b) drop the exclusion entirely. Option (b) was chosen — the setup/trigger state machine is also informative for held tickers (it answers "is this still in a healthy entry zone?"), and the user prefers the simpler "show everything" model. The pipeline now passes `portfolio_tickers=set()` to disable the exclusion. The `compute_active_set` function still accepts the parameter for tests and future use.
 
 Two evaluations exist independently — `active_set_us` (sourced from US momentum scanner) and `active_set_kr` (sourced from KR momentum scanner).
 
