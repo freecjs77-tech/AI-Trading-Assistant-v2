@@ -252,6 +252,67 @@ def classify_maturity(stock_data: dict) -> str | None:
     return "MID"
 
 
+def classify_em(stock_data: dict) -> bool:
+    """
+    Emerging Momentum (EM) tier 검사 — Structural Inflection Discovery.
+
+    Returns True if all gates pass:
+      Structure: ema9 > ema21 > ema65 AND ema21_slope_3d > 0 AND close > ema21
+      Momentum:  ret_5d >= 4% OR ret_20d >= 10%
+      Anti-overheat: rsi14 < 72 AND dist_ema9 < 8%
+      Participation: volume_ratio >= 1.05
+    """
+    ema9 = _safe_float(stock_data.get("ema9"))
+    ema21 = _safe_float(stock_data.get("ema21"))
+    ema65 = _safe_float(stock_data.get("ema65"))
+    slope = _safe_float(stock_data.get("ema21_slope_3d_pct"))
+    close = _safe_float(stock_data.get("close"))
+    if (ema9 is None or ema21 is None or ema65 is None
+            or slope is None or close is None):
+        return False
+    if not (ema9 > ema21 > ema65):
+        return False
+    if slope <= cfg.EM_EMA21_SLOPE_MIN_PCT:
+        return False
+    if close <= ema21:
+        return False
+
+    r5 = _safe_float(stock_data.get("ret_5d_pct"))
+    r20 = _safe_float(stock_data.get("ret_20d_pct"))
+    has_5d = r5 is not None and r5 >= cfg.EM_RET_5D_MIN_PCT
+    has_20d = r20 is not None and r20 >= cfg.EM_RET_20D_MIN_PCT
+    if not (has_5d or has_20d):
+        return False
+
+    rsi = _safe_float(stock_data.get("rsi14"))
+    dist = _safe_float(stock_data.get("dist_ema9_pct"))
+    if rsi is None or dist is None:
+        return False
+    if rsi >= cfg.EM_RSI_MAX or dist >= cfg.EM_DIST_EMA9_MAX:
+        return False
+
+    vr = _safe_float(stock_data.get("volume_ratio"))
+    if vr is None or vr < cfg.EM_VOL_RATIO_MIN:
+        return False
+
+    return True
+
+
+def classify_tier(stock_data: dict) -> str | None:
+    """
+    Single tier label resolution.
+
+    Priority: M3 > M2 > M1 > EM > None.
+    M+ wins when both M+ and EM would qualify (strength label single).
+    """
+    stage = classify_stage(stock_data)
+    if stage is not None:
+        return stage
+    if classify_em(stock_data):
+        return "EM"
+    return None
+
+
 def position_hint(risk_tags: list[str]) -> str:
     """
     Risk tag → 포지션 힌트 (한글).

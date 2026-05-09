@@ -297,6 +297,112 @@ def test_maturity_extended_takes_precedence_over_early():
     assert ms.classify_maturity(s) == "EXTENDED"
 
 
+def _stock_em_pass(**overrides):
+    """Build a stock dict that passes all EM gates by default."""
+    base = {
+        "ticker": "EM_OK",
+        # Structure
+        "ema9": 110.0, "ema21": 108.0, "ema65": 105.0,
+        "ema21_slope_3d_pct": 0.5,
+        "close": 111.0,
+        # Momentum
+        "ret_5d_pct": 5.0, "ret_20d_pct": 12.0,
+        # Anti-overheat
+        "rsi14": 65.0, "dist_ema9_pct": 0.9,
+        # Participation
+        "volume_ratio": 1.10,
+    }
+    base.update(overrides)
+    return base
+
+
+def test_classify_em_passes_all_gates():
+    assert ms.classify_em(_stock_em_pass()) is True
+
+
+def test_classify_em_fails_when_ema9_not_above_ema21():
+    s = _stock_em_pass(ema9=107.0, ema21=108.0)
+    assert ms.classify_em(s) is False
+
+
+def test_classify_em_fails_when_ema21_not_above_ema65():
+    s = _stock_em_pass(ema21=104.0, ema65=105.0)
+    assert ms.classify_em(s) is False
+
+
+def test_classify_em_fails_when_ema21_not_rising():
+    s = _stock_em_pass(ema21_slope_3d_pct=-0.1)
+    assert ms.classify_em(s) is False
+
+
+def test_classify_em_fails_when_close_below_ema21():
+    s = _stock_em_pass(close=107.0, ema21=108.0)
+    assert ms.classify_em(s) is False
+
+
+def test_classify_em_passes_with_5d_only():
+    """5d>=4% OR 20d>=10% — 5d alone is enough."""
+    s = _stock_em_pass(ret_5d_pct=4.0, ret_20d_pct=2.0)
+    assert ms.classify_em(s) is True
+
+
+def test_classify_em_passes_with_20d_only():
+    s = _stock_em_pass(ret_5d_pct=1.0, ret_20d_pct=10.0)
+    assert ms.classify_em(s) is True
+
+
+def test_classify_em_fails_when_neither_momentum_threshold_met():
+    s = _stock_em_pass(ret_5d_pct=2.0, ret_20d_pct=8.0)
+    assert ms.classify_em(s) is False
+
+
+def test_classify_em_fails_overheated_rsi():
+    s = _stock_em_pass(rsi14=72.0)  # >= 72
+    assert ms.classify_em(s) is False
+
+
+def test_classify_em_fails_overheated_dist():
+    s = _stock_em_pass(dist_ema9_pct=8.0)  # >= 8
+    assert ms.classify_em(s) is False
+
+
+def test_classify_em_fails_low_volume():
+    s = _stock_em_pass(volume_ratio=1.04)
+    assert ms.classify_em(s) is False
+
+
+def test_classify_em_returns_false_on_missing_fields():
+    """missing ema9 → cannot evaluate → False."""
+    s = _stock_em_pass()
+    s.pop("ema9")
+    assert ms.classify_em(s) is False
+
+
+# classify_tier — M+ priority over EM
+def test_classify_tier_returns_m1_when_both_qualify():
+    """Stock satisfies M1 (3d=9, RSI=65) and EM but not M2. Tier should be MOMENTUM_1."""
+    s = _stock_em_pass()
+    s.update({
+        "ret_3d_pct": 9.0, "ma20": 100.0, "ma50": 115.0,  # close < ma50 → M2 accel miss
+        "macd_hist_trend": "flat", "high_52w": 120.0,      # flat → M2 accel miss
+    })
+    # volume_ratio=1.10 < M2_VOLUME_RATIO_MIN(1.2) → 0/3 accel → stays M1
+    assert ms.classify_tier(s) == "MOMENTUM_1"
+
+
+def test_classify_tier_returns_em_when_only_em_qualifies():
+    """3d=2% (under M1) but EM passes → tier=EM."""
+    s = _stock_em_pass()
+    s.update({"ret_3d_pct": 2.0, "ma20": 100.0})
+    assert ms.classify_tier(s) == "EM"
+
+
+def test_classify_tier_returns_none_when_neither_qualifies():
+    s = {"ticker": "X", "ret_3d_pct": 2.0, "rsi14": 50.0,
+         "close": 100.0, "ma20": 105.0}
+    assert ms.classify_tier(s) is None
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):
