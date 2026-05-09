@@ -78,6 +78,13 @@ def prepare_deploy():
     if stop_files:
         print(f"portfolio_stops pages copied ({len(stop_files)} files)")
 
+    # Lifecycle 페이지 복사 (US/KR 별도 페이지)
+    lifecycle_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "lifecycle_*.html")))
+    for f in lifecycle_files:
+        shutil.copy2(f, DEPLOY_DIR)
+    if lifecycle_files:
+        print(f"lifecycle pages copied ({len(lifecycle_files)} files)")
+
     # details/ 복사 (종목 상세 페이지)
     details_src = os.path.join(REPORTS_DIR, "details")
     if os.path.exists(details_src):
