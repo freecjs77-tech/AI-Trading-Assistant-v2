@@ -250,6 +250,76 @@ def test_compute_weekly_top100_by_dollar_volume():
     assert top == ["C", "A"]
 
 
+def test_compute_ema_fields_basic():
+    import pandas as pd
+    import momentum_data as md
+    # 90 day rising series — all EMAs should rise
+    close = pd.Series([100 + i * 0.3 for i in range(90)])
+    out = md.compute_ema_fields(close)
+    assert out["ema9"] is not None
+    assert out["ema21"] is not None
+    assert out["ema65"] is not None
+    assert out["dist_ema9_pct"] is not None
+    assert out["dist_ema21_pct"] is not None
+    assert out["ema21_slope_3d_pct"] is not None
+    assert out["ema65_slope_5d_pct"] is not None
+    assert out["ema21_slope_3d_pct"] > 0  # rising
+    assert out["ema65_slope_5d_pct"] > 0  # rising
+
+
+def test_compute_ema_fields_short_series():
+    """series < 65 — ema65 should be None, ema9/21 may compute."""
+    import pandas as pd
+    import momentum_data as md
+    close = pd.Series([100 + i for i in range(40)])
+    out = md.compute_ema_fields(close)
+    assert out["ema9"] is not None
+    assert out["ema21"] is not None
+    assert out["ema65"] is None
+    assert out["ema65_slope_5d_pct"] is None
+
+
+def test_compute_ema_fields_too_short():
+    """series < 9 — all None."""
+    import pandas as pd
+    import momentum_data as md
+    close = pd.Series([100, 101, 102, 103, 104])
+    out = md.compute_ema_fields(close)
+    assert out["ema9"] is None
+    assert out["ema21"] is None
+    assert out["ema65"] is None
+    assert out["dist_ema9_pct"] is None
+
+
+def test_compute_ema_fields_handles_nan_in_tail():
+    """trailing NaN — utility returns None gracefully."""
+    import pandas as pd
+    import numpy as np
+    import momentum_data as md
+    close = pd.Series([100 + i * 0.5 for i in range(80)] + [np.nan, np.nan])
+    out = md.compute_ema_fields(close)
+    # ema computed on dropna in caller; helper expects clean input.
+    # This test documents that helper handles NaN-containing series gracefully:
+    # any None-yielding output should be None (no exception).
+    # 82 inputs - 2 NaN tail = 80 valid points (>= 65) — all fields populated.
+    assert isinstance(out, dict)
+    assert out["ema9"] is not None
+    assert out["ema21"] is not None
+    assert out["ema65"] is not None
+    assert out["ema21_slope_3d_pct"] is not None
+    assert out["ema65_slope_5d_pct"] is not None
+
+
+def test_compute_ema_fields_zero_division_guard():
+    """ema base = 0 -> dist None, no exception."""
+    import pandas as pd
+    import momentum_data as md
+    close = pd.Series([0.0] * 70)
+    out = md.compute_ema_fields(close)
+    # ema9 = 0 -> dist_ema9_pct should be None (zero division guard)
+    assert out["dist_ema9_pct"] is None
+
+
 if __name__ == "__main__":
     test_save_and_load_cache()
     test_load_cache_missing_returns_none()

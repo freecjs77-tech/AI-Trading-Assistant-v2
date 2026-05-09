@@ -247,63 +247,112 @@ def _format_ticker_with_tags(entry: dict) -> str:
     icons = []
     for tag in tags:
         if tag == "OVERHEAT":
-            icons.append("🔴")
+            icons.append("\U0001f534")
         elif tag == "PARABOLIC":
-            icons.append("🟠")
-        elif tag == "EXTENDED":
-            icons.append("🟡")
+            icons.append("\U0001f7e0")
     return f"{t} {''.join(icons)}".strip()
 
 
-def _format_momentum_message(us_result: dict | None,
-                              kr_result: dict | None,
-                              as_of: str) -> str:
-    """모멘텀 결과 → Telegram 메시지 (≤3500자)."""
-    lines = [f"🔥 Momentum Scanner — {as_of}", ""]
-    for label, result, flag in [("US", us_result, "🇺🇸"), ("KR", kr_result, "🇰🇷")]:
-        if not result or result.get("status") != "ok":
-            continue
-        sigs = result.get("signals", {})
-        m3 = sigs.get("MOMENTUM_3", [])
-        m2 = sigs.get("MOMENTUM_2", [])
-        m1 = sigs.get("MOMENTUM_1", [])
-        top_secs = result.get("top_sectors", [])
-        sec_str = ", ".join(s.get("ticker", "?") for s in top_secs[:3])
-        lines.append(f"{flag} {label}  Top: {sec_str}")
-        if m3:
-            tickers_str = ", ".join(
-                _format_ticker_with_tags(e) for e in m3[:5]
-            )
-            lines.append(f"M3 ({len(m3)}): {tickers_str}")
-        if m2:
-            tickers_str = ", ".join(
-                _format_ticker_with_tags(e) for e in m2[:5]
-            )
-            lines.append(f"M2 ({len(m2)}): {tickers_str}")
-        if m1:
-            lines.append(f"M1 ({len(m1)}): see report")
-        lines.append("")
+def _maturity_marker(maturity: str | None) -> str:
+    """성숙도 → 색상 마커 (EARLY=녹색, MID=노랑, EXTENDED=빨강)."""
+    return {
+        "EARLY": "\U0001f7e2",
+        "MID": "\U0001f7e1",
+        "EXTENDED": "\U0001f534",
+    }.get(maturity or "", "")
 
-    # Edge / Alert
-    for result in (us_result, kr_result):
+
+def _format_market_section(label_emoji: str, label: str,
+                            result: dict | None) -> str:
+    """단일 마켓(US/KR)의 포맷 블록 생성."""
+    if not result or result.get("status") != "ok":
+        return ""
+    sigs = result.get("signals", {})
+    lines = [f"{label_emoji} {label}"]
+
+    # Top sectors line
+    tops = result.get("top_sectors", [])
+    if tops:
+        lines.append("Top sectors: " + ", ".join(s.get("ticker", "?") for s in tops[:3]))
+
+    # M3/M2/M1 — brief
+    for tier_key, short in [("MOMENTUM_3", "M3"), ("MOMENTUM_2", "M2"), ("MOMENTUM_1", "M1")]:
+        items = sigs.get(tier_key, [])
+        if items:
+            preview = ", ".join(_format_ticker_with_tags(e) for e in items[:5])
+            extra = "" if len(items) <= 5 else f" (+{len(items) - 5})"
+            lines.append(f"{short} ({len(items)}): {preview}{extra}")
+
+    # EM section
+    em = sigs.get("EM", [])
+    if em:
+        preview = ", ".join(
+            f"{s.get('ticker', '?')}{_maturity_marker(s.get('maturity'))}"
+            for s in em[:5]
+        )
+        extra = "" if len(em) <= 5 else f" (+{len(em) - 5})"
+        lines.append(f"\U0001f331 Emerging ({len(em)}): {preview}{extra}")
+
+    # Rotation Radar
+    radar = result.get("rotation_radar") or []
+    if radar:
+        rotation_str = ", ".join(f"{name} ({cnt})" for name, cnt in radar[:5])
+        lines.append(f"\U0001f504 Sector Rotation Radar: {rotation_str}")
+
+    return "\n".join(lines)
+
+
+def _format_momentum_message(us: dict | None = None,
+                              kr: dict | None = None,
+                              backtest_summary: dict | None = None,
+                              # Legacy positional compat: old callers pass (us_result, kr_result, as_of)
+                              # but since as_of is now derived internally, we ignore the 3rd arg if str
+                              **_kwargs) -> str:
+    """모멘텀 결과 → Telegram 메시지 (≤3500자).
+
+    New signature: _format_momentum_message(us=..., kr=..., backtest_summary=...)
+    send_momentum_brief uses keyword args; legacy positional callers still work via
+    the us/kr positional params.
+    """
+    as_of = (us or {}).get("as_of") or (kr or {}).get("as_of") or "—"
+    parts: list[str] = [f"\U0001f525 Momentum Scanner — {as_of}"]
+
+    us_section = _format_market_section("\U0001f1fa\U0001f1f8", "US", us)
+    if us_section:
+        parts.append(us_section)
+
+    kr_section = _format_market_section("\U0001f1f0\U0001f1f7", "KR", kr)
+    if kr_section:
+        parts.append(kr_section)
+
+    # EM transition KPI from US backtest (if available)
+    bs = (us or {}).get("backtest_summary") or {}
+    em_stats = (bs.get("by_stage") or {}).get("EM") or {}
+    transition_pct = em_stats.get("transition_to_M1_pct")
+    if transition_pct is not None:
+        parts.append(f"\U0001f525 Edge: EM transition to M1 = {transition_pct:.1f}% (90d)")
+
+    # Legacy Edge / Alert (by_streak) — preserve existing behaviour
+    for result in (us, kr):
         if not result:
             continue
-        bs = result.get("backtest_summary") or {}
-        edge = (bs.get("by_streak") or {}).get("3+", {}).get("avg_ret_5d")
+        b = result.get("backtest_summary") or {}
+        edge = (b.get("by_streak") or {}).get("3+", {}).get("avg_ret_5d")
         if edge is not None:
-            lines.append(f"🔥 Edge: M3 streak 3+일 → 5d 평균 {edge:.1f}%")
+            parts.append(f"\U0001f525 Edge: M3 streak 3+일 → 5d 평균 {edge:.1f}%")
             break
-    for result in (us_result, kr_result):
+    for result in (us, kr):
         if not result:
             continue
         alerts = (result.get("backtest_summary") or {}).get("alerts") or {}
         if alerts.get("consecutive_loss_warning"):
-            lines.append(
-                f"⚠ 최근 5개 leg 중 {alerts.get('recent_5_legs_loss_count', '?')}개 손실"
+            parts.append(
+                f"⚠ 최근 5개 leg 중 "
+                f"{alerts.get('recent_5_legs_loss_count', '?')}개 손실"
             )
             break
 
-    msg = "\n".join(lines)
+    msg = "\n\n".join(parts)
     return msg[:3500]
 
 
@@ -312,8 +361,7 @@ def send_momentum_brief(us_result: dict | None,
     """모멘텀 결과를 Telegram으로 전송. 둘 다 None이면 skip."""
     if not us_result and not kr_result:
         return False
-    as_of = (us_result or kr_result or {}).get("as_of", "unknown")
-    msg = _format_momentum_message(us_result, kr_result, as_of)
+    msg = _format_momentum_message(us=us_result, kr=kr_result)
     return _send_message(msg)
 
 

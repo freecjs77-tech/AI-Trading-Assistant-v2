@@ -172,6 +172,83 @@ def test_aggregate_streak_buckets():
     assert abs(agg["by_streak"]["3+"]["avg_ret_5d"] - 5.7) < 0.01
 
 
+def test_aggregate_includes_em_in_by_stage():
+    import momentum_backtest as mb
+    legs = [
+        {"ticker": "X", "stage": "EM", "ret_3d_pct": 1.0, "ret_5d_pct": 2.0,
+         "ret_10d_pct": 4.0, "max_ret_pct": 5.0, "min_ret_pct": -1.0,
+         "mdd_pct": -1.5, "duration_days": 5, "exit_reason": "UPGRADE"},
+        {"ticker": "Y", "stage": "EM", "ret_3d_pct": -0.5, "ret_5d_pct": -1.0,
+         "ret_10d_pct": 0.0, "max_ret_pct": 1.0, "min_ret_pct": -2.0,
+         "mdd_pct": -2.5, "duration_days": 7, "exit_reason": "EXIT"},
+    ]
+    agg = mb.aggregate(legs, as_of="2026-05-09")
+    assert "EM" in agg["by_stage"]
+    em = agg["by_stage"]["EM"]
+    assert em["leg_count"] == 2
+    # win rate 5d: 1 of 2 positive (2.0 > 0)
+    assert em["win_rate_5d_pct"] == 50.0
+
+
+def test_em_transition_to_m1_pct_calculated():
+    """transition_to_M1_pct = % of EM legs whose exit_reason == UPGRADE."""
+    import momentum_backtest as mb
+    legs = [
+        {"ticker": "A", "stage": "EM", "exit_reason": "UPGRADE",
+         "ret_5d_pct": 3.0, "ret_3d_pct": 1.0, "ret_10d_pct": None,
+         "max_ret_pct": None, "min_ret_pct": None, "mdd_pct": None,
+         "duration_days": 4},
+        {"ticker": "B", "stage": "EM", "exit_reason": "UPGRADE",
+         "ret_5d_pct": 5.0, "ret_3d_pct": 2.0, "ret_10d_pct": None,
+         "max_ret_pct": None, "min_ret_pct": None, "mdd_pct": None,
+         "duration_days": 5},
+        {"ticker": "C", "stage": "EM", "exit_reason": "EXIT",
+         "ret_5d_pct": -1.0, "ret_3d_pct": 0.0, "ret_10d_pct": None,
+         "max_ret_pct": None, "min_ret_pct": None, "mdd_pct": None,
+         "duration_days": 6},
+        {"ticker": "D", "stage": "EM", "exit_reason": "DOWNGRADE",
+         "ret_5d_pct": -2.0, "ret_3d_pct": -1.0, "ret_10d_pct": None,
+         "max_ret_pct": None, "min_ret_pct": None, "mdd_pct": None,
+         "duration_days": 7},
+    ]
+    agg = mb.aggregate(legs, as_of="2026-05-09")
+    em = agg["by_stage"]["EM"]
+    # 2 of 4 UPGRADE → 50.0%
+    assert em["transition_to_M1_pct"] == 50.0
+
+
+def test_transition_pct_excludes_in_progress_legs():
+    """In-progress legs (exit_reason None) shouldn't count in denominator."""
+    import momentum_backtest as mb
+    legs = [
+        {"ticker": "A", "stage": "EM", "exit_reason": "UPGRADE",
+         "ret_5d_pct": 3.0, "ret_3d_pct": 1.0, "ret_10d_pct": None,
+         "max_ret_pct": None, "min_ret_pct": None, "mdd_pct": None,
+         "duration_days": 4},
+        {"ticker": "B", "stage": "EM", "exit_reason": None,
+         "ret_5d_pct": None, "ret_3d_pct": None, "ret_10d_pct": None,
+         "max_ret_pct": None, "min_ret_pct": None, "mdd_pct": None,
+         "duration_days": 1},
+    ]
+    agg = mb.aggregate(legs, as_of="2026-05-09")
+    em = agg["by_stage"]["EM"]
+    # Only 1 closed leg, 1 UPGRADE → 100.0%
+    assert em["transition_to_M1_pct"] == 100.0
+
+
+def test_transition_pct_none_when_no_closed_em_legs():
+    import momentum_backtest as mb
+    legs = [
+        {"ticker": "A", "stage": "EM", "exit_reason": None,
+         "ret_5d_pct": None, "ret_3d_pct": None, "ret_10d_pct": None,
+         "max_ret_pct": None, "min_ret_pct": None, "mdd_pct": None,
+         "duration_days": 1},
+    ]
+    agg = mb.aggregate(legs, as_of="2026-05-09")
+    em = agg["by_stage"]["EM"]
+    assert em["transition_to_M1_pct"] is None
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

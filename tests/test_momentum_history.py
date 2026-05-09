@@ -129,6 +129,101 @@ def test_load_history_creates_skeleton_if_missing():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def test_rank_includes_em_at_zero():
+    import momentum_history as mh
+    assert mh.RANK["EM"] == 0
+    assert mh.RANK["MOMENTUM_1"] == 1
+    assert mh.RANK["MOMENTUM_2"] == 2
+    assert mh.RANK["MOMENTUM_3"] == 3
+
+
+def test_em_to_m1_is_upgrade():
+    """EM → MOMENTUM_1 should be UPGRADE (RANK 0 < 1) with streak +1."""
+    import momentum_history as mh
+    history = {"data": {"PLTR": {
+        "2026-05-09": {"stage": "EM", "streak": 3, "change": "HOLD",
+                        "entry_price": 22.0, "entry_date": "2026-05-07",
+                        "time_in_stage": 3, "price": 23.5},
+    }}}
+    today_signals = [{
+        "ticker": "PLTR", "stage": "MOMENTUM_1", "price": 24.0,
+        "maturity": "MID", "sector": "Software", "sector_top_rank": None,
+        "rsi": 62.0, "ret_1d_pct": 1.5, "ret_3d_pct": 5.0,
+        "ret_5d_pct": 7.0, "ret_20d_pct": 12.0, "dist_ema9_pct": 4.5,
+        "rs_vs_sector": True, "risk_tags": [], "name": "Palantir",
+    }]
+    out = mh.update_history(history, today_signals, today="2026-05-10")
+    entry = out["data"]["PLTR"]["2026-05-10"]
+    assert entry["stage"] == "MOMENTUM_1"
+    assert entry["change"] == "UPGRADE"
+    assert entry["streak"] == 4
+    assert entry["prev_stage"] == "EM"
+    assert entry["maturity"] == "MID"
+    assert entry["sector_top_rank"] is None
+    assert entry["dist_ema9_pct"] == 4.5
+    assert entry["ret_20d_pct"] == 12.0
+
+
+def test_em_new_entry_includes_maturity_and_dist_ema9():
+    import momentum_history as mh
+    history = {"data": {}}
+    today_signals = [{
+        "ticker": "DUOL", "stage": "EM", "price": 180.0,
+        "maturity": "EARLY", "sector": "Education", "sector_top_rank": None,
+        "rsi": 64.0, "ret_1d_pct": 1.2, "ret_3d_pct": 2.0,
+        "ret_5d_pct": 4.5, "ret_20d_pct": 11.0, "dist_ema9_pct": 1.8,
+        "rs_vs_sector": None, "risk_tags": [], "name": "Duolingo",
+    }]
+    out = mh.update_history(history, today_signals, today="2026-05-09")
+    entry = out["data"]["DUOL"]["2026-05-09"]
+    assert entry["change"] == "NEW"
+    assert entry["streak"] == 1
+    assert entry["stage"] == "EM"
+    assert entry["maturity"] == "EARLY"
+    assert entry["dist_ema9_pct"] == 1.8
+    assert entry["sector_top_rank"] is None
+
+
+def test_load_history_filters_legacy_risk_tags_on_active_entries():
+    """Existing v1.0 entries with EARLY/EXTENDED tags — filtered on read."""
+    import json, tempfile, os, momentum_history as mh
+    raw = {
+        "_meta": {"scanner": "momentum_us", "schema_version": 1,
+                  "version": "Momentum v1.0", "last_updated": "2026-05-08"},
+        "data": {"NVDA": {"2026-05-08": {
+            "stage": "MOMENTUM_3", "streak": 5, "change": "HOLD",
+            "risk_tags": ["EXTENDED", "OVERHEAT", "EARLY"],
+            "price": 920.0,
+        }}},
+    }
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8") as f:
+        json.dump(raw, f)
+        path = f.name
+    try:
+        out = mh.load_history(path)
+        tags = out["data"]["NVDA"]["2026-05-08"]["risk_tags"]
+        assert "EARLY" not in tags
+        assert "EXTENDED" not in tags
+        assert "OVERHEAT" in tags
+    finally:
+        os.unlink(path)
+
+
+def test_save_history_writes_schema_version_2():
+    import json, tempfile, os, momentum_history as mh
+    history = {"_meta": {}, "data": {}}
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8") as f:
+        path = f.name
+    try:
+        mh.save_history(path, history)
+        with open(path, encoding="utf-8") as f:
+            saved = json.load(f)
+        assert saved["_meta"]["schema_version"] == 2
+        assert saved["_meta"]["version"] == "Momentum v1.5"
+    finally:
+        os.unlink(path)
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

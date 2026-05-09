@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "version": "Momentum v1.0",
-    "description": "Golden sample inputs/outputs for evaluate_stock and classify_stage. If test fails after intentional logic change, regenerate with --update flag (or manually update expected)."
+    "version": "Momentum v1.5",
+    "description": "Golden sample inputs/outputs for evaluate_stock and classify_stage. Updated for v1.5: EXTENDED/EARLY no longer emitted as risk tags (absorbed by Maturity dimension). Hints now use 2-axis position_hint(maturity, risk_tags). If test fails after intentional logic change, regenerate with --update flag (or manually update expected)."
   },
   "cases": [
     {
@@ -46,10 +46,8 @@
       "expected": {
         "stage": "MOMENTUM_2",
         "rs_vs_sector": true,
-        "risk_tags": [
-          "EXTENDED"
-        ],
-        "hint": "분할"
+        "risk_tags": [],
+        "hint": "적극"
       }
     },
     {
@@ -71,10 +69,8 @@
       "expected": {
         "stage": "MOMENTUM_1",
         "rs_vs_sector": true,
-        "risk_tags": [
-          "EARLY"
-        ],
-        "hint": "조기"
+        "risk_tags": [],
+        "hint": "적극"
       }
     },
     {
@@ -115,8 +111,7 @@
         "stage": "MOMENTUM_3",
         "rs_vs_sector": true,
         "risk_tags": [
-          "OVERHEAT",
-          "EXTENDED"
+          "OVERHEAT"
         ],
         "hint": "신중"
       }
@@ -141,8 +136,7 @@
         "stage": "MOMENTUM_2",
         "rs_vs_sector": true,
         "risk_tags": [
-          "PARABOLIC",
-          "EXTENDED"
+          "PARABOLIC"
         ],
         "hint": "눌림"
       }

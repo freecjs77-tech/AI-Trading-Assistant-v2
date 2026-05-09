@@ -5,6 +5,7 @@ Market Momentum Scanner — Data access layer.
   1. yfinance bulk fetch (Task 4-7에서 추가)
   2. iShares CSV / KRX API 호출 (Task 4-5)
   3. 캐시 I/O 공통 (load/save/age + fallback helper) ← Task 2
+  4. EMA 필드 계산 공통 헬퍼 (compute_ema_fields — EMA9/21/65 + dist + slope)
 
 캐시 메타 스키마:
   {
@@ -420,3 +421,71 @@ def fetch_yf_bulk(tickers: list[str], period: str = "30d") -> tuple:
     if not all_close:
         return pd.DataFrame(), pd.DataFrame()
     return pd.concat(all_close, axis=1), pd.concat(all_vol, axis=1)
+
+
+def compute_ema_fields(close: "pd.Series") -> dict:
+    """
+    Compute EMA9/21/65 + dist + slope fields from a close series.
+
+    Single source of truth for EMA calculation. Called by both
+    fetch_market_data.py (per-ticker) and momentum_scanner._fetch_indicators
+    (in-memory bulk). momentum_signal.py must NOT compute EMAs.
+
+    Returns dict with 7 keys; each value is float or None.
+    """
+    import pandas as pd
+
+    out = {
+        "ema9": None, "ema21": None, "ema65": None,
+        "dist_ema9_pct": None, "dist_ema21_pct": None,
+        "ema21_slope_3d_pct": None, "ema65_slope_5d_pct": None,
+    }
+    if close is None or len(close) == 0:
+        return out
+    s = close.dropna() if hasattr(close, "dropna") else pd.Series(close).dropna()
+    if len(s) < 9:
+        return out
+
+    last = float(s.iloc[-1])
+
+    def _last_or_none(series):
+        try:
+            v = float(series.iloc[-1])
+            return v if v == v else None
+        except (TypeError, ValueError, IndexError):
+            return None
+
+    def _slope_pct(series, lookback):
+        if len(series) <= lookback:
+            return None
+        try:
+            cur = float(series.iloc[-1])
+            prev = float(series.iloc[-1 - lookback])
+        except (TypeError, ValueError, IndexError):
+            return None
+        if cur != cur or prev != prev or prev == 0:
+            return None
+        return round((cur - prev) / prev * 100, 2)
+
+    def _dist_pct(close_v, ema_v):
+        if ema_v is None or ema_v == 0:
+            return None
+        return round((close_v - ema_v) / ema_v * 100, 2)
+
+    # ema9 (always computed — len(s) >= 9 guaranteed by top guard)
+    ema9 = s.ewm(span=9, adjust=False).mean()
+    out["ema9"] = _last_or_none(ema9)
+    out["dist_ema9_pct"] = _dist_pct(last, out["ema9"])
+
+    if len(s) >= 21:
+        ema21 = s.ewm(span=21, adjust=False).mean()
+        out["ema21"] = _last_or_none(ema21)
+        out["dist_ema21_pct"] = _dist_pct(last, out["ema21"])
+        out["ema21_slope_3d_pct"] = _slope_pct(ema21, 3)
+
+    if len(s) >= 65:
+        ema65 = s.ewm(span=65, adjust=False).mean()
+        out["ema65"] = _last_or_none(ema65)
+        out["ema65_slope_5d_pct"] = _slope_pct(ema65, 5)
+
+    return out

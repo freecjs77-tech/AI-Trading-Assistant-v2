@@ -166,7 +166,7 @@ def aggregate(legs: list[dict], as_of: str) -> dict:
     """
     # by_stage 집계
     by_stage: dict[str, dict] = {}
-    for stage in ("MOMENTUM_1", "MOMENTUM_2", "MOMENTUM_3"):
+    for stage in ("EM", "MOMENTUM_1", "MOMENTUM_2", "MOMENTUM_3"):
         s_legs = [L for L in legs if L.get("stage") == stage]
         if not s_legs:
             continue
@@ -182,6 +182,16 @@ def aggregate(legs: list[dict], as_of: str) -> dict:
             "avg_duration_days": _safe_avg([float(L.get("duration_days") or 0)
                                             for L in s_legs]),
         }
+        if stage == "EM":
+            # transition_to_M1_pct counts ANY upgrade out of EM (to M1, M2, or M3) —
+            # EM is the lowest RANK, so any UPGRADE exit_reason qualifies.
+            closed = [L for L in s_legs if L.get("exit_reason") is not None]
+            upgraded = [L for L in closed if L.get("exit_reason") == "UPGRADE"]
+            if closed:
+                by_stage[stage]["transition_to_M1_pct"] = round(
+                    len(upgraded) / len(closed) * 100, 1)
+            else:
+                by_stage[stage]["transition_to_M1_pct"] = None
 
     # by_streak 집계 (1, 2, 3+)
     by_streak: dict[str, dict] = {}

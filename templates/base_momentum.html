@@ -28,20 +28,27 @@
   .alert { background: #3d2020; border-left: 3px solid #ff4444; padding: 8px 12px; margin: 1em 0; color: #ffb3b3; }
   .pos { color: #4caf50; font-weight: bold; }
   .neg { color: #ff6b6b; font-weight: bold; }
-  .M3 { color: #ff5722; font-weight: bold; }
-  .M2 { color: #ffa500; font-weight: bold; }
-  .M1 { color: #ffeb3b; }
+  .tier-MOMENTUM_3, .M3 { color: #ff5722; font-weight: bold; }
+  .tier-MOMENTUM_2, .M2 { color: #ffa500; font-weight: bold; }
+  .tier-MOMENTUM_1, .M1 { color: #ffeb3b; }
+  .tier-em { background: #2a3540; color: #cbd5e1; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+  .maturity-early    { color: #22c55e; font-weight: bold; }
+  .maturity-mid      { color: #eab308; }
+  .maturity-extended { color: #ef4444; font-weight: bold; }
   .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 12px; margin: 0 2px 2px 0; }
   .badge-OVERHEAT { background: #d32f2f; color: #fff; }
   .badge-PARABOLIC { background: #ff9800; color: #fff; }
-  .badge-EXTENDED { background: #ffc107; color: #222; }
-  .badge-EARLY { background: #9e9e9e; color: #fff; }
   .empty-state { text-align: center; padding: 2em 0; color: #888; }
   .empty-state-icon { font-size: 48px; margin-bottom: 0.5em; }
   .footer { margin-top: 2em; padding-top: 1em; border-top: 1px dashed #444; font-size: 12px; color: #888; }
   .sector-leader { background: #242424; border-left: 4px solid #ffa500; padding: 0.8em; margin: 0.5em 0; }
   .sr-ticker { color: #4db8ff; font-weight: bold; font-size: 13px; }
   .sr-score { color: #ffb84d; }
+  .rotation-radar { background: #1f2a35; border-left: 3px solid #4db8ff; padding: 0.8em 1em; margin: 0.8em 0; }
+  .rotation-radar h4 { color: #99d9ff; font-size: 13px; margin-bottom: 0.4em; }
+  .rotation-radar .row { color: #cfe8ff; font-size: 13px; margin: 2px 0; }
+  .rotation-radar .row.strong { color: #ffeb3b; font-weight: bold; }
+  .star-top { color: #ffd54f; }
   @media (max-width: 768px) {
     body { padding: 1em; }
     table { font-size: 12px; }
@@ -52,16 +59,23 @@
 <body>
 <div class="container">
 
-<nav>{% block nav %}<a href="index.html">📊 Portfolio</a> | 🔥 Momentum Scanner{% endblock %}</nav>
+<nav>{% block nav %}<a href="index.html">&#128202; Portfolio</a> | &#128293; Momentum Scanner{% endblock %}</nav>
 
-<h1>🔥 {{ market_label }} Momentum — {{ result.as_of }}</h1>
-<p style="color: #aaa;">Scanned: {{ result.scanned_count }} tickers · ⏱ {{ result.elapsed_s|default(0)|round(1) }}s · {{ result.version }}</p>
+<h1>&#128293; {{ market_label }} Momentum &#8212; {{ result.as_of }}</h1>
+<p style="color: #aaa;">Scanned: {{ result.scanned_count }} tickers · &#9201; {{ result.elapsed_s|default(0)|round(1) }}s · {{ result.version }}</p>
 
 {% if result.status == "failed" %}
-<div class="alert">⚠ Scan failed: {{ result.error_message }}</div>
+<div class="alert">&#9888; Scan failed: {{ result.error_message }}</div>
 {% else %}
 
-<p style="margin: 1em 0; color: #ccc;">Signals detected: <span class="M3">M3={{ result.signals.MOMENTUM_3|length }}</span> | <span class="M2">M2={{ result.signals.MOMENTUM_2|length }}</span> | <span class="M1">M1={{ result.signals.MOMENTUM_1|length }}</span></p>
+{% set leaders_count = result.signals.MOMENTUM_3|length + result.signals.MOMENTUM_2|length + result.signals.MOMENTUM_1|length %}
+{% set em_count = result.signals.get('EM', [])|length %}
+<p style="margin: 1em 0; color: #ccc;">
+  Leaders: <span class="M3">M3={{ result.signals.MOMENTUM_3|length }}</span> /
+  <span class="M2">M2={{ result.signals.MOMENTUM_2|length }}</span> /
+  <span class="M1">M1={{ result.signals.MOMENTUM_1|length }}</span>
+  &nbsp;&#183;&nbsp; Emerging: <span class="tier-em">{{ em_count }}</span>
+</p>
 
 <h2>Sector Leaders</h2>
 {% if result.top_sectors %}
@@ -76,10 +90,11 @@
   {% endfor %}
 </div>
 {% else %}
-<p style="color: #666;">— No sector qualifies for momentum today.</p>
+<p style="color: #666;">&#8212; No sector qualifies for momentum today.</p>
 {% endif %}
 
-<h2>Signals</h2>
+{# Section A — Momentum Leaders #}
+<h2>&#128293; Momentum Leaders (M1/M2/M3)</h2>
 {% for stage_name, stage_label in [("MOMENTUM_3","M3"),("MOMENTUM_2","M2"),("MOMENTUM_1","M1")] %}
   {% set entries = result.signals[stage_name] %}
   <h3 class="{{ stage_label }}">{{ stage_label }} ({{ entries|length }})</h3>
@@ -88,12 +103,15 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Price</th>
-        <th>1d %</th>
-        <th>3d %</th>
-        <th>5d %</th>
-        <th>RSI</th>
+        <th>Tier</th>
+        <th>Maturity</th>
+        <th>Streak</th>
         <th>Sector</th>
+        <th>RSI</th>
+        <th>dist_ema9</th>
+        <th>1d %</th>
+        <th>5d %</th>
+        <th>20d %</th>
         <th>Sec_RS</th>
         <th>Risk Tags</th>
         <th>Hint</th>
@@ -102,14 +120,17 @@
     <tbody>
     {% for e in entries %}
       <tr>
-        <td><a href="details/{{ e.ticker }}.html" style="color: #4db8ff;" title="{{ e.ticker }}">{{ e.name or e.ticker }}</a>{% if e.name and e.name != e.ticker %}<span style="color:#888;font-size:0.82em;margin-left:6px;">{{ e.ticker }}</span>{% endif %}</td>
-        <td>{{ "%.2f"|format(e.price or 0) }}</td>
-        <td class="{{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
-        <td class="{{ 'pos' if (e.ret_3d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_3d_pct or 0) }}%</td>
-        <td class="{{ 'pos' if (e.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_5d_pct or 0) }}%</td>
+        <td><a href="details/{{ e.ticker }}.html" title="{{ e.ticker }}">{{ e.name or e.ticker }}</a>{% if e.name and e.name != e.ticker %}<span style="color:#888;font-size:0.82em;margin-left:6px;">{{ e.ticker }}</span>{% endif %}</td>
+        <td><span class="tier-{{ e.tier or e.stage }}">{{ stage_label }}</span></td>
+        <td>{% if e.maturity %}<span class="maturity-{{ e.maturity|lower }}">{{ e.maturity }}</span>{% else %}&#8212;{% endif %}</td>
+        <td>{% if e.streak %}{{ e.streak }}d{% else %}&#8212;{% endif %}</td>
+        <td>{{ e.sector or "&#8212;" }}{% if e.sector_top_rank %} <span class="star-top">&#11088;</span>{% endif %}</td>
         <td>{{ "%.1f"|format(e.rsi or 0) }}</td>
-        <td>{{ e.sector or "—" }}</td>
-        <td>{{ "✓" if e.rs_vs_sector else "—" }}</td>
+        <td>{% if e.dist_ema9_pct is not none %}{{ "%+.1f"|format(e.dist_ema9_pct) }}%{% else %}&#8212;{% endif %}</td>
+        <td class="{{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
+        <td class="{{ 'pos' if (e.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_5d_pct or 0) }}%</td>
+        <td class="{{ 'pos' if (e.ret_20d_pct or 0) >= 0 else 'neg' }}">{% if e.ret_20d_pct is not none %}{{ "%.2f"|format(e.ret_20d_pct) }}%{% else %}&#8212;{% endif %}</td>
+        <td>{{ "&#10003;" if e.rs_vs_sector else "&#8212;" }}</td>
         <td>{% for tag in e.risk_tags %}<span class="badge badge-{{ tag }}">{{ tag }}</span>{% endfor %}</td>
         <td>{{ e.hint }}</td>
       </tr>
@@ -117,15 +138,70 @@
     </tbody>
   </table>
   {% else %}
-  <p style="color: #666;">— No {{ stage_label }} signals today.</p>
+  <p style="color: #666;">&#8212; No {{ stage_label }} signals today.</p>
   {% endif %}
 {% endfor %}
+
+{# Section B — Emerging Momentum #}
+<h2>&#127807; Emerging Momentum (EM)</h2>
+{% if result.rotation_radar %}
+<div class="rotation-radar">
+  <h4>Potential Sector Rotation</h4>
+  {% for sector_count in result.rotation_radar %}
+  <div class="row {{ 'strong' if sector_count[1] >= 3 else '' }}">
+    {{ sector_count[0] }} ({{ sector_count[1] }} EM, non-Top)
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% set em_entries = result.signals.get('EM', []) %}
+<h3 class="tier-em" style="display:inline-block;">EM ({{ em_entries|length }})</h3>
+{% if em_entries %}
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Tier</th>
+      <th>Maturity</th>
+      <th>Streak</th>
+      <th>Sector</th>
+      <th>RSI</th>
+      <th>dist_ema9</th>
+      <th>1d %</th>
+      <th>5d %</th>
+      <th>20d %</th>
+      <th>Risk Tags</th>
+      <th>Hint</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for e in em_entries %}
+    <tr>
+      <td><a href="details/{{ e.ticker }}.html" title="{{ e.ticker }}">{{ e.name or e.ticker }}</a>{% if e.name and e.name != e.ticker %}<span style="color:#888;font-size:0.82em;margin-left:6px;">{{ e.ticker }}</span>{% endif %}</td>
+      <td><span class="tier-em">EM</span></td>
+      <td>{% if e.maturity %}<span class="maturity-{{ e.maturity|lower }}">{{ e.maturity }}</span>{% else %}&#8212;{% endif %}</td>
+      <td>{% if e.streak %}{{ e.streak }}d{% else %}&#8212;{% endif %}</td>
+      <td>{{ e.sector or "&#8212;" }}{% if e.sector_top_rank %} <span class="star-top">&#11088;</span>{% endif %}</td>
+      <td>{{ "%.1f"|format(e.rsi or 0) }}</td>
+      <td>{% if e.dist_ema9_pct is not none %}{{ "%+.1f"|format(e.dist_ema9_pct) }}%{% else %}&#8212;{% endif %}</td>
+      <td class="{{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
+      <td class="{{ 'pos' if (e.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_5d_pct or 0) }}%</td>
+      <td class="{{ 'pos' if (e.ret_20d_pct or 0) >= 0 else 'neg' }}">{% if e.ret_20d_pct is not none %}{{ "%.2f"|format(e.ret_20d_pct) }}%{% else %}&#8212;{% endif %}</td>
+      <td>{% for tag in e.risk_tags %}<span class="badge badge-{{ tag }}">{{ tag }}</span>{% endfor %}</td>
+      <td>{{ e.hint }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p style="color: #666;">&#8212; No emerging signals today.</p>
+{% endif %}
 
 {% if result.backtest_summary %}
 <h2>Backtest Summary (Direct 90-day rolling)</h2>
 {% set bs = result.backtest_summary %}
 {% if bs.alerts and bs.alerts.consecutive_loss_warning %}
-<div class="alert">⚠ 최근 5개 leg 중 {{ bs.alerts.recent_5_legs_loss_count }}개 손실 — 신호 신뢰도 점검 필요</div>
+<div class="alert">&#9888; &#52572;&#44540; 5&#44060; leg &#51473; {{ bs.alerts.recent_5_legs_loss_count }}&#44060; &#49552;&#49892; &#8212; &#49888;&#54840; &#49888;&#47260;&#46020; &#51216;&#44160; &#54596;&#50836;</div>
 {% endif %}
 <table>
   <thead>
@@ -138,10 +214,11 @@
       <th>Avg 10d %</th>
       <th>MDD %</th>
       <th>Avg dur (days)</th>
+      <th>EM&#8594;M1 %</th>
     </tr>
   </thead>
   <tbody>
-  {% for stage in ["MOMENTUM_3","MOMENTUM_2","MOMENTUM_1"] %}
+  {% for stage in ["MOMENTUM_3","MOMENTUM_2","MOMENTUM_1","EM"] %}
     {% if bs.by_stage and stage in bs.by_stage %}
     {% set st = bs.by_stage[stage] %}
     <tr>
@@ -153,16 +230,17 @@
       <td>{{ "%.2f"|format(st.avg_ret_10d_pct or 0) }}%</td>
       <td class="neg">{{ "%.2f"|format(st.avg_mdd_pct or 0) }}%</td>
       <td>{{ "%.1f"|format(st.avg_duration_days or 0) }}</td>
+      <td>{% if stage == "EM" and st.transition_to_M1_pct is not none %}{{ "%.1f"|format(st.transition_to_M1_pct) }}%{% else %}&#8212;{% endif %}</td>
     </tr>
     {% endif %}
   {% endfor %}
   </tbody>
 </table>
 {% if bs.by_streak and "3+" in bs.by_streak %}
-<p style="margin-top: 1em; color: #4caf50;">🔥 <b>Edge:</b> M3 streak 3+ days → 5d avg {{ "%.1f"|format(bs.by_streak["3+"].avg_ret_5d or 0) }}%</p>
+<p style="margin-top: 1em; color: #4caf50;">&#128293; <b>Edge:</b> M3 streak 3+ days &#8594; 5d avg {{ "%.1f"|format(bs.by_streak["3+"].avg_ret_5d or 0) }}%</p>
 {% endif %}
 {% else %}
-<p style="color: #666;">백테스트 데이터 누적 중 (최소 90일 후 표시)</p>
+<p style="color: #666;">&#48177;&#53580;&#49828;&#53944; &#45936;&#51060;&#53552; &#45204;&#51201; &#51473; (&#52572;&#49548; 90&#51068; &#54980; &#54364;&#49884;)</p>
 {% endif %}
 
 {% endif %}
@@ -170,7 +248,7 @@
 <div class="footer">
 {% block footer %}
 <p>Universe: {{ result.scanned_count }} | Version: {{ result.version }}</p>
-<p>⚠ Backtest assumes close entry — slippage expected in live trading</p>
+<p>&#9888; Backtest assumes close entry &#8212; slippage expected in live trading</p>
 {% endblock %}
 </div>
 

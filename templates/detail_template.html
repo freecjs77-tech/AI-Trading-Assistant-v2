@@ -122,6 +122,11 @@
   .cond-card.cond-card-na .cond-card-title { color: var(--text-dim); }
   .cond-card.cond-card-na .cond-card-desc { color: var(--text-dim); }
 
+  /* Maturity labels */
+  .maturity-early    { color: #22c55e; font-weight: bold; }
+  .maturity-mid      { color: #eab308; }
+  .maturity-extended { color: #ef4444; font-weight: bold; }
+
   /* Signal History */
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .history-table th { text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--sub); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
@@ -298,6 +303,15 @@
       | <strong>Entry:</strong> {% if is_kospi %}₩{{ md.last.entry_price|default(0)|comma }}{% else %}${{ md.last.entry_price|default(0)|f2 }}{% endif %} →
       <strong>Now:</strong> {% if is_kospi %}₩{{ md.last.price|default(0)|comma }}{% else %}${{ md.last.price|default(0)|f2 }}{% endif %}
     </p>
+    {% if md.last.maturity %}
+    <p style="margin-bottom:0.8em;">
+      <strong>Maturity:</strong>
+      <span class="maturity-{{ md.last.maturity|lower }}">{{ md.last.maturity }}</span>
+      {% if md.last.dist_ema9_pct is not none %}
+        (dist_ema9 {% if md.last.dist_ema9_pct >= 0 %}+{% endif %}{{ "%.1f"|format(md.last.dist_ema9_pct) }}%, RSI {{ "%.1f"|format(md.last.rsi or 0) }})
+      {% endif %}
+    </p>
+    {% endif %}
     {% if md.last.risk_tags %}
     <p style="margin:0;">
       <strong>Risk:</strong>

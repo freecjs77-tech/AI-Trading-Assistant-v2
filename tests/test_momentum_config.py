@@ -21,7 +21,6 @@ def test_prefilter_relaxed():
 def test_risk_thresholds():
     assert cfg.RISK_OVERHEAT_RSI > cfg.M3_RSI_MIN
     assert cfg.RISK_PARABOLIC_PCT > 0
-    assert cfg.RISK_EARLY_RSI_MIN < cfg.RISK_EARLY_RSI_MAX <= cfg.M3_RSI_MIN
 
 def test_universe_caps():
     assert cfg.CACHE_TTL_DAYS == 7
@@ -34,7 +33,46 @@ def test_backtest_constants():
     assert 1 <= cfg.CONSECUTIVE_LOSS_THRESHOLD <= 5
 
 def test_version():
-    assert cfg.VERSION == "Momentum v1.0"
+    # Updated to v1.5 — kept for backward-compat shape; see test_version_string_v15
+    assert cfg.VERSION.startswith("Momentum v")
+
+def test_maturity_constants_present():
+    import momentum_config as cfg
+    assert cfg.MATURITY_EXT_DIST_PCT == 8.0
+    assert cfg.MATURITY_EXT_RSI == 75.0
+    assert cfg.MATURITY_EARLY_DIST_PCT == 3.0
+    assert cfg.MATURITY_EARLY_RSI == 68.0
+
+
+def test_em_constants_present():
+    import momentum_config as cfg
+    assert cfg.EM_RET_5D_MIN_PCT == 4.0
+    assert cfg.EM_RET_20D_MIN_PCT == 10.0
+    assert cfg.EM_RSI_MAX == 72.0
+    assert cfg.EM_DIST_EMA9_MAX == 8.0
+    assert cfg.EM_VOL_RATIO_MIN == 1.05
+    assert cfg.EM_EMA21_SLOPE_MIN_PCT == 0.0
+
+
+def test_legacy_risk_tags_set():
+    import momentum_config as cfg
+    assert cfg.LEGACY_RISK_TAGS == frozenset({"EARLY", "EXTENDED"})
+
+
+def test_risk_priority_only_two_tags():
+    import momentum_config as cfg
+    assert cfg.RISK_PRIORITY == ["OVERHEAT", "PARABOLIC"]
+
+
+def test_history_schema_version_v2():
+    import momentum_config as cfg
+    assert cfg.HISTORY_SCHEMA_VERSION == 2
+
+
+def test_version_string_v15():
+    import momentum_config as cfg
+    assert cfg.VERSION == "Momentum v1.5"
+
 
 if __name__ == "__main__":
     test_sector_thresholds_in_range()
@@ -44,4 +82,10 @@ if __name__ == "__main__":
     test_universe_caps()
     test_backtest_constants()
     test_version()
+    test_maturity_constants_present()
+    test_em_constants_present()
+    test_legacy_risk_tags_set()
+    test_risk_priority_only_two_tags()
+    test_history_schema_version_v2()
+    test_version_string_v15()
     print("[OK] momentum_config tests passed.")
