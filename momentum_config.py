@@ -44,6 +44,15 @@ EM_EMA21_SLOPE_MIN_PCT = 0.0    # rising = positive slope
 # ── Risk tags (v1.5 정리: EARLY/EXTENDED 삭제) ──────────
 RISK_OVERHEAT_RSI = 80
 RISK_PARABOLIC_PCT = 8.0
+
+# Legacy v1.0 thresholds — used by momentum_signal.compute_risk_tags() to emit
+# the now-deprecated EXTENDED/EARLY risk tags. Will be removed in Task 7 when
+# compute_risk_tags is rewritten to emit only OVERHEAT/PARABOLIC. Until then,
+# they keep the test suite green between Task 1 and Task 7.
+RISK_EXTENDED_MA20_PCT = 10.0
+RISK_EARLY_RSI_MIN = 60
+RISK_EARLY_RSI_MAX = 65
+
 LEGACY_RISK_TAGS = frozenset({"EARLY", "EXTENDED"})  # filtered on history read
 
 # ── Position hint (Maturity + Risk 2-axis) ──────────────
