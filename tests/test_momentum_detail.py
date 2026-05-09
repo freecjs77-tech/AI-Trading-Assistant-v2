@@ -104,3 +104,96 @@ def test_detail_works_with_no_momentum_args_at_all():
         assert os.path.exists(os.path.join(tmp, "AAPL.html"))
     finally:
         teardown(tmp)
+
+
+def _make_jinja_env():
+    """Return a Jinja2 Environment with the custom filters needed by detail_template.html."""
+    import jinja2
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader("templates"),
+        autoescape=True,
+    )
+    env.filters["f4"] = lambda x: f"{x:.4f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f3"] = lambda x: f"{x:.3f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["f0"] = lambda x: f"{x:.0f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["comma"] = lambda x: f"{x:,.0f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["pct1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
+    env.filters["sign_pct"] = lambda x: (f"+{x:.1f}%" if x >= 0 else f"{x:.1f}%") if isinstance(x, (int, float)) else str(x)
+    env.filters["badge_class"] = lambda s: "badge-HOLD"
+    env.filters["mcap"] = lambda v, currency="USD": ""
+    env.filters["shares_fmt"] = lambda x: str(x)
+    return env
+
+
+def _base_ctx(**extra):
+    """Return a minimal context dict that satisfies all unconditional variable references
+    in detail_template.html, so tests can reach the momentum section."""
+    ctx = {
+        # header / price block
+        "ticker": "TEST", "name": "Test", "cls": "", "market_cap": None,
+        "currency": "USD", "date_ko": "2026-05-09", "is_kospi": False,
+        "price": 100.0, "change_pct": 0.0,
+        # signal badge
+        "signal": "HOLD", "note": "", "buy_streak": 0, "buy_confirmed": False,
+        # portfolio info (guarded by {% if shares %})
+        "shares": 0, "avg_cost": 0.0, "value": 0.0, "pnl_pct": 0.0,
+        # 52w range (guarded by {% if high_52w and low_52w %})
+        "high_52w": None, "low_52w": None, "range_pct": 0.0,
+        # metric cards (all guarded with is not none checks)
+        "rsi": None, "macd_hist": None, "macd_hist_trend_ko": "",
+        "adx": None, "bb_pct": None, "volume_ratio": None,
+        "drawdown": None, "ma20": None, "ma200": None,
+        # chart (guarded)
+        "chart_exists": False,
+        # signal section
+        "signals": [], "indicators": {}, "judgment_sections": [], "history_rows": [],
+        "hypo_return": None,
+        # momentum
+        "momentum_data": None,
+    }
+    ctx.update(extra)
+    return ctx
+
+
+def test_detail_template_renders_maturity_line():
+    """CURRENT STATUS block shows Maturity + dist_ema9 when present in last entry."""
+    env = _make_jinja_env()
+    tmpl = env.get_template("detail_template.html")
+    momentum_data = {
+        "last": {
+            "stage": "EM", "time_in_stage": 3,
+            "entry_price": 22.0, "price": 23.5,
+            "maturity": "EARLY", "dist_ema9_pct": 1.8, "rsi": 64.0,
+            "risk_tags": [],
+        },
+        "recent": [],
+    }
+    html = tmpl.render(_base_ctx(
+        ticker="PLTR", name="Palantir",
+        momentum_data=momentum_data,
+    ))
+    assert "Maturity" in html
+    assert "EARLY" in html
+    assert "1.8" in html  # dist_ema9 shown
+
+
+def test_detail_template_omits_maturity_when_missing():
+    """If maturity field absent (legacy entry), block doesn't crash."""
+    env = _make_jinja_env()
+    tmpl = env.get_template("detail_template.html")
+    momentum_data = {
+        "last": {
+            "stage": "MOMENTUM_1", "time_in_stage": 1,
+            "entry_price": 100.0, "price": 102.0, "risk_tags": [],
+            # no maturity / no dist_ema9_pct
+        },
+        "recent": [],
+    }
+    html = tmpl.render(_base_ctx(
+        ticker="X", name="X",
+        momentum_data=momentum_data,
+    ))
+    # No exception, page renders. Maturity line is conditional.
+    assert "MOMENTUM_1" in html
