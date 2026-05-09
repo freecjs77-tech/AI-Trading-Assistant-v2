@@ -6,7 +6,7 @@ def _result(market, new_confirmed_tickers, enter_ok_count, early_count, failed_c
     snaps = {}
     for tk in new_confirmed_tickers:
         snaps[tk] = {"setup": "PULLBACK", "trigger": "CONFIRMED_TRIGGER",
-                       "decision": "ENTER_OK", "raw": {"risk_tags": []}}
+                       "decision": "ENTER", "raw": {"risk_tags": []}}
     return {
         "market": market, "as_of": "2026-05-08",
         "snapshots": snaps,

@@ -51,7 +51,7 @@ def test_atomic_write_no_partial_on_failure(tmp_path: Path, monkeypatch):
 def test_append_snapshot_creates_ticker_block():
     s = new_empty_state(market="US")
     snap = {"date": "2026-05-08", "setup": "TREND_OK", "trigger": "WAIT",
-            "decision": "STAGING", "raw": {"close": 100, "high": 101,
+            "decision": "TRENDING", "raw": {"close": 100, "high": 101,
             "low": 99, "ema9": 99, "ema21": 95, "ema65": 90,
             "dist_ema9_pct": 1.0, "dist_ema21_pct": 5.0,
             "volume_ratio": 1.0, "atr_pct": 2.0,
@@ -66,10 +66,10 @@ def test_append_snapshot_extends_existing_ticker():
     s = new_empty_state(market="US")
     s["tickers"]["NVDA"] = {"first_seen": "2026-05-07", "last_seen": "2026-05-07",
                              "snapshots": [{"date": "2026-05-07", "setup": "TREND_OK",
-                                            "trigger": "WAIT", "decision": "STAGING",
+                                            "trigger": "WAIT", "decision": "TRENDING",
                                             "raw": {}}]}
     snap = {"date": "2026-05-08", "setup": "PULLBACK", "trigger": "WAIT",
-            "decision": "STAGING", "raw": {}}
+            "decision": "WATCH", "raw": {}}
     append_snapshot(s, "NVDA", snap)
     assert s["tickers"]["NVDA"]["last_seen"] == "2026-05-08"
     assert len(s["tickers"]["NVDA"]["snapshots"]) == 2
@@ -238,24 +238,24 @@ def test_transition_setup_change():
     yesterday = {"setup": "EXTENDED", "trigger": "WAIT", "decision": "AVOID",
                   "raw": {"risk_tags": []}}
     today =     {"date": "2026-05-08",
-                  "setup": "PULLBACK", "trigger": "WAIT", "decision": "STAGING",
+                  "setup": "PULLBACK", "trigger": "WAIT", "decision": "WATCH",
                   "raw": {"risk_tags": []}}
     events = compute_transitions("NVDA", yesterday, today)
     types = {e["event"] for e in events}
     assert "SETUP_CHANGE" in types
-    assert "DECISION_CHANGE" in types  # AVOID -> STAGING
+    assert "DECISION_CHANGE" in types  # AVOID -> WATCH
 
 
 def test_transition_no_change_no_event():
     same = {"date": "2026-05-08", "setup": "TREND_OK", "trigger": "WAIT",
-             "decision": "STAGING", "raw": {"risk_tags": []}}
+             "decision": "TRENDING", "raw": {"risk_tags": []}}
     events = compute_transitions("NVDA", same, same)
     assert events == []
 
 
 def test_transition_failed_breakout_emitted_independently():
     yesterday = {"setup": "PULLBACK", "trigger": "CONFIRMED_TRIGGER",
-                  "decision": "ENTER_OK", "raw": {"risk_tags": []}}
+                  "decision": "ENTER", "raw": {"risk_tags": []}}
     today =     {"date": "2026-05-08",
                   "setup": "PULLBACK", "trigger": "WAIT", "decision": "AVOID",
                   "raw": {"risk_tags": ["FAILED_BREAKOUT"]}}
@@ -266,7 +266,7 @@ def test_transition_failed_breakout_emitted_independently():
 
 def test_transition_risk_escalation_when_extended_first_appears():
     yesterday = {"setup": "TREND_OK", "trigger": "WAIT",
-                  "decision": "STAGING", "raw": {"risk_tags": []}}
+                  "decision": "TRENDING", "raw": {"risk_tags": []}}
     today =     {"date": "2026-05-08",
                   "setup": "EXTENDED", "trigger": "WAIT",
                   "decision": "AVOID", "raw": {"risk_tags": ["EXTENDED"]}}
@@ -276,7 +276,7 @@ def test_transition_risk_escalation_when_extended_first_appears():
 
 def test_transition_no_yesterday_emits_nothing():
     today =     {"date": "2026-05-08",
-                  "setup": "PULLBACK", "trigger": "WAIT", "decision": "STAGING",
+                  "setup": "PULLBACK", "trigger": "WAIT", "decision": "WATCH",
                   "raw": {"risk_tags": []}}
     assert compute_transitions("NVDA", None, today) == []
 

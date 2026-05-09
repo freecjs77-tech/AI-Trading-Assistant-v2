@@ -34,10 +34,18 @@
     font-size: 13px; color: #475569; margin-bottom: 10px; line-height: 1.5;
   }
   .card .tickers { font-weight: 500; }
-  .card.enter-ok { background: #ecfdf5; border-left: 4px solid #10b981; }
-  .card.early    { background: #fef3c7; border-left: 4px solid #f59e0b; }
-  .card.staging  { background: #f3f4f6; border-left: 4px solid #9ca3af; }
-  .card.avoid    { background: #fee2e2; border-left: 4px solid #ef4444; }
+  .card.enter-ok  { background: #ecfdf5; border-left: 4px solid #10b981; }
+  .card.probe     { background: #fef3c7; border-left: 4px solid #f59e0b; }
+  .card.watch     { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .card.trending  { background: #f3f4f6; border-left: 4px solid #9ca3af; }
+  .card.avoid     { background: #fee2e2; border-left: 4px solid #ef4444; }
+
+  /* Decision cell colors */
+  .decision-enter    { color: #22c55e; font-weight: bold; }
+  .decision-probe    { color: #eab308; }
+  .decision-watch    { color: #3b82f6; }
+  .decision-trending { color: #94a3b8; }
+  .decision-avoid    { color: #ef4444; font-weight: bold; }
 
   .new-confirmed {
     background: #dbeafe; border-left: 4px solid #2563eb;
@@ -138,10 +146,11 @@
   <br><small style="color:#64748b">보유 종목의 매도 판단(trailing stop)은 Portfolio Risk 페이지를 별도로 참조하세요.</small>
 
   <div class="legend-grid">
-    <div class="legend-item"><span class="key">🟢 ENTER_OK</span><span>진입해도 OK — 좋은 zone(PULLBACK/BASE)에서 거래량·종가 게이트까지 통과한 확정 trigger.</span></div>
-    <div class="legend-item"><span class="key">🟡 EARLY</span><span>조기 진입 — 진입 zone 안에서 약한 trigger 발화. 작게 시도하거나 확정 대기.</span></div>
-    <div class="legend-item"><span class="key">⚪ STAGING</span><span>대기 — 추세는 정상이지만 진입 신호 아직 없음. 모니터링 대상.</span></div>
-    <div class="legend-item"><span class="key">🔴 AVOID</span><span>회피 — 과확장(EXTENDED)·구조 깨짐(BROKEN)·실패한 trigger(FAILED_BREAKOUT) 중 하나 이상.</span></div>
+    <div class="legend-item"><span class="key">🟢 본 진입 (ENTER)</span><span>진입해도 OK — 좋은 zone(PULLBACK/BASE)에서 거래량·종가 게이트까지 통과한 확정 trigger. 풀 포지션 가능.</span></div>
+    <div class="legend-item"><span class="key">🟡 분할 진입 (PROBE)</span><span>조기 진입 — 진입 zone 안에서 약한 trigger 발화. 50% 부분 진입 가능, 확정 대기.</span></div>
+    <div class="legend-item"><span class="key">🔵 진입 대기 (WATCH)</span><span>좋은 setup, 트리거 미발생 — PULLBACK/BASE_FORMING zone이나 아직 진입 신호 없음. 반등 신호 관찰.</span></div>
+    <div class="legend-item"><span class="key">⚪ 눌림 대기 (TRENDING)</span><span>추세 진행 중 — TREND_OK지만 setup 압축 부족. 다음 PULLBACK까지 추격 자제.</span></div>
+    <div class="legend-item"><span class="key">🔴 매수 금지 (AVOID)</span><span>회피 — 과확장(EXTENDED)·구조 깨짐(BROKEN)·실패한 trigger(FAILED_BREAKOUT). 진입 시 손실 위험 큼.</span></div>
   </div>
 </div>
 
@@ -151,7 +160,7 @@
 
   <div class="glossary-body">
     <p class="glossary-intro">
-      Decision (위 4가지) 은 두 가지 raw 상태의 조합 결과입니다:
+      Decision (위 5가지) 은 두 가지 raw 상태의 조합 결과입니다:
       <strong>Setup</strong> 은 종목의 추세 구조를 5단계로 진단하고,
       <strong>Trigger</strong> 는 그 안에서 진입 신호의 발화 강도를 3단계로 표시합니다.
     </p>
@@ -204,15 +213,15 @@
     <table class="state-table decision-matrix">
       <thead><tr><th>Setup \ Trigger</th><th>WAIT</th><th>EARLY_TRIGGER</th><th>CONFIRMED_TRIGGER</th></tr></thead>
       <tbody>
-        <tr><td><strong>TREND_OK</strong></td><td>⚪ STAGING</td><td colspan="2" class="dim">— (Trigger 평가 안 함)</td></tr>
-        <tr><td><strong>PULLBACK</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
-        <tr><td><strong>BASE_FORMING</strong></td><td>⚪ STAGING</td><td>🟡 EARLY</td><td>🟢 ENTER_OK</td></tr>
-        <tr><td><strong>EXTENDED</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
-        <tr><td><strong>BROKEN</strong></td><td colspan="3">🔴 AVOID (Trigger 무시)</td></tr>
+        <tr><td><strong>TREND_OK</strong></td><td>⚪ 눌림 대기 (TRENDING)</td><td colspan="2" class="dim">— (Trigger 평가 안 함)</td></tr>
+        <tr><td><strong>PULLBACK</strong></td><td>🔵 진입 대기 (WATCH)</td><td>🟡 분할 진입 (PROBE)</td><td>🟢 본 진입 (ENTER)</td></tr>
+        <tr><td><strong>BASE_FORMING</strong></td><td>🔵 진입 대기 (WATCH)</td><td>🟡 분할 진입 (PROBE)</td><td>🟢 본 진입 (ENTER)</td></tr>
+        <tr><td><strong>EXTENDED</strong></td><td colspan="3">🔴 매수 금지 (AVOID) — Trigger 무시</td></tr>
+        <tr><td><strong>BROKEN</strong></td><td colspan="3">🔴 매수 금지 (AVOID) — Trigger 무시</td></tr>
       </tbody>
     </table>
     <p class="glossary-note" style="margin-top: 8px;">
-      추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup·Trigger 무관하게 🔴 AVOID 강제.
+      추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup·Trigger 무관하게 🔴 매수 금지 (AVOID) 강제.
     </p>
   </div>
 </details>
@@ -225,9 +234,9 @@
 <!-- Section [3]: NEW CONFIRMED TODAY -->
 {% if new_confirmed %}
 <div class="new-confirmed">
-  <strong>🆕 NEW CONFIRMED TODAY ({{ new_confirmed|length }})</strong>:
+  <strong>🆕 NEW 본 진입 TODAY ({{ new_confirmed|length }})</strong>:
   {% for r in new_confirmed %}<a href="#row-{{ r.ticker }}">{{ r.name or r.ticker }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
-  <div class="desc">오늘 처음 ENTER_OK 가 발화한 종목 — 가장 시의성이 높은 진입 후보.</div>
+  <div class="desc">오늘 처음 본 진입(ENTER) 이 발화한 종목 — 가장 시의성이 높은 진입 후보.</div>
 </div>
 {% endif %}
 
@@ -235,38 +244,49 @@
 <h2>오늘의 결정 그룹</h2>
 
 <div class="card enter-ok">
-  <h3>🟢 ENTER_OK ({{ enter_ok|length }})</h3>
+  <h3>🟢 본 진입 — ENTER ({{ enter|length }})</h3>
   <div class="desc">
-    <strong>진입해도 OK</strong> — PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (전일 종가 ≤ EMA9, 오늘 EMA9 돌파 또는 전일 고점 돌파 + 거래량 1.2x + 종가가 일중 상위 20%).
+    <strong>진입해도 OK — 풀 포지션 가능</strong> — PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (거래량 1.2x + 종가가 일중 상위 20%).
   </div>
-  {% if enter_ok %}<div class="tickers">{% for r in enter_ok %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div><br>
+  {% if enter %}<div class="tickers">{% for r in enter %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div><br>
   <span class="recommended-size">권장 포지션 크기: TBD — Phase C 에서 ATR 기반 sizing 추가 예정</span>
   {% else %}<em>해당 없음</em>{% endif %}
 </div>
 
-<div class="card early">
-  <h3>🟡 EARLY ({{ early|length }})</h3>
+<div class="card probe">
+  <h3>🟡 분할 진입 — PROBE ({{ probe|length }})</h3>
   <div class="desc">
-    <strong>조기 진입 — 작게 시도 가능</strong> — 진입 zone 안에서 trigger 발화는 있으나 거래량·종가 게이트 중 하나 이상 미달. 다음 거래일에 CONFIRMED 로 승급될 수 있음.
+    <strong>조기 진입 — 50% 부분 진입 가능</strong> — 진입 zone 안에서 trigger 발화는 있으나 거래량·종가 게이트 중 하나 이상 미달. 다음 거래일에 ENTER 로 승급될 수 있음.
   </div>
-  {% if early %}<div class="tickers">{% for r in early %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% else %}<em>해당 없음</em>{% endif %}
+  {% if probe %}<div class="tickers">{% for r in probe %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% else %}<em>해당 없음</em>{% endif %}
 </div>
 
 <details>
-  <summary>⚪ STAGING ({{ staging|length }}) — 추세 정상, 신호 없음 (모니터링)</summary>
-  <div class="card staging">
+  <summary>🔵 진입 대기 — WATCH ({{ watch|length }}) — 좋은 setup, 트리거 대기</summary>
+  <div class="card watch">
     <div class="desc">
-      <strong>지금 진입 신호 없음</strong> — TREND_OK / PULLBACK / BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 EARLY 또는 ENTER_OK 로 자동 승격.
+      <strong>좋은 setup, 아직 트리거 미발생</strong> — PULLBACK/BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 PROBE 또는 ENTER 로 자동 승격.
+      AVGO 같은 "눌림 압축 중" 종목이 여기에 위치합니다.
     </div>
-    <div class="tickers">{% for r in staging %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+    <div class="tickers">{% for r in watch %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
   </div>
 </details>
 
 <details>
-  <summary>🔴 AVOID ({{ avoid|length }}) — 회피 사유 있음</summary>
+  <summary>⚪ 눌림 대기 — TRENDING ({{ trending|length }}) — 추세 진행 중, setup 압축 대기</summary>
+  <div class="card trending">
+    <div class="desc">
+      <strong>추세는 살아있으나 setup 압축 부족</strong> — TREND_OK 상태. 다음 PULLBACK/BASE_FORMING 까지 추격 자제. 매일 재평가되며 눌림 발생 시 WATCH 로 이동.
+    </div>
+    <div class="tickers">{% for r in trending %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+  </div>
+</details>
+
+<details>
+  <summary>🔴 매수 금지 — AVOID ({{ avoid|length }}) — 실제 위험 사유 있음</summary>
   <div class="card avoid">
     <div class="desc">
-      <strong>지금 진입 부적합</strong> — EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN 직전 단계 또는 risk_tags 에 FAILED_BREAKOUT (어제 CONFIRMED → 오늘 EMA9 하회).
+      <strong>지금 진입 부적합</strong> — EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN (추세 깨짐) 또는 risk_tags 에 FAILED_BREAKOUT (어제 CONFIRMED → 오늘 EMA9 하회).
     </div>
     <div class="tickers">{% for r in avoid %}{{ r.name or r.ticker }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
   </div>
@@ -306,7 +326,7 @@
       <th>섹터</th>
       <th title="구조 진단: TREND_OK · PULLBACK · BASE_FORMING · EXTENDED · BROKEN">Setup</th>
       <th title="진입 신호: WAIT · EARLY_TRIGGER · CONFIRMED_TRIGGER">Trigger</th>
-      <th title="실행 권고: ENTER_OK · EARLY · STAGING · AVOID">Decision</th>
+      <th title="실행 권고: 본 진입(ENTER) · 분할 진입(PROBE) · 진입 대기(WATCH) · 눌림 대기(TRENDING) · 매수 금지(AVOID)">Decision</th>
       <th title="마지막 trigger 로부터 경과 일수 (0 = 오늘)">trig_age</th>
       <th title="EMA9 와의 거리 (%)">dist_ema9 %</th>
       <th title="EMA21 과의 거리 (%)">dist_ema21 %</th>
@@ -318,13 +338,15 @@
     </tr>
   </thead>
   <tbody>
-  {% for group in [enter_ok, early, staging, avoid] %}{% for r in group %}
+  {% for group in [enter, probe, watch, trending, avoid] %}{% for r in group %}
     <tr id="row-{{ r.ticker }}">
       <td><strong>{{ r.name or r.ticker }}</strong>{% if r.name and r.name != r.ticker %}<br><small style="color:#94a3b8;font-weight:normal">{{ r.ticker }}</small>{% endif %}</td>
       <td>{{ r.raw.sector or '—' }}</td>
       <td>{{ r.setup }}</td>
       <td>{{ r.trigger }}</td>
-      <td>{{ r.decision }}</td>
+      <td class="decision decision-{{ r.decision|lower }}"
+          title="{{ DECISION_TOOLTIPS[r.decision] if r.decision in DECISION_TOOLTIPS else r.decision }}">
+        {{ DECISION_LABELS[r.decision] if r.decision in DECISION_LABELS else r.decision }}</td>
       <td>{{ r.trigger_age_days if r.trigger_age_days is not none else '—' }}</td>
       <td>{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
       <td>{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>
