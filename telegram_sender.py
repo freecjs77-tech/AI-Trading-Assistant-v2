@@ -250,8 +250,6 @@ def _format_ticker_with_tags(entry: dict) -> str:
             icons.append("\U0001f534")
         elif tag == "PARABOLIC":
             icons.append("\U0001f7e0")
-        elif tag == "EXTENDED":
-            icons.append("\U0001f7e1")
     return f"{t} {''.join(icons)}".strip()
 
 

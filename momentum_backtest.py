@@ -183,6 +183,8 @@ def aggregate(legs: list[dict], as_of: str) -> dict:
                                             for L in s_legs]),
         }
         if stage == "EM":
+            # transition_to_M1_pct counts ANY upgrade out of EM (to M1, M2, or M3) —
+            # EM is the lowest RANK, so any UPGRADE exit_reason qualifies.
             closed = [L for L in s_legs if L.get("exit_reason") is not None]
             upgraded = [L for L in closed if L.get("exit_reason") == "UPGRADE"]
             if closed:

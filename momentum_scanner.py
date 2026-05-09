@@ -212,6 +212,9 @@ def _scan_market(market: str, build_universe_fn, sector_etfs: list[str],
             # top_sectors is reset to [] so the KR page shows no misleading
             # sector leaderboard; M1/M2/M3 tables still populate from
             # prefilter + classify.
+            # KR scans all universe for both M+ and EM — no sector gate (KRX
+            # public ETF holdings API requires authentication; sector_top_rank
+            # remains None for all KR signals).
             top_tickers = list(universe)
             top_sectors = []
             result["top_sectors"] = top_sectors
