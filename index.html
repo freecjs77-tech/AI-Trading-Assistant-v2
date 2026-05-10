@@ -150,6 +150,7 @@ tailwind.config = {
 <body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="1461.48">
 
 <!-- ── Sidebar ── -->
+<!-- ── Sidebar Partial ── shared by report_template, momentum, lifecycle pages ── -->
 <nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
   <div class="flex items-center gap-3 mb-10">
     <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center">
@@ -163,6 +164,16 @@ tailwind.config = {
   <div class="space-y-2 flex-grow">
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
     <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="report_2026-05-08.html">
       <span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span>
     </a>
@@ -171,40 +182,40 @@ tailwind.config = {
       <span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span>
     </a>
     
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-05-08.html">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="scanner_2026-05-08.html">
       <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
     </a>
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="backtest_2026-05-08.html">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="backtest_2026-05-08.html">
       <span class="material-symbols-outlined">history</span><span>Backtest</span>
     </a>
     
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="portfolio_stops_2026-05-08.html">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="portfolio_stops_2026-05-08.html">
       <span class="material-symbols-outlined">shield</span><span>Portfolio Risk</span>
     </a>
     
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="trend_2026-05-08.html">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="trend_2026-05-08.html">
       <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
     </a>
     <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html">
       <span class="material-symbols-outlined">inventory_2</span><span>Archive</span>
     </a>
     
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="momentum_us_2026-05-09.html">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="momentum_us_2026-05-10.html">
       <span class="material-symbols-outlined">local_fire_department</span><span>Momentum US</span>
     </a>
     
     
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="momentum_kr_2026-05-09.html">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="momentum_kr_2026-05-10.html">
       <span class="material-symbols-outlined">local_fire_department</span><span>Momentum KR</span>
     </a>
     
     
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="lifecycle_us_2026-05-08.html">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="lifecycle_us_2026-05-08.html">
       <span class="material-symbols-outlined">timeline</span><span>Lifecycle US</span>
     </a>
     
     
-    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="lifecycle_kr_2026-05-08.html">
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="lifecycle_kr_2026-05-08.html">
       <span class="material-symbols-outlined">timeline</span><span>Lifecycle KR</span>
     </a>
     
@@ -216,9 +227,11 @@ tailwind.config = {
     <button id="themeToggle" onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
       <span class="material-symbols-outlined">light_mode</span><span>Light Mode</span>
     </button>
+    
     <button id="currencyToggle" onclick="toggleCurrency()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
       <span class="material-symbols-outlined">currency_exchange</span><span>USD / KRW</span>
     </button>
+    
     <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">
       2026년 5월 8일 (금요일)<br>
       
@@ -260,7 +273,7 @@ tailwind.config = {
       </nav>
     </div>
     <div class="flex items-center gap-4">
-      <div class="text-xs text-outline font-label hidden sm:block">2026-05-09 23:31:50</div>
+      <div class="text-xs text-outline font-label hidden sm:block">2026-05-10 19:53:31</div>
       <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme">
         <span class="material-symbols-outlined">light_mode</span>
       </button>
@@ -580,7 +593,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (11d)</span>
                   
                 </td>
               </tr>
@@ -828,7 +841,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (11d)</span>
                   
                 </td>
               </tr>
@@ -890,7 +903,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (11d)</span>
                   
                 </td>
               </tr>
@@ -984,7 +997,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (11d)</span>
                   
                 </td>
               </tr>
@@ -1014,7 +1027,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (11d)</span>
                   
                 </td>
               </tr>
@@ -1044,7 +1057,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (11d)</span>
                   
                 </td>
               </tr>
@@ -1138,7 +1151,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (11d)</span>
                   
                 </td>
               </tr>
@@ -1626,7 +1639,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (11d)</span>
                   
                 </td>
               </tr>
@@ -1645,9 +1658,9 @@ tailwind.config = {
             </thead>
             <tbody class="divide-y divide-outline-variant/10 text-on-surface-variant">
               <tr><td class="px-6 py-2">Portfolio</td><td class="px-6 py-2">portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolios/me.md)</td><td class="px-6 py-2">Screenshot date</td></tr>
-              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-05-09 23:31:50</td></tr>
-              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-05-09 23:31:50</td></tr>
-              <tr><td class="px-6 py-2">Dividends (Forward 우선, TTM 폴백)</td><td class="px-6 py-2">yfinance (dividendRate / history)</td><td class="px-6 py-2">2026-05-09 23:31:50</td></tr>
+              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-05-10 19:53:31</td></tr>
+              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-05-10 19:53:31</td></tr>
+              <tr><td class="px-6 py-2">Dividends (Forward 우선, TTM 폴백)</td><td class="px-6 py-2">yfinance (dividendRate / history)</td><td class="px-6 py-2">2026-05-10 19:53:31</td></tr>
             </tbody>
           </table>
         </div>
@@ -1913,7 +1926,7 @@ tailwind.config = {
     <!-- Footer -->
     <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
       This report is for personal reference only. Trading signals are generated from technical indicators (RSI, MACD, MA, BB, ADX, Volume) and do not constitute investment advice.<br>
-      Generated by Trading Assistant v5.0 | 2026-05-08 | Data: yfinance (2026-05-09 23:31:50) | Portfolio: portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolios/me.md)
+      Generated by Trading Assistant v5.0 | 2026-05-08 | Data: yfinance (2026-05-10 19:53:31) | Portfolio: portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolios/me.md)
     </p>
   </div>
 </main>
