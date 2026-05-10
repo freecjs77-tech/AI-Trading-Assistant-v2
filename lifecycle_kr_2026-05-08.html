@@ -215,9 +215,9 @@ tailwind.config = {
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
         <div class="flex gap-2"><span class="font-semibold text-green-400 min-w-[120px]">&#127802; &#48376; &#51652;&#51077; (ENTER)</span><span class="text-on-surface-variant">&#51652;&#51077;&#54644;&#46020; OK &#8212; &#51456;&#51008; zone(PULLBACK/BASE)&#50640;&#49436; &#44144;&#47000;&#47049;&#183;&#51333;&#44032; &#44172;&#51060;&#53944;&#44252;&#51648; &#53685;&#44284;&#54620; &#54869;&#51221; trigger. &#54480; &#54252;&#51648;&#49205; &#44032;&#45733;.</span></div>
         <div class="flex gap-2"><span class="font-semibold text-yellow-400 min-w-[120px]">&#127937; &#48516;&#54624; &#51652;&#51077; (PROBE)</span><span class="text-on-surface-variant">&#51312;&#44592; &#51652;&#51077; &#8212; &#51652;&#51077; zone &#50504;&#50640;&#49436; &#50557;&#54620; trigger &#48156;&#54868;. 50% &#48512;&#48516; &#51652;&#51077; &#44032;&#45733;, &#54869;&#51221; &#45824;&#44592;.</span></div>
-        <div class="flex gap-2"><span class="font-semibold text-blue-400 min-w-[120px]">&#128309; &#51652;&#51077; &#45824;&#44592; (WATCH)</span><span class="text-on-surface-variant">&#51452;&#51008; setup, &#53944;&#47532;&#44144; &#48120;&#48156;&#49373; &#8212; PULLBACK/BASE_FORMING zone&#51060;&#45208; &#50500;&#51649; &#51652;&#51077; &#49888;&#54840; &#50630;&#51020;. &#48152;&#46321; &#49888;&#54840; &#44288;&#52ûl.</span></div>
+        <div class="flex gap-2"><span class="font-semibold text-blue-400 min-w-[120px]">&#128309; 진입 대기 (WATCH)</span><span class="text-on-surface-variant">좋은 setup, 트리거 미발생 &#8212; PULLBACK/BASE_FORMING zone이나 아직 진입 신호 없음. 반등 신호 관찰.</span></div>
         <div class="flex gap-2"><span class="font-semibold text-slate-400 min-w-[120px]">&#9898; &#45221;&#47549; &#45824;&#44592; (TRENDING)</span><span class="text-on-surface-variant">&#52628;&#49464; &#51652;&#54665; &#51473; &#8212; TREND_OK&#51648;&#47564; setup &#50555;&#51219; &#48512;&#51871;. &#45796;&#51020; PULLBACK&#44252;&#51648; &#52628;&#44201; &#51088;&#51228;.</span></div>
-        <div class="flex gap-2"><span class="font-semibold text-red-400 min-w-[120px]">&#128308; &#47588;&#49688; &#44552;&#51648; (AVOID)</span><span class="text-on-surface-variant">&#54924;&#54588; &#8212; &#44284;&#54869;&#51109;(EXTENDED)&#183;&#44396;&#51312; &#44214;&#51608;(BROKEN)&#183;&#49892;&#54328;&#54620; trigger(FAILED_BREAKOUT). &#51652;&#51077; &#49884; &#49552;&#49892; &#50948;&#54em; &#53200;.</span></div>
+        <div class="flex gap-2"><span class="font-semibold text-red-400 min-w-[120px]">&#128308; 매수 금지 (AVOID)</span><span class="text-on-surface-variant">회피 &#8212; 과확장(EXTENDED)&#183;구조 깨짐(BROKEN)&#183;실패한 trigger(FAILED_BREAKOUT). 진입 시 손실 위험 큼.</span></div>
       </div>
     </section>
 
@@ -342,7 +342,7 @@ tailwind.config = {
             <span class="material-symbols-outlined text-sm">expand_more</span>
           </summary>
           <div class="px-4 pb-4 pt-2">
-            <p class="text-xs text-on-surface-variant mb-2"><strong class="text-on-surface">&#52628;&#49464;&#45716; &#49撒&#51648;&#51080;&#51004;&#45208; setup &#50555;&#51219; &#48512;&#51871;</strong> &#8212; TREND_OK &#49345;&#53468;. &#45796;&#51020; PULLBACK/BASE_FORMING &#44252;&#51648; &#52628;&#44201; &#51088;&#51228;.</p>
+            <p class="text-xs text-on-surface-variant mb-2"><strong class="text-on-surface">추세는 살아있으나 setup 압축 부족</strong> &#8212; TREND_OK 상태. 다음 PULLBACK/BASE_FORMING 까지 추격 자제.</p>
             <p class="text-sm text-on-surface">대한항공 &middot; 포스코퓨처엠 &middot; 현대자동차 &middot; 삼성전자 &middot; 미래에셋증권 &middot; GS리테일 &middot; SKC &middot; 현대모비스 &middot; 삼성생명 &middot; 현대글로비스 &middot; 기아 &middot; 금호석유 &middot; 롯데쇼핑 &middot; 이마트</p>
           </div>
         </details>
@@ -350,11 +350,11 @@ tailwind.config = {
         <!-- AVOID (collapsible) -->
         <details class="rounded-lg border border-red-500/20 overflow-hidden">
           <summary class="px-4 py-3 cursor-pointer text-sm font-medium text-red-400 list-none hover:bg-red-900/10 flex items-center justify-between">
-            <span>&#128308; &#47588;&#49688; &#44552;&#51648; &#8212; AVOID (4) &#8212; &#49892;&#51228; &#50948;&#54em; &#49324;&#50976; &#51080;&#51020;</span>
+            <span>&#128308; 매수 금지 &#8212; AVOID (4) &#8212; 실제 위험 사유 있음</span>
             <span class="material-symbols-outlined text-sm">expand_more</span>
           </summary>
           <div class="px-4 pb-4 pt-2 bg-red-900/10">
-            <p class="text-xs text-on-surface-variant mb-2"><strong class="text-on-surface">&#51648;&#44552; &#51652;&#51077; &#48512;&#51201;&#54633;</strong> &#8212; EXTENDED (EMA9 &#45824;&#48ñ 12% &#51060;&#49345; + RSI 72+) &#46608;&#45716; BROKEN (&#52628;&#49464; &#44214;&#51608;) &#46608;&#45716; risk_tags &#50640; FAILED_BREAKOUT.</p>
+            <p class="text-xs text-on-surface-variant mb-2"><strong class="text-on-surface">지금 진입 부적합</strong> &#8212; EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN (추세 깨짐) 또는 risk_tags 에 FAILED_BREAKOUT.</p>
             <p class="text-sm text-on-surface">SK하이닉스 &middot; 효성 &middot; 삼성물산 &middot; SK</p>
           </div>
         </details>
@@ -364,7 +364,7 @@ tailwind.config = {
     <!-- STATE TRANSITIONS -->
     <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20">
       <h2 class="font-headline font-bold text-lg mb-2">&#52572;&#44540; &#49345;&#53468; &#48320;&#54868; (last 50)</h2>
-      <p class="text-xs text-on-surface-variant mb-3">&#51333;&#47785;&#48324; setup / trigger / decision &#49345;&#53468;&#44032; &#50612;&#51228; &#45824;&#48ñ &#48320;&#54620; &#51060;&#47141;. &#52395; &#49892;&#54665;&#51068;&#50640;&#45716; &#48ñ&#44368; &#45824;&#49345;&#51060; &#50630;&#50612; &#48ñ&#50612; &#51080;&#51020; &#8212; &#45796;&#51020; &#44144;&#47000;&#51068;&#48512;&#53552; &#45204;&#51201; &#49884;&#51089;.</p>
+      <p class="text-xs text-on-surface-variant mb-3">종목별 setup / trigger / decision 상태가 어제 대비 변한 이력. 첫 실행일에는 비교 대상이 없어 비어 있음 &#8212; 다음 거래일부터 누적 시작.</p>
       
       <p class="text-on-surface-variant text-sm italic">&#50500;&#51649; transition &#51060;&#47141; &#50630;&#51020; (&#52395; &#44144;&#47000;&#51068;).</p>
       
@@ -392,7 +392,7 @@ tailwind.config = {
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="&#47560;&#51648;&#47561; trigger &#47196;&#48512;&#53552; &#44221;&#44284; &#51068;&#49688; (0=&#50624;&#45221;)">trig_age</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="EMA9 &#50752;&#51032; &#44144;&#47532; (%)">dist_ema9 %</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="EMA21 &#44284;&#51032; &#44144;&#47532; (%)">dist_ema21 %</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="20&#51068; &#54217;&#44400; &#45824;&#48ñ &#44144;&#47000;&#47049; &#48ñ&#47028; (1.0=&#54217;&#44400;)">vol_ratio</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="20일 평균 대비 거래량 비율 (1.0=평균)">vol_ratio</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="ATR 14 (% of close)">atr %</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="PULLBACK/BASE_FORMING &#50640; &#47672;&#47785; &#50672;&#49549; &#51068;&#49688;">days_in_pb</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="&#44057;&#51008; setup &#50976;&#51648; &#50672;&#49549; &#51068;&#49688;">setup_streak</th>
@@ -417,8 +417,8 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">2.55</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.13</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.88</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -438,8 +438,8 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.89</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.26</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">2.67</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -459,8 +459,8 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">5.61</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.06</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.23</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -480,8 +480,8 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">0.88</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.18</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">5.05</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -502,7 +502,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">2.03</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">3.45</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -523,7 +523,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">0.75</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">5.27</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -544,7 +544,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">3.79</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.96</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -565,7 +565,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.02</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.32</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -586,7 +586,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.22</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">6.52</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -607,7 +607,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.98</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.38</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">PARABOLIC</td>
             </tr>
           
@@ -628,7 +628,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.82</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">6.88</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -649,7 +649,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.48</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.95</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">PARABOLIC</td>
             </tr>
           
@@ -670,7 +670,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">0.90</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.63</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -691,7 +691,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.92</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">5.17</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">PARABOLIC</td>
             </tr>
           
@@ -712,7 +712,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">2.96</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">3.93</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -733,7 +733,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">3.37</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">5.28</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
               <td class="px-3 py-2 text-xs">PARABOLIC</td>
             </tr>
           
@@ -754,7 +754,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.08</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">5.36</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -775,7 +775,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.63</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">3.61</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">3</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">4</td>
               <td class="px-3 py-2 text-xs">&amp;#8212;</td>
             </tr>
           
@@ -796,7 +796,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.05</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.49</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">OVERHEAT, EXTENDED</td>
             </tr>
           
@@ -817,7 +817,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.25</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">7.29</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">EXTENDED</td>
             </tr>
           
@@ -838,7 +838,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">1.87</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">4.91</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">EXTENDED</td>
             </tr>
           
@@ -859,7 +859,7 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">0.90</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">5.25</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">0</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">9</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">10</td>
               <td class="px-3 py-2 text-xs">OVERHEAT, EXTENDED</td>
             </tr>
           
