@@ -589,6 +589,40 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         )
         print(f"  OK {len(scanner_files)} scanner pages generated")
 
+        # Shared nav context for momentum + lifecycle sidebar
+        _meta = market_data.get("_meta", {})
+        _nav_date = _meta.get("date", today)
+        from report_generator import _owner_nav_links, _date_ko
+        _shared_nav = {
+            "nav_portfolio": f"report_{_nav_date}.html",
+            "nav_scanner": f"scanner_{_nav_date}.html",
+            "nav_backtest": f"backtest_{_nav_date}.html",
+            "nav_trend": f"trend_{_nav_date}.html",
+            **_owner_nav_links(_nav_date),
+            "has_momentum_us": momentum_us_result is not None and momentum_us_result.get("status") != "failed",
+            "has_momentum_kr": momentum_kr_result is not None and momentum_kr_result.get("status") != "failed",
+            "momentum_us_url": f"momentum_us_{(momentum_us_result or {}).get('as_of', _nav_date)}.html"
+                               if momentum_us_result and momentum_us_result.get("status") != "failed" else "",
+            "momentum_kr_url": f"momentum_kr_{(momentum_kr_result or {}).get('as_of', _nav_date)}.html"
+                               if momentum_kr_result and momentum_kr_result.get("status") != "failed" else "",
+            "lifecycle_us_page": f"lifecycle_us_{(lifecycle_us_result or {}).get('as_of', _nav_date)}.html"
+                                  if lifecycle_us_result and lifecycle_us_result.get("snapshots") else None,
+            "lifecycle_kr_page": f"lifecycle_kr_{(lifecycle_kr_result or {}).get('as_of', _nav_date)}.html"
+                                  if lifecycle_kr_result and lifecycle_kr_result.get("snapshots") else None,
+            "portfolio_stop_summary": stop_result_me.get("summary")
+                                       if stop_result_me and stop_result_me.get("status") == "ok" else None,
+            "portfolio_stop_page": None,
+            "date_ko": _date_ko(_nav_date),
+            "market_status": _meta.get("market_status"),
+        }
+        if stop_result_me and stop_result_me.get("status") == "ok":
+            _stop_owner = stop_result_me.get("owner", "me")
+            _stop_date = stop_result_me.get("date", _nav_date)
+            _shared_nav["portfolio_stop_page"] = (
+                f"portfolio_stops_{_stop_date}.html" if _stop_owner == "me"
+                else f"portfolio_stops_{_stop_owner}_{_stop_date}.html"
+            )
+
         # Momentum pages (US + KR)
         try:
             from report_generator import generate_momentum_pages
@@ -596,6 +630,13 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 momentum_us=momentum_us_result,
                 momentum_kr=momentum_kr_result,
                 output_dir=reports_dir,
+                nav_ctx=_shared_nav,
+                lifecycle_us_page=_shared_nav.get("lifecycle_us_page"),
+                lifecycle_kr_page=_shared_nav.get("lifecycle_kr_page"),
+                portfolio_stop_summary=_shared_nav.get("portfolio_stop_summary"),
+                portfolio_stop_page=_shared_nav.get("portfolio_stop_page"),
+                date_ko=_shared_nav.get("date_ko", ""),
+                market_status=_shared_nav.get("market_status"),
             )
             print(f"  OK {len(momentum_files)} momentum pages generated")
         except Exception as e:
@@ -609,6 +650,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 output_dir=os.path.join(project_dir, "reports"),
                 us_state=(lifecycle_us_result or {}).get("state"),
                 kr_state=(lifecycle_kr_result or {}).get("state"),
+                nav_ctx=_shared_nav,
             )
             for m, p in _lc_paths.items():
                 print(f"  Generated {m}: {p}")

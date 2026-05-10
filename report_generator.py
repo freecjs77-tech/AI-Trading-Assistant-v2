@@ -466,6 +466,7 @@ def generate_report(
         "nav_scanner": f"scanner_{date_str}.html",
         "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
+        "show_currency_toggle": True,
         **_owner_nav_links(date_str),
     }
 
@@ -702,6 +703,13 @@ def generate_momentum_pages(
     momentum_kr: dict | None,
     output_dir: str,
     template_dir: str | None = None,
+    nav_ctx: dict | None = None,
+    lifecycle_us_page: str | None = None,
+    lifecycle_kr_page: str | None = None,
+    portfolio_stop_summary=None,
+    portfolio_stop_page: str | None = None,
+    date_ko: str = "",
+    market_status=None,
 ) -> list[str]:
     """모멘텀 스캐너 결과 → momentum_us_<DATE>.html / momentum_kr_<DATE>.html 페이지.
 
@@ -710,6 +718,13 @@ def generate_momentum_pages(
         momentum_kr: scan_momentum_kr() 결과 dict 또는 None
         output_dir: 페이지 출력 디렉토리
         template_dir: Jinja2 템플릿 디렉토리 (기본: ./templates)
+        nav_ctx: 공통 nav 링크 dict (nav_portfolio, nav_wife, nav_scanner, nav_backtest, nav_trend)
+        lifecycle_us_page: lifecycle US 페이지 파일명 (sidebar 표시용)
+        lifecycle_kr_page: lifecycle KR 페이지 파일명 (sidebar 표시용)
+        portfolio_stop_summary: stop signal 요약 (sidebar Portfolio Risk 표시용)
+        portfolio_stop_page: Portfolio Risk 페이지 파일명
+        date_ko: 한국 날짜 문자열 (sidebar 하단 표시)
+        market_status: {'US': 'open'|'closed', 'KRX': 'open'|'closed'} (sidebar 표시용)
 
     Returns:
         생성된 파일 경로 리스트 (None 결과는 스킵).
@@ -720,18 +735,48 @@ def generate_momentum_pages(
     env.filters["f1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
     env.filters["f2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
 
+    has_momentum_us = momentum_us is not None and momentum_us.get("status") != "failed"
+    has_momentum_kr = momentum_kr is not None and momentum_kr.get("status") != "failed"
+    us_as_of = (momentum_us or {}).get("as_of", "")
+    kr_as_of = (momentum_kr or {}).get("as_of", "")
+    momentum_us_url = f"momentum_us_{us_as_of}.html" if has_momentum_us else ""
+    momentum_kr_url = f"momentum_kr_{kr_as_of}.html" if has_momentum_kr else ""
+
+    # Build shared nav context
+    _nav = dict(nav_ctx or {})
+    _nav.setdefault("nav_portfolio", "index.html")
+    _nav.setdefault("nav_wife", "")
+    _nav.setdefault("nav_scanner", "")
+    _nav.setdefault("nav_backtest", "")
+    _nav.setdefault("nav_trend", "")
+
+    shared_ctx = {
+        **_nav,
+        "has_momentum_us": has_momentum_us,
+        "has_momentum_kr": has_momentum_kr,
+        "momentum_us_url": momentum_us_url,
+        "momentum_kr_url": momentum_kr_url,
+        "lifecycle_us_page": lifecycle_us_page,
+        "lifecycle_kr_page": lifecycle_kr_page,
+        "portfolio_stop_summary": portfolio_stop_summary,
+        "portfolio_stop_page": portfolio_stop_page,
+        "date_ko": date_ko,
+        "market_status": market_status,
+    }
+
     pairs = [
-        ("US", momentum_us, "momentum_us.html", "🇺🇸 US"),
-        ("KR", momentum_kr, "momentum_kr.html", "🇰🇷 KR"),
+        ("US", momentum_us, "momentum_us.html", "🇺🇸 US", "momentum_us"),
+        ("KR", momentum_kr, "momentum_kr.html", "🇰🇷 KR", "momentum_kr"),
     ]
     output: list[str] = []
-    for market, result, tmpl, label in pairs:
+    for market, result, tmpl, label, nav_key in pairs:
         if result is None or result.get("status") == "failed":
             continue
         as_of = result.get("as_of", "unknown")
         path = os.path.join(output_dir, f"momentum_{market.lower()}_{as_of}.html")
         try:
-            html = env.get_template(tmpl).render(result=result, market_label=label)
+            ctx = {**shared_ctx, "result": result, "market_label": label, "active_nav": nav_key}
+            html = env.get_template(tmpl).render(**ctx)
             with open(path, "w", encoding="utf-8") as f:
                 f.write(html)
             output.append(path)

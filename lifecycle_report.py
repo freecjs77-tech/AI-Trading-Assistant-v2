@@ -104,12 +104,20 @@ def build_page_context(result: dict,
 
 
 def _render(market: str, result: dict, output_dir: str,
-              template_dir: Optional[str], lifecycle_state: Optional[dict]) -> str:
+              template_dir: Optional[str], lifecycle_state: Optional[dict],
+              nav_ctx: Optional[dict] = None) -> str:
     if template_dir is None:
         template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
     tmpl = env.get_template(f"lifecycle_{market.lower()}.html")
     ctx = build_page_context(result, lifecycle_state=lifecycle_state)
+
+    # Merge nav vars for sidebar rendering
+    if nav_ctx:
+        ctx.update(nav_ctx)
+    # Set active_nav for current page
+    ctx["active_nav"] = f"lifecycle_{market.lower()}"
+
     html = tmpl.render(**ctx)
     os.makedirs(output_dir, exist_ok=True)
     fname = f"lifecycle_{market.lower()}_{result['as_of']}.html"
@@ -124,10 +132,24 @@ def generate_lifecycle_pages(*, us_result: Optional[dict],
                                 output_dir: str,
                                 template_dir: Optional[str] = None,
                                 us_state: Optional[dict] = None,
-                                kr_state: Optional[dict] = None) -> dict[str, str]:
+                                kr_state: Optional[dict] = None,
+                                nav_ctx: Optional[dict] = None) -> dict[str, str]:
+    """Render lifecycle pages for US and/or KR markets.
+
+    Args:
+        us_result: lifecycle scan result for US, or None
+        kr_result: lifecycle scan result for KR, or None
+        output_dir: directory to write HTML files to
+        template_dir: Jinja2 templates directory (default: ./templates)
+        us_state: lifecycle history state for US (from lifecycle_history)
+        kr_state: lifecycle history state for KR (from lifecycle_history)
+        nav_ctx: optional dict with sidebar nav keys (nav_portfolio, nav_wife,
+                 nav_scanner, nav_backtest, nav_trend, has_momentum_us,
+                 momentum_us_url, etc.) — passed directly into template context
+    """
     out: dict[str, str] = {}
     if us_result and us_result.get("snapshots"):
-        out["us"] = _render("US", us_result, output_dir, template_dir, us_state)
+        out["us"] = _render("US", us_result, output_dir, template_dir, us_state, nav_ctx)
     if kr_result and kr_result.get("snapshots"):
-        out["kr"] = _render("KR", kr_result, output_dir, template_dir, kr_state)
+        out["kr"] = _render("KR", kr_result, output_dir, template_dir, kr_state, nav_ctx)
     return out
