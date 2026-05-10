@@ -1,257 +1,390 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ market_label }} Momentum {{ result.as_of }}</title>
+<title>{{ market_label }} Momentum — {{ result.as_of }}</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container": "rgb(var(--c-surface-container) / <alpha-value>)",
+        "surface-container-highest": "rgb(var(--c-surface-container-highest) / <alpha-value>)",
+        "surface-dim": "rgb(var(--c-surface-dim) / <alpha-value>)",
+        "surface": "rgb(var(--c-surface) / <alpha-value>)",
+        "surface-container-high": "rgb(var(--c-surface-container-high) / <alpha-value>)",
+        "surface-container-low": "rgb(var(--c-surface-container-low) / <alpha-value>)",
+        "surface-container-lowest": "rgb(var(--c-surface-container-lowest) / <alpha-value>)",
+        "surface-bright": "rgb(var(--c-surface-bright) / <alpha-value>)",
+        "surface-variant": "rgb(var(--c-surface-variant) / <alpha-value>)",
+        "surface-tint": "rgb(var(--c-surface-tint) / <alpha-value>)",
+        "background": "rgb(var(--c-background) / <alpha-value>)",
+        "primary": "rgb(var(--c-primary) / <alpha-value>)",
+        "primary-dim": "rgb(var(--c-primary-dim) / <alpha-value>)",
+        "primary-container": "rgb(var(--c-primary-container) / <alpha-value>)",
+        "on-primary": "rgb(var(--c-on-primary) / <alpha-value>)",
+        "on-primary-container": "rgb(var(--c-on-primary-container) / <alpha-value>)",
+        "secondary": "rgb(var(--c-secondary) / <alpha-value>)",
+        "on-surface": "rgb(var(--c-on-surface) / <alpha-value>)",
+        "on-surface-variant": "rgb(var(--c-on-surface-variant) / <alpha-value>)",
+        "on-background": "rgb(var(--c-on-background) / <alpha-value>)",
+        "outline": "rgb(var(--c-outline) / <alpha-value>)",
+        "outline-variant": "rgb(var(--c-outline-variant) / <alpha-value>)",
+        "error": "rgb(var(--c-error) / <alpha-value>)",
+        "tertiary": "rgb(var(--c-tertiary) / <alpha-value>)",
+      },
+      fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
+    },
+  },
+}
+</script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #1a1a1a; color: #e0e0e0; font-family: 'Consolas', 'D2Coding', monospace;
-         margin: 0; padding: 1.5em; line-height: 1.5; font-size: 14px; }
-  .container { max-width: 1200px; margin: 0 auto; }
-  h1 { color: #ffa500; font-size: 28px; font-weight: bold; margin-bottom: 0.5em; }
-  h2 { color: #ffa500; font-size: 18px; font-weight: bold; margin: 1.5em 0 0.8em; border-bottom: 1px solid #444; padding-bottom: 0.4em; }
-  h3 { color: #ffb84d; font-size: 15px; font-weight: bold; margin: 1em 0 0.6em; }
-  p { margin: 0.5em 0; }
-  table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 13px; }
-  th, td { border: 1px solid #444; padding: 6px 8px; text-align: left; }
-  th { background: #2a2a2a; color: #ffb84d; font-weight: bold; }
-  tr:nth-child(even) { background: #222; }
-  tr:nth-child(odd) { background: #1f1f1f; }
-  a { color: #4db8ff; text-decoration: none; }
-  a:hover { color: #99d9ff; }
-  nav { margin-bottom: 1.5em; }
-  nav a { margin-right: 16px; font-weight: bold; }
-  nav a:first-child { color: #bbb; }
-  nav a:hover { color: #ddd; }
-  .info { background: #2a2a2a; border-left: 3px solid #ffa500; padding: 8px 12px; margin: 0.8em 0; font-size: 13px; }
-  .alert { background: #3d2020; border-left: 3px solid #ff4444; padding: 8px 12px; margin: 1em 0; color: #ffb3b3; }
-  .pos { color: #4caf50; font-weight: bold; }
-  .neg { color: #ff6b6b; font-weight: bold; }
-  .tier-MOMENTUM_3, .M3 { color: #ff5722; font-weight: bold; }
-  .tier-MOMENTUM_2, .M2 { color: #ffa500; font-weight: bold; }
-  .tier-MOMENTUM_1, .M1 { color: #ffeb3b; }
-  .tier-em { background: #2a3540; color: #cbd5e1; padding: 2px 6px; border-radius: 3px; font-weight: bold; }
+  /* ── Dark Theme ── */
+  html.dark {
+    --c-surface-container: 15 25 48; --c-surface-container-highest: 25 37 64;
+    --c-surface-dim: 6 14 32; --c-surface: 6 14 32;
+    --c-surface-container-high: 20 31 56; --c-surface-container-low: 9 19 40;
+    --c-surface-container-lowest: 0 0 0; --c-surface-bright: 31 43 73;
+    --c-surface-variant: 25 37 64; --c-surface-tint: 109 221 255;
+    --c-background: 6 14 32;
+    --c-primary: 109 221 255; --c-primary-dim: 0 195 235;
+    --c-primary-container: 0 210 253; --c-on-primary: 0 76 94;
+    --c-on-primary-container: 0 67 82;
+    --c-secondary: 0 229 188;
+    --c-tertiary: 255 113 102;
+    --c-on-surface: 222 229 255; --c-on-surface-variant: 163 170 196;
+    --c-on-background: 222 229 255;
+    --c-outline: 109 117 140; --c-outline-variant: 64 72 93;
+    --c-error: 255 113 108;
+    --grad-start: #6dddff; --grad-end: #00d2fd;
+  }
+  /* ── Light Theme ── */
+  html.light {
+    --c-surface-container: 255 255 255; --c-surface-container-highest: 226 232 240;
+    --c-surface-dim: 241 245 249; --c-surface: 241 243 245;
+    --c-surface-container-high: 255 255 255; --c-surface-container-low: 248 250 252;
+    --c-surface-container-lowest: 255 255 255; --c-surface-bright: 255 255 255;
+    --c-surface-variant: 248 250 252; --c-surface-tint: 37 99 235;
+    --c-background: 241 243 245;
+    --c-primary: 37 99 235; --c-primary-dim: 30 64 175;
+    --c-primary-container: 219 234 254; --c-on-primary: 255 255 255;
+    --c-on-primary-container: 30 64 175;
+    --c-secondary: 16 185 129;
+    --c-tertiary: 225 29 72;
+    --c-on-surface: 15 23 42; --c-on-surface-variant: 71 85 105;
+    --c-on-background: 15 23 42;
+    --c-outline: 100 116 139; --c-outline-variant: 148 163 184;
+    --c-error: 225 29 72;
+    --grad-start: #2563EB; --grad-end: #1E40AF;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  /* maturity class names kept for test compatibility */
   .maturity-early    { color: #22c55e; font-weight: bold; }
   .maturity-mid      { color: #eab308; }
   .maturity-extended { color: #ef4444; font-weight: bold; }
-  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 12px; margin: 0 2px 2px 0; }
-  .badge-OVERHEAT { background: #d32f2f; color: #fff; }
-  .badge-PARABOLIC { background: #ff9800; color: #fff; }
-  .empty-state { text-align: center; padding: 2em 0; color: #888; }
-  .empty-state-icon { font-size: 48px; margin-bottom: 0.5em; }
-  .footer { margin-top: 2em; padding-top: 1em; border-top: 1px dashed #444; font-size: 12px; color: #888; }
-  .sector-leader { background: #242424; border-left: 4px solid #ffa500; padding: 0.8em; margin: 0.5em 0; }
-  .sr-ticker { color: #4db8ff; font-weight: bold; font-size: 13px; }
-  .sr-score { color: #ffb84d; }
-  .rotation-radar { background: #1f2a35; border-left: 3px solid #4db8ff; padding: 0.8em 1em; margin: 0.8em 0; }
-  .rotation-radar h4 { color: #99d9ff; font-size: 13px; margin-bottom: 0.4em; }
-  .rotation-radar .row { color: #cfe8ff; font-size: 13px; margin: 2px 0; }
-  .rotation-radar .row.strong { color: #ffeb3b; font-weight: bold; }
-  .star-top { color: #ffd54f; }
-  @media (max-width: 768px) {
-    body { padding: 1em; }
-    table { font-size: 12px; }
-    th, td { padding: 4px 6px; }
-  }
+  /* tier classes kept for test compatibility */
+  .tier-em { background: rgba(109,221,255,0.15); color: #6dddff; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 12px; }
+  .tier-MOMENTUM_3, .M3 { color: #ef4444; font-weight: bold; }
+  .tier-MOMENTUM_2, .M2 { color: #f97316; font-weight: bold; }
+  .tier-MOMENTUM_1, .M1 { color: #eab308; }
+  .pos { color: #22c55e; font-weight: 600; }
+  .neg { color: #ef4444; font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin: 0 2px 2px 0; font-weight: 600; }
+  .badge-OVERHEAT { background: #7f1d1d; color: #fca5a5; }
+  .badge-PARABOLIC { background: #78350f; color: #fde68a; }
 </style>
 </head>
-<body>
-<div class="container">
+<body class="bg-surface text-on-surface font-body">
 
-<nav>{% block nav %}<a href="index.html">&#128202; Portfolio</a> | &#128293; Momentum Scanner{% endblock %}</nav>
+{% include "_sidebar.html" %}
 
-<h1>&#128293; {{ market_label }} Momentum &#8212; {{ result.as_of }}</h1>
-<p style="color: #aaa;">Scanned: {{ result.scanned_count }} tickers · &#9201; {{ result.elapsed_s|default(0)|round(1) }}s · {{ result.version }}</p>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-{% if result.status == "failed" %}
-<div class="alert">&#9888; Scan failed: {{ result.error_message }}</div>
-{% else %}
+<main class="md:ml-64 min-h-screen">
 
-{% set leaders_count = result.signals.MOMENTUM_3|length + result.signals.MOMENTUM_2|length + result.signals.MOMENTUM_1|length %}
-{% set em_count = result.signals.get('EM', [])|length %}
-<p style="margin: 1em 0; color: #ccc;">
-  Leaders: <span class="M3">M3={{ result.signals.MOMENTUM_3|length }}</span> /
-  <span class="M2">M2={{ result.signals.MOMENTUM_2|length }}</span> /
-  <span class="M1">M1={{ result.signals.MOMENTUM_1|length }}</span>
-  &nbsp;&#183;&nbsp; Emerging: <span class="tier-em">{{ em_count }}</span>
-</p>
+  <!-- Top header bar -->
+  <header class="px-6 lg:px-10 py-5 border-b border-outline-variant/20 flex items-center justify-between sticky top-0 bg-surface/80 backdrop-blur-xl z-30">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div>
+        <h1 class="font-headline font-bold text-xl text-primary flex items-center gap-2">
+          <span class="material-symbols-outlined text-2xl">local_fire_department</span>
+          {{ market_label }} Momentum
+        </h1>
+        <p class="text-xs text-on-surface-variant mt-0.5 font-label">
+          {{ result.as_of }} &middot; Scanned {{ result.scanned_count }} tickers &middot;
+          {{ result.elapsed_s|default(0)|round(1) }}s &middot; {{ result.version }}
+        </p>
+      </div>
+    </div>
+    <button onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme">
+      <span class="material-symbols-outlined">light_mode</span>
+    </button>
+  </header>
 
-<h2>Sector Leaders</h2>
-{% if result.top_sectors %}
-<div style="margin: 1em 0;">
-  {% for s in result.top_sectors %}
-  <div class="sector-leader">
-    <span class="sr-ticker">{{ s.ticker }}</span>
-    <span class="sr-score">Score: {{ s.score }}</span> |
-    <span class="{{ 'pos' if (s.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(s.ret_5d_pct or 0) }}% (5d)</span> |
-    RS: {{ s.rs_score|default(0) }}
-  </div>
-  {% endfor %}
-</div>
-{% else %}
-<p style="color: #666;">&#8212; No sector qualifies for momentum today.</p>
-{% endif %}
+  <div class="p-6 lg:p-10 space-y-8">
 
-{# Section A — Momentum Leaders #}
-<h2>&#128293; Momentum Leaders (M1/M2/M3)</h2>
-{% for stage_name, stage_label in [("MOMENTUM_3","M3"),("MOMENTUM_2","M2"),("MOMENTUM_1","M1")] %}
-  {% set entries = result.signals[stage_name] %}
-  <h3 class="{{ stage_label }}">{{ stage_label }} ({{ entries|length }})</h3>
-  {% if entries %}
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Tier</th>
-        <th>Maturity</th>
-        <th>Streak</th>
-        <th>Sector</th>
-        <th>RSI</th>
-        <th>dist_ema9</th>
-        <th>1d %</th>
-        <th>5d %</th>
-        <th>20d %</th>
-        <th>Sec_RS</th>
-        <th>Risk Tags</th>
-        <th>Hint</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for e in entries %}
-      <tr>
-        <td><a href="details/{{ e.ticker }}.html" title="{{ e.ticker }}">{{ e.name or e.ticker }}</a>{% if e.name and e.name != e.ticker %}<span style="color:#888;font-size:0.82em;margin-left:6px;">{{ e.ticker }}</span>{% endif %}</td>
-        <td><span class="tier-{{ e.tier or e.stage }}">{{ stage_label }}</span></td>
-        <td>{% if e.maturity %}<span class="maturity-{{ e.maturity|lower }}">{{ e.maturity }}</span>{% else %}&#8212;{% endif %}</td>
-        <td>{% if e.streak %}{{ e.streak }}d{% else %}&#8212;{% endif %}</td>
-        <td>{{ e.sector or "&#8212;" }}{% if e.sector_top_rank %} <span class="star-top">&#11088;</span>{% endif %}</td>
-        <td>{{ "%.1f"|format(e.rsi or 0) }}</td>
-        <td>{% if e.dist_ema9_pct is not none %}{{ "%+.1f"|format(e.dist_ema9_pct) }}%{% else %}&#8212;{% endif %}</td>
-        <td class="{{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
-        <td class="{{ 'pos' if (e.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_5d_pct or 0) }}%</td>
-        <td class="{{ 'pos' if (e.ret_20d_pct or 0) >= 0 else 'neg' }}">{% if e.ret_20d_pct is not none %}{{ "%.2f"|format(e.ret_20d_pct) }}%{% else %}&#8212;{% endif %}</td>
-        <td>{{ "&#10003;" if e.rs_vs_sector else "&#8212;" }}</td>
-        <td>{% for tag in e.risk_tags %}<span class="badge badge-{{ tag }}">{{ tag }}</span>{% endfor %}</td>
-        <td>{{ e.hint }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p style="color: #666;">&#8212; No {{ stage_label }} signals today.</p>
-  {% endif %}
-{% endfor %}
+    {% if result.status == "failed" %}
+    <div class="p-4 rounded-xl bg-red-900/30 border border-red-500/40 text-red-300">
+      &#9888; Scan failed: {{ result.error_message }}
+    </div>
+    {% else %}
 
-{# Section B — Emerging Momentum #}
-<h2>&#127807; Emerging Momentum (EM)</h2>
-{% if result.rotation_radar %}
-<div class="rotation-radar">
-  <h4>Potential Sector Rotation</h4>
-  {% for sector_count in result.rotation_radar %}
-  <div class="row {{ 'strong' if sector_count[1] >= 3 else '' }}">
-    {{ sector_count[0] }} ({{ sector_count[1] }} EM, non-Top)
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-{% set em_entries = result.signals.get('EM', []) %}
-<h3 class="tier-em" style="display:inline-block;">EM ({{ em_entries|length }})</h3>
-{% if em_entries %}
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Tier</th>
-      <th>Maturity</th>
-      <th>Streak</th>
-      <th>Sector</th>
-      <th>RSI</th>
-      <th>dist_ema9</th>
-      <th>1d %</th>
-      <th>5d %</th>
-      <th>20d %</th>
-      <th>Risk Tags</th>
-      <th>Hint</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for e in em_entries %}
-    <tr>
-      <td><a href="details/{{ e.ticker }}.html" title="{{ e.ticker }}">{{ e.name or e.ticker }}</a>{% if e.name and e.name != e.ticker %}<span style="color:#888;font-size:0.82em;margin-left:6px;">{{ e.ticker }}</span>{% endif %}</td>
-      <td><span class="tier-em">EM</span></td>
-      <td>{% if e.maturity %}<span class="maturity-{{ e.maturity|lower }}">{{ e.maturity }}</span>{% else %}&#8212;{% endif %}</td>
-      <td>{% if e.streak %}{{ e.streak }}d{% else %}&#8212;{% endif %}</td>
-      <td>{{ e.sector or "&#8212;" }}{% if e.sector_top_rank %} <span class="star-top">&#11088;</span>{% endif %}</td>
-      <td>{{ "%.1f"|format(e.rsi or 0) }}</td>
-      <td>{% if e.dist_ema9_pct is not none %}{{ "%+.1f"|format(e.dist_ema9_pct) }}%{% else %}&#8212;{% endif %}</td>
-      <td class="{{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
-      <td class="{{ 'pos' if (e.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_5d_pct or 0) }}%</td>
-      <td class="{{ 'pos' if (e.ret_20d_pct or 0) >= 0 else 'neg' }}">{% if e.ret_20d_pct is not none %}{{ "%.2f"|format(e.ret_20d_pct) }}%{% else %}&#8212;{% endif %}</td>
-      <td>{% for tag in e.risk_tags %}<span class="badge badge-{{ tag }}">{{ tag }}</span>{% endfor %}</td>
-      <td>{{ e.hint }}</td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p style="color: #666;">&#8212; No emerging signals today.</p>
-{% endif %}
+    <!-- Summary counts -->
+    {% set leaders_count = result.signals.MOMENTUM_3|length + result.signals.MOMENTUM_2|length + result.signals.MOMENTUM_1|length %}
+    {% set em_count = result.signals.get('EM', [])|length %}
+    <div class="flex flex-wrap gap-4 text-sm font-label">
+      <span>Leaders:
+        <span class="tier-MOMENTUM_3 font-bold">M3={{ result.signals.MOMENTUM_3|length }}</span> /
+        <span class="tier-MOMENTUM_2 font-bold">M2={{ result.signals.MOMENTUM_2|length }}</span> /
+        <span class="tier-MOMENTUM_1">M1={{ result.signals.MOMENTUM_1|length }}</span>
+      </span>
+      <span class="text-on-surface-variant">&middot;</span>
+      <span>Emerging: <span class="tier-em">{{ em_count }}</span></span>
+    </div>
 
-{% if result.backtest_summary %}
-<h2>Backtest Summary (Direct 90-day rolling)</h2>
-{% set bs = result.backtest_summary %}
-{% if bs.alerts and bs.alerts.consecutive_loss_warning %}
-<div class="alert">&#9888; &#52572;&#44540; 5&#44060; leg &#51473; {{ bs.alerts.recent_5_legs_loss_count }}&#44060; &#49552;&#49892; &#8212; &#49888;&#54840; &#49888;&#47260;&#46020; &#51216;&#44160; &#54596;&#50836;</div>
-{% endif %}
-<table>
-  <thead>
-    <tr>
-      <th>Stage</th>
-      <th>#legs</th>
-      <th>Win 5d %</th>
-      <th>Avg 3d %</th>
-      <th>Avg 5d %</th>
-      <th>Avg 10d %</th>
-      <th>MDD %</th>
-      <th>Avg dur (days)</th>
-      <th>EM&#8594;M1 %</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for stage in ["MOMENTUM_3","MOMENTUM_2","MOMENTUM_1","EM"] %}
-    {% if bs.by_stage and stage in bs.by_stage %}
-    {% set st = bs.by_stage[stage] %}
-    <tr>
-      <td>{{ stage }}</td>
-      <td>{{ st.leg_count }}</td>
-      <td>{{ "%.1f"|format(st.win_rate_5d_pct or 0) }}%</td>
-      <td>{{ "%.2f"|format(st.avg_ret_3d_pct or 0) }}%</td>
-      <td>{{ "%.2f"|format(st.avg_ret_5d_pct or 0) }}%</td>
-      <td>{{ "%.2f"|format(st.avg_ret_10d_pct or 0) }}%</td>
-      <td class="neg">{{ "%.2f"|format(st.avg_mdd_pct or 0) }}%</td>
-      <td>{{ "%.1f"|format(st.avg_duration_days or 0) }}</td>
-      <td>{% if stage == "EM" and st.transition_to_M1_pct is not none %}{{ "%.1f"|format(st.transition_to_M1_pct) }}%{% else %}&#8212;{% endif %}</td>
-    </tr>
+    <!-- Sector Leaders -->
+    <section class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+      <h2 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">pie_chart</span>
+        Sector Leaders
+      </h2>
+      {% if result.top_sectors %}
+      <div class="space-y-2">
+        {% for s in result.top_sectors %}
+        <div class="flex items-center gap-4 px-4 py-3 rounded-lg bg-surface-container border border-outline-variant/10">
+          <span class="font-bold text-primary text-sm font-label">{{ s.ticker }}</span>
+          <span class="text-on-surface-variant text-xs">Score: {{ s.score }}</span>
+          <span class="text-xs {{ 'pos' if (s.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(s.ret_5d_pct or 0) }}% (5d)</span>
+          <span class="text-on-surface-variant text-xs">RS: {{ s.rs_score|default(0) }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-on-surface-variant text-sm">&#8212; No sector qualifies for momentum today.</p>
+      {% endif %}
+    </section>
+
+    {# Section A — Momentum Leaders #}
+    <section class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+      <h2 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">local_fire_department</span>
+        Momentum Leaders (M1/M2/M3)
+      </h2>
+      {% for stage_name, stage_label in [("MOMENTUM_3","M3"),("MOMENTUM_2","M2"),("MOMENTUM_1","M1")] %}
+        {% set entries = result.signals[stage_name] %}
+        <h3 class="{{ stage_label }} font-headline font-semibold text-base mb-3 mt-5 first:mt-0">{{ stage_label }} ({{ entries|length }})</h3>
+        {% if entries %}
+        <div class="overflow-x-auto mb-4">
+          <table class="w-full border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-outline-variant/30">
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Name</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Tier</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Maturity</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Streak</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Sector</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">RSI</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">dist_ema9</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">1d %</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">5d %</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">20d %</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Sec_RS</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Risk Tags</th>
+                <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Hint</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-outline-variant/10">
+            {% for e in entries %}
+              <tr class="hover:bg-surface-container/50 transition-colors">
+                <td class="px-3 py-2 text-sm">
+                  <a href="details/{{ e.ticker }}.html" title="{{ e.ticker }}" class="text-primary hover:underline font-medium">{{ e.name or e.ticker }}</a>
+                  {% if e.name and e.name != e.ticker %}<span class="text-on-surface-variant/60 text-xs ml-1">{{ e.ticker }}</span>{% endif %}
+                </td>
+                <td class="px-3 py-2"><span class="tier-{{ e.tier or e.stage }}">{{ stage_label }}</span></td>
+                <td class="px-3 py-2">{% if e.maturity %}<span class="maturity-{{ e.maturity|lower }}">{{ e.maturity }}</span>{% else %}&#8212;{% endif %}</td>
+                <td class="px-3 py-2 text-on-surface-variant">{% if e.streak %}{{ e.streak }}d{% else %}&#8212;{% endif %}</td>
+                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ e.sector or "&#8212;" }}{% if e.sector_top_rank %} <span class="text-yellow-400">&#11088;</span>{% endif %}</td>
+                <td class="px-3 py-2 text-on-surface-variant">{{ "%.1f"|format(e.rsi or 0) }}</td>
+                <td class="px-3 py-2 text-on-surface-variant">{% if e.dist_ema9_pct is not none %}{{ "%+.1f"|format(e.dist_ema9_pct) }}%{% else %}&#8212;{% endif %}</td>
+                <td class="px-3 py-2 {{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
+                <td class="px-3 py-2 {{ 'pos' if (e.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_5d_pct or 0) }}%</td>
+                <td class="px-3 py-2 {{ 'pos' if (e.ret_20d_pct or 0) >= 0 else 'neg' }}">{% if e.ret_20d_pct is not none %}{{ "%.2f"|format(e.ret_20d_pct) }}%{% else %}&#8212;{% endif %}</td>
+                <td class="px-3 py-2 text-on-surface-variant">{{ "&#10003;" if e.rs_vs_sector else "&#8212;" }}</td>
+                <td class="px-3 py-2">{% for tag in e.risk_tags %}<span class="badge badge-{{ tag }}">{{ tag }}</span>{% endfor %}</td>
+                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ e.hint }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="text-on-surface-variant text-sm mb-4">&#8212; No {{ stage_label }} signals today.</p>
+        {% endif %}
+      {% endfor %}
+    </section>
+
+    {# Section B — Emerging Momentum #}
+    <section class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+      <h2 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-green-400">eco</span>
+        Emerging Momentum (EM)
+      </h2>
+
+      {% if result.rotation_radar %}
+      <div class="mb-4 p-4 rounded-lg bg-surface-container border-l-4 border-primary/60">
+        <h4 class="text-sm font-semibold text-primary mb-2">Potential Sector Rotation</h4>
+        {% for sector_count in result.rotation_radar %}
+        <div class="text-sm {{ 'text-yellow-300 font-semibold' if sector_count[1] >= 3 else 'text-on-surface-variant' }} py-0.5">
+          {{ sector_count[0] }} ({{ sector_count[1] }} EM, non-Top)
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% set em_entries = result.signals.get('EM', []) %}
+      <h3 class="font-semibold text-sm mb-3"><span class="tier-em">EM ({{ em_entries|length }})</span></h3>
+      {% if em_entries %}
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-outline-variant/30">
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Name</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Tier</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Maturity</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Streak</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Sector</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">RSI</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">dist_ema9</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">1d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">5d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">20d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Risk Tags</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Hint</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/10">
+          {% for e in em_entries %}
+            <tr class="hover:bg-surface-container/50 transition-colors">
+              <td class="px-3 py-2">
+                <a href="details/{{ e.ticker }}.html" title="{{ e.ticker }}" class="text-primary hover:underline font-medium">{{ e.name or e.ticker }}</a>
+                {% if e.name and e.name != e.ticker %}<span class="text-on-surface-variant/60 text-xs ml-1">{{ e.ticker }}</span>{% endif %}
+              </td>
+              <td class="px-3 py-2"><span class="tier-em">EM</span></td>
+              <td class="px-3 py-2">{% if e.maturity %}<span class="maturity-{{ e.maturity|lower }}">{{ e.maturity }}</span>{% else %}&#8212;{% endif %}</td>
+              <td class="px-3 py-2 text-on-surface-variant">{% if e.streak %}{{ e.streak }}d{% else %}&#8212;{% endif %}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ e.sector or "&#8212;" }}{% if e.sector_top_rank %} <span class="text-yellow-400">&#11088;</span>{% endif %}</td>
+              <td class="px-3 py-2 text-on-surface-variant">{{ "%.1f"|format(e.rsi or 0) }}</td>
+              <td class="px-3 py-2 text-on-surface-variant">{% if e.dist_ema9_pct is not none %}{{ "%+.1f"|format(e.dist_ema9_pct) }}%{% else %}&#8212;{% endif %}</td>
+              <td class="px-3 py-2 {{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
+              <td class="px-3 py-2 {{ 'pos' if (e.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_5d_pct or 0) }}%</td>
+              <td class="px-3 py-2 {{ 'pos' if (e.ret_20d_pct or 0) >= 0 else 'neg' }}">{% if e.ret_20d_pct is not none %}{{ "%.2f"|format(e.ret_20d_pct) }}%{% else %}&#8212;{% endif %}</td>
+              <td class="px-3 py-2">{% for tag in e.risk_tags %}<span class="badge badge-{{ tag }}">{{ tag }}</span>{% endfor %}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ e.hint }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-on-surface-variant text-sm">&#8212; No emerging signals today.</p>
+      {% endif %}
+    </section>
+
+    <!-- Backtest Summary -->
+    {% if result.backtest_summary %}
+    {% set bs = result.backtest_summary %}
+    <section class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+      <h2 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">history</span>
+        Backtest Summary (Direct 90-day rolling)
+      </h2>
+      {% if bs.alerts and bs.alerts.consecutive_loss_warning %}
+      <div class="p-3 mb-4 rounded-lg bg-red-900/30 border border-red-500/40 text-red-300 text-sm">
+        &#9888; &#52572;&#44540; 5&#44060; leg &#51473; {{ bs.alerts.recent_5_legs_loss_count }}&#44060; &#49552;&#49892; &#8212; &#49888;&#54840; &#49888;&#47260;&#46020; &#51216;&#44160; &#54596;&#50836;
+      </div>
+      {% endif %}
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-outline-variant/30">
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Stage</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">#legs</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Win 5d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Avg 3d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Avg 5d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Avg 10d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">MDD %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Avg dur (days)</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">EM&#8594;M1 %</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/10">
+          {% for stage in ["MOMENTUM_3","MOMENTUM_2","MOMENTUM_1","EM"] %}
+            {% if bs.by_stage and stage in bs.by_stage %}
+            {% set st = bs.by_stage[stage] %}
+            <tr class="hover:bg-surface-container/50">
+              <td class="px-3 py-2 font-medium">{{ stage }}</td>
+              <td class="px-3 py-2 text-on-surface-variant">{{ st.leg_count }}</td>
+              <td class="px-3 py-2 text-secondary">{{ "%.1f"|format(st.win_rate_5d_pct or 0) }}%</td>
+              <td class="px-3 py-2 text-on-surface-variant">{{ "%.2f"|format(st.avg_ret_3d_pct or 0) }}%</td>
+              <td class="px-3 py-2 text-on-surface-variant">{{ "%.2f"|format(st.avg_ret_5d_pct or 0) }}%</td>
+              <td class="px-3 py-2 text-on-surface-variant">{{ "%.2f"|format(st.avg_ret_10d_pct or 0) }}%</td>
+              <td class="px-3 py-2 neg">{{ "%.2f"|format(st.avg_mdd_pct or 0) }}%</td>
+              <td class="px-3 py-2 text-on-surface-variant">{{ "%.1f"|format(st.avg_duration_days or 0) }}</td>
+              <td class="px-3 py-2 text-on-surface-variant">{% if stage == "EM" and st.transition_to_M1_pct is not none %}{{ "%.1f"|format(st.transition_to_M1_pct) }}%{% else %}&#8212;{% endif %}</td>
+            </tr>
+            {% endif %}
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if bs.by_streak and "3+" in bs.by_streak %}
+      <p class="mt-4 text-sm text-green-400">
+        &#128293; <strong>Edge:</strong> M3 streak 3+ days &#8594; 5d avg {{ "%.1f"|format(bs.by_streak["3+"].avg_ret_5d or 0) }}%
+      </p>
+      {% endif %}
+    </section>
+    {% else %}
+    <p class="text-on-surface-variant text-sm">&#48177;&#53580;&#49828;&#53540; &#45936;&#51060;&#53552; &#45204;&#51201; &#51473; (&#52380;&#49548; 90&#51068; &#54980; &#54364;&#49884;)</p>
     {% endif %}
-  {% endfor %}
-  </tbody>
-</table>
-{% if bs.by_streak and "3+" in bs.by_streak %}
-<p style="margin-top: 1em; color: #4caf50;">&#128293; <b>Edge:</b> M3 streak 3+ days &#8594; 5d avg {{ "%.1f"|format(bs.by_streak["3+"].avg_ret_5d or 0) }}%</p>
-{% endif %}
-{% else %}
-<p style="color: #666;">&#48177;&#53580;&#49828;&#53944; &#45936;&#51060;&#53552; &#45204;&#51201; &#51473; (&#52572;&#49548; 90&#51068; &#54980; &#54364;&#49884;)</p>
-{% endif %}
 
-{% endif %}
+    {% endif %}{# end status ok #}
 
-<div class="footer">
-{% block footer %}
-<p>Universe: {{ result.scanned_count }} | Version: {{ result.version }}</p>
-<p>&#9888; Backtest assumes close entry &#8212; slippage expected in live trading</p>
-{% endblock %}
-</div>
+    <!-- Footer -->
+    <div class="pt-4 border-t border-outline-variant/20 text-xs text-on-surface-variant">
+      {% block footer %}
+      <p>Universe: {{ result.scanned_count }} | Version: {{ result.version }}</p>
+      <p>&#9888; Backtest assumes close entry &#8212; slippage expected in live trading</p>
+      {% endblock %}
+    </div>
 
-</div>
+  </div>
+</main>
+
+<script>
+function toggleSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('hidden');
+  overlay.classList.toggle('hidden');
+}
+function toggleTheme() {
+  var html = document.documentElement;
+  var isDark = html.classList.contains('dark');
+  html.classList.toggle('dark', !isDark);
+  html.classList.toggle('light', isDark);
+  localStorage.setItem('theme', !isDark ? 'dark' : 'light');
+}
+</script>
 </body>
 </html>

@@ -1,0 +1,94 @@
+<!-- ── Sidebar Partial ── shared by report_template, momentum, lifecycle pages ── -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center">
+      <span class="material-symbols-outlined text-[#004352]" style="font-variation-settings: 'FILL' 1;">dashboard_customize</span>
+    </div>
+    <div>
+      <h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2>
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p>
+    </div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    {% set _active = (active_nav|default('portfolio')) %}
+    {% set _dash_active = _active == 'portfolio' %}
+    {% set _wife_active = _active == 'wife' %}
+    {% set _scanner_active = _active == 'scanner' %}
+    {% set _backtest_active = _active == 'backtest' %}
+    {% set _trend_active = _active == 'trend' %}
+    {% set _risk_active = _active == 'risk' %}
+    {% set _mom_us_active = _active == 'momentum_us' %}
+    {% set _mom_kr_active = _active == 'momentum_kr' %}
+    {% set _lc_us_active = _active == 'lifecycle_us' %}
+    {% set _lc_kr_active = _active == 'lifecycle_kr' %}
+
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _dash_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ nav_portfolio|default('index.html') }}">
+      <span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span>
+    </a>
+    {% if nav_wife %}
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _wife_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ nav_wife }}">
+      <span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span>
+    </a>
+    {% endif %}
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _scanner_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ nav_scanner|default('') }}">
+      <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _backtest_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ nav_backtest|default('') }}">
+      <span class="material-symbols-outlined">history</span><span>Backtest</span>
+    </a>
+    {% if portfolio_stop_summary %}
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _risk_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ portfolio_stop_page }}">
+      <span class="material-symbols-outlined">shield</span><span>Portfolio Risk</span>
+    </a>
+    {% endif %}
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _trend_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ nav_trend|default('') }}">
+      <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html">
+      <span class="material-symbols-outlined">inventory_2</span><span>Archive</span>
+    </a>
+    {% if has_momentum_us %}
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _mom_us_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ momentum_us_url }}">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum US</span>
+    </a>
+    {% endif %}
+    {% if has_momentum_kr %}
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _mom_kr_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ momentum_kr_url }}">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum KR</span>
+    </a>
+    {% endif %}
+    {% if lifecycle_us_page %}
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _lc_us_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ lifecycle_us_page }}">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle US</span>
+    </a>
+    {% endif %}
+    {% if lifecycle_kr_page %}
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _lc_kr_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ lifecycle_kr_page }}">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle KR</span>
+    </a>
+    {% endif %}
+  </div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" class="flex items-center gap-3 px-4 py-3 w-full text-left bg-[#6dddff]/10 text-[#6dddff] hover:bg-[#6dddff]/20 rounded-md transition-all font-bold text-sm">
+      <span class="material-symbols-outlined">rocket_launch</span><span>Run Workflow</span>
+    </a>
+    <button id="themeToggle" onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
+      <span class="material-symbols-outlined">light_mode</span><span>Light Mode</span>
+    </button>
+    {% if show_currency_toggle %}
+    <button id="currencyToggle" onclick="toggleCurrency()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
+      <span class="material-symbols-outlined">currency_exchange</span><span>USD / KRW</span>
+    </button>
+    {% endif %}
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">
+      {{ date_ko|default('') }}<br>
+      {% if market_status %}
+        {% if market_status.US == 'open' or market_status.KRX == 'open' %}
+          <span class="text-[#ff7166]">LIVE</span> US:{{ market_status.US }} / KRX:{{ market_status.KRX }}
+        {% else %}
+          <span class="text-[#00E5BC]">CLOSED</span>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</nav>

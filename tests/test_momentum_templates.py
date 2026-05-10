@@ -132,7 +132,8 @@ def test_template_dropped_change_column_in_signals_table():
 
 def test_template_has_streak_column():
     src = open("templates/base_momentum.html", encoding="utf-8").read()
-    assert "<th>Streak</th>" in src
+    # Accept both plain <th>Streak</th> (old) and Tailwind <th class="...">Streak</th> (new)
+    assert "Streak</th>" in src
 
 
 def test_template_renders_em_signals(tmp_path):
