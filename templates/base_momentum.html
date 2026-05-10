@@ -185,7 +185,22 @@ tailwind.config = {
         <h3 class="{{ stage_label }} font-headline font-semibold text-base mb-3 mt-5 first:mt-0">{{ stage_label }} ({{ entries|length }})</h3>
         {% if entries %}
         <div class="overflow-x-auto mb-4">
-          <table class="w-full border-collapse text-sm">
+          <table class="w-full table-fixed border-collapse text-sm">
+            <colgroup>
+              <col style="width:16%">
+              <col style="width:6%">
+              <col style="width:9%">
+              <col style="width:6%">
+              <col style="width:10%">
+              <col style="width:5%">
+              <col style="width:8%">
+              <col style="width:6%">
+              <col style="width:6%">
+              <col style="width:7%">
+              <col style="width:6%">
+              <col style="width:8%">
+              <col style="width:7%">
+            </colgroup>
             <thead>
               <tr class="border-b border-outline-variant/30">
                 <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Name</th>
@@ -255,7 +270,22 @@ tailwind.config = {
       <h3 class="font-semibold text-sm mb-3"><span class="tier-em">EM ({{ em_entries|length }})</span></h3>
       {% if em_entries %}
       <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-sm">
+        <table class="w-full table-fixed border-collapse text-sm">
+          <colgroup>
+            <col style="width:16%">
+            <col style="width:6%">
+            <col style="width:9%">
+            <col style="width:6%">
+            <col style="width:10%">
+            <col style="width:5%">
+            <col style="width:8%">
+            <col style="width:6%">
+            <col style="width:6%">
+            <col style="width:7%">
+            <col style="width:6%">
+            <col style="width:8%">
+            <col style="width:7%">
+          </colgroup>
           <thead>
             <tr class="border-b border-outline-variant/30">
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Name</th>
@@ -268,6 +298,7 @@ tailwind.config = {
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">1d %</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">5d %</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">20d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider"></th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Risk Tags</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Hint</th>
             </tr>
@@ -288,6 +319,7 @@ tailwind.config = {
               <td class="px-3 py-2 {{ 'pos' if (e.ret_1d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_1d_pct or 0) }}%</td>
               <td class="px-3 py-2 {{ 'pos' if (e.ret_5d_pct or 0) >= 0 else 'neg' }}">{{ "%.2f"|format(e.ret_5d_pct or 0) }}%</td>
               <td class="px-3 py-2 {{ 'pos' if (e.ret_20d_pct or 0) >= 0 else 'neg' }}">{% if e.ret_20d_pct is not none %}{{ "%.2f"|format(e.ret_20d_pct) }}%{% else %}&#8212;{% endif %}</td>
+              <td class="px-3 py-2"></td>
               <td class="px-3 py-2">{% for tag in e.risk_tags %}<span class="badge badge-{{ tag }}">{{ tag }}</span>{% endfor %}</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">{{ e.hint }}</td>
             </tr>
