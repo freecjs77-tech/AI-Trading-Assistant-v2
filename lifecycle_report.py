@@ -10,7 +10,13 @@ from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader
 
-from lifecycle_config import LIFECYCLE_VERSION
+from lifecycle_config import (
+    LIFECYCLE_VERSION,
+    PULLBACK_MAX_DIST_FROM_EMA9, EXTENDED_DIST_FROM_EMA9, EXTENDED_RSI_MIN,
+    RISK_OVERHEAT_RSI, RISK_PARABOLIC_RET_1D, RISK_PARABOLIC_VOL_RATIO,
+    TRIGGER_CONFIRM_VOL_RATIO_MIN, TRIGGER_CONFIRM_CLOSE_HIGH_RATIO,
+    BASE_FORMING_DAYS_MIN, BASE_FORMING_DAYS_MAX,
+)
 from lifecycle_history import derive_fields
 from lifecycle_signal import DECISION_LABELS, DECISION_TOOLTIPS
 
@@ -49,7 +55,94 @@ def _attach_derived(snap: dict, ticker: str,
     out["setup_streak"]     = derived["setup_streak"]
     out["days_in_pullback"] = derived["days_in_pullback"]
     out["trigger_age_days"] = derived["trigger_age_days"]
+
+    # Signed distance fields for chip display (raw values are abs).
+    # close / ema9 / ema21 are in raw nested dict per lifecycle_signal._make_snapshot.
+    raw = snap.get("raw") or {}
+    close = raw.get("close")
+    e9 = raw.get("ema9")
+    e21 = raw.get("ema21")
+    out["dist_ema9_signed_pct"] = (
+        round((close / e9 - 1) * 100, 2) if (close and e9 and e9 > 0) else None
+    )
+    out["dist_ema21_signed_pct"] = (
+        round((close / e21 - 1) * 100, 2) if (close and e21 and e21 > 0) else None
+    )
+
+    # Also surface raw abs value at top-level for verdict_summary max() (avoids
+    # needing to dig into raw.* from the helper, keeps _build_verdict_summary lean).
+    out["dist_ema9_pct"] = raw.get("dist_ema9_pct")
+
     return out
+
+
+def _build_verdict_summary(enter: list, probe: list, watch: list,
+                            trending: list, avoid: list) -> dict:
+    """Build dynamic narration for the 'Today's Verdict' summary box.
+
+    Branches on which groups are non-empty (ENTER > PROBE > empty > total=0).
+    AVOID line is appended whenever AVOID > 0, with max dist_ema9 and max
+    rsi14 from the AVOID group inserted as live values.
+
+    Returns:
+        {
+          "headline":    str,             # 큰 제목
+          "narration":   str,             # 1-2 문장 설명
+          "avoid_line":  str | None,      # AVOID > 0일 때만, else None
+          "action_hint": str,             # 💡 오늘 할 일
+        }
+    """
+    enter_n, probe_n = len(enter), len(probe)
+    watch_n, trending_n, avoid_n = len(watch), len(trending), len(avoid)
+    total = enter_n + probe_n + watch_n + trending_n + avoid_n
+
+    def _ticker_list(rows: list, limit: int = 5) -> str:
+        names = [r["ticker"] for r in rows[:limit]]
+        s = ", ".join(names)
+        if len(rows) > limit:
+            s += f" 외 {len(rows) - limit}개"
+        return s
+
+    if total == 0:
+        headline = "⚠ 추적 종목 없음 — 시그널 부재"
+        narration = "오늘 평가된 종목이 없습니다 (전 종목 skip 또는 데이터 부족)"
+        action_hint = "pipeline 로그 확인"
+    elif enter_n > 0:
+        headline = f"✅ 오늘 신규 진입 가능 종목 {enter_n}개"
+        narration = f"{_ticker_list(enter)}이 확정 트리거 발화 — 풀 진입 검토 가능"
+        action_hint = "ENTER 종목 점검 후 비중 결정"
+    elif probe_n > 0:
+        headline = f"⚡ 분할 진입 가능 종목 {probe_n}개"
+        narration = f"{_ticker_list(probe)}이 약한 트리거 — 절반 진입 검토"
+        action_hint = "PROBE 종목 절반 비중 진입"
+    else:
+        headline = "⏸ 오늘은 신규 진입할 종목이 없습니다 (ENTER 0, PROBE 0)"
+        narration = (
+            f"WATCH {watch_n}개는 트리거 발화 대기, "
+            f"TRENDING {trending_n}개는 다음 눌림목까지 관망"
+        )
+        action_hint = "WATCH 트리거 발화 대기 — 오늘은 신규 매수 없음"
+
+    avoid_line = None
+    if avoid_n > 0:
+        # _ticker_list uses ', ' separator; mockup uses ' · ' for AVOID line
+        names = [r["ticker"] for r in avoid[:5]]
+        tickers = " · ".join(names)
+        if avoid_n > 5:
+            tickers += f" 외 {avoid_n - 5}개"
+        max_dist = max((r.get("dist_ema9_pct") or 0) for r in avoid)
+        max_rsi = max((r.get("raw", {}).get("rsi14") or 0) for r in avoid)
+        avoid_line = (
+            f"🔴 {tickers} {avoid_n}종목은 매수 금지 — "
+            f"9일선 +{max_dist:.1f}% 이격, RSI {max_rsi:.0f}+로 과확장 상태"
+        )
+
+    return {
+        "headline":    headline,
+        "narration":   narration,
+        "avoid_line":  avoid_line,
+        "action_hint": action_hint,
+    }
 
 
 def build_page_context(result: dict,
@@ -100,6 +193,19 @@ def build_page_context(result: dict,
         "transitions":  (result.get("transitions") or [])[-50:],
         "DECISION_LABELS":   DECISION_LABELS,
         "DECISION_TOOLTIPS": DECISION_TOOLTIPS,
+        "verdict_summary":   _build_verdict_summary(enter, probe, watch, trending, avoid),
+        "lifecycle_thresholds": {
+            "PULLBACK_MAX_DIST_FROM_EMA9":      PULLBACK_MAX_DIST_FROM_EMA9,
+            "EXTENDED_DIST_FROM_EMA9":          EXTENDED_DIST_FROM_EMA9,
+            "EXTENDED_RSI_MIN":                 EXTENDED_RSI_MIN,
+            "RISK_OVERHEAT_RSI":                RISK_OVERHEAT_RSI,
+            "RISK_PARABOLIC_RET_1D":            RISK_PARABOLIC_RET_1D,
+            "RISK_PARABOLIC_VOL_RATIO":         RISK_PARABOLIC_VOL_RATIO,
+            "TRIGGER_CONFIRM_VOL_RATIO_MIN":    TRIGGER_CONFIRM_VOL_RATIO_MIN,
+            "TRIGGER_CONFIRM_CLOSE_HIGH_RATIO": TRIGGER_CONFIRM_CLOSE_HIGH_RATIO,
+            "BASE_FORMING_DAYS_MIN":            BASE_FORMING_DAYS_MIN,
+            "BASE_FORMING_DAYS_MAX":            BASE_FORMING_DAYS_MAX,
+        },
     }
 
 
@@ -109,6 +215,34 @@ def _render(market: str, result: dict, output_dir: str,
     if template_dir is None:
         template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
+
+    # Custom filters for chip rendering
+    def _signed_pct(x):
+        """Format signed percentage: +5.3% / -2.1% / 0.0% / — (None)."""
+        if x is None:
+            return "—"
+        return f"{x:+.1f}%"
+
+    def _x_fmt(x):
+        """Format multiplier: 1.5× / — (None)."""
+        if x is None:
+            return "—"
+        return f"{x:.1f}×"
+
+    def _trig_age_label(d):
+        """Format trigger age: 오늘 / 어제 / N일전 / —."""
+        if d is None:
+            return "—"
+        if d == 0:
+            return "오늘"
+        if d == 1:
+            return "어제"
+        return f"{d}일전"
+
+    env.filters["signed_pct"] = _signed_pct
+    env.filters["x_fmt"] = _x_fmt
+    env.filters["trig_age_label"] = _trig_age_label
+
     tmpl = env.get_template(f"lifecycle_{market.lower()}.html")
     ctx = build_page_context(result, lifecycle_state=lifecycle_state)
 
