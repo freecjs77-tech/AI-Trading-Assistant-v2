@@ -1,0 +1,119 @@
+{# templates/_lifecycle_glossary.html
+   용어 사전 5 collapsible sections. parent context 요구:
+     lifecycle_thresholds (dict from build_page_context)
+#}
+<section class="glossary">
+  <h2>📖 용어 사전</h2>
+
+  <details open>
+    <summary>왜 5가지 그룹으로 나누나? (결정 매트릭스)</summary>
+    <div class="gbody">
+      시스템은 종목을 두 축으로 보고 최종 그룹을 정합니다:
+      <br><b>① Setup</b> (구조 진단) × <b>② Trigger</b> (진입 신호)
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Setup \ Trigger</th>
+            <th>WAIT<br>(신호 없음)</th>
+            <th>EARLY<br>(약한 신호)</th>
+            <th>CONFIRMED<br>(거래량 동반)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="setup-name">TREND_OK (추세)</td>
+            <td class="cell-trending" colspan="3">⚪ 눌림 대기 (TRENDING)</td>
+          </tr>
+          <tr>
+            <td class="setup-name">PULLBACK (눌림)</td>
+            <td class="cell-watch">🔵 WATCH</td>
+            <td class="cell-probe">🟡 PROBE</td>
+            <td class="cell-enter">🟢 ENTER</td>
+          </tr>
+          <tr>
+            <td class="setup-name">BASE_FORMING (베이스)</td>
+            <td class="cell-watch">🔵 WATCH</td>
+            <td class="cell-probe">🟡 PROBE</td>
+            <td class="cell-enter">🟢 ENTER</td>
+          </tr>
+          <tr>
+            <td class="setup-name">EXTENDED (과확장)</td>
+            <td class="cell-avoid" colspan="3">🔴 AVOID — 트리거 무시</td>
+          </tr>
+          <tr>
+            <td class="setup-name">BROKEN (깨짐)</td>
+            <td class="cell-avoid" colspan="3">🔴 AVOID — 트리거 무시</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">※ 추가: <b>FAILED_BREAKOUT</b> 태그가 붙으면 무조건 AVOID로 강제 분류.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Setup (구조 진단) — 5단계</summary>
+    <div class="gbody">
+      종목의 추세 구조를 진단하는 5단계 분류.
+      평가 우선순위: <b>BROKEN &gt; EXTENDED &gt; BASE_FORMING &gt; PULLBACK &gt; TREND_OK</b>
+      <table>
+        <tr><th>단계</th><th>의미</th><th>판정 조건</th></tr>
+        <tr><td><span class="tag tag-TREND_OK">TREND_OK</span></td>
+            <td>정상 상승 추세</td>
+            <td>EMA9 &gt; EMA21 &gt; EMA65 정렬 + EMA65 5일 기울기 양수</td></tr>
+        <tr><td><span class="tag tag-PULLBACK">PULLBACK</span></td>
+            <td>추세 안의 단기 하락 (=진입 자리)</td>
+            <td>TREND_OK 조건 + EMA9 거리 ≤ {{ (lifecycle_thresholds.PULLBACK_MAX_DIST_FROM_EMA9 * 100)|round(0)|int }}% + EMA21 위</td></tr>
+        <tr><td><span class="tag tag-BASE">BASE_FORMING</span></td>
+            <td>{{ lifecycle_thresholds.BASE_FORMING_DAYS_MIN }}–{{ lifecycle_thresholds.BASE_FORMING_DAYS_MAX }}일 횡보 + 변동성 수축 (=VCP)</td>
+            <td>5d ATR &lt; 20d ATR + 거래량 수축 + EMA21 기울기 양수</td></tr>
+        <tr><td><span class="tag tag-EXTENDED">EXTENDED</span></td>
+            <td>과확장</td>
+            <td>정렬 유지 + EMA9 거리 &gt; {{ (lifecycle_thresholds.EXTENDED_DIST_FROM_EMA9 * 100)|round(0)|int }}% + RSI &gt; {{ lifecycle_thresholds.EXTENDED_RSI_MIN }}</td></tr>
+        <tr><td><span class="tag tag-BROKEN">BROKEN</span></td>
+            <td>구조 깨짐</td>
+            <td>EMA21 &lt; EMA65 또는 종가 &lt; EMA65</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Trigger (진입 신호) — 3단계</summary>
+    <div class="gbody">
+      Setup이 PULLBACK 또는 BASE_FORMING일 때만 의미 있음.
+      <table>
+        <tr><th>신호</th><th>조건</th></tr>
+        <tr><td><b>WAIT</b></td><td>진입 신호 없음 (대다수의 일상)</td></tr>
+        <tr><td><b>EARLY_TRIGGER</b></td><td>EMA9 reclaim 또는 전일 고점 돌파 + 종가가 일중 상위 {{ ((1 - lifecycle_thresholds.TRIGGER_CONFIRM_CLOSE_HIGH_RATIO) * 100)|round(0)|int }}%</td></tr>
+        <tr><td><b>CONFIRMED_TRIGGER</b></td><td>EARLY 조건 + 거래량 {{ lifecycle_thresholds.TRIGGER_CONFIRM_VOL_RATIO_MIN }}배 + 종가 일중 상위 {{ ((1 - lifecycle_thresholds.TRIGGER_CONFIRM_CLOSE_HIGH_RATIO) * 100)|round(0)|int }}%</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>지표 약어 (테이블 컬럼)</summary>
+    <div class="gbody">
+      <table>
+        <tr><th>약어</th><th>설명</th></tr>
+        <tr><td><b>EMA9 / EMA21 / EMA65</b></td><td>9일, 21일, 65일 지수이동평균</td></tr>
+        <tr><td><b>dist_ema9 / dist_ema21</b></td><td>현재 가격이 해당 이평선보다 얼마나 위 (%)</td></tr>
+        <tr><td><b>vol_ratio</b></td><td>20일 평균 거래량 대비 비율. 1.0 = 평균, 1.2 = 평균의 1.2배</td></tr>
+        <tr><td><b>ATR %</b></td><td>평균 진폭 (변동성). 종가 대비 %</td></tr>
+        <tr><td><b>days_in_pb</b></td><td>PULLBACK/BASE_FORMING에 머문 연속 일수</td></tr>
+        <tr><td><b>setup_streak</b></td><td>같은 setup 유지 연속 일수</td></tr>
+        <tr><td><b>trig_age</b></td><td>마지막 trigger 발화로부터 경과 일수 (0=오늘)</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>위험 태그 (risk_tags)</summary>
+    <div class="gbody">
+      <table>
+        <tr><th>태그</th><th>조건</th></tr>
+        <tr><td><b>OVERHEAT</b></td><td>RSI ≥ {{ lifecycle_thresholds.RISK_OVERHEAT_RSI }}</td></tr>
+        <tr><td><b>PARABOLIC</b></td><td>1일 수익률 ≥ +{{ (lifecycle_thresholds.RISK_PARABOLIC_RET_1D * 100)|round(0)|int }}% &amp; 거래량 ≥ {{ lifecycle_thresholds.RISK_PARABOLIC_VOL_RATIO }}배</td></tr>
+        <tr><td><b>FAILED_BREAKOUT</b></td><td>어제 CONFIRMED → 오늘 종가 &lt; EMA9. 가짜 돌파 → 강제 AVOID</td></tr>
+      </table>
+    </div>
+  </details>
+</section>
