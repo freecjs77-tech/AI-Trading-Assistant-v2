@@ -185,7 +185,7 @@
       </div>
       <div class="price-block">
         <div class="price">{% if is_kospi %}₩{{ price|comma }}{% else %}${{ price|f2 }}{% endif %}</div>
-        <div class="change {{ 'up' if change_pct >= 0 else 'dn' }}">{{ '&#9650;' if change_pct >= 0 else '&#9660;' }} {{ change_pct|sign_pct }}</div>
+        <div class="change {{ 'up' if change_pct >= 0 else 'dn' }}">{{ '▲' if change_pct >= 0 else '▼' }} {{ change_pct|sign_pct }}</div>
       </div>
     </div>
     <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -245,7 +245,7 @@
     <div class="metric-card">
       <div class="label">RSI (14)</div>
       <div class="value {{ 'v-red' if rsi is not none and rsi >= 70 else 'v-green' if rsi is not none and rsi <= 30 else 'v-orange' if rsi is not none and rsi >= 60 else 'v-text' }}">{{ rsi|f1 if rsi is not none else 'N/A' }}</div>
-      <div class="desc">{{ '&#44284;&#47588;&#49688;' if rsi is not none and rsi >= 70 else '&#44284;&#47588;&#46020;' if rsi is not none and rsi <= 30 else '&#51473;&#47549;' }}</div>
+      <div class="desc">{{ '과매수' if rsi is not none and rsi >= 70 else '과매도' if rsi is not none and rsi <= 30 else '중립' }}</div>
     </div>
     <div class="metric-card">
       <div class="label">MACD Hist</div>
@@ -255,12 +255,12 @@
     <div class="metric-card">
       <div class="label">ADX</div>
       <div class="value v-text">{{ adx|f1 if adx is not none else 'N/A' }}</div>
-      <div class="desc">{{ '&#44053;&#54620; &#52628;&#49464;' if adx is not none and adx >= 25 else '&#52628;&#49464; &#50557;&#54868;' if adx is not none else '' }}</div>
+      <div class="desc">{{ '강한 추세' if adx is not none and adx >= 25 else '추세 약화' if adx is not none else '' }}</div>
     </div>
     <div class="metric-card">
       <div class="label">BB%</div>
       <div class="value v-text">{{ bb_pct|f1 if bb_pct is not none else 'N/A' }}{% if bb_pct is not none %}%{% endif %}</div>
-      <div class="desc">{{ '&#49345;&#45800; &#46028;&#54028;' if bb_pct is not none and bb_pct > 100 else '&#54616;&#45800; &#46028;&#54028;' if bb_pct is not none and bb_pct < 0 else '&#48180;&#46300; &#51473;&#44036;' if bb_pct is not none else '' }}</div>
+      <div class="desc">{{ '상단 돌파' if bb_pct is not none and bb_pct > 100 else '하단 돌파' if bb_pct is not none and bb_pct < 0 else '밴드 중간' if bb_pct is not none else '' }}</div>
     </div>
     <div class="metric-card">
       <div class="label">&#44144;&#47000;&#47049; &#48708;&#50984;</div>
@@ -275,12 +275,12 @@
     <div class="metric-card">
       <div class="label">MA20</div>
       <div class="value {{ 'v-green' if ma20 is not none and price > ma20 else 'v-red' if ma20 is not none else 'v-text' }}">{% if is_kospi %}₩{{ ma20|comma if ma20 is not none else 'N/A' }}{% else %}${{ ma20|f2 if ma20 is not none else 'N/A' }}{% endif %}</div>
-      <div class="desc">{{ '&#9650; &#44032;&#44201; &#49345;&#54924;' if ma20 is not none and price > ma20 else '&#9660; &#44032;&#44201; &#54616;&#54924;' if ma20 is not none else '' }}</div>
+      <div class="desc">{{ '▲ 가격 상회' if ma20 is not none and price > ma20 else '▼ 가격 하회' if ma20 is not none else '' }}</div>
     </div>
     <div class="metric-card">
       <div class="label">MA200</div>
       <div class="value {{ 'v-green' if ma200 is not none and price > ma200 else 'v-red' if ma200 is not none else 'v-text' }}">{% if is_kospi %}₩{{ ma200|comma if ma200 is not none else 'N/A' }}{% else %}${{ ma200|f2 if ma200 is not none else 'N/A' }}{% endif %}</div>
-      <div class="desc">{{ '&#9650; &#44032;&#44201; &#49345;&#54924;' if ma200 is not none and price > ma200 else '&#9660; &#44032;&#44201; &#54616;&#54924;' if ma200 is not none else '' }}</div>
+      <div class="desc">{{ '▲ 가격 상회' if ma200 is not none and price > ma200 else '▼ 가격 하회' if ma200 is not none else '' }}</div>
     </div>
   </div>
 
