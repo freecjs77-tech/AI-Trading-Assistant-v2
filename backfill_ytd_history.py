@@ -19,8 +19,8 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, PROJECT_DIR)
 
 from benchmark_ytd import (
-    ANCHOR_DATE, SPY_SYMBOL, load_or_build_baseline,
-    compute_v0_total_krw, fetch_close_on,
+    ANCHOR_DATE, SPY_SYMBOL, DIT_TICKER, load_or_build_baseline,
+    compute_v0_total_krw, fetch_close_on, compute_dit_rest_decomposition,
 )
 from portfolio_paths import discover_portfolios
 from pipeline import _parse_portfolio_for_report
@@ -78,6 +78,56 @@ def find_nearest_spy(spy_history: dict, target_date: str) -> float | None:
         d = (dt - timedelta(days=back)).strftime("%Y-%m-%d")
         if d in spy_history:
             return spy_history[d]
+    return None
+
+
+def fetch_dit_history(start_date: str, end_date: str) -> dict:
+    """Fetch 110990.KQ Close prices for date range. Returns {date_str: close_krw}.
+
+    Same retry pattern as fetch_spy_history. Returns empty dict on failure.
+    """
+    import time
+    end = (datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=2)).strftime("%Y-%m-%d")
+    print(f"Fetching 110990.KQ history {start_date} → {end} ...")
+    delays = [0, 1, 3, 9]
+    last_exc = None
+    for attempt, delay in enumerate(delays):
+        if delay > 0:
+            print(f"  ⏳ retry after {delay}s (attempt {attempt}/{len(delays)-1})")
+            time.sleep(delay)
+        try:
+            t = yf.Ticker("110990.KQ")
+            df = t.history(start=start_date, end=end, auto_adjust=False)
+            if df is None or df.empty:
+                return {}
+            out = {}
+            for idx, row in df.iterrows():
+                date_str = idx.strftime("%Y-%m-%d")
+                close = row.get("Close")
+                if pd.notna(close) and close > 0:
+                    out[date_str] = float(close)
+            return out
+        except Exception as e:
+            last_exc = e
+            msg = str(e).lower()
+            if "rate limit" in msg or "too many requests" in msg or "429" in msg:
+                continue
+            if "no data" in msg or "delisted" in msg:
+                return {}
+            continue
+    print(f"  WARN 110990.KQ history fetch failed after {len(delays)} attempts: {last_exc}")
+    return {}
+
+
+def find_nearest_dit(dit_history: dict, target_date: str) -> float | None:
+    """Find 110990 close on target_date, or fall back to most recent prior trading day."""
+    if target_date in dit_history:
+        return dit_history[target_date]
+    dt = datetime.strptime(target_date, "%Y-%m-%d")
+    for back in range(1, 8):
+        d = (dt - timedelta(days=back)).strftime("%Y-%m-%d")
+        if d in dit_history:
+            return dit_history[d]
     return None
 
 
