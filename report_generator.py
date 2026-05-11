@@ -741,6 +741,8 @@ def _series_from_daily(daily: dict) -> list:
             "ytd_pct": snap.get("ytd_pct"),
             "spy_ytd_pct": snap.get("spy_ytd_pct"),
             "alpha_pp": snap.get("alpha_pp"),
+            "dit_ytd_pct": snap.get("dit_ytd_pct"),
+            "rest_ytd_pct": snap.get("rest_ytd_pct"),
         })
     return out
 
@@ -765,6 +767,8 @@ def _build_owner_payload(daily: dict) -> dict:
         "ytd_pct": latest_snap.get("ytd_pct"),
         "spy_ytd_pct": latest_snap.get("spy_ytd_pct"),
         "alpha_pp": latest_snap.get("alpha_pp"),
+        "dit_ytd_pct": latest_snap.get("dit_ytd_pct"),
+        "rest_ytd_pct": latest_snap.get("rest_ytd_pct"),
     }
     ticker_weights = latest_snap.get("weights_by_ticker", {}) or {}
     sorted_tickers = sorted(ticker_weights.items(), key=lambda x: -x[1])
