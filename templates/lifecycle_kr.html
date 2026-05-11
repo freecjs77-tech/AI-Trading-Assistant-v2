@@ -306,8 +306,8 @@ tailwind.config = {
               <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t.date }}</td>
               <td class="px-3 py-2 font-medium text-primary">{{ t.ticker }}</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t.event }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t['from'] or '&#8212;' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t['to'] or '&#8212;' }}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t['from'] or '—' }}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t['to'] or '—' }}</td>
             </tr>
           {% endfor %}
           </tbody>
@@ -354,20 +354,20 @@ tailwind.config = {
                 <strong class="text-on-surface text-sm">{{ r.name or r.ticker }}</strong>
                 {% if r.name and r.name != r.ticker %}<br><small class="text-on-surface-variant/60 font-normal text-xs">{{ r.ticker }}</small>{% endif %}
               </td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.raw.sector or '&#8212;' }}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.raw.sector or '—' }}</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.setup }}</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.trigger }}</td>
               <td class="px-3 py-2 text-sm decision decision-{{ r.decision|lower }}"
                   title="{{ DECISION_TOOLTIPS[r.decision] if r.decision in DECISION_TOOLTIPS else r.decision }}">
                 {{ DECISION_LABELS[r.decision] if r.decision in DECISION_LABELS else r.decision }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.trigger_age_days if r.trigger_age_days is not none else '&#8212;' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '&#8212;' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '&#8212;' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.volume_ratio) if r.raw.volume_ratio is not none else '&#8212;' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.atr_pct) if r.raw.atr_pct is not none else '&#8212;' }}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.trigger_age_days if r.trigger_age_days is not none else '—' }}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.volume_ratio) if r.raw.volume_ratio is not none else '—' }}</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.atr_pct) if r.raw.atr_pct is not none else '—' }}</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.days_in_pullback }}</td>
               <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.setup_streak }}</td>
-              <td class="px-3 py-2 text-xs">{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '&#8212;' }}</td>
+              <td class="px-3 py-2 text-xs">{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '—' }}</td>
             </tr>
           {% endfor %}{% endfor %}
           </tbody>
@@ -397,11 +397,11 @@ tailwind.config = {
             {% for r in broken_table %}
               <tr class="hover:bg-surface-container/50">
                 <td class="px-3 py-2">{{ r.name or r.ticker }}{% if r.name and r.name != r.ticker %} <small class="text-on-surface-variant/60 text-xs">({{ r.ticker }})</small>{% endif %}</td>
-                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.raw.sector or '&#8212;' }}</td>
+                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.raw.sector or '—' }}</td>
                 <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.setup }}</td>
-                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '&#8212;' }}</td>
-                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '&#8212;' }}</td>
-                <td class="px-3 py-2 text-xs">{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '&#8212;' }}</td>
+                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
+                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>
+                <td class="px-3 py-2 text-xs">{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '—' }}</td>
               </tr>
             {% endfor %}
             </tbody>

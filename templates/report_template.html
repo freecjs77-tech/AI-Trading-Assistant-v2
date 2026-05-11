@@ -222,7 +222,7 @@ tailwind.config = {
               <p class="text-2xl font-headline font-semibold {{ 'text-secondary' if total_pnl >= 0 else 'text-tertiary' }}">
                 <span class="money" data-usd="{{ total_pnl }}" data-krw="{{ total_pnl_krw }}" data-signed="1">{{ '+' if total_pnl >= 0 else '' }}${{ total_pnl|comma }}</span>
               </p>
-              <p class="text-xs font-label {{ 'text-secondary/60' if total_pnl >= 0 else 'text-tertiary/60' }}">{{ '&#9650;' if total_pnl_pct >= 0 else '&#9660;' }} {{ total_pnl_pct|sign_pct }} vs Principal</p>
+              <p class="text-xs font-label {{ 'text-secondary/60' if total_pnl >= 0 else 'text-tertiary/60' }}">{{ '▲' if total_pnl_pct >= 0 else '▼' }} {{ total_pnl_pct|sign_pct }} vs Principal</p>
               {% if benchmark_status == "ok" and ytd_pct is not none and spy_ytd_pct is not none %}
               <div class="mt-2 pt-2 border-t border-outline-variant/10 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-label">
                 <span class="text-on-surface-variant uppercase tracking-widest">2026 YTD</span>
