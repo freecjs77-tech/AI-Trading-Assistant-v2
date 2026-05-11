@@ -364,7 +364,7 @@ tailwind.config = {
             <thead>
               <tr>
                 <th>ticker</th><th>decision</th><th>setup</th><th>trigger</th>
-                <th>dist_ema9</th><th>dist_ema21</th>
+                <th>dist_ema9</th><th>dist_ema21</th><th>RSI</th>
                 <th>vol_ratio</th><th>setup_streak</th><th>trig_age</th><th>risk_tags</th>
               </tr>
             </thead>
@@ -377,6 +377,7 @@ tailwind.config = {
                 <td>{{ row.trigger }}</td>
                 <td>{{ row.dist_ema9_signed_pct|signed_pct }}</td>
                 <td>{{ row.dist_ema21_signed_pct|signed_pct }}</td>
+                <td>{{ row.raw.rsi14 if row.raw.rsi14 is not none else '—' }}</td>
                 <td>{{ row.raw.volume_ratio|x_fmt }}</td>
                 <td>{{ row.setup_streak }}</td>
                 <td>{{ row.trigger_age_days|trig_age_label }}</td>

@@ -95,3 +95,22 @@ def test_verdict_avoid_dynamic_line():
     # max dist (MU's 21.2) and max RSI (INTC's 84.5 → 85 when rounded)
     assert "21.2" in result["avoid_line"]
     assert "84" in result["avoid_line"] or "85" in result["avoid_line"]
+
+
+def test_make_snapshot_exposes_rsi14_in_raw():
+    """Regression guard: production snap.raw must include rsi14 for verdict avoid_line.
+
+    Without this, the dynamic AVOID line displays 'RSI 0+로 과확장 상태'
+    instead of the actual RSI value. The synthetic _row() helper in the
+    verdict tests injects rsi14 manually, so they pass even when the
+    production data path is broken — this test closes that gap.
+    """
+    from lifecycle_signal import _make_snapshot
+    snap = _make_snapshot(
+        "2026-05-11",
+        raw={"close": 100, "ema9": 95, "ema21": 90, "ema65": 85,
+             "rsi14": 78.5, "high": 102, "low": 98, "volume_ratio": 1.5},
+        setup="EXTENDED", trigger="WAIT", decision="AVOID", risk_tags=["OVERHEAT"]
+    )
+    assert "rsi14" in snap["raw"], "_make_snapshot raw dict must include rsi14"
+    assert snap["raw"]["rsi14"] == 78.5
