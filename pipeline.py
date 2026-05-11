@@ -737,6 +737,12 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     alpha_pp=_bm.get("alpha_pp"),
                     v0_krw=_bm.get("v0_krw"),
                     spy_v0_krw=_bm.get("spy_v0_krw"),
+                    dit_ytd_pct=_bm.get("dit_ytd_pct"),
+                    rest_ytd_pct=_bm.get("rest_ytd_pct"),
+                    dit_v0_krw=_bm.get("dit_v0_krw"),
+                    dit_now_krw=_bm.get("dit_now_krw"),
+                    rest_v0_krw=_bm.get("rest_v0_krw"),
+                    rest_now_krw=_bm.get("rest_now_krw"),
                 )
 
             # me (기본) 스냅샷
