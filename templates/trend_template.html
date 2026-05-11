@@ -176,7 +176,7 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
       <div class="flex gap-1 items-center" id="ytdRangeToggle" role="tablist" aria-label="YTD 비교 Y축 범위">
         <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-1">Y축</span>
         <button data-mode="auto" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">Auto</button>
-        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">0~50%</button>
+        <button data-mode="manual" class="range-btn px-3 py-1 rounded-md text-[11px] font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">0~80%</button>
       </div>
     </div>
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="ytdCompareChart" style="max-height:320px;"></canvas></div>
@@ -344,23 +344,32 @@ let ytdChart = null;
 {% if latest.ytd_pct is not none and latest.spy_ytd_pct is not none %}
 const ytdPortData = trend.map(d => d.ytd_pct);
 const ytdSpyData  = trend.map(d => d.spy_ytd_pct);
+const ytdDitData  = trend.map(d => d.dit_ytd_pct);
+const ytdRestData = trend.map(d => d.rest_ytd_pct);
 const _ytdYTickFn = function(v){ return (v>=0?'+':'') + v.toFixed(1) + '%'; };
 const _ytdTooltipFn = function(c){ const v=c.parsed.y; return c.dataset.label+': '+(v==null?'n/a':(v>=0?'+':'')+v.toFixed(2)+'%'); };
 ytdChart = new Chart(document.getElementById('ytdCompareChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'Portfolio (₩)', data:ytdPortData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 },
+  { label:'디아이티 (110990)', data:ytdDitData, borderColor:'#ff716c', backgroundColor:'rgba(255,113,102,0.04)', fill:false, tension:0.3, pointRadius:2, borderWidth:2 },
+  { label:'나머지', data:ytdRestData, borderColor:'#a78bfa', backgroundColor:'rgba(167,139,250,0.04)', fill:false, tension:0.3, pointRadius:2, borderWidth:2 },
   { label:'S&P 500 (₩)', data:ytdSpyData, borderColor:'#a3aac4', backgroundColor:'rgba(163,170,196,0.05)', borderDash:[6,4], fill:false, tension:0.3, pointRadius:2, borderWidth:2 }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }, tooltip:{ callbacks:{ label:_ytdTooltipFn }}}, scales:{ y:{ ...dso, ticks:{ ...dso.ticks, callback:_ytdYTickFn }, title:{ display:true, text:'%', color:'#a3aac4' }}}}});
-_wireRangeToggle('ytdRangeToggle', ytdChart, { min: 0, max: 50 });
+_wireRangeToggle('ytdRangeToggle', ytdChart, { min: 0, max: 80 });
 {% endif %}
 function _updateYtdChart(trendArr){
   if(!ytdChart) return;
   if(!trendArr || trendArr.length === 0) return;
   const portSeries = trendArr.map(d => d.ytd_pct);
   const spySeries  = trendArr.map(d => d.spy_ytd_pct);
+  const ditSeries  = trendArr.map(d => d.dit_ytd_pct);
+  const restSeries = trendArr.map(d => d.rest_ytd_pct);
   if(portSeries.every(v => v == null) || spySeries.every(v => v == null)) return;
   ytdChart.data.labels = trendArr.map(d => d.date.slice(5));
+  // datasets 배열 순서: Portfolio(0) → 디아이티(1) → 나머지(2) → S&P(3)
   ytdChart.data.datasets[0].data = portSeries;
-  ytdChart.data.datasets[1].data = spySeries;
+  ytdChart.data.datasets[1].data = ditSeries;
+  ytdChart.data.datasets[2].data = restSeries;
+  ytdChart.data.datasets[3].data = spySeries;
   ytdChart.update();
 }
 
