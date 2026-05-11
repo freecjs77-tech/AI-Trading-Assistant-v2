@@ -804,6 +804,12 @@ def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
         div_annual = 0.0
         v0_sum = 0.0
         v0_complete = True  # v0_krw가 모든 owner에 있어야 합산 ytd 계산 가능
+        # DIT/rest 합산용 (모든 owner에 있어야 합산 가능; 미보유 owner는 자연스럽게 0 contribution)
+        dit_v0_sum = 0.0
+        dit_now_sum = 0.0
+        rest_v0_sum = 0.0
+        rest_now_sum = 0.0
+        dit_complete = True
         spy_ytd_pct = None
         # 티커별 krw 누적
         ticker_krw = {}
@@ -827,6 +833,23 @@ def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
                 v0_sum += v0
             if spy_ytd_pct is None and snap.get("spy_ytd_pct") is not None:
                 spy_ytd_pct = snap.get("spy_ytd_pct")  # 모든 owner 동일하므로 첫 값 사용
+            # DIT/rest 합산: 모든 owner의 4 KRW 필드가 다 있어야 의미 있음
+            dit_v0 = snap.get("dit_v0_krw")
+            dit_now = snap.get("dit_now_krw")
+            rest_v0 = snap.get("rest_v0_krw")
+            rest_now = snap.get("rest_now_krw")
+            if dit_v0 is None or dit_now is None or rest_v0 is None or rest_now is None:
+                # 4개 모두 None이면 완전 미보유 owner — 단순 skip (contribution 0)
+                # 일부만 None이면 데이터 corruption — dit_complete=False로 표시
+                if dit_v0 is None and dit_now is None and rest_v0 is None and rest_now is None:
+                    pass
+                else:
+                    dit_complete = False
+            else:
+                dit_v0_sum += dit_v0
+                dit_now_sum += dit_now
+                rest_v0_sum += rest_v0
+                rest_now_sum += rest_now
         weights_by_ticker = {name: (v / tot * 100) for name, v in ticker_krw.items()} if tot > 0 else {}
         pnl_pct = round((pnl / cost * 100), 2) if cost > 0 else 0
         div_yield = round((div_annual / tot * 100), 2) if tot > 0 else 0
@@ -838,6 +861,14 @@ def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
             ytd_pct_combined = round((tot / v0_sum - 1) * 100, 2)
             if spy_ytd_pct is not None:
                 alpha_pp_combined = round(ytd_pct_combined - spy_ytd_pct, 2)
+        # 합산 DIT/rest YTD: KRW 절대값 합산 후 % 재계산
+        dit_ytd_combined = None
+        rest_ytd_combined = None
+        if dit_complete:
+            if dit_v0_sum > 0:
+                dit_ytd_combined = round((dit_now_sum / dit_v0_sum - 1) * 100, 2)
+            if rest_v0_sum > 0:
+                rest_ytd_combined = round((rest_now_sum / rest_v0_sum - 1) * 100, 2)
         combined_daily[date] = {
             "total_value_krw": tot,
             "cost_basis_krw": cost,
@@ -852,6 +883,12 @@ def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
             "ytd_pct": ytd_pct_combined,
             "spy_ytd_pct": spy_ytd_pct,
             "alpha_pp": alpha_pp_combined,
+            "dit_ytd_pct": dit_ytd_combined,
+            "rest_ytd_pct": rest_ytd_combined,
+            "dit_v0_krw": dit_v0_sum if dit_complete else None,
+            "dit_now_krw": dit_now_sum if dit_complete else None,
+            "rest_v0_krw": rest_v0_sum if dit_complete else None,
+            "rest_now_krw": rest_now_sum if dit_complete else None,
         }
     return _build_owner_payload(combined_daily)
 
