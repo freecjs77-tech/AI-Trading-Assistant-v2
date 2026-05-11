@@ -166,6 +166,11 @@ def main():
         print(f"  {owner}: current v0_krw={v0_krw:,.0f}, spy_v0_krw={spy_v0_krw:,.2f} (Jan 2: SPY ${baseline['spy_close_usd']:.2f}, USD/KRW {baseline['usd_krw']:.2f})")
     print()
 
+    # Cache per-owner holdings for DIT/rest decomposition
+    owner_holdings = {}
+    for owner, ppath in discover_portfolios(PROJECT_DIR):
+        owner_holdings[owner] = _parse_portfolio_for_report(ppath)
+
     # Step 2: collect all historical dates across all daily files
     all_dates = set()
     daily_files = {}
@@ -194,6 +199,11 @@ def main():
     if not spy_history:
         print("  WARN SPY history empty — skipping backfill (will retry on next run)")
         return  # graceful exit, exit code 0
+
+    dit_history = fetch_dit_history(ANCHOR_DATE, sorted_dates[-1])
+    print(f"  Fetched {len(dit_history)} 110990.KQ trading days\n")
+    # Note: DIT history may be empty for owners not holding 110990 — that's OK,
+    # decomposition will return None fields for those owners.
 
     # Cross-owner FX fallback table (in case one owner's snapshot has usd_krw=0)
     fx_lookup = _build_fx_lookup(daily_files)
@@ -246,6 +256,31 @@ def main():
                 snap["v0_krw"] = round(current_v0)
             if snap.get("spy_v0_krw") is None:
                 snap["spy_v0_krw"] = round(spy_v0_krw, 2)
+            # DIT/rest decomposition (110990 보유 owner만)
+            holdings_for_owner = owner_holdings.get(owner, [])
+            dit_close_d = find_nearest_dit(dit_history, date_str)
+            if dit_close_d is not None and holdings_for_owner:
+                today_prices_d = {DIT_TICKER: dit_close_d}
+                decomp = compute_dit_rest_decomposition(
+                    holdings_for_owner,
+                    today_prices_d,
+                    usd_krw_d,
+                    baseline,
+                    float(current_v0),
+                    float(total_krw_d),
+                )
+                if decomp["dit_ytd_pct"] is not None:
+                    snap["dit_ytd_pct"] = round(decomp["dit_ytd_pct"], 2)
+                if decomp["rest_ytd_pct"] is not None:
+                    snap["rest_ytd_pct"] = round(decomp["rest_ytd_pct"], 2)
+                if decomp["dit_v0_krw"] is not None:
+                    snap["dit_v0_krw"] = round(decomp["dit_v0_krw"])
+                if decomp["dit_now_krw"] is not None:
+                    snap["dit_now_krw"] = round(decomp["dit_now_krw"])
+                if decomp["rest_v0_krw"] is not None:
+                    snap["rest_v0_krw"] = round(decomp["rest_v0_krw"])
+                if decomp["rest_now_krw"] is not None:
+                    snap["rest_now_krw"] = round(decomp["rest_now_krw"])
             if is_update:
                 updated += 1
             else:
