@@ -954,6 +954,8 @@ def generate_trend_page(
             "ytd_pct": snap.get("ytd_pct"),
             "spy_ytd_pct": snap.get("spy_ytd_pct"),
             "alpha_pp": snap.get("alpha_pp"),
+            "dit_ytd_pct": snap.get("dit_ytd_pct"),
+            "rest_ytd_pct": snap.get("rest_ytd_pct"),
         })
 
     # 최신 스냅샷 (Summary Cards)
@@ -974,6 +976,8 @@ def generate_trend_page(
         "ytd_pct": latest_snap.get("ytd_pct"),
         "spy_ytd_pct": latest_snap.get("spy_ytd_pct"),
         "alpha_pp": latest_snap.get("alpha_pp"),
+        "dit_ytd_pct": latest_snap.get("dit_ytd_pct"),
+        "rest_ytd_pct": latest_snap.get("rest_ytd_pct"),
     }
 
     # 카테고리별 비중 + 금액
