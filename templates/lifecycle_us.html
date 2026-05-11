@@ -118,18 +118,18 @@ tailwind.config = {
 
     <!-- Intro / usage box -->
     <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20 text-sm leading-relaxed">
-      <p class="font-semibold text-on-surface mb-2">&#51060; &#54168;&#51060;&#51648;&#45716; &#47924;&#50635;&#51064;&#44032;&#50836;?</p>
+      <p class="font-semibold text-on-surface mb-2">이 페이지는 무엇인가요?</p>
       <p class="text-on-surface-variant mb-3">
-        Momentum scanner &#44032; &#52628;&#49464; &#54980;&#48372;&#47196; &#48156;&#44204;&#54620; &#51333;&#47785;&#46308; (<strong class="text-on-surface">&#48372;&#50976; &#50668;&#48512; &#47924;&#44288;</strong>) &#51032; setup / trigger / decision &#51012; &#47588;&#51068; &#52628;&#51201;&#54616;&#50668;,
-        <strong class="text-on-surface">&#51648;&#44552; &#51652;&#51077;&#54624; &#47564;&#54620;&#44032;</strong> / <strong class="text-on-surface">&#50500;&#51649; &#44592;&#45796;&#47140;&#50556; &#54616;&#45716;&#44032;</strong> / <strong class="text-on-surface">&#54588;&#50556; &#54616;&#45716;&#44032;</strong> &#47484; &#54032;&#45800;&#54644; &#51452;&#45716; &#54168;&#51060;&#51648;&#51077;&#45768;&#45796;.
-        &#51088;&#46041; &#47588;&#47588;&#44032; &#50500;&#45768; <em>&#47588;&#49688; &#54032;&#45800; &#48372;&#51312;</em> &#46020;&#44396;&#51077;&#45768;&#45796;.
+        Momentum scanner 가 추세 후보로 발견한 종목들 (<strong class="text-on-surface">보유 여부 무관</strong>) 의 setup / trigger / decision 을 매일 추적하여,
+        <strong class="text-on-surface">지금 진입할 만한가</strong> / <strong class="text-on-surface">아직 기다려야 하는가</strong> / <strong class="text-on-surface">피야 하는가</strong> 를 판단해 주는 페이지입니다.
+        자동 매매가 아니 <em>매수 판단 보조</em> 도구입니다.
       </p>
-      <p class="text-xs text-on-surface-variant mb-3">&#48372;&#50976; &#51333;&#47785;&#51032; &#47588;&#46020; &#54032;&#45800;(trailing stop)&#51008; Portfolio Risk &#54168;&#51060;&#51648;&#47484; &#48324;&#46020;&#47196; &#52280;&#51312;&#54616;&#49464;&#50836;.</p>
+      <p class="text-xs text-on-surface-variant mb-3">보유 종목의 매도 판단(trailing stop)은 Portfolio Risk 페이지를 별도로 참조하세요.</p>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-        <div class="flex gap-2"><span class="font-semibold text-green-400 min-w-[120px]">&#127802; &#48376; &#51652;&#51077; (ENTER)</span><span class="text-on-surface-variant">&#51652;&#51077;&#54644;&#46020; OK &#8212; &#51456;&#51008; zone(PULLBACK/BASE)&#50640;&#49436; &#44144;&#47000;&#47049;&#183;&#51333;&#44032; &#44172;&#51060;&#53944;&#44252;&#51648; &#53685;&#44284;&#54620; &#54869;&#51221; trigger. &#54480; &#54252;&#51648;&#49205; &#44032;&#45733;.</span></div>
-        <div class="flex gap-2"><span class="font-semibold text-yellow-400 min-w-[120px]">&#127937; &#48516;&#54624; &#51652;&#51077; (PROBE)</span><span class="text-on-surface-variant">&#51312;&#44592; &#51652;&#51077; &#8212; &#51652;&#51077; zone &#50504;&#50640;&#49436; &#50557;&#54620; trigger &#48156;&#54868;. 50% &#48512;&#48516; &#51652;&#51077; &#44032;&#45733;, &#54869;&#51221; &#45824;&#44592;.</span></div>
+        <div class="flex gap-2"><span class="font-semibold text-green-400 min-w-[120px]">&#127802; 본 진입 (ENTER)</span><span class="text-on-surface-variant">진입해도 OK &#8212; 좋은 zone(PULLBACK/BASE)에서 거래량&#183;종가 게이트까지 통과한 확정 trigger. 풀 포지션 가능.</span></div>
+        <div class="flex gap-2"><span class="font-semibold text-yellow-400 min-w-[120px]">&#127937; 분할 진입 (PROBE)</span><span class="text-on-surface-variant">조기 진입 &#8212; 진입 zone 안에서 약한 trigger 발화. 50% 부분 진입 가능, 확정 대기.</span></div>
         <div class="flex gap-2"><span class="font-semibold text-blue-400 min-w-[120px]">&#128309; 진입 대기 (WATCH)</span><span class="text-on-surface-variant">좋은 setup, 트리거 미발생 &#8212; PULLBACK/BASE_FORMING zone이나 아직 진입 신호 없음. 반등 신호 관찰.</span></div>
-        <div class="flex gap-2"><span class="font-semibold text-slate-400 min-w-[120px]">&#9898; &#45221;&#47549; &#45824;&#44592; (TRENDING)</span><span class="text-on-surface-variant">&#52628;&#49464; &#51652;&#54665; &#51473; &#8212; TREND_OK&#51648;&#47564; setup &#50555;&#51219; &#48512;&#51871;. &#45796;&#51020; PULLBACK&#44252;&#51648; &#52628;&#44201; &#51088;&#51228;.</span></div>
+        <div class="flex gap-2"><span class="font-semibold text-slate-400 min-w-[120px]">&#9898; 눌림 대기 (TRENDING)</span><span class="text-on-surface-variant">추세 진행 중 &#8212; TREND_OK지만 setup 압축 부족. 다음 PULLBACK까지 추격 자제.</span></div>
         <div class="flex gap-2"><span class="font-semibold text-red-400 min-w-[120px]">&#128308; 매수 금지 (AVOID)</span><span class="text-on-surface-variant">회피 &#8212; 과확장(EXTENDED)&#183;구조 깨짐(BROKEN)&#183;실패한 trigger(FAILED_BREAKOUT). 진입 시 손실 위험 큼.</span></div>
       </div>
     </section>
@@ -138,46 +138,46 @@ tailwind.config = {
     <details class="bg-surface-container-low rounded-xl border border-outline-variant/20 overflow-hidden">
       <summary class="px-5 py-4 cursor-pointer text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors list-none flex items-center gap-2">
         <span class="material-symbols-outlined text-base">help_outline</span>
-        &#49345;&#53468; &#50857;&#50612;&#51665; &#8212; Setup &#215; Trigger &#44032; &#50612;&#46496;&#44172; Decision &#51004;&#47196; &#50672;&#44208;&#46104;&#45716;&#44032;
+        상태 용어집 &#8212; Setup &#215; Trigger 가 어떻게 Decision 으로 연결되는가
       </summary>
       <div class="px-5 pb-5 pt-2 text-sm leading-relaxed">
         <p class="text-on-surface-variant mb-4">
-          Decision (&#50948; 5&#44032;&#51648;) &#51008; &#46160; &#44032;&#51648; raw &#49345;&#53468;&#51032; &#51312;&#54633; &#44208;&#44284;&#51077;&#45768;&#45796;:
-          <strong class="text-on-surface">Setup</strong> &#51008; &#51333;&#47785;&#51032; &#52628;&#49464; &#44396;&#51312;&#47484; 5&#45800;&#44228;&#47196; &#51652;&#45800;&#54616;&#44256;,
-          <strong class="text-on-surface">Trigger</strong> &#45716; &#44536; &#50504;&#50640;&#49436; &#51652;&#51077; &#49888;&#54840;&#51032; &#48156;&#54868; &#44053;&#46020;&#47484; 3&#45800;&#44228;&#47196; &#54364;&#49884;&#54633;&#45768;&#45796;.
+          Decision (위 5가지) 은 두 가지 raw 상태의 조합 결과입니다:
+          <strong class="text-on-surface">Setup</strong> 은 종목의 추세 구조를 5단계로 진단하고,
+          <strong class="text-on-surface">Trigger</strong> 는 그 안에서 진입 신호의 발화 강도를 3단계로 표시합니다.
         </p>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
           <!-- Setup states -->
           <div>
-            <h4 class="font-semibold text-on-surface mb-2">Setup (&#44396;&#51312; &#51652;&#45800;) &#8212; 5&#45800;&#44228;</h4>
-            <p class="text-xs text-on-surface-variant mb-2">&#54217;&#44032; &#50864;&#49440;&#49692;&#50948;: <strong>BROKEN &gt; EXTENDED &gt; BASE_FORMING &gt; PULLBACK &gt; TREND_OK</strong></p>
+            <h4 class="font-semibold text-on-surface mb-2">Setup (구조 진단) &#8212; 5단계</h4>
+            <p class="text-xs text-on-surface-variant mb-2">평가 우선순위: <strong>BROKEN &gt; EXTENDED &gt; BASE_FORMING &gt; PULLBACK &gt; TREND_OK</strong></p>
             <div class="space-y-1">
-              <div class="flex gap-2 items-start text-xs"><span class="state state-trend-ok shrink-0">TREND_OK</span><span class="text-on-surface-variant">&#51221;&#49345; &#49345;&#49849; &#52628;&#49464; &#8212; EMA9 &gt; EMA21 &gt; EMA65 &#51221;&#47144; + EMA65 5&#51068; &#44592;&#50872;&#44592; &#50577;&#49688;.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-pullback shrink-0">PULLBACK</span><span class="text-on-surface-variant">&#52628;&#49464; &#50504;&#51032; &#45800;&#44592; &#54616;&#46973; &#8212; TREND_OK &#51312;&#44148; + EMA9 &#44144;&#47532; &#8804; 3% + EMA21 &#50948;. <em>&#51652;&#51077; zone</em>.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-base shrink-0">BASE_FORMING</span><span class="text-on-surface-variant">5&#8211;15&#51068; &#54163;&#48372; + &#48320;&#46041;&#49457; &#49688;&#51316; (5d ATR &lt; 20d ATR) + &#44144;&#47000;&#47049; &#49688;&#51316; + EMA21 5&#51068; &#44592;&#50872;&#44592; &#50577;&#49688;. <em>VCP &#49885; &#50555;&#51219; &#48264;&#51060;&#49828;</em>.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-extended shrink-0">EXTENDED</span><span class="text-on-surface-variant">&#44284;&#54869;&#51109; &#8212; &#51221;&#47144; &#50976;&#51648; + EMA9 &#44144;&#47532; &gt; 12% + RSI &gt; 72.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-broken shrink-0">BROKEN</span><span class="text-on-surface-variant">&#44396;&#51312; &#44214;&#51608; &#8212; EMA21 &lt; EMA65 &#46610;&#45716; &#51333;&#44032; &lt; EMA65.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-trend-ok shrink-0">TREND_OK</span><span class="text-on-surface-variant">정상 상승 추세 &#8212; EMA9 &gt; EMA21 &gt; EMA65 정렬 + EMA65 5일 기울기 양수.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-pullback shrink-0">PULLBACK</span><span class="text-on-surface-variant">추세 안의 단기 하락 &#8212; TREND_OK 조건 + EMA9 거리 &#8804; 3% + EMA21 위. <em>진입 zone</em>.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-base shrink-0">BASE_FORMING</span><span class="text-on-surface-variant">5&#8211;15일 횡보 + 변동성 수축 (5d ATR &lt; 20d ATR) + 거래량 수축 + EMA21 5일 기울기 양수. <em>VCP 식 압축 베이스</em>.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-extended shrink-0">EXTENDED</span><span class="text-on-surface-variant">과확장 &#8212; 정렬 유지 + EMA9 거리 &gt; 12% + RSI &gt; 72.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-broken shrink-0">BROKEN</span><span class="text-on-surface-variant">구조 깨짐 &#8212; EMA21 &lt; EMA65 또는 종가 &lt; EMA65.</span></div>
             </div>
           </div>
           <!-- Trigger states -->
           <div>
-            <h4 class="font-semibold text-on-surface mb-2">Trigger (&#51652;&#51077; &#49888;&#54840;) &#8212; 3&#45800;&#44228;</h4>
-            <p class="text-xs text-on-surface-variant mb-2">Setup &#51060; PULLBACK &#46608;&#45716; BASE_FORMING &#51068; &#46412;&#47564; &#51032;&#48120; &#51080;&#51020;.</p>
+            <h4 class="font-semibold text-on-surface mb-2">Trigger (진입 신호) &#8212; 3단계</h4>
+            <p class="text-xs text-on-surface-variant mb-2">Setup 이 PULLBACK 또는 BASE_FORMING 일 때만 의미 있음.</p>
             <div class="space-y-1 mb-3">
-              <div class="flex gap-2 items-start text-xs"><span class="state state-wait shrink-0">WAIT</span><span class="text-on-surface-variant">&#51652;&#51077; &#49888;&#54840; &#50630;&#51020;.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-early shrink-0">EARLY_TRIGGER</span><span class="text-on-surface-variant">EMA9 reclaim &#46610;&#45716; &#51204;&#51068; &#44256;&#51216; &#46028;&#54028; + &#51333;&#44032;&#44032; &#51068;&#51473; &#49345;&#50948; 20%.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-confirmed shrink-0">CONFIRMED_TRIGGER</span><span class="text-on-surface-variant">EARLY &#51312;&#44148; + &#44144;&#47000;&#47049; 1.2&#215; + &#51333;&#44032; &#51068;&#51473; &#49345;&#50948; 20%.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-wait shrink-0">WAIT</span><span class="text-on-surface-variant">진입 신호 없음.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-early shrink-0">EARLY_TRIGGER</span><span class="text-on-surface-variant">EMA9 reclaim 또는 전일 고점 돌파 + 종가가 일중 상위 20%.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-confirmed shrink-0">CONFIRMED_TRIGGER</span><span class="text-on-surface-variant">EARLY 조건 + 거래량 1.2&#215; + 종가 일중 상위 20%.</span></div>
             </div>
-            <h4 class="font-semibold text-on-surface mb-2">risk_tags (&#48372;&#51312; &#44221;&#44256;)</h4>
+            <h4 class="font-semibold text-on-surface mb-2">risk_tags (보조 경고)</h4>
             <div class="space-y-1">
               <div class="flex gap-2 items-start text-xs"><span class="state state-tag shrink-0">OVERHEAT</span><span class="text-on-surface-variant">RSI &#8805; 80.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-tag shrink-0">PARABOLIC</span><span class="text-on-surface-variant">1&#51068; &#49688;&#51775;&#47476; &#8805; +8% &amp; &#44144;&#47000;&#47049; &#8805; 2.0&#215;.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-tag-bad shrink-0">FAILED_BREAKOUT</span><span class="text-on-surface-variant">&#50612;&#51228; CONFIRMED &#8594; &#50724;&#45720; &#51333;&#44032; &lt; EMA9. &#44260;&#51652; &#46028;&#54028; &#8212; &#44053;&#51228;&#47196; AVOID.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-tag shrink-0">PARABOLIC</span><span class="text-on-surface-variant">1일 수쨿르 &#8805; +8% &amp; 거래량 &#8805; 2.0&#215;.</span></div>
+              <div class="flex gap-2 items-start text-xs"><span class="state state-tag-bad shrink-0">FAILED_BREAKOUT</span><span class="text-on-surface-variant">어제 CONFIRMED &#8594; 오늘 종가 &lt; EMA9. 가짜 돌파 &#8212; 강제로 AVOID.</span></div>
             </div>
           </div>
         </div>
         <!-- Decision matrix -->
-        <h4 class="font-semibold text-on-surface mb-2">&#44208;&#51221; &#47588;&#53944;&#47533;&#49828; &#8212; Setup &#215; Trigger &#8594; Decision</h4>
+        <h4 class="font-semibold text-on-surface mb-2">결정 매트릭스 &#8212; Setup &#215; Trigger &#8594; Decision</h4>
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-xs">
             <thead><tr class="border-b border-outline-variant/30">
@@ -187,75 +187,75 @@ tailwind.config = {
               <th class="px-3 py-2 text-center text-on-surface-variant">CONFIRMED_TRIGGER</th>
             </tr></thead>
             <tbody class="divide-y divide-outline-variant/10">
-              <tr><td class="px-3 py-2 font-medium">TREND_OK</td><td class="px-3 py-2 text-center text-slate-400">&#9898; &#45221;&#47549; &#45824;&#44592; (TRENDING)</td><td class="px-3 py-2 text-center text-on-surface-variant/40" colspan="2">&#8212; (Trigger &#54217;&#44032; &#50504; &#54632;)</td></tr>
-              <tr><td class="px-3 py-2 font-medium">PULLBACK</td><td class="px-3 py-2 text-center text-blue-400">&#128309; &#51652;&#51077; &#45824;&#44592; (WATCH)</td><td class="px-3 py-2 text-center text-yellow-400">&#127937; &#48516;&#54624; &#51652;&#51077; (PROBE)</td><td class="px-3 py-2 text-center text-green-400">&#127802; &#48376; &#51652;&#51077; (ENTER)</td></tr>
-              <tr><td class="px-3 py-2 font-medium">BASE_FORMING</td><td class="px-3 py-2 text-center text-blue-400">&#128309; &#51652;&#51077; &#45824;&#44592; (WATCH)</td><td class="px-3 py-2 text-center text-yellow-400">&#127937; &#48516;&#54624; &#51652;&#51077; (PROBE)</td><td class="px-3 py-2 text-center text-green-400">&#127802; &#48376; &#51652;&#51077; (ENTER)</td></tr>
-              <tr><td class="px-3 py-2 font-medium">EXTENDED</td><td class="px-3 py-2 text-center text-red-400" colspan="3">&#128308; &#47588;&#49688; &#44552;&#51648; (AVOID) &#8212; Trigger &#47924;&#49884;</td></tr>
-              <tr><td class="px-3 py-2 font-medium">BROKEN</td><td class="px-3 py-2 text-center text-red-400" colspan="3">&#128308; &#47588;&#49688; &#44552;&#51648; (AVOID) &#8212; Trigger &#47924;&#49884;</td></tr>
+              <tr><td class="px-3 py-2 font-medium">TREND_OK</td><td class="px-3 py-2 text-center text-slate-400">&#9898; 눌림 대기 (TRENDING)</td><td class="px-3 py-2 text-center text-on-surface-variant/40" colspan="2">&#8212; (Trigger 평가 안 함)</td></tr>
+              <tr><td class="px-3 py-2 font-medium">PULLBACK</td><td class="px-3 py-2 text-center text-blue-400">&#128309; 진입 대기 (WATCH)</td><td class="px-3 py-2 text-center text-yellow-400">&#127937; 분할 진입 (PROBE)</td><td class="px-3 py-2 text-center text-green-400">&#127802; 본 진입 (ENTER)</td></tr>
+              <tr><td class="px-3 py-2 font-medium">BASE_FORMING</td><td class="px-3 py-2 text-center text-blue-400">&#128309; 진입 대기 (WATCH)</td><td class="px-3 py-2 text-center text-yellow-400">&#127937; 분할 진입 (PROBE)</td><td class="px-3 py-2 text-center text-green-400">&#127802; 본 진입 (ENTER)</td></tr>
+              <tr><td class="px-3 py-2 font-medium">EXTENDED</td><td class="px-3 py-2 text-center text-red-400" colspan="3">&#128308; 매수 금지 (AVOID) &#8212; Trigger 무시</td></tr>
+              <tr><td class="px-3 py-2 font-medium">BROKEN</td><td class="px-3 py-2 text-center text-red-400" colspan="3">&#128308; 매수 금지 (AVOID) &#8212; Trigger 무시</td></tr>
             </tbody>
           </table>
         </div>
         <p class="text-xs text-on-surface-variant mt-2">
-          &#52628;&#44032; &#44508;&#52825;: risk_tags &#50640; <strong>FAILED_BREAKOUT</strong> &#54252;&#54632; &#49884; Setup&#183;Trigger &#47924;&#44288;&#54616;&#44172; &#128308; &#47588;&#49688; &#44552;&#51648; (AVOID) &#44053;&#51228;.
+          추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup&#183;Trigger 무관하게 &#128308; 매수 금지 (AVOID) 강제.
         </p>
       </div>
     </details>
 
     <!-- Phase B placeholder -->
     <div class="p-4 rounded-xl bg-orange-900/20 border border-orange-500/30 text-orange-300 text-sm">
-      <strong>[1] MARKET STATE</strong> &#8212; &#49884;&#51109; &#44397;&#47732; &#48516;&#47448;&#44592;&#45716; Phase B &#50640;&#49436; &#52628;&#44032; &#50696;&#51221; (RISK_ON / TRENDING / CHOPPY / RISK_OFF).
+      <strong>[1] MARKET STATE</strong> &#8212; 시장 국면 분류기는 Phase B 에서 추가 예정 (RISK_ON / TRENDING / CHOPPY / RISK_OFF).
     </div>
 
     <!-- NEW CONFIRMED TODAY -->
     {% if new_confirmed %}
     <div class="p-4 rounded-xl bg-blue-900/30 border border-blue-500/40">
-      <p class="font-semibold text-blue-300">&#128249; NEW &#48376; &#51652;&#51077; TODAY ({{ new_confirmed|length }}):
+      <p class="font-semibold text-blue-300">&#128249; NEW 본 진입 TODAY ({{ new_confirmed|length }}):
         {% for r in new_confirmed %}<a href="#row-{{ r.ticker }}" class="text-primary hover:underline">{{ r.name or r.ticker }}</a>{% if not loop.last %} &middot; {% endif %}{% endfor %}
       </p>
-      <p class="text-xs text-on-surface-variant mt-1">&#50624;&#45212; &#52376;&#51020; &#48376; &#51652;&#51077;(ENTER) &#51060; &#48156;&#54868;&#54620; &#51333;&#47785; &#8212; &#44032;&#51109; &#49884;&#51032;&#49457;&#51060; &#45192;&#51008; &#51652;&#51077; &#54980;&#48372;.</p>
+      <p class="text-xs text-on-surface-variant mt-1">오늘 처음 본 진입(ENTER) 이 발화한 종목 &#8212; 가장 시의성이 높은 진입 후보.</p>
     </div>
     {% endif %}
 
     <!-- ACTION PANEL -->
     <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20">
-      <h2 class="font-headline font-bold text-lg mb-4">&#50624;&#45221;&#51032; &#44208;&#51221; &#44536;&#47353;</h2>
+      <h2 class="font-headline font-bold text-lg mb-4">오늘의 결정 그룹</h2>
       <div class="space-y-3">
 
         <!-- ENTER -->
         <div class="rounded-lg p-4 border-l-4 border-green-500 bg-green-900/15">
-          <h3 class="font-semibold text-green-400 mb-1">&#127802; &#48376; &#51652;&#51077; &#8212; ENTER ({{ enter|length }})</h3>
+          <h3 class="font-semibold text-green-400 mb-1">&#127802; 본 진입 &#8212; ENTER ({{ enter|length }})</h3>
           <p class="text-xs text-on-surface-variant mb-2">
-            <strong class="text-on-surface">&#51652;&#51077;&#54644;&#46020; OK &#8212; &#54480; &#54252;&#51648;&#49205; &#44032;&#45733;</strong> &#8212; PULLBACK/BASE_FORMING zone &#50640;&#49436; trigger &#44032; &#54869;&#51221; &#48156;&#54868; (&#44144;&#47000;&#47049; 1.2x + &#51333;&#44032;&#44032; &#51068;&#51473; &#49345;&#50948; 20%).
+            <strong class="text-on-surface">진입해도 OK &#8212; 풀 포지션 가능</strong> &#8212; PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (거래량 1.2x + 종가가 일중 상위 20%).
           </p>
           {% if enter %}
           <p class="text-sm font-medium text-on-surface">{% for r in enter %}{{ r.name or r.ticker }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
-          <p class="text-xs text-on-surface-variant mt-1 italic">&#44428;&#51109; &#54252;&#51648;&#49205; &#53356;&#44592;: TBD &#8212; Phase C &#50640;&#49436; ATR &#44592;&#48152; sizing &#52628;&#44032; &#50696;&#51221;</p>
+          <p class="text-xs text-on-surface-variant mt-1 italic">권장 포지션 크기: TBD &#8212; Phase C 에서 ATR 기반 sizing 추가 예정</p>
           {% else %}
-          <em class="text-on-surface-variant text-sm">&#54644;&#45817; &#50630;&#51020;</em>
+          <em class="text-on-surface-variant text-sm">해당 없음</em>
           {% endif %}
         </div>
 
         <!-- PROBE -->
         <div class="rounded-lg p-4 border-l-4 border-yellow-500 bg-yellow-900/15">
-          <h3 class="font-semibold text-yellow-400 mb-1">&#127937; &#48516;&#54624; &#51652;&#51077; &#8212; PROBE ({{ probe|length }})</h3>
+          <h3 class="font-semibold text-yellow-400 mb-1">&#127937; 분할 진입 &#8212; PROBE ({{ probe|length }})</h3>
           <p class="text-xs text-on-surface-variant mb-2">
-            <strong class="text-on-surface">&#51312;&#44592; &#51652;&#51077; &#8212; 50% &#48512;&#48516; &#51652;&#51077; &#44032;&#45733;</strong> &#8212; &#51652;&#51077; zone &#50504;&#50640;&#49436; trigger &#48156;&#54868;&#45716; &#51080;&#51004;&#45208; &#44144;&#47000;&#47049;&#183;&#51333;&#44032; &#44172;&#51060;&#53944; &#51473; &#54616;&#45208; &#51060;&#49345; &#48120;&#45813;.
+            <strong class="text-on-surface">조기 진입 &#8212; 50% 부분 진입 가능</strong> &#8212; 진입 zone 안에서 trigger 발화는 있으나 거래량&#183;종가 게이트 중 하나 이상 미답.
           </p>
           {% if probe %}
           <p class="text-sm font-medium text-on-surface">{% for r in probe %}{{ r.name or r.ticker }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
           {% else %}
-          <em class="text-on-surface-variant text-sm">&#54644;&#45817; &#50630;&#51020;</em>
+          <em class="text-on-surface-variant text-sm">해당 없음</em>
           {% endif %}
         </div>
 
         <!-- WATCH (collapsible) -->
         <details class="rounded-lg border border-outline-variant/20 overflow-hidden">
           <summary class="px-4 py-3 cursor-pointer text-sm font-medium text-blue-400 list-none hover:bg-surface-container/50 flex items-center justify-between">
-            <span>&#128309; &#51652;&#51077; &#45824;&#44592; &#8212; WATCH ({{ watch|length }}) &#8212; &#51452;&#51008; setup, &#53944;&#47532;&#44144; &#45824;&#44592;</span>
+            <span>&#128309; 진입 대기 &#8212; WATCH ({{ watch|length }}) &#8212; 주은 setup, 트리거 대기</span>
             <span class="material-symbols-outlined text-sm">expand_more</span>
           </summary>
           <div class="px-4 pb-4 pt-2 bg-blue-900/10">
-            <p class="text-xs text-on-surface-variant mb-2"><strong class="text-on-surface">&#51452;&#51008; setup, &#50500;&#51649; &#53944;&#47532;&#44144; &#48120;&#48156;&#49373;</strong> &#8212; PULLBACK/BASE_FORMING zone &#50504;&#50640; &#51080;&#51648;&#47564; trigger &#48120;&#48156;&#54868;. &#48588;&#51068; &#45796;&#49884; &#54217;&#44032;&#46104;&#47728; trigger &#48156;&#54868; &#49884; PROBE &#46608;&#45716; ENTER &#47196; &#51088;&#46041; &#49849;&#44201;.</p>
+            <p class="text-xs text-on-surface-variant mb-2"><strong class="text-on-surface">주은 setup, 아직 트리거 미발생</strong> &#8212; PULLBACK/BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 PROBE 또는 ENTER 로 자동 승격.</p>
             <p class="text-sm text-on-surface">{% for r in watch %}{{ r.name or r.ticker }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
           </div>
         </details>
@@ -263,7 +263,7 @@ tailwind.config = {
         <!-- TRENDING (collapsible) -->
         <details class="rounded-lg border border-outline-variant/20 overflow-hidden">
           <summary class="px-4 py-3 cursor-pointer text-sm font-medium text-slate-400 list-none hover:bg-surface-container/50 flex items-center justify-between">
-            <span>&#9898; &#45221;&#47549; &#45824;&#44592; &#8212; TRENDING ({{ trending|length }}) &#8212; &#52628;&#49464; &#51652;&#54665; &#51473;, setup &#50555;&#51219; &#45824;&#44592;</span>
+            <span>&#9898; 눌림 대기 &#8212; TRENDING ({{ trending|length }}) &#8212; 추세 진행 중, setup 압축 대기</span>
             <span class="material-symbols-outlined text-sm">expand_more</span>
           </summary>
           <div class="px-4 pb-4 pt-2">
@@ -288,15 +288,15 @@ tailwind.config = {
 
     <!-- STATE TRANSITIONS -->
     <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20">
-      <h2 class="font-headline font-bold text-lg mb-2">&#52572;&#44540; &#49345;&#53468; &#48320;&#54868; (last 50)</h2>
+      <h2 class="font-headline font-bold text-lg mb-2">최근 상태 변화 (last 50)</h2>
       <p class="text-xs text-on-surface-variant mb-3">종목별 setup / trigger / decision 상태가 어제 대비 변한 이력. 첫 실행일에는 비교 대상이 없어 비어 있음 &#8212; 다음 거래일부터 누적 시작.</p>
       {% if transitions %}
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead><tr class="border-b border-outline-variant/30">
-            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">&#45216;&#51592;</th>
-            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">&#54000;&#53552;</th>
-            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">&#51060;&#48292;&#53944;</th>
+            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">날짜</th>
+            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">티터</th>
+            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">이벤트</th>
             <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">From</th>
             <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">To</th>
           </tr></thead>
@@ -314,36 +314,36 @@ tailwind.config = {
         </table>
       </div>
       {% else %}
-      <p class="text-on-surface-variant text-sm italic">&#50500;&#51649; transition &#51060;&#47141; &#50630;&#51020; (&#52395; &#44144;&#47000;&#51068;).</p>
+      <p class="text-on-surface-variant text-sm italic">아직 transition 이력 없음 (첫 거래일).</p>
       {% endif %}
     </section>
 
     <!-- MAIN TABLE -->
     <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20">
-      <h2 class="font-headline font-bold text-lg mb-2">&#51204;&#52404; active set &#49345;&#49464;</h2>
+      <h2 class="font-headline font-bold text-lg mb-2">전체 active set 상세</h2>
       <p class="text-xs text-on-surface-variant mb-3">
-        &#52392;&#47492; &#51032;&#48120;: <strong class="text-on-surface">Setup</strong> = &#52628;&#49464; &#44396;&#51312; &#51652;&#45800; &middot;
-        <strong class="text-on-surface">Trigger</strong> = &#51652;&#51077; &#49888;&#54840; &#48156;&#54868; &#50668;&#48512; &middot;
-        <strong class="text-on-surface">Decision</strong> = &#50948; &#46160;&#51012; &#51312;&#54633;&#54620; &#49892;&#54665; &#44428;&#44256;.
-        <strong class="text-on-surface">trig_age</strong> = &#47560;&#51648;&#47561; trigger &#48156;&#54868;&#47196;&#48512;&#53552; &#44221;&#44284; &#51068;&#49688; (0 = &#50624;&#45221;) &middot;
-        <strong class="text-on-surface">days_in_pb</strong> = PULLBACK/BASE_FORMING &#50640; &#47672;&#47785; &#50672;&#49549; &#51068;&#49688;.
+        처음 의미: <strong class="text-on-surface">Setup</strong> = 추세 구조 진단 &middot;
+        <strong class="text-on-surface">Trigger</strong> = 진입 신호 발화 여부 &middot;
+        <strong class="text-on-surface">Decision</strong> = 위 두을 조합한 실행 권고.
+        <strong class="text-on-surface">trig_age</strong> = 마지막 trigger 발화로부터 경과 일수 (0 = 오늘) &middot;
+        <strong class="text-on-surface">days_in_pb</strong> = PULLBACK/BASE_FORMING 에 머문 연속 일수.
       </p>
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-outline-variant/30">
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">&#54000;&#53552;</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">&#49464;&#53552;</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="&#44396;&#51312; &#51652;&#45800;: TREND_OK &middot; PULLBACK &middot; BASE_FORMING &middot; EXTENDED &middot; BROKEN">Setup</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="&#51652;&#51077; &#49888;&#54840;: WAIT &middot; EARLY_TRIGGER &middot; CONFIRMED_TRIGGER">Trigger</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="&#49892;&#54665; &#44428;&#44256;">Decision</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="&#47560;&#51648;&#47561; trigger &#47196;&#48512;&#53552; &#44221;&#44284; &#51068;&#49688; (0=&#50624;&#45221;)">trig_age</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="EMA9 &#50752;&#51032; &#44144;&#47532; (%)">dist_ema9 %</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="EMA21 &#44284;&#51032; &#44144;&#47532; (%)">dist_ema21 %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">티터</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">세터</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="구조 진단: TREND_OK &middot; PULLBACK &middot; BASE_FORMING &middot; EXTENDED &middot; BROKEN">Setup</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="진입 신호: WAIT &middot; EARLY_TRIGGER &middot; CONFIRMED_TRIGGER">Trigger</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="실행 권고">Decision</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="마지막 trigger 로부터 경과 일수 (0=오늘)">trig_age</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="EMA9 와의 거리 (%)">dist_ema9 %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="EMA21 과의 거리 (%)">dist_ema21 %</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="20일 평균 대비 거래량 비율 (1.0=평균)">vol_ratio</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="ATR 14 (% of close)">atr %</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="PULLBACK/BASE_FORMING &#50640; &#47672;&#47785; &#50672;&#49549; &#51068;&#49688;">days_in_pb</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="&#44057;&#51008; setup &#50976;&#51648; &#50672;&#49549; &#51068;&#49688;">setup_streak</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="PULLBACK/BASE_FORMING 에 머문 연속 일수">days_in_pb</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="같은 setup 유지 연속 일수">setup_streak</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="OVERHEAT &middot; PARABOLIC &middot; EXTENDED &middot; FAILED_BREAKOUT">risk_tags</th>
             </tr>
           </thead>
@@ -379,16 +379,16 @@ tailwind.config = {
     {% if broken_table %}
     <details class="bg-surface-container-low rounded-xl border border-outline-variant/20 overflow-hidden">
       <summary class="px-5 py-4 cursor-pointer text-sm font-medium text-on-surface-variant list-none hover:bg-surface-container/50">
-        FAILED / BROKEN ({{ broken_table|length }}) &#8212; &#52628;&#49464; &#44214;&#51652; &#51333;&#47785; (&#52280;&#44256;&#50857;)
+        FAILED / BROKEN ({{ broken_table|length }}) &#8212; 추세 깨진 종목 (참고용)
       </summary>
       <div class="px-5 pb-5 pt-2">
-        <p class="text-xs text-on-surface-variant mb-3">&#51473;&#44592; &#52628;&#49464; (EMA21 &lt; EMA65) &#46608;&#45716; &#51109;&#44592; &#54596;&#53552; (close &lt; EMA65) &#44032; &#44214;&#51652;&#51652; &#51333;&#47785;&#46308;. &#51652;&#51077; &#54980;&#48372;&#50640;&#49436; &#51228;&#50808;&#46428;&#47728; Phase D &#51032; expectancy &#48516;&#49437;&#51012; &#50948;&#54644; &#48372;&#51316;&#46428;.
+        <p class="text-xs text-on-surface-variant mb-3">중기 추세 (EMA21 &lt; EMA65) 또는 장기 필터 (close &lt; EMA65) 가 깨진 종목들. 진입 후보에서 제외되며 Phase D 의 expectancy 분석을 위해 보존됨.
         </p>
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-sm">
             <thead><tr class="border-b border-outline-variant/30">
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">&#54000;&#53552;</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">&#49464;&#53552;</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">티터</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">세터</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Setup</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">dist_ema9 %</th>
               <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">dist_ema21 %</th>
@@ -414,9 +414,9 @@ tailwind.config = {
 
     <!-- Footer note -->
     <p class="text-xs text-on-surface-variant">
-      &#44033; &#49884;&#51109;&#51008; &#51088;&#52404; &#47561;&#44048;&#51068; &#44592;&#51456; &#8212; US &#50752; KR &#54168;&#51060;&#51648;&#51032; &#45216;&#51592; &#49828;&#53580;&#54532;&#44032; &#51068;&#49884;&#51201;&#51004;&#47196; &#45796;&#47213; &#49688; &#51080;&#51020;.
-      Lifecycle &#51008; <strong>&#47588;&#49688; &#54032;&#45800; &#48372;&#51312;</strong> &#46020;&#44396;&#51060;&#47728; &#51088;&#46041;&#47588;&#47588;&#47484; &#49688;&#54665;&#54616;&#51648; &#50506;&#49845;&#45768;&#45796;.
-      &#54633;&#49457; &#51216;&#49688; (composite score) &#45716; &#51032;&#46020;&#51201;&#51004;&#47196; &#51228;&#44277;&#54616;&#51648; &#50506;&#51004;&#47728;, raw &#49688;&#52824;&#47564; &#45432;&#52636;&#54633;&#45768;&#45796;.
+      각 시장은 자체 마감일 기준 &#8212; US 와 KR 페이지의 날짜 스탬프가 일시적으로 다를 수 있음.
+      Lifecycle 은 <strong>매수 판단 보조</strong> 도구이며 자동매매를 수행하지 않습니다.
+      합성 점수 (composite score) 는 의도적으로 제공하지 않으며, raw 수치만 노출합니다.
     </p>
 
   </div>
