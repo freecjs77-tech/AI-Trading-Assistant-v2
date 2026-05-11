@@ -212,6 +212,12 @@ def save_portfolio_snapshot(
     alpha_pp: float | None = None,
     v0_krw: float | None = None,
     spy_v0_krw: float | None = None,
+    dit_ytd_pct: float | None = None,
+    rest_ytd_pct: float | None = None,
+    dit_v0_krw: float | None = None,
+    dit_now_krw: float | None = None,
+    rest_v0_krw: float | None = None,
+    rest_now_krw: float | None = None,
 ):
     """일별 포트폴리오 스냅샷을 portfolio_daily.json에 저장."""
     daily = load_portfolio_daily(path)
@@ -246,6 +252,18 @@ def save_portfolio_snapshot(
         snap["v0_krw"] = round(v0_krw)
     if spy_v0_krw is not None:
         snap["spy_v0_krw"] = round(spy_v0_krw, 2)
+    if dit_ytd_pct is not None:
+        snap["dit_ytd_pct"] = round(dit_ytd_pct, 2)
+    if rest_ytd_pct is not None:
+        snap["rest_ytd_pct"] = round(rest_ytd_pct, 2)
+    if dit_v0_krw is not None:
+        snap["dit_v0_krw"] = round(dit_v0_krw)
+    if dit_now_krw is not None:
+        snap["dit_now_krw"] = round(dit_now_krw)
+    if rest_v0_krw is not None:
+        snap["rest_v0_krw"] = round(rest_v0_krw)
+    if rest_now_krw is not None:
+        snap["rest_now_krw"] = round(rest_now_krw)
 
     daily[date_str] = snap
 

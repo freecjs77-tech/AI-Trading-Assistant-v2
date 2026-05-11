@@ -19,8 +19,8 @@ PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, PROJECT_DIR)
 
 from benchmark_ytd import (
-    ANCHOR_DATE, SPY_SYMBOL, load_or_build_baseline,
-    compute_v0_total_krw, fetch_close_on,
+    ANCHOR_DATE, SPY_SYMBOL, DIT_TICKER, load_or_build_baseline,
+    compute_v0_total_krw, fetch_close_on, compute_dit_rest_decomposition,
 )
 from portfolio_paths import discover_portfolios
 from pipeline import _parse_portfolio_for_report
@@ -81,6 +81,56 @@ def find_nearest_spy(spy_history: dict, target_date: str) -> float | None:
     return None
 
 
+def fetch_dit_history(start_date: str, end_date: str) -> dict:
+    """Fetch 110990.KQ Close prices for date range. Returns {date_str: close_krw}.
+
+    Same retry pattern as fetch_spy_history. Returns empty dict on failure.
+    """
+    import time
+    end = (datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=2)).strftime("%Y-%m-%d")
+    print(f"Fetching 110990.KQ history {start_date} → {end} ...")
+    delays = [0, 1, 3, 9]
+    last_exc = None
+    for attempt, delay in enumerate(delays):
+        if delay > 0:
+            print(f"  ⏳ retry after {delay}s (attempt {attempt}/{len(delays)-1})")
+            time.sleep(delay)
+        try:
+            t = yf.Ticker("110990.KQ")
+            df = t.history(start=start_date, end=end, auto_adjust=False)
+            if df is None or df.empty:
+                return {}
+            out = {}
+            for idx, row in df.iterrows():
+                date_str = idx.strftime("%Y-%m-%d")
+                close = row.get("Close")
+                if pd.notna(close) and close > 0:
+                    out[date_str] = float(close)
+            return out
+        except Exception as e:
+            last_exc = e
+            msg = str(e).lower()
+            if "rate limit" in msg or "too many requests" in msg or "429" in msg:
+                continue
+            if "no data" in msg or "delisted" in msg:
+                return {}
+            continue
+    print(f"  WARN 110990.KQ history fetch failed after {len(delays)} attempts: {last_exc}")
+    return {}
+
+
+def find_nearest_dit(dit_history: dict, target_date: str) -> float | None:
+    """Find 110990 close on target_date, or fall back to most recent prior trading day."""
+    if target_date in dit_history:
+        return dit_history[target_date]
+    dt = datetime.strptime(target_date, "%Y-%m-%d")
+    for back in range(1, 8):
+        d = (dt - timedelta(days=back)).strftime("%Y-%m-%d")
+        if d in dit_history:
+            return dit_history[d]
+    return None
+
+
 def _build_fx_lookup(daily_files: dict) -> dict:
     """Build {date: usd_krw} from all owners' daily files (uses any owner's non-zero rate)."""
     fx = {}
@@ -116,6 +166,11 @@ def main():
         print(f"  {owner}: current v0_krw={v0_krw:,.0f}, spy_v0_krw={spy_v0_krw:,.2f} (Jan 2: SPY ${baseline['spy_close_usd']:.2f}, USD/KRW {baseline['usd_krw']:.2f})")
     print()
 
+    # Cache per-owner holdings for DIT/rest decomposition
+    owner_holdings = {}
+    for owner, ppath in discover_portfolios(PROJECT_DIR):
+        owner_holdings[owner] = _parse_portfolio_for_report(ppath)
+
     # Step 2: collect all historical dates across all daily files
     all_dates = set()
     daily_files = {}
@@ -144,6 +199,11 @@ def main():
     if not spy_history:
         print("  WARN SPY history empty — skipping backfill (will retry on next run)")
         return  # graceful exit, exit code 0
+
+    dit_history = fetch_dit_history(ANCHOR_DATE, sorted_dates[-1])
+    print(f"  Fetched {len(dit_history)} 110990.KQ trading days\n")
+    # Note: DIT history may be empty for owners not holding 110990 — that's OK,
+    # decomposition will return None fields for those owners.
 
     # Cross-owner FX fallback table (in case one owner's snapshot has usd_krw=0)
     fx_lookup = _build_fx_lookup(daily_files)
@@ -196,6 +256,31 @@ def main():
                 snap["v0_krw"] = round(current_v0)
             if snap.get("spy_v0_krw") is None:
                 snap["spy_v0_krw"] = round(spy_v0_krw, 2)
+            # DIT/rest decomposition (110990 보유 owner만)
+            holdings_for_owner = owner_holdings.get(owner, [])
+            dit_close_d = find_nearest_dit(dit_history, date_str)
+            if dit_close_d is not None and holdings_for_owner:
+                today_prices_d = {DIT_TICKER: dit_close_d}
+                decomp = compute_dit_rest_decomposition(
+                    holdings_for_owner,
+                    today_prices_d,
+                    usd_krw_d,
+                    baseline,
+                    float(current_v0),
+                    float(total_krw_d),
+                )
+                if decomp["dit_ytd_pct"] is not None:
+                    snap["dit_ytd_pct"] = round(decomp["dit_ytd_pct"], 2)
+                if decomp["rest_ytd_pct"] is not None:
+                    snap["rest_ytd_pct"] = round(decomp["rest_ytd_pct"], 2)
+                if decomp["dit_v0_krw"] is not None:
+                    snap["dit_v0_krw"] = round(decomp["dit_v0_krw"])
+                if decomp["dit_now_krw"] is not None:
+                    snap["dit_now_krw"] = round(decomp["dit_now_krw"])
+                if decomp["rest_v0_krw"] is not None:
+                    snap["rest_v0_krw"] = round(decomp["rest_v0_krw"])
+                if decomp["rest_now_krw"] is not None:
+                    snap["rest_now_krw"] = round(decomp["rest_now_krw"])
             if is_update:
                 updated += 1
             else:

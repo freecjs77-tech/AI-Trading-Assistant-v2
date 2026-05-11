@@ -174,6 +174,12 @@ def compute_returns(
           "spy_ytd_pct": float | None,
           "alpha_pp": float | None,
           "excluded_tickers": [ticker, ...],
+          "dit_ytd_pct": float | None,
+          "rest_ytd_pct": float | None,
+          "dit_v0_krw": float | None,
+          "dit_now_krw": float | None,
+          "rest_v0_krw": float | None,
+          "rest_now_krw": float | None,
         }
 
     ytd_pct/alpha_pp are None when v0 == 0 (all holdings unmappable).
@@ -212,6 +218,10 @@ def compute_returns(
     else:
         alpha_pp = None
 
+    decomp = compute_dit_rest_decomposition(
+        holdings, today_prices, today_usd_krw, sym_baseline, v0_krw, v_now_krw
+    )
+
     return {
         "v0_krw": v0_krw,
         "v_now_krw": v_now_krw,
@@ -221,6 +231,96 @@ def compute_returns(
         "spy_ytd_pct": spy_ytd_pct,
         "alpha_pp": alpha_pp,
         "excluded_tickers": excluded,
+        "dit_ytd_pct": decomp["dit_ytd_pct"],
+        "rest_ytd_pct": decomp["rest_ytd_pct"],
+        "dit_v0_krw": decomp["dit_v0_krw"],
+        "dit_now_krw": decomp["dit_now_krw"],
+        "rest_v0_krw": decomp["rest_v0_krw"],
+        "rest_now_krw": decomp["rest_now_krw"],
+    }
+
+
+DIT_TICKER = "110990"
+
+
+def compute_dit_rest_decomposition(
+    holdings: list[dict],
+    today_prices: dict,
+    today_usd_krw: float,
+    baseline: dict,
+    v0_krw: float,
+    v_now_krw: float,
+) -> dict:
+    """Compute 110990 standalone YTD and 'rest' (portfolio - 110990) YTD.
+
+    Reuses pre-computed v0_krw and v_now_krw from compute_returns to avoid
+    redundant summation. Returns 6 fields, all None when 110990 isn't held
+    OR is unmappable in baseline OR is missing in today_prices.
+
+    110990 is statically KOSDAQ → KRW native, so no USD/KRW multiplication
+    is applied to its prices.
+
+    Args:
+        holdings: list of {ticker, shares, ...} dicts. Used to find DIT shares.
+        today_prices: {ticker: price} dict. Used to fetch today's DIT price (KRW).
+        today_usd_krw: Unused in this function (110990 is KOSDAQ → KRW native).
+            Kept in signature for call-site symmetry with compute_returns()
+            so both callers pass the same argument set.
+        baseline: anchor baseline dict with "ticker_v0_krw" key.
+        v0_krw: pre-computed portfolio v0 (total) from compute_v0_total_krw.
+        v_now_krw: pre-computed portfolio v_now (total).
+
+    Returns:
+        {
+          "dit_ytd_pct":  float | None,
+          "rest_ytd_pct": float | None,
+          "dit_v0_krw":   float | None,
+          "dit_now_krw":  float | None,
+          "rest_v0_krw":  float | None,
+          "rest_now_krw": float | None,
+        }
+    """
+    none_result = {
+        "dit_ytd_pct": None,
+        "rest_ytd_pct": None,
+        "dit_v0_krw": None,
+        "dit_now_krw": None,
+        "rest_v0_krw": None,
+        "rest_now_krw": None,
+    }
+
+    ticker_v0 = baseline.get("ticker_v0_krw") or {}
+    if DIT_TICKER not in ticker_v0:
+        return none_result
+
+    dit_today_price = today_prices.get(DIT_TICKER)
+    if dit_today_price is None or dit_today_price <= 0:
+        return none_result
+
+    dit_shares = next((float(h["shares"]) for h in holdings if h["ticker"] == DIT_TICKER), 0.0)
+    if dit_shares <= 0:
+        return none_result
+
+    dit_v0_per_share = float(ticker_v0[DIT_TICKER])
+    if dit_v0_per_share <= 0:
+        return none_result  # corrupted baseline — bail
+
+    dit_now_per_share = float(dit_today_price)  # KRW native (KOSDAQ — no FX)
+    dit_v0_krw_val = dit_shares * dit_v0_per_share
+    dit_now_krw_val = dit_shares * dit_now_per_share
+    dit_ytd_pct = (dit_now_per_share / dit_v0_per_share - 1.0) * 100.0
+
+    rest_v0_krw_val = v0_krw - dit_v0_krw_val
+    rest_now_krw_val = v_now_krw - dit_now_krw_val
+    rest_ytd_pct = (rest_now_krw_val / rest_v0_krw_val - 1.0) * 100.0 if rest_v0_krw_val > 0 else None
+
+    return {
+        "dit_ytd_pct": dit_ytd_pct,
+        "rest_ytd_pct": rest_ytd_pct,
+        "dit_v0_krw": dit_v0_krw_val,
+        "dit_now_krw": dit_now_krw_val,
+        "rest_v0_krw": rest_v0_krw_val,
+        "rest_now_krw": rest_now_krw_val,
     }
 
 
