@@ -11,6 +11,7 @@ GitHub Pages에서 리포트를 서빙하고, GitHub Actions로 파이프라인�
 - [Politician Watchlist McCaul 전용 필터](docs/plans/politician-mccaul-only.md) — `data/politician_filter.json` 설정으로 Michael McCaul 거래만 timeline 표시 · 별점·consensus 제거, raw 수치 우선 · config 부재 시 기존 consensus 모드 fallback
 - [Portfolio history rebuild 2026-01-02~](docs/superpowers/plans/2026-04-28-portfolio-history-rebuild.md) — me/wife/합산 트렌드 1월 2일까지 확장 · TTM 배당 단일 진실의 원천(`portfolio_history_core.py`) · 하드코딩 배당(₩42M base, ₩16M base, div=0) 제거 · 현재 보유 동결 후 가격 replay · `SKIP_SCANNERS=1` 로컬 테스트 옵션 추가
 - [Portfolio Stop Signal System v1.0](docs/superpowers/plans/2026-05-07-portfolio-stop-signal.md) — Pipeline Step 4c3 신규 · 4-state trailing stop (HOLD/TIGHT/EXIT_READY/EXIT) · me/wife 양쪽 적용 · 종가 기준 2-consecutive-close-breach EXIT · positions/snapshots 분리 schema · 신규 진입 종목 display downgrade · MOMENTUM/HIGH_VOL ATR 기반 + min/max% clamp · `fetch_market_data.py`에 `atr14`/`atr14_pct` 추가 · Telegram 합산 알림 · 자동매매 ❌ / 매도 판단 보조 ✅
+- [Trend Page YTD 디아이티/나머지 Decomposition](docs/superpowers/plans/2026-05-11-trend-dit-decomposition.md) — 트렌드 페이지 `포트폴리오 vs S&P 500 (₩) — 2026 YTD` 차트에 디아이티(110990) 단독 + 나머지(110990 제외) 라인 2개 추가 · me/wife/합산 3 owner 뷰 모두 지원 · 1/2 anchor 전체 backfill · 단일 Y축 4 라인 · Y토글 0~80% · 신규 6 필드 (`dit_ytd_pct`, `rest_ytd_pct`, `dit_v0_krw`, `dit_now_krw`, `rest_v0_krw`, `rest_now_krw`) 합산 뷰 KRW 합산 후 % 재계산
 
 ## 배포 (GitHub Pages + Actions)
 - **리포트 URL**: https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/
