@@ -241,7 +241,18 @@ def compute_dit_rest_decomposition(
     redundant summation. Returns 6 fields, all None when 110990 isn't held
     OR is unmappable in baseline OR is missing in today_prices.
 
-    KOSDAQ ticker — USD/KRW conversion not applied to 110990 (is_korean_ticker check).
+    110990 is statically KOSDAQ → KRW native, so no USD/KRW multiplication
+    is applied to its prices.
+
+    Args:
+        holdings: list of {ticker, shares, ...} dicts. Used to find DIT shares.
+        today_prices: {ticker: price} dict. Used to fetch today's DIT price (KRW).
+        today_usd_krw: Unused in this function (110990 is KOSDAQ → KRW native).
+            Kept in signature for call-site symmetry with compute_returns()
+            so both callers pass the same argument set.
+        baseline: anchor baseline dict with "ticker_v0_krw" key.
+        v0_krw: pre-computed portfolio v0 (total) from compute_v0_total_krw.
+        v_now_krw: pre-computed portfolio v_now (total).
 
     Returns:
         {
@@ -275,10 +286,13 @@ def compute_dit_rest_decomposition(
         return none_result
 
     dit_v0_per_share = float(ticker_v0[DIT_TICKER])
+    if dit_v0_per_share <= 0:
+        return none_result  # corrupted baseline — bail
+
     dit_now_per_share = float(dit_today_price)  # KRW native (KOSDAQ — no FX)
     dit_v0_krw_val = dit_shares * dit_v0_per_share
     dit_now_krw_val = dit_shares * dit_now_per_share
-    dit_ytd_pct = (dit_now_per_share / dit_v0_per_share - 1.0) * 100.0 if dit_v0_per_share > 0 else None
+    dit_ytd_pct = (dit_now_per_share / dit_v0_per_share - 1.0) * 100.0
 
     rest_v0_krw_val = v0_krw - dit_v0_krw_val
     rest_now_krw_val = v_now_krw - dit_now_krw_val
