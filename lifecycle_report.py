@@ -52,6 +52,75 @@ def _attach_derived(snap: dict, ticker: str,
     return out
 
 
+def _build_verdict_summary(enter: list, probe: list, watch: list,
+                            trending: list, avoid: list) -> dict:
+    """Build dynamic narration for the 'Today's Verdict' summary box.
+
+    Branches on which groups are non-empty (ENTER > PROBE > empty > total=0).
+    AVOID line is appended whenever AVOID > 0, with max dist_ema9 and max
+    rsi14 from the AVOID group inserted as live values.
+
+    Returns:
+        {
+          "headline":    str,             # 큰 제목
+          "narration":   str,             # 1-2 문장 설명
+          "avoid_line":  str | None,      # AVOID > 0일 때만, else None
+          "action_hint": str,             # 💡 오늘 할 일
+        }
+    """
+    enter_n, probe_n = len(enter), len(probe)
+    watch_n, trending_n, avoid_n = len(watch), len(trending), len(avoid)
+    total = enter_n + probe_n + watch_n + trending_n + avoid_n
+
+    def _ticker_list(rows: list, limit: int = 5) -> str:
+        names = [r["ticker"] for r in rows[:limit]]
+        s = ", ".join(names)
+        if len(rows) > limit:
+            s += f" 외 {len(rows) - limit}개"
+        return s
+
+    if total == 0:
+        headline = "⚠ 추적 종목 없음 — 시그널 부재"
+        narration = "오늘 평가된 종목이 없습니다 (전 종목 skip 또는 데이터 부족)"
+        action_hint = "pipeline 로그 확인"
+    elif enter_n > 0:
+        headline = f"✅ 오늘 신규 진입 가능 종목 {enter_n}개"
+        narration = f"{_ticker_list(enter)}이 확정 트리거 발화 — 풀 진입 검토 가능"
+        action_hint = "ENTER 종목 점검 후 비중 결정"
+    elif probe_n > 0:
+        headline = f"⚡ 분할 진입 가능 종목 {probe_n}개"
+        narration = f"{_ticker_list(probe)}이 약한 트리거 — 절반 진입 검토"
+        action_hint = "PROBE 종목 절반 비중 진입"
+    else:
+        headline = "⏸ 오늘은 신규 진입할 종목이 없습니다 (ENTER 0, PROBE 0)"
+        narration = (
+            f"WATCH {watch_n}개는 트리거 발화 대기, "
+            f"TRENDING {trending_n}개는 다음 눌림목까지 관망"
+        )
+        action_hint = "WATCH 트리거 발화 대기 — 오늘은 신규 매수 없음"
+
+    avoid_line = None
+    if avoid_n > 0:
+        # _ticker_list uses ', ' separator; mockup uses ' · ' for AVOID line
+        names = [r["ticker"] for r in avoid[:5]]
+        tickers = " · ".join(names)
+        if avoid_n > 5:
+            tickers += f" 외 {avoid_n - 5}개"
+        max_dist = max((r.get("dist_ema9_pct") or 0) for r in avoid)
+        max_rsi = max((r.get("raw", {}).get("rsi14") or 0) for r in avoid)
+        avoid_line = (
+            f"🔴 {tickers} {avoid_n}종목은 매수 금지 — "
+            f"9일선 +{max_dist:.1f}% 이격, RSI {max_rsi:.0f}+로 과확장 상태"
+        )
+
+    return {
+        "headline":    headline,
+        "narration":   narration,
+        "avoid_line":  avoid_line,
+        "action_hint": action_hint,
+    }
+
+
 def build_page_context(result: dict,
                          lifecycle_state: Optional[dict] = None) -> dict:
     market = result.get("market", "US")
