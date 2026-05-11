@@ -174,6 +174,12 @@ def compute_returns(
           "spy_ytd_pct": float | None,
           "alpha_pp": float | None,
           "excluded_tickers": [ticker, ...],
+          "dit_ytd_pct": float | None,
+          "rest_ytd_pct": float | None,
+          "dit_v0_krw": float | None,
+          "dit_now_krw": float | None,
+          "rest_v0_krw": float | None,
+          "rest_now_krw": float | None,
         }
 
     ytd_pct/alpha_pp are None when v0 == 0 (all holdings unmappable).
@@ -213,7 +219,7 @@ def compute_returns(
         alpha_pp = None
 
     decomp = compute_dit_rest_decomposition(
-        holdings, today_prices, today_usd_krw, baseline, v0_krw, v_now_krw
+        holdings, today_prices, today_usd_krw, sym_baseline, v0_krw, v_now_krw
     )
 
     return {
