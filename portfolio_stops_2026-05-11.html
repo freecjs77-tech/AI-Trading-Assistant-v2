@@ -1,0 +1,710 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>🛡 Portfolio Risk — me 2026-05-11</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         max-width: 1200px; margin: 0 auto; padding: 20px;
+         background: #0f172a; color: #e2e8f0; }
+  h1 { color: #fbbf24; margin: 0 0 10px; }
+  .meta { color: #94a3b8; font-size: 13px; margin-bottom: 20px; }
+  nav { margin: 10px 0 20px; }
+  nav a { display: inline-block; margin-right: 8px; padding: 6px 12px;
+          background: #1e293b; color: #e2e8f0; border-radius: 6px;
+          text-decoration: none; font-size: 13px; }
+  nav a.active { background: #fbbf24; color: #0f172a; }
+  .cards { display: flex; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
+  .card { padding: 16px; border-radius: 10px; min-width: 140px; }
+  .card.hold { background: #064e3b; }
+  .card.tight { background: #78350f; }
+  .card.exit-ready { background: #9a3412; }
+  .card.exit { background: #991b1b; }
+  .card .num { font-size: 32px; font-weight: 700; }
+  .card .label { font-size: 13px; opacity: .85; }
+  .changes { background: #1e293b; padding: 12px 16px; border-radius: 8px;
+             margin-bottom: 16px; }
+  .changes h3 { margin: 0 0 8px; font-size: 14px; color: #fbbf24; }
+  .changes div { font-size: 13px; padding: 2px 0; }
+  table { width: 100%; border-collapse: collapse; background: #1e293b;
+          border-radius: 8px; overflow: hidden; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #334155; }
+  th { background: #0f172a; color: #fbbf24; font-weight: 600; }
+  tr:hover td { background: #334155; }
+  .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px;
+           font-weight: 600; display: inline-block; }
+  .badge.hold { background: #064e3b; color: #6ee7b7; }
+  .badge.tight { background: #78350f; color: #fde68a; }
+  .badge.exit-ready { background: #9a3412; color: #fdba74; }
+  .badge.exit { background: #991b1b; color: #fecaca; }
+  .badge.exit.deep2 { background: #7f1d1d; }
+  .badge.exit.deep3 { background: #6b1414; }
+  .gap.green-dark { color: #34d399; font-weight: 600; }
+  .gap.green-light { color: #6ee7b7; }
+  .gap.yellow { color: #fbbf24; }
+  .gap.red { color: #f87171; font-weight: 600; }
+  .new-mark { color: #93c5fd; font-size: 11px; margin-left: 4px; }
+  .footer { color: #94a3b8; font-size: 12px; margin-top: 30px;
+            padding: 16px; background: #1e293b; border-radius: 8px; }
+  .footer p { margin: 4px 0; }
+</style>
+</head>
+<body>
+
+<h1>🛡 Portfolio Risk Dashboard — me</h1>
+<div class="meta">
+  Date: 2026-05-11 · Anchor: 2026-01-02 · Tracked:
+  39 positions ·
+  Mode: PortfolioStop v1.0
+</div>
+
+<nav>
+  <a href="report_2026-05-11.html">📊 Portfolio</a>
+  
+  <a href="trend_2026-05-11.html">📈 Trend</a>
+  <a class="active" href="#">🛡 Portfolio Risk</a>
+</nav>
+
+<div class="cards">
+  <div class="card hold">
+    <div class="num">27</div>
+    <div class="label">🟢 HOLD</div>
+  </div>
+  <div class="card tight">
+    <div class="num">5</div>
+    <div class="label">🟡 TIGHT</div>
+  </div>
+  <div class="card exit-ready">
+    <div class="num">0</div>
+    <div class="label">🟠 EXIT READY</div>
+  </div>
+  <div class="card exit">
+    <div class="num">7</div>
+    <div class="label">🔴 EXIT</div>
+  </div>
+</div>
+
+
+<div class="changes">
+  <h3>Signal Changes (vs previous trading day)</h3>
+  
+    <div>O: EXIT → TIGHT</div>
+  
+    <div>TSLA: HOLD → TIGHT</div>
+  
+</div>
+
+
+<table>
+  <thead>
+    <tr>
+      <th>Ticker</th>
+      <th>Mode</th>
+      <th>Highest (date)</th>
+      <th>Current</th>
+      <th>Stop</th>
+      <th>Stop Gap</th>
+      <th>Signal</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+  
+    <tr>
+      <td>
+        <a href="details/ETHU.html" style="color:#fbbf24">ETHU</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>70.13<br>
+          <small style="color:#94a3b8">2026-01-14</small></td>
+      <td>26.58</td>
+      <td>61.71</td>
+      <td class="gap red">-56.93%</td>
+      <td><span class="badge exit deep3">🔴 EXIT (16d)</span></td>
+      <td>Exit trading portion</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/NKE.html" style="color:#fbbf24">NKE</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>66.3<br>
+          <small style="color:#94a3b8">2026-01-13</small></td>
+      <td>42.9</td>
+      <td>61.0</td>
+      <td class="gap red">-29.67%</td>
+      <td><span class="badge exit deep3">🔴 EXIT (16d)</span></td>
+      <td>Exit trading portion</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/PLTR.html" style="color:#fbbf24">PLTR</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>181.68<br>
+          <small style="color:#94a3b8">2026-01-07</small></td>
+      <td>134.45</td>
+      <td>162.29</td>
+      <td class="gap red">-17.15%</td>
+      <td><span class="badge exit deep3">🔴 EXIT (16d)</span></td>
+      <td>Exit trading portion</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/SLV.html" style="color:#fbbf24">SLV</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>105.6<br>
+          <small style="color:#94a3b8">2026-01-28</small></td>
+      <td>77.54</td>
+      <td>92.93</td>
+      <td class="gap red">-16.56%</td>
+      <td><span class="badge exit deep3">🔴 EXIT (16d)</span></td>
+      <td>Exit trading portion</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/MSFT.html" style="color:#fbbf24">MSFT</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>483.47<br>
+          <small style="color:#94a3b8">2026-01-07</small></td>
+      <td>409.85</td>
+      <td>444.79</td>
+      <td class="gap red">-7.86%</td>
+      <td><span class="badge exit deep3">🔴 EXIT (16d)</span></td>
+      <td>Exit trading portion</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/139480.html" style="color:#fbbf24">139480</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>127600.0<br>
+          <small style="color:#94a3b8">2026-02-11</small></td>
+      <td>112900.0</td>
+      <td>114976.0</td>
+      <td class="gap red">-1.81%</td>
+      <td><span class="badge exit deep3">🔴 EXIT (16d)</span></td>
+      <td>Exit trading portion</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/XLF.html" style="color:#fbbf24">XLF</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>56.4<br>
+          <small style="color:#94a3b8">2026-01-06</small></td>
+      <td>51.35</td>
+      <td>51.89</td>
+      <td class="gap red">-1.04%</td>
+      <td><span class="badge exit deep3">🔴 EXIT (16d)</span></td>
+      <td>Exit trading portion</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/O.html" style="color:#fbbf24">O</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>67.56<br>
+          <small style="color:#94a3b8">2026-03-02</small></td>
+      <td>62.53</td>
+      <td>62.16</td>
+      <td class="gap yellow">+0.6%</td>
+      <td><span class="badge tight">🟡 TIGHT</span></td>
+      <td>Trim 10~15%</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/0153K0.html" style="color:#fbbf24">0153K0</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>13130.0<br>
+          <small style="color:#94a3b8">2026-02-20</small></td>
+      <td>12260.0</td>
+      <td>12080.0</td>
+      <td class="gap yellow">+1.49%</td>
+      <td><span class="badge tight">🟡 TIGHT</span></td>
+      <td>Trim 10~15%</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/JEPI.html" style="color:#fbbf24">JEPI</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>59.88<br>
+          <small style="color:#94a3b8">2026-02-27</small></td>
+      <td>56.0</td>
+      <td>55.09</td>
+      <td class="gap yellow">+1.65%</td>
+      <td><span class="badge tight">🟡 TIGHT</span></td>
+      <td>Trim 10~15%</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/TLT.html" style="color:#fbbf24">TLT</a>
+        
+      </td>
+      <td>DEFENSIVE</td>
+      <td>90.82<br>
+          <small style="color:#94a3b8">2026-02-27</small></td>
+      <td>85.88</td>
+      <td>83.55</td>
+      <td class="gap yellow">+2.79%</td>
+      <td><span class="badge tight">🟡 TIGHT</span></td>
+      <td>Trim 10~15%</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/TSLA.html" style="color:#fbbf24">TSLA</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>451.67<br>
+          <small style="color:#94a3b8">2026-01-05</small></td>
+      <td>421.55</td>
+      <td>407.9</td>
+      <td class="gap green-light">+3.35%</td>
+      <td><span class="badge tight">🟡 TIGHT</span></td>
+      <td>Trim 10~15%</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/GOOGL.html" style="color:#fbbf24">GOOGL</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>400.8<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>395.62</td>
+      <td>368.74</td>
+      <td class="gap green-light">+7.29%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/SCHD.html" style="color:#fbbf24">SCHD</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>32.07<br>
+          <small style="color:#94a3b8">2026-04-30</small></td>
+      <td>31.76</td>
+      <td>29.5</td>
+      <td class="gap green-light">+7.66%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/AMZN.html" style="color:#fbbf24">AMZN</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>274.99<br>
+          <small style="color:#94a3b8">2026-05-06</small></td>
+      <td>272.58</td>
+      <td>252.99</td>
+      <td class="gap green-light">+7.74%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/AAPL.html" style="color:#fbbf24">AAPL</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>293.32<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>291.13</td>
+      <td>269.85</td>
+      <td class="gap green-light">+7.89%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/232080.html" style="color:#fbbf24">232080</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>21525.0<br>
+          <small style="color:#94a3b8">2026-02-27</small></td>
+      <td>20460.0</td>
+      <td>18942.0</td>
+      <td class="gap green-light">+8.01%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/UNH.html" style="color:#fbbf24">UNH</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>379.98<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>377.6</td>
+      <td>349.58</td>
+      <td class="gap green-light">+8.02%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/BIL.html" style="color:#fbbf24">BIL</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>91.65<br>
+          <small style="color:#94a3b8">2026-01-30</small></td>
+      <td>91.47</td>
+      <td>84.32</td>
+      <td class="gap green-light">+8.48%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/QQQ.html" style="color:#fbbf24">QQQ</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>711.23<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>710.74</td>
+      <td>654.33</td>
+      <td class="gap green-light">+8.62%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/SPY.html" style="color:#fbbf24">SPY</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>738.4<br>
+          <small style="color:#94a3b8">2026-05-11</small></td>
+      <td>738.4</td>
+      <td>679.33</td>
+      <td class="gap green-light">+8.7%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/VOO.html" style="color:#fbbf24">VOO</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>678.86<br>
+          <small style="color:#94a3b8">2026-05-11</small></td>
+      <td>678.86</td>
+      <td>624.55</td>
+      <td class="gap green-light">+8.7%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/373220.html" style="color:#fbbf24">373220</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>484500.0<br>
+          <small style="color:#94a3b8">2026-04-22</small></td>
+      <td>468000.0</td>
+      <td>429000.0</td>
+      <td class="gap green-light">+9.09%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/NVDA.html" style="color:#fbbf24">NVDA</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>217.45<br>
+          <small style="color:#94a3b8">2026-05-11</small></td>
+      <td>217.45</td>
+      <td>197.47</td>
+      <td class="gap green-dark">+10.12%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/006400.html" style="color:#fbbf24">006400</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>712000.0<br>
+          <small style="color:#94a3b8">2026-04-29</small></td>
+      <td>684000.0</td>
+      <td>614232.0</td>
+      <td class="gap green-dark">+11.36%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/005380.html" style="color:#fbbf24">005380</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>674000.0<br>
+          <small style="color:#94a3b8">2026-02-27</small></td>
+      <td>646000.0</td>
+      <td>579898.0</td>
+      <td class="gap green-dark">+11.4%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/458730.html" style="color:#fbbf24">458730</a>
+        
+      </td>
+      <td>CORE</td>
+      <td>14910.0<br>
+          <small style="color:#94a3b8">2026-03-31</small></td>
+      <td>14745.0</td>
+      <td>13121.0</td>
+      <td class="gap green-dark">+12.38%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/QLD.html" style="color:#fbbf24">QLD</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>91.72<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>91.61</td>
+      <td>80.71</td>
+      <td class="gap green-dark">+13.51%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/102110.html" style="color:#fbbf24">102110</a>
+        
+      </td>
+      <td>CORE</td>
+      <td>121740.0<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>121740.0</td>
+      <td>107131.0</td>
+      <td class="gap green-dark">+13.64%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/379800.html" style="color:#fbbf24">379800</a>
+        
+      </td>
+      <td>CORE</td>
+      <td>24600.0<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>24600.0</td>
+      <td>21648.0</td>
+      <td class="gap green-dark">+13.64%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/379810.html" style="color:#fbbf24">379810</a>
+        
+      </td>
+      <td>CORE</td>
+      <td>28535.0<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>28535.0</td>
+      <td>25111.0</td>
+      <td class="gap green-dark">+13.64%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/SOXX.html" style="color:#fbbf24">SOXX</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>523.56<br>
+          <small style="color:#94a3b8">2026-05-11</small></td>
+      <td>523.56</td>
+      <td>460.73</td>
+      <td class="gap green-dark">+13.64%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/005930.html" style="color:#fbbf24">005930</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>285500.0<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>285500.0</td>
+      <td>248868.0</td>
+      <td class="gap green-dark">+14.72%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/466920.html" style="color:#fbbf24">466920</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>42325.0<br>
+          <small style="color:#94a3b8">2026-04-27</small></td>
+      <td>41600.0</td>
+      <td>36024.0</td>
+      <td class="gap green-dark">+15.48%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/CRCL.html" style="color:#fbbf24">CRCL</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>132.84<br>
+          <small style="color:#94a3b8">2026-03-18</small></td>
+      <td>111.9</td>
+      <td>96.62</td>
+      <td class="gap green-dark">+15.81%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/396500.html" style="color:#fbbf24">396500</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>49400.0<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>49400.0</td>
+      <td>42510.0</td>
+      <td class="gap green-dark">+16.21%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/000660.html" style="color:#fbbf24">000660</a>
+        
+      </td>
+      <td>MOMENTUM</td>
+      <td>1880000.0<br>
+          <small style="color:#94a3b8">2026-05-08</small></td>
+      <td>1880000.0</td>
+      <td>1612963.0</td>
+      <td class="gap green-dark">+16.56%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/110990.html" style="color:#fbbf24">110990</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>26650.0<br>
+          <small style="color:#94a3b8">2026-04-27</small></td>
+      <td>25250.0</td>
+      <td>20923.0</td>
+      <td class="gap green-dark">+20.68%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+    <tr>
+      <td>
+        <a href="details/IONQ.html" style="color:#fbbf24">IONQ</a>
+        
+      </td>
+      <td>HIGH_VOL</td>
+      <td>54.4<br>
+          <small style="color:#94a3b8">2026-05-11</small></td>
+      <td>54.4</td>
+      <td>39.21</td>
+      <td class="gap green-dark">+38.74%</td>
+      <td><span class="badge hold">🟢 HOLD</span></td>
+      <td>Hold</td>
+    </tr>
+  
+  </tbody>
+</table>
+
+<div class="footer">
+  <p>Anchor: 2026-01-02 · Bootstrap: yfinance YTD high · Mode: PortfolioStop v1.0</p>
+  <p>⚠ ⓝ 표시 종목은 신규 진입(entry_date 후 14 calendar days 이내)으로 highest_close 누적 부족 — 시그널 노이즈 가능. EXIT_READY/EXIT는 display 다운그레이드되어 TIGHT (new)로 표기.</p>
+  <p>⚠ 자동 매도 아님 — 매도 판단 보조 reference 시스템</p>
+  <p>Stop 공식: CORE 12% · DEFENSIVE 8% · MOMENTUM ATR×3 [8%,20%] · HIGH_VOL ATR×4 [12%,30%]</p>
+</div>
+
+</body>
+</html>
