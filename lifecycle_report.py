@@ -10,7 +10,13 @@ from typing import Optional
 
 from jinja2 import Environment, FileSystemLoader
 
-from lifecycle_config import LIFECYCLE_VERSION
+from lifecycle_config import (
+    LIFECYCLE_VERSION,
+    PULLBACK_MAX_DIST_FROM_EMA9, EXTENDED_DIST_FROM_EMA9, EXTENDED_RSI_MIN,
+    RISK_OVERHEAT_RSI, RISK_PARABOLIC_RET_1D, RISK_PARABOLIC_VOL_RATIO,
+    TRIGGER_CONFIRM_VOL_RATIO_MIN, TRIGGER_CONFIRM_CLOSE_HIGH_RATIO,
+    BASE_FORMING_DAYS_MIN, BASE_FORMING_DAYS_MAX,
+)
 from lifecycle_history import derive_fields
 from lifecycle_signal import DECISION_LABELS, DECISION_TOOLTIPS
 
@@ -187,6 +193,19 @@ def build_page_context(result: dict,
         "transitions":  (result.get("transitions") or [])[-50:],
         "DECISION_LABELS":   DECISION_LABELS,
         "DECISION_TOOLTIPS": DECISION_TOOLTIPS,
+        "verdict_summary":   _build_verdict_summary(enter, probe, watch, trending, avoid),
+        "lifecycle_thresholds": {
+            "PULLBACK_MAX_DIST_FROM_EMA9":      PULLBACK_MAX_DIST_FROM_EMA9,
+            "EXTENDED_DIST_FROM_EMA9":          EXTENDED_DIST_FROM_EMA9,
+            "EXTENDED_RSI_MIN":                 EXTENDED_RSI_MIN,
+            "RISK_OVERHEAT_RSI":                RISK_OVERHEAT_RSI,
+            "RISK_PARABOLIC_RET_1D":            RISK_PARABOLIC_RET_1D,
+            "RISK_PARABOLIC_VOL_RATIO":         RISK_PARABOLIC_VOL_RATIO,
+            "TRIGGER_CONFIRM_VOL_RATIO_MIN":    TRIGGER_CONFIRM_VOL_RATIO_MIN,
+            "TRIGGER_CONFIRM_CLOSE_HIGH_RATIO": TRIGGER_CONFIRM_CLOSE_HIGH_RATIO,
+            "BASE_FORMING_DAYS_MIN":            BASE_FORMING_DAYS_MIN,
+            "BASE_FORMING_DAYS_MAX":            BASE_FORMING_DAYS_MAX,
+        },
     }
 
 
@@ -196,6 +215,34 @@ def _render(market: str, result: dict, output_dir: str,
     if template_dir is None:
         template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
+
+    # Custom filters for chip rendering
+    def _signed_pct(x):
+        """Format signed percentage: +5.3% / -2.1% / 0.0% / — (None)."""
+        if x is None:
+            return "—"
+        return f"{x:+.1f}%"
+
+    def _x_fmt(x):
+        """Format multiplier: 1.5× / — (None)."""
+        if x is None:
+            return "—"
+        return f"{x:.1f}×"
+
+    def _trig_age_label(d):
+        """Format trigger age: 오늘 / 어제 / N일전 / —."""
+        if d is None:
+            return "—"
+        if d == 0:
+            return "오늘"
+        if d == 1:
+            return "어제"
+        return f"{d}일전"
+
+    env.filters["signed_pct"] = _signed_pct
+    env.filters["x_fmt"] = _x_fmt
+    env.filters["trig_age_label"] = _trig_age_label
+
     tmpl = env.get_template(f"lifecycle_{market.lower()}.html")
     ctx = build_page_context(result, lifecycle_state=lifecycle_state)
 
