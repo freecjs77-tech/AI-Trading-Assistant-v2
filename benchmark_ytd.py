@@ -212,6 +212,10 @@ def compute_returns(
     else:
         alpha_pp = None
 
+    decomp = compute_dit_rest_decomposition(
+        holdings, today_prices, today_usd_krw, baseline, v0_krw, v_now_krw
+    )
+
     return {
         "v0_krw": v0_krw,
         "v_now_krw": v_now_krw,
@@ -221,6 +225,12 @@ def compute_returns(
         "spy_ytd_pct": spy_ytd_pct,
         "alpha_pp": alpha_pp,
         "excluded_tickers": excluded,
+        "dit_ytd_pct": decomp["dit_ytd_pct"],
+        "rest_ytd_pct": decomp["rest_ytd_pct"],
+        "dit_v0_krw": decomp["dit_v0_krw"],
+        "dit_now_krw": decomp["dit_now_krw"],
+        "rest_v0_krw": decomp["rest_v0_krw"],
+        "rest_now_krw": decomp["rest_now_krw"],
     }
 
 
