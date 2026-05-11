@@ -49,6 +49,24 @@ def _attach_derived(snap: dict, ticker: str,
     out["setup_streak"]     = derived["setup_streak"]
     out["days_in_pullback"] = derived["days_in_pullback"]
     out["trigger_age_days"] = derived["trigger_age_days"]
+
+    # Signed distance fields for chip display (raw values are abs).
+    # close / ema9 / ema21 are in raw nested dict per lifecycle_signal._make_snapshot.
+    raw = snap.get("raw") or {}
+    close = raw.get("close")
+    e9 = raw.get("ema9")
+    e21 = raw.get("ema21")
+    out["dist_ema9_signed_pct"] = (
+        round((close / e9 - 1) * 100, 2) if (close and e9 and e9 > 0) else None
+    )
+    out["dist_ema21_signed_pct"] = (
+        round((close / e21 - 1) * 100, 2) if (close and e21 and e21 > 0) else None
+    )
+
+    # Also surface raw abs value at top-level for verdict_summary max() (avoids
+    # needing to dig into raw.* from the helper, keeps _build_verdict_summary lean).
+    out["dist_ema9_pct"] = raw.get("dist_ema9_pct")
+
     return out
 
 
