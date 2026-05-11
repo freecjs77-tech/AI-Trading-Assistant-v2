@@ -224,6 +224,76 @@ def compute_returns(
     }
 
 
+DIT_TICKER = "110990"
+
+
+def compute_dit_rest_decomposition(
+    holdings: list[dict],
+    today_prices: dict,
+    today_usd_krw: float,
+    baseline: dict,
+    v0_krw: float,
+    v_now_krw: float,
+) -> dict:
+    """Compute 110990 standalone YTD and 'rest' (portfolio - 110990) YTD.
+
+    Reuses pre-computed v0_krw and v_now_krw from compute_returns to avoid
+    redundant summation. Returns 6 fields, all None when 110990 isn't held
+    OR is unmappable in baseline OR is missing in today_prices.
+
+    KOSDAQ ticker — USD/KRW conversion not applied to 110990 (is_korean_ticker check).
+
+    Returns:
+        {
+          "dit_ytd_pct":  float | None,
+          "rest_ytd_pct": float | None,
+          "dit_v0_krw":   float | None,
+          "dit_now_krw":  float | None,
+          "rest_v0_krw":  float | None,
+          "rest_now_krw": float | None,
+        }
+    """
+    none_result = {
+        "dit_ytd_pct": None,
+        "rest_ytd_pct": None,
+        "dit_v0_krw": None,
+        "dit_now_krw": None,
+        "rest_v0_krw": None,
+        "rest_now_krw": None,
+    }
+
+    ticker_v0 = baseline.get("ticker_v0_krw") or {}
+    if DIT_TICKER not in ticker_v0:
+        return none_result
+
+    dit_today_price = today_prices.get(DIT_TICKER)
+    if dit_today_price is None or dit_today_price <= 0:
+        return none_result
+
+    dit_shares = next((float(h["shares"]) for h in holdings if h["ticker"] == DIT_TICKER), 0.0)
+    if dit_shares <= 0:
+        return none_result
+
+    dit_v0_per_share = float(ticker_v0[DIT_TICKER])
+    dit_now_per_share = float(dit_today_price)  # KRW native (KOSDAQ — no FX)
+    dit_v0_krw_val = dit_shares * dit_v0_per_share
+    dit_now_krw_val = dit_shares * dit_now_per_share
+    dit_ytd_pct = (dit_now_per_share / dit_v0_per_share - 1.0) * 100.0 if dit_v0_per_share > 0 else None
+
+    rest_v0_krw_val = v0_krw - dit_v0_krw_val
+    rest_now_krw_val = v_now_krw - dit_now_krw_val
+    rest_ytd_pct = (rest_now_krw_val / rest_v0_krw_val - 1.0) * 100.0 if rest_v0_krw_val > 0 else None
+
+    return {
+        "dit_ytd_pct": dit_ytd_pct,
+        "rest_ytd_pct": rest_ytd_pct,
+        "dit_v0_krw": dit_v0_krw_val,
+        "dit_now_krw": dit_now_krw_val,
+        "rest_v0_krw": rest_v0_krw_val,
+        "rest_now_krw": rest_now_krw_val,
+    }
+
+
 def _baseline_cache_path(owner: str, project_dir: str) -> str:
     return os.path.join(project_dir, "data", f"baseline_2026_{owner}.json")
 
