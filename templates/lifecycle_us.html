@@ -4,438 +4,412 @@
 <script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lifecycle US &#8212; {{ as_of }}</title>
+<title>🔄 Lifecycle US — {{ as_of }}</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script>
 tailwind.config = {
   darkMode: "class",
-  theme: {
-    extend: {
-      colors: {
-        "surface-container": "rgb(var(--c-surface-container) / <alpha-value>)",
-        "surface-container-highest": "rgb(var(--c-surface-container-highest) / <alpha-value>)",
-        "surface-dim": "rgb(var(--c-surface-dim) / <alpha-value>)",
-        "surface": "rgb(var(--c-surface) / <alpha-value>)",
-        "surface-container-high": "rgb(var(--c-surface-container-high) / <alpha-value>)",
-        "surface-container-low": "rgb(var(--c-surface-container-low) / <alpha-value>)",
-        "surface-container-lowest": "rgb(var(--c-surface-container-lowest) / <alpha-value>)",
-        "surface-bright": "rgb(var(--c-surface-bright) / <alpha-value>)",
-        "surface-variant": "rgb(var(--c-surface-variant) / <alpha-value>)",
-        "primary": "rgb(var(--c-primary) / <alpha-value>)",
-        "on-surface": "rgb(var(--c-on-surface) / <alpha-value>)",
-        "on-surface-variant": "rgb(var(--c-on-surface-variant) / <alpha-value>)",
-        "outline": "rgb(var(--c-outline) / <alpha-value>)",
-        "outline-variant": "rgb(var(--c-outline-variant) / <alpha-value>)",
-        "error": "rgb(var(--c-error) / <alpha-value>)",
-        "secondary": "rgb(var(--c-secondary) / <alpha-value>)",
-        "tertiary": "rgb(var(--c-tertiary) / <alpha-value>)",
-      },
-      fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
+  theme: { extend: {
+    colors: {
+      "surface-container": "rgb(var(--c-surface-container) / <alpha-value>)",
+      "surface-container-high": "rgb(var(--c-surface-container-high) / <alpha-value>)",
+      "surface": "rgb(var(--c-surface) / <alpha-value>)",
+      "primary": "rgb(var(--c-primary) / <alpha-value>)",
+      "on-surface": "rgb(var(--c-on-surface) / <alpha-value>)",
+      "on-surface-variant": "rgb(var(--c-on-surface-variant) / <alpha-value>)",
+      "outline-variant": "rgb(var(--c-outline-variant) / <alpha-value>)",
     },
-  },
+    fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
+  }}
 }
 </script>
 <style>
   html.dark {
-    --c-surface-container: 15 25 48; --c-surface-container-highest: 25 37 64;
-    --c-surface-dim: 6 14 32; --c-surface: 6 14 32;
-    --c-surface-container-high: 20 31 56; --c-surface-container-low: 9 19 40;
-    --c-surface-container-lowest: 0 0 0; --c-surface-bright: 31 43 73;
-    --c-surface-variant: 25 37 64;
-    --c-background: 6 14 32;
+    --c-surface-container: 15 25 48; --c-surface-container-high: 20 31 56;
+    --c-surface: 6 14 32; --c-background: 6 14 32;
     --c-primary: 109 221 255;
-    --c-secondary: 0 229 188;
-    --c-tertiary: 255 113 102;
     --c-on-surface: 222 229 255; --c-on-surface-variant: 163 170 196;
-    --c-outline: 109 117 140; --c-outline-variant: 64 72 93;
-    --c-error: 255 113 108;
+    --c-outline-variant: 64 72 93;
+    --bg: #0a1226; --card: #0f1a36; --card-2: #14203f;
+    --border: rgba(148,163,184,0.15); --text: #e2e8f0; --muted: #94a3b8;
+    --primary-c: #6dddff;
+    --green: #22c55e; --yellow: #eab308; --blue: #3b82f6; --gray: #64748b; --red: #ef4444;
   }
   html.light {
-    --c-surface-container: 255 255 255; --c-surface-container-highest: 226 232 240;
-    --c-surface-dim: 241 245 249; --c-surface: 241 243 245;
-    --c-surface-container-high: 255 255 255; --c-surface-container-low: 248 250 252;
-    --c-surface-container-lowest: 255 255 255; --c-surface-bright: 255 255 255;
-    --c-surface-variant: 248 250 252;
-    --c-background: 241 243 245;
-    --c-primary: 37 99 235;
-    --c-secondary: 16 185 129;
-    --c-tertiary: 225 29 72;
+    --c-surface-container: 255 255 255; --c-surface-container-high: 248 250 252;
+    --c-surface: 241 245 249; --c-background: 241 245 249;
+    --c-primary: 2 132 199;
     --c-on-surface: 15 23 42; --c-on-surface-variant: 71 85 105;
-    --c-outline: 100 116 139; --c-outline-variant: 148 163 184;
-    --c-error: 225 29 72;
+    --c-outline-variant: 148 163 184;
+    --bg: #f1f5f9; --card: #ffffff; --card-2: #f8fafc;
+    --border: rgba(100,116,139,0.2); --text: #0f172a; --muted: #64748b;
+    --primary-c: #0284c7;
+    --green: #16a34a; --yellow: #ca8a04; --blue: #2563eb; --gray: #64748b; --red: #dc2626;
   }
-  /* Decision cell colors */
-  .decision-enter    { color: #22c55e; font-weight: bold; }
-  .decision-probe    { color: #eab308; }
-  .decision-watch    { color: #60a5fa; }
-  .decision-trending { color: #94a3b8; }
-  .decision-avoid    { color: #ef4444; font-weight: bold; }
-  /* State badge pills */
-  .state { font-weight: 700; font-family: ui-monospace, monospace; white-space: nowrap;
-           padding: 2px 6px; border-radius: 4px; font-size: 11px; }
-  .state-trend-ok  { background: rgba(34,197,94,0.15); color: #22c55e; }
-  .state-pullback  { background: rgba(96,165,250,0.15); color: #60a5fa; }
-  .state-base      { background: rgba(167,139,250,0.15); color: #a78bfa; }
-  .state-extended  { background: rgba(234,179,8,0.15); color: #eab308; }
-  .state-broken    { background: rgba(239,68,68,0.15); color: #ef4444; }
-  .state-wait      { background: rgba(148,163,184,0.15); color: #94a3b8; }
-  .state-early     { background: rgba(234,179,8,0.15); color: #eab308; }
-  .state-confirmed { background: rgba(34,197,94,0.15); color: #22c55e; }
-  .state-tag       { background: rgba(148,163,184,0.15); color: #94a3b8; }
-  .state-tag-bad   { background: rgba(239,68,68,0.15); color: #ef4444; }
+  body { background: var(--bg); color: var(--text); }
+
+  .concept-box, .pipeline, section.detail, .glossary > details {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  }
+  .concept-box, .pipeline, section.detail { padding: 18px 22px; margin-bottom: 20px; }
+  .concept-box h3, .pipeline h2, section.detail h2 {
+    margin: 0 0 6px; font-size: 17px; color: var(--primary-c);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .concept-box p { margin: 6px 0; font-size: 14px; }
+  .concept-box b { color: var(--text); }
+  .pipeline .sub, section.detail .sub { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+
+  .summary-box {
+    margin: 20px 0 28px; padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(109,221,255,0.08), rgba(34,197,94,0.04));
+    border: 1px solid rgba(109,221,255,0.25); border-radius: 12px;
+  }
+  .summary-box h2 { margin: 0 0 12px; font-size: 15px; color: var(--primary-c); }
+  .summary-box .big-verdict { font-size: 18px; font-weight: 700; margin: 6px 0 14px; color: #fde047; }
+  .summary-box .verdict { font-size: 14px; line-height: 1.7; color: var(--text); margin: 4px 0; }
+
+  .pipe-flow { display: flex; gap: 12px; align-items: stretch; overflow-x: auto; }
+  .pipe-stage {
+    flex: 1; min-width: 150px;
+    background: var(--card-2); border-radius: 10px; padding: 14px; border-top: 4px solid;
+    display: flex; flex-direction: column;
+  }
+  .stage-trending { border-color: var(--gray); }
+  .stage-watch    { border-color: var(--blue); }
+  .stage-probe    { border-color: var(--yellow); }
+  .stage-enter    { border-color: var(--green); }
+  .stage-avoid    { border-color: var(--red); }
+  .stage-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .stage-name { font-weight: 700; font-size: 14px; }
+  .stage-count { font-size: 22px; font-weight: 800; }
+  .stage-trending .stage-name, .stage-trending .stage-count { color: var(--gray); }
+  .stage-watch    .stage-name, .stage-watch    .stage-count { color: var(--blue); }
+  .stage-probe    .stage-name, .stage-probe    .stage-count { color: var(--yellow); }
+  .stage-enter    .stage-name, .stage-enter    .stage-count { color: var(--green); }
+  .stage-avoid    .stage-name, .stage-avoid    .stage-count { color: var(--red); }
+  .stage-desc { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; min-height: 36px; }
+  .stage-action {
+    font-size: 12px; font-weight: 600;
+    padding: 4px 8px; border-radius: 4px; margin-bottom: 10px; display: inline-block;
+    background: rgba(100,116,139,0.15);
+  }
+  .stage-tickers { font-size: 12px; line-height: 1.55; word-break: break-word; }
+  .stage-tickers .muted { color: var(--muted); }
+  .pipe-arrow { align-self: center; color: var(--muted); font-size: 20px; padding: 0 2px; }
+  .pipe-arrow.invisible { color: transparent; }
+  .flow-narration { margin-top: 18px; padding: 14px 16px; background: rgba(0,0,0,0.15); border-radius: 8px; font-size: 13px; color: var(--text); line-height: 1.7; }
+
+  .action-box {
+    padding: 10px 12px; border-radius: 8px; font-size: 13px; line-height: 1.55;
+    border-left: 3px solid; margin-bottom: 14px;
+  }
+  .action-box .head { display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 4px; }
+  .action-box .desc { color: var(--text); }
+  .action-box .desc b { color: var(--text); font-weight: 700; }
+  .action-danger { background: rgba(239,68,68,0.08); border-color: #ef4444; }
+  .action-danger .head { color: #fca5a5; }
+  .action-watch { background: rgba(59,130,246,0.08); border-color: #3b82f6; }
+  .action-watch .head { color: #93c5fd; }
+  .action-trend { background: rgba(100,116,139,0.1); border-color: #64748b; }
+  .action-trend .head { color: #cbd5e1; }
+  .action-enter { background: rgba(34,197,94,0.08); border-color: #22c55e; }
+  .action-enter .head { color: #86efac; }
+  .action-probe { background: rgba(234,179,8,0.08); border-color: #eab308; }
+  .action-probe .head { color: #fde047; }
+
+  .stock-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+  .stock-chip {
+    background: var(--card-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 10px; font-size: 12px;
+  }
+  .stock-chip .ticker { font-weight: 700; color: var(--primary-c); font-size: 13px; }
+  .stock-chip .meta { color: var(--muted); margin-top: 2px; font-size: 11px; line-height: 1.5; }
+  .stock-chip .risk { color: #fca5a5; font-weight: 600; font-size: 11px; margin-top: 2px; }
+  .stock-chip.danger { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+  .stock-chip.new-confirmed { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.05); }
+
+  .tag {
+    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    font-size: 10.5px; font-weight: 700; margin-right: 3px;
+  }
+  .tag-PULLBACK { background: rgba(59,130,246,0.18); color: #93c5fd; }
+  .tag-TREND_OK { background: rgba(100,116,139,0.2); color: #cbd5e1; }
+  .tag-EXTENDED { background: rgba(239,68,68,0.18); color: #fca5a5; }
+  .tag-BASE     { background: rgba(34,197,94,0.18); color: #86efac; }
+  .tag-BROKEN   { background: rgba(239,68,68,0.3);  color: #fca5a5; }
+
+  .glossary > details { padding: 12px 16px; margin-bottom: 8px; }
+  .glossary summary { cursor: pointer; font-weight: 600; color: var(--primary-c); font-size: 14px; }
+  .glossary .gbody { margin-top: 10px; font-size: 13px; line-height: 1.7; color: var(--text); }
+  .glossary table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
+  .glossary th, .glossary td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .glossary th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; }
+  .glossary .note { margin-top: 10px; font-size: 12px; color: var(--muted); }
+
+  .matrix-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+  .matrix-table th, .matrix-table td { padding: 8px; text-align: center; border: 1px solid var(--border); }
+  .matrix-table th { background: rgba(0,0,0,0.2); color: var(--muted); }
+  .matrix-table td.setup-name { background: rgba(0,0,0,0.1); font-weight: 600; text-align: left; padding-left: 12px; }
+  .cell-trending { background: rgba(100,116,139,0.12); color: #cbd5e1; }
+  .cell-watch    { background: rgba(59,130,246,0.12); color: #93c5fd; }
+  .cell-probe    { background: rgba(234,179,8,0.12); color: #fde047; }
+  .cell-enter    { background: rgba(34,197,94,0.12); color: #86efac; }
+  .cell-avoid    { background: rgba(239,68,68,0.12); color: #fca5a5; }
+
+  .advanced > details { padding: 12px 16px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+  .advanced summary { cursor: pointer; font-weight: 600; color: var(--primary-c); font-size: 14px; }
+  .advanced .abody { margin-top: 12px; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+  .data-table th, .data-table td { padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .data-table th { color: var(--muted); font-size: 10px; text-transform: uppercase; }
+
+  footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+  footer p { margin: 4px 0; }
+
+  @media (max-width: 768px) {
+    .pipe-flow { flex-direction: column; }
+    .pipe-arrow { transform: rotate(90deg); padding: 4px 0; }
+  }
 </style>
 </head>
-<body class="bg-surface text-on-surface font-body">
+<body class="font-body">
 
 {% include "_sidebar.html" %}
-
 <div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <main class="md:ml-64 min-h-screen">
-
-  <!-- Top header bar -->
-  <header class="px-6 lg:px-10 py-5 border-b border-outline-variant/20 flex items-center justify-between sticky top-0 bg-surface/80 backdrop-blur-xl z-30">
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
     <div class="flex items-center gap-4">
-      <button class="md:hidden text-on-surface" onclick="toggleSidebar()">
-        <span class="material-symbols-outlined">menu</span>
-      </button>
-      <div>
-        <h1 class="font-headline font-bold text-xl text-primary flex items-center gap-2">
-          <span class="material-symbols-outlined text-2xl">timeline</span>
-          &#127482;&#127480; Lifecycle US
-        </h1>
-        <p class="text-xs text-on-surface-variant mt-0.5 font-label">As of {{ as_of }} &middot; {{ version }}</p>
-      </div>
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">🔄 Lifecycle US</span>
+      <span class="text-xs text-on-surface-variant font-label hidden sm:block">{{ as_of }} 기준 · {{ version }}</span>
     </div>
-    <button onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme">
-      <span class="material-symbols-outlined">light_mode</span>
-    </button>
+    <button onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme"><span class="material-symbols-outlined" id="themeIcon">light_mode</span></button>
   </header>
 
-  <div class="p-6 lg:p-10 space-y-6">
+  <div class="p-8 space-y-0 max-w-[1100px] mx-auto">
 
-    <!-- Intro / usage box -->
-    <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20 text-sm leading-relaxed">
-      <p class="font-semibold text-on-surface mb-2">이 페이지는 무엇인가요?</p>
-      <p class="text-on-surface-variant mb-3">
-        Momentum scanner 가 추세 후보로 발견한 종목들 (<strong class="text-on-surface">보유 여부 무관</strong>) 의 setup / trigger / decision 을 매일 추적하여,
-        <strong class="text-on-surface">지금 진입할 만한가</strong> / <strong class="text-on-surface">아직 기다려야 하는가</strong> / <strong class="text-on-surface">피야 하는가</strong> 를 판단해 주는 페이지입니다.
-        자동 매매가 아니 <em>매수 판단 보조</em> 도구입니다.
-      </p>
-      <p class="text-xs text-on-surface-variant mb-3">보유 종목의 매도 판단(trailing stop)은 Portfolio Risk 페이지를 별도로 참조하세요.</p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-        <div class="flex gap-2"><span class="font-semibold text-green-400 min-w-[120px]">&#127802; 본 진입 (ENTER)</span><span class="text-on-surface-variant">진입해도 OK &#8212; 좋은 zone(PULLBACK/BASE)에서 거래량&#183;종가 게이트까지 통과한 확정 trigger. 풀 포지션 가능.</span></div>
-        <div class="flex gap-2"><span class="font-semibold text-yellow-400 min-w-[120px]">&#127937; 분할 진입 (PROBE)</span><span class="text-on-surface-variant">조기 진입 &#8212; 진입 zone 안에서 약한 trigger 발화. 50% 부분 진입 가능, 확정 대기.</span></div>
-        <div class="flex gap-2"><span class="font-semibold text-blue-400 min-w-[120px]">&#128309; 진입 대기 (WATCH)</span><span class="text-on-surface-variant">좋은 setup, 트리거 미발생 &#8212; PULLBACK/BASE_FORMING zone이나 아직 진입 신호 없음. 반등 신호 관찰.</span></div>
-        <div class="flex gap-2"><span class="font-semibold text-slate-400 min-w-[120px]">&#9898; 눌림 대기 (TRENDING)</span><span class="text-on-surface-variant">추세 진행 중 &#8212; TREND_OK지만 setup 압축 부족. 다음 PULLBACK까지 추격 자제.</span></div>
-        <div class="flex gap-2"><span class="font-semibold text-red-400 min-w-[120px]">&#128308; 매수 금지 (AVOID)</span><span class="text-on-surface-variant">회피 &#8212; 과확장(EXTENDED)&#183;구조 깨짐(BROKEN)&#183;실패한 trigger(FAILED_BREAKOUT). 진입 시 손실 위험 큼.</span></div>
-      </div>
-    </section>
-
-    <!-- Glossary -->
-    <details class="bg-surface-container-low rounded-xl border border-outline-variant/20 overflow-hidden">
-      <summary class="px-5 py-4 cursor-pointer text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors list-none flex items-center gap-2">
-        <span class="material-symbols-outlined text-base">help_outline</span>
-        상태 용어집 &#8212; Setup &#215; Trigger 가 어떻게 Decision 으로 연결되는가
-      </summary>
-      <div class="px-5 pb-5 pt-2 text-sm leading-relaxed">
-        <p class="text-on-surface-variant mb-4">
-          Decision (위 5가지) 은 두 가지 raw 상태의 조합 결과입니다:
-          <strong class="text-on-surface">Setup</strong> 은 종목의 추세 구조를 5단계로 진단하고,
-          <strong class="text-on-surface">Trigger</strong> 는 그 안에서 진입 신호의 발화 강도를 3단계로 표시합니다.
-        </p>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
-          <!-- Setup states -->
-          <div>
-            <h4 class="font-semibold text-on-surface mb-2">Setup (구조 진단) &#8212; 5단계</h4>
-            <p class="text-xs text-on-surface-variant mb-2">평가 우선순위: <strong>BROKEN &gt; EXTENDED &gt; BASE_FORMING &gt; PULLBACK &gt; TREND_OK</strong></p>
-            <div class="space-y-1">
-              <div class="flex gap-2 items-start text-xs"><span class="state state-trend-ok shrink-0">TREND_OK</span><span class="text-on-surface-variant">정상 상승 추세 &#8212; EMA9 &gt; EMA21 &gt; EMA65 정렬 + EMA65 5일 기울기 양수.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-pullback shrink-0">PULLBACK</span><span class="text-on-surface-variant">추세 안의 단기 하락 &#8212; TREND_OK 조건 + EMA9 거리 &#8804; 3% + EMA21 위. <em>진입 zone</em>.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-base shrink-0">BASE_FORMING</span><span class="text-on-surface-variant">5&#8211;15일 횡보 + 변동성 수축 (5d ATR &lt; 20d ATR) + 거래량 수축 + EMA21 5일 기울기 양수. <em>VCP 식 압축 베이스</em>.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-extended shrink-0">EXTENDED</span><span class="text-on-surface-variant">과확장 &#8212; 정렬 유지 + EMA9 거리 &gt; 12% + RSI &gt; 72.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-broken shrink-0">BROKEN</span><span class="text-on-surface-variant">구조 깨짐 &#8212; EMA21 &lt; EMA65 또는 종가 &lt; EMA65.</span></div>
-            </div>
-          </div>
-          <!-- Trigger states -->
-          <div>
-            <h4 class="font-semibold text-on-surface mb-2">Trigger (진입 신호) &#8212; 3단계</h4>
-            <p class="text-xs text-on-surface-variant mb-2">Setup 이 PULLBACK 또는 BASE_FORMING 일 때만 의미 있음.</p>
-            <div class="space-y-1 mb-3">
-              <div class="flex gap-2 items-start text-xs"><span class="state state-wait shrink-0">WAIT</span><span class="text-on-surface-variant">진입 신호 없음.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-early shrink-0">EARLY_TRIGGER</span><span class="text-on-surface-variant">EMA9 reclaim 또는 전일 고점 돌파 + 종가가 일중 상위 20%.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-confirmed shrink-0">CONFIRMED_TRIGGER</span><span class="text-on-surface-variant">EARLY 조건 + 거래량 1.2&#215; + 종가 일중 상위 20%.</span></div>
-            </div>
-            <h4 class="font-semibold text-on-surface mb-2">risk_tags (보조 경고)</h4>
-            <div class="space-y-1">
-              <div class="flex gap-2 items-start text-xs"><span class="state state-tag shrink-0">OVERHEAT</span><span class="text-on-surface-variant">RSI &#8805; 80.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-tag shrink-0">PARABOLIC</span><span class="text-on-surface-variant">1일 수쨿르 &#8805; +8% &amp; 거래량 &#8805; 2.0&#215;.</span></div>
-              <div class="flex gap-2 items-start text-xs"><span class="state state-tag-bad shrink-0">FAILED_BREAKOUT</span><span class="text-on-surface-variant">어제 CONFIRMED &#8594; 오늘 종가 &lt; EMA9. 가짜 돌파 &#8212; 강제로 AVOID.</span></div>
-            </div>
-          </div>
-        </div>
-        <!-- Decision matrix -->
-        <h4 class="font-semibold text-on-surface mb-2">결정 매트릭스 &#8212; Setup &#215; Trigger &#8594; Decision</h4>
-        <div class="overflow-x-auto">
-          <table class="w-full border-collapse text-xs">
-            <thead><tr class="border-b border-outline-variant/30">
-              <th class="text-left px-3 py-2 text-on-surface-variant">Setup \ Trigger</th>
-              <th class="px-3 py-2 text-center text-on-surface-variant">WAIT</th>
-              <th class="px-3 py-2 text-center text-on-surface-variant">EARLY_TRIGGER</th>
-              <th class="px-3 py-2 text-center text-on-surface-variant">CONFIRMED_TRIGGER</th>
-            </tr></thead>
-            <tbody class="divide-y divide-outline-variant/10">
-              <tr><td class="px-3 py-2 font-medium">TREND_OK</td><td class="px-3 py-2 text-center text-slate-400">&#9898; 눌림 대기 (TRENDING)</td><td class="px-3 py-2 text-center text-on-surface-variant/40" colspan="2">&#8212; (Trigger 평가 안 함)</td></tr>
-              <tr><td class="px-3 py-2 font-medium">PULLBACK</td><td class="px-3 py-2 text-center text-blue-400">&#128309; 진입 대기 (WATCH)</td><td class="px-3 py-2 text-center text-yellow-400">&#127937; 분할 진입 (PROBE)</td><td class="px-3 py-2 text-center text-green-400">&#127802; 본 진입 (ENTER)</td></tr>
-              <tr><td class="px-3 py-2 font-medium">BASE_FORMING</td><td class="px-3 py-2 text-center text-blue-400">&#128309; 진입 대기 (WATCH)</td><td class="px-3 py-2 text-center text-yellow-400">&#127937; 분할 진입 (PROBE)</td><td class="px-3 py-2 text-center text-green-400">&#127802; 본 진입 (ENTER)</td></tr>
-              <tr><td class="px-3 py-2 font-medium">EXTENDED</td><td class="px-3 py-2 text-center text-red-400" colspan="3">&#128308; 매수 금지 (AVOID) &#8212; Trigger 무시</td></tr>
-              <tr><td class="px-3 py-2 font-medium">BROKEN</td><td class="px-3 py-2 text-center text-red-400" colspan="3">&#128308; 매수 금지 (AVOID) &#8212; Trigger 무시</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="text-xs text-on-surface-variant mt-2">
-          추가 규칙: risk_tags 에 <strong>FAILED_BREAKOUT</strong> 포함 시 Setup&#183;Trigger 무관하게 &#128308; 매수 금지 (AVOID) 강제.
-        </p>
-      </div>
-    </details>
-
-    <!-- Phase B placeholder -->
-    <div class="p-4 rounded-xl bg-orange-900/20 border border-orange-500/30 text-orange-300 text-sm">
-      <strong>[1] MARKET STATE</strong> &#8212; 시장 국면 분류기는 Phase B 에서 추가 예정 (RISK_ON / TRENDING / CHOPPY / RISK_OFF).
+    {# 컨셉 박스 #}
+    <div class="concept-box">
+      <h3>📌 이 페이지는 뭐 하는 페이지인가요?</h3>
+      <p>Momentum 스캐너가 추세 후보로 뽑은 종목들이 <b>지금 어느 단계에 있는지</b> 매일 추적하는 페이지입니다. 각 종목을 <b>"사도 되는가 / 기다려야 하는가 / 피해야 하는가"</b> 5단계로 분류합니다.</p>
+      <p>⚠️ <b>매수 판단 보조용</b>이지 자동 매매가 아닙니다. 또한 <b>보유 종목 매도</b>는 Portfolio Risk 페이지에서 별도로 봅니다.</p>
     </div>
 
-    <!-- NEW CONFIRMED TODAY -->
-    {% if new_confirmed %}
-    <div class="p-4 rounded-xl bg-blue-900/30 border border-blue-500/40">
-      <p class="font-semibold text-blue-300">&#128249; NEW 본 진입 TODAY ({{ new_confirmed|length }}):
-        {% for r in new_confirmed %}<a href="#row-{{ r.ticker }}" class="text-primary hover:underline">{{ r.name or r.ticker }}</a>{% if not loop.last %} &middot; {% endif %}{% endfor %}
-      </p>
-      <p class="text-xs text-on-surface-variant mt-1">오늘 처음 본 진입(ENTER) 이 발화한 종목 &#8212; 가장 시의성이 높은 진입 후보.</p>
-    </div>
-    {% endif %}
-
-    <!-- ACTION PANEL -->
-    <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20">
-      <h2 class="font-headline font-bold text-lg mb-4">오늘의 결정 그룹</h2>
-      <div class="space-y-3">
-
-        <!-- ENTER -->
-        <div class="rounded-lg p-4 border-l-4 border-green-500 bg-green-900/15">
-          <h3 class="font-semibold text-green-400 mb-1">&#127802; 본 진입 &#8212; ENTER ({{ enter|length }})</h3>
-          <p class="text-xs text-on-surface-variant mb-2">
-            <strong class="text-on-surface">진입해도 OK &#8212; 풀 포지션 가능</strong> &#8212; PULLBACK/BASE_FORMING zone 에서 trigger 가 확정 발화 (거래량 1.2x + 종가가 일중 상위 20%).
-          </p>
-          {% if enter %}
-          <p class="text-sm font-medium text-on-surface">{% for r in enter %}{{ r.name or r.ticker }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
-          <p class="text-xs text-on-surface-variant mt-1 italic">권장 포지션 크기: TBD &#8212; Phase C 에서 ATR 기반 sizing 추가 예정</p>
-          {% else %}
-          <em class="text-on-surface-variant text-sm">해당 없음</em>
-          {% endif %}
-        </div>
-
-        <!-- PROBE -->
-        <div class="rounded-lg p-4 border-l-4 border-yellow-500 bg-yellow-900/15">
-          <h3 class="font-semibold text-yellow-400 mb-1">&#127937; 분할 진입 &#8212; PROBE ({{ probe|length }})</h3>
-          <p class="text-xs text-on-surface-variant mb-2">
-            <strong class="text-on-surface">조기 진입 &#8212; 50% 부분 진입 가능</strong> &#8212; 진입 zone 안에서 trigger 발화는 있으나 거래량&#183;종가 게이트 중 하나 이상 미답.
-          </p>
-          {% if probe %}
-          <p class="text-sm font-medium text-on-surface">{% for r in probe %}{{ r.name or r.ticker }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
-          {% else %}
-          <em class="text-on-surface-variant text-sm">해당 없음</em>
-          {% endif %}
-        </div>
-
-        <!-- WATCH (collapsible) -->
-        <details class="rounded-lg border border-outline-variant/20 overflow-hidden">
-          <summary class="px-4 py-3 cursor-pointer text-sm font-medium text-blue-400 list-none hover:bg-surface-container/50 flex items-center justify-between">
-            <span>&#128309; 진입 대기 &#8212; WATCH ({{ watch|length }}) &#8212; 주은 setup, 트리거 대기</span>
-            <span class="material-symbols-outlined text-sm">expand_more</span>
-          </summary>
-          <div class="px-4 pb-4 pt-2 bg-blue-900/10">
-            <p class="text-xs text-on-surface-variant mb-2"><strong class="text-on-surface">주은 setup, 아직 트리거 미발생</strong> &#8212; PULLBACK/BASE_FORMING zone 안에 있지만 trigger 미발화. 매일 다시 평가되며 trigger 발화 시 PROBE 또는 ENTER 로 자동 승격.</p>
-            <p class="text-sm text-on-surface">{% for r in watch %}{{ r.name or r.ticker }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
-          </div>
-        </details>
-
-        <!-- TRENDING (collapsible) -->
-        <details class="rounded-lg border border-outline-variant/20 overflow-hidden">
-          <summary class="px-4 py-3 cursor-pointer text-sm font-medium text-slate-400 list-none hover:bg-surface-container/50 flex items-center justify-between">
-            <span>&#9898; 눌림 대기 &#8212; TRENDING ({{ trending|length }}) &#8212; 추세 진행 중, setup 압축 대기</span>
-            <span class="material-symbols-outlined text-sm">expand_more</span>
-          </summary>
-          <div class="px-4 pb-4 pt-2">
-            <p class="text-xs text-on-surface-variant mb-2"><strong class="text-on-surface">추세는 살아있으나 setup 압축 부족</strong> &#8212; TREND_OK 상태. 다음 PULLBACK/BASE_FORMING 까지 추격 자제.</p>
-            <p class="text-sm text-on-surface">{% for r in trending %}{{ r.name or r.ticker }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
-          </div>
-        </details>
-
-        <!-- AVOID (collapsible) -->
-        <details class="rounded-lg border border-red-500/20 overflow-hidden">
-          <summary class="px-4 py-3 cursor-pointer text-sm font-medium text-red-400 list-none hover:bg-red-900/10 flex items-center justify-between">
-            <span>&#128308; 매수 금지 &#8212; AVOID ({{ avoid|length }}) &#8212; 실제 위험 사유 있음</span>
-            <span class="material-symbols-outlined text-sm">expand_more</span>
-          </summary>
-          <div class="px-4 pb-4 pt-2 bg-red-900/10">
-            <p class="text-xs text-on-surface-variant mb-2"><strong class="text-on-surface">지금 진입 부적합</strong> &#8212; EXTENDED (EMA9 대비 12% 이상 + RSI 72+) 또는 BROKEN (추세 깨짐) 또는 risk_tags 에 FAILED_BREAKOUT.</p>
-            <p class="text-sm text-on-surface">{% for r in avoid %}{{ r.name or r.ticker }}{% if not loop.last %} &middot; {% endif %}{% endfor %}</p>
-          </div>
-        </details>
-      </div>
-    </section>
-
-    <!-- STATE TRANSITIONS -->
-    <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20">
-      <h2 class="font-headline font-bold text-lg mb-2">최근 상태 변화 (last 50)</h2>
-      <p class="text-xs text-on-surface-variant mb-3">종목별 setup / trigger / decision 상태가 어제 대비 변한 이력. 첫 실행일에는 비교 대상이 없어 비어 있음 &#8212; 다음 거래일부터 누적 시작.</p>
-      {% if transitions %}
-      <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-sm">
-          <thead><tr class="border-b border-outline-variant/30">
-            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">날짜</th>
-            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">티커</th>
-            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">이벤트</th>
-            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">From</th>
-            <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">To</th>
-          </tr></thead>
-          <tbody class="divide-y divide-outline-variant/10">
-          {% for t in transitions|reverse %}
-            <tr class="hover:bg-surface-container/50">
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t.date }}</td>
-              <td class="px-3 py-2 font-medium text-primary">{{ t.ticker }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t.event }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t['from'] or '—' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ t['to'] or '—' }}</td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-      <p class="text-on-surface-variant text-sm italic">아직 transition 이력 없음 (첫 거래일).</p>
+    {# 오늘의 결론 #}
+    <div class="summary-box">
+      <h2>📊 오늘의 결론 ({{ as_of }})</h2>
+      <div class="big-verdict">{{ verdict_summary.headline }}</div>
+      <div class="verdict">{{ verdict_summary.narration }}</div>
+      {% if verdict_summary.avoid_line %}
+      <div class="verdict" style="margin-top: 8px;">{{ verdict_summary.avoid_line }}</div>
       {% endif %}
-    </section>
+      <div class="verdict" style="margin-top: 12px;">💡 <b>오늘 할 일</b>: {{ verdict_summary.action_hint }}</div>
+    </div>
 
-    <!-- MAIN TABLE -->
-    <section class="bg-surface-container-low rounded-xl p-5 border border-outline-variant/20">
-      <h2 class="font-headline font-bold text-lg mb-2">전체 active set 상세</h2>
-      <p class="text-xs text-on-surface-variant mb-3">
-        처음 의미: <strong class="text-on-surface">Setup</strong> = 추세 구조 진단 &middot;
-        <strong class="text-on-surface">Trigger</strong> = 진입 신호 발화 여부 &middot;
-        <strong class="text-on-surface">Decision</strong> = 위 두을 조합한 실행 권고.
-        <strong class="text-on-surface">trig_age</strong> = 마지막 trigger 발화로부터 경과 일수 (0 = 오늘) &middot;
-        <strong class="text-on-surface">days_in_pb</strong> = PULLBACK/BASE_FORMING 에 머문 연속 일수.
-      </p>
-      <div class="overflow-x-auto">
-        <table class="w-full border-collapse text-sm">
-          <thead>
-            <tr class="border-b border-outline-variant/30">
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">티커</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">섹터</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="구조 진단: TREND_OK &middot; PULLBACK &middot; BASE_FORMING &middot; EXTENDED &middot; BROKEN">Setup</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="진입 신호: WAIT &middot; EARLY_TRIGGER &middot; CONFIRMED_TRIGGER">Trigger</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="실행 권고">Decision</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="마지막 trigger 로부터 경과 일수 (0=오늘)">trig_age</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="EMA9 와의 거리 (%)">dist_ema9 %</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="EMA21 과의 거리 (%)">dist_ema21 %</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="20일 평균 대비 거래량 비율 (1.0=평균)">vol_ratio</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="ATR 14 (% of close)">atr %</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="PULLBACK/BASE_FORMING 에 머문 연속 일수">days_in_pb</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="같은 setup 유지 연속 일수">setup_streak</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-help" title="OVERHEAT &middot; PARABOLIC &middot; EXTENDED &middot; FAILED_BREAKOUT">risk_tags</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-outline-variant/10">
-          {% for group in [enter, probe, watch, trending, avoid] %}{% for r in group %}
-            <tr id="row-{{ r.ticker }}" class="hover:bg-surface-container/50 transition-colors">
-              <td class="px-3 py-2">
-                <strong class="text-on-surface text-sm">{{ r.name or r.ticker }}</strong>
-                {% if r.name and r.name != r.ticker %}<br><small class="text-on-surface-variant/60 font-normal text-xs">{{ r.ticker }}</small>{% endif %}
-              </td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.raw.sector or '—' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.setup }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.trigger }}</td>
-              <td class="px-3 py-2 text-sm decision decision-{{ r.decision|lower }}"
-                  title="{{ DECISION_TOOLTIPS[r.decision] if r.decision in DECISION_TOOLTIPS else r.decision }}">
-                {{ DECISION_LABELS[r.decision] if r.decision in DECISION_LABELS else r.decision }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.trigger_age_days if r.trigger_age_days is not none else '—' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.volume_ratio) if r.raw.volume_ratio is not none else '—' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.atr_pct) if r.raw.atr_pct is not none else '—' }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.days_in_pullback }}</td>
-              <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.setup_streak }}</td>
-              <td class="px-3 py-2 text-xs">{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '—' }}</td>
-            </tr>
-          {% endfor %}{% endfor %}
-          </tbody>
-        </table>
+    {# 파이프라인 partial #}
+    {% include "_lifecycle_pipeline.html" %}
+
+    {# AVOID 상세 #}
+    {% if avoid %}
+    <section class="detail">
+      <h2>🔴 매수 금지 (AVOID) — {{ avoid|length }} 종목</h2>
+      <p class="sub">9일선 대비 {{ (lifecycle_thresholds.EXTENDED_DIST_FROM_EMA9 * 100)|round(0)|int }}% 이상 이격 + RSI {{ lifecycle_thresholds.EXTENDED_RSI_MIN }} 초과 = EXTENDED (과확장). 지금 진입은 손실 위험 큼.</p>
+      <div class="action-box action-danger">
+        <div class="head">⚠ 공통 상황</div>
+        <div class="desc">3종목 모두 <b>EXTENDED</b> 상태로, RSI는 {{ lifecycle_thresholds.RISK_OVERHEAT_RSI }} 이상 과매수, 9일선 이격은 정상 범위(±10%)를 크게 초과. <b>신규 진입 절대 금지</b>, 보유자는 분할 익절 검토.</div>
       </div>
-    </section>
-
-    <!-- FAILED / BROKEN -->
-    {% if broken_table %}
-    <details class="bg-surface-container-low rounded-xl border border-outline-variant/20 overflow-hidden">
-      <summary class="px-5 py-4 cursor-pointer text-sm font-medium text-on-surface-variant list-none hover:bg-surface-container/50">
-        FAILED / BROKEN ({{ broken_table|length }}) &#8212; 추세 깨진 종목 (참고용)
-      </summary>
-      <div class="px-5 pb-5 pt-2">
-        <p class="text-xs text-on-surface-variant mb-3">중기 추세 (EMA21 &lt; EMA65) 또는 장기 필터 (close &lt; EMA65) 가 깨진 종목들. 진입 후보에서 제외되며 Phase D 의 expectancy 분석을 위해 보존됨.
-        </p>
-        <div class="overflow-x-auto">
-          <table class="w-full border-collapse text-sm">
-            <thead><tr class="border-b border-outline-variant/30">
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">티커</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">섹터</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Setup</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">dist_ema9 %</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">dist_ema21 %</th>
-              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">risk_tags</th>
-            </tr></thead>
-            <tbody class="divide-y divide-outline-variant/10">
-            {% for r in broken_table %}
-              <tr class="hover:bg-surface-container/50">
-                <td class="px-3 py-2">{{ r.name or r.ticker }}{% if r.name and r.name != r.ticker %} <small class="text-on-surface-variant/60 text-xs">({{ r.ticker }})</small>{% endif %}</td>
-                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.raw.sector or '—' }}</td>
-                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ r.setup }}</td>
-                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema9_pct) if r.raw.dist_ema9_pct is not none else '—' }}</td>
-                <td class="px-3 py-2 text-on-surface-variant text-xs">{{ '%.2f'|format(r.raw.dist_ema21_pct) if r.raw.dist_ema21_pct is not none else '—' }}</td>
-                <td class="px-3 py-2 text-xs">{{ r.raw.risk_tags|join(', ') if r.raw.risk_tags else '—' }}</td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table>
+      <div class="stock-list">
+        {% for row in avoid %}
+        <div class="stock-chip danger">
+          <div class="ticker">{{ row.ticker }}</div>
+          <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · 21일선 {{ row.dist_ema21_signed_pct|signed_pct }}</div>
+          {% if row.raw and row.raw.risk_tags %}
+          <div class="risk">⚠ {{ row.raw.risk_tags|join(', ') }}</div>
+          {% endif %}
         </div>
+        {% endfor %}
       </div>
-    </details>
+    </section>
     {% endif %}
 
-    <!-- Footer note -->
-    <p class="text-xs text-on-surface-variant">
-      각 시장은 자체 마감일 기준 &#8212; US 와 KR 페이지의 날짜 스탬프가 일시적으로 다를 수 있음.
-      Lifecycle 은 <strong>매수 판단 보조</strong> 도구이며 자동매매를 수행하지 않습니다.
-      합성 점수 (composite score) 는 의도적으로 제공하지 않으며, raw 수치만 노출합니다.
-    </p>
+    {# ENTER 상세 #}
+    {% if enter %}
+    <section class="detail">
+      <h2>🟢 본 진입 (ENTER) — {{ enter|length }} 종목</h2>
+      <p class="sub">PULLBACK/BASE 자리에서 확정 트리거(거래량 동반) 발화. 풀 진입 검토 가능.</p>
+      <div class="action-box action-enter">
+        <div class="head">✅ 오늘 할 일</div>
+        <div class="desc">확정 트리거가 발화한 종목들입니다. 비중과 손절 기준을 정한 뒤 <b>풀 진입</b>을 검토하세요. 🆕 표시는 트리거 발화 첫날입니다.</div>
+      </div>
+      <div class="stock-list">
+        {% for row in enter %}
+        <div class="stock-chip {% if row.trigger_age_days == 0 and row.trigger == 'CONFIRMED_TRIGGER' %}new-confirmed{% endif %}">
+          <div class="ticker">{{ row.ticker }}{% if row.trigger_age_days == 0 and row.trigger == 'CONFIRMED_TRIGGER' %} 🆕{% endif %}</div>
+          <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · vol {{ row.raw.volume_ratio|x_fmt }} · trig {{ row.trigger_age_days|trig_age_label }}</div>
+          <div class="meta">{{ row.setup }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# PROBE 상세 #}
+    {% if probe %}
+    <section class="detail">
+      <h2>🟡 분할 진입 (PROBE) — {{ probe|length }} 종목</h2>
+      <p class="sub">PULLBACK/BASE 자리에서 약한 트리거(거래량 미동반) 발화. 50% 비중 진입 검토.</p>
+      <div class="action-box action-probe">
+        <div class="head">⚡ 오늘 할 일</div>
+        <div class="desc">약한 트리거 발화 — 거래량 부족으로 신뢰도가 풀 트리거보다 낮습니다. <b>절반 비중</b>으로 진입하고 다음 거래일 확인 후 추가 진입 결정.</div>
+      </div>
+      <div class="stock-list">
+        {% for row in probe %}
+        <div class="stock-chip">
+          <div class="ticker">{{ row.ticker }}</div>
+          <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · vol {{ row.raw.volume_ratio|x_fmt }}</div>
+          <div class="meta">EARLY · {{ row.setup_streak }}일 압축</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# WATCH 상세 #}
+    {% if watch %}
+    <section class="detail">
+      <h2>🔵 진입 대기 (WATCH) — {{ watch|length }} 종목</h2>
+      <p class="sub">PULLBACK(눌림목) 자리에 도착했지만 반등 신호(트리거)가 아직 안 뜸. <b>매일 다시 평가</b>되며 신호 발화 시 PROBE/ENTER로 자동 승격.</p>
+      <div class="action-box action-watch">
+        <div class="head">👀 오늘 할 일</div>
+        <div class="desc">지금 사지 마세요. 이 종목들이 <b>"반등 신호 + 거래량 증가"</b>를 보이면 시스템이 자동으로 ENTER로 올려줍니다. 다음 거래일에 이 페이지를 다시 확인하세요.<br>👉 <b>관전 포인트</b>: 거래량 평균 대비 {{ lifecycle_thresholds.TRIGGER_CONFIRM_VOL_RATIO_MIN }}배 이상 + 종가가 일중 상위 {{ ((1 - lifecycle_thresholds.TRIGGER_CONFIRM_CLOSE_HIGH_RATIO) * 100)|round(0)|int }}% 마감.</div>
+      </div>
+      <div class="stock-list">
+        {% for row in watch %}
+        <div class="stock-chip">
+          <div class="ticker">{{ row.ticker }}</div>
+          <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · 21일선 {{ row.dist_ema21_signed_pct|signed_pct }}</div>
+          <div class="meta">{{ row.setup }} · {{ row.setup_streak }}일 압축</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# TRENDING 상세 #}
+    {% if trending %}
+    <section class="detail">
+      <h2>⚪ 눌림 대기 (TRENDING) — {{ trending|length }} 종목</h2>
+      <p class="sub">추세는 살아있으나 아직 눌림 자리가 안 형성됨. 지금 추격 매수는 자제하고, 다음 PULLBACK을 기다림.</p>
+      <div class="action-box action-trend">
+        <div class="head">📍 오늘 할 일</div>
+        <div class="desc">이 종목들은 <b>이미 추세 중</b>이라 따라잡기 매수는 평균단가가 높아질 위험이 있습니다. 다음에 <b>EMA9 근처까지 단기 조정</b>이 오면 그때 WATCH로 이동하고 진입 검토 가능.<br>👉 지금은 <b>관망</b>만, 차트 알람만 걸어두기.</div>
+      </div>
+      <div class="stock-list">
+        {% for row in trending %}
+        <div class="stock-chip">
+          <div class="ticker">{{ row.ticker }}</div>
+          <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · {{ row.setup_streak }}일 추세 유지</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {# 용어 사전 partial #}
+    {% include "_lifecycle_glossary.html" %}
+
+    {# 고급 보기 #}
+    <section class="advanced">
+      <details>
+        <summary>⚙ 고급 보기 (디버깅·audit용)</summary>
+        <div class="abody">
+
+          {# 최근 상태 전환 #}
+          {% if transitions %}
+          <h3 style="font-size:14px; margin: 10px 0 6px;">최근 상태 전환 (transitions, 최근 {{ transitions|length }}개)</h3>
+          <table class="data-table">
+            <thead><tr><th>ticker</th><th>from → to</th><th>as_of</th></tr></thead>
+            <tbody>
+              {% for t in transitions|reverse %}
+              <tr>
+                <td><b>{{ t.ticker }}</b></td>
+                <td>{{ t.from_decision }} → {{ t.to_decision }}</td>
+                <td>{{ t.as_of }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
+
+          {# BROKEN 별도 #}
+          {% if broken_table %}
+          <h3 style="font-size:14px; margin: 16px 0 6px;">BROKEN 종목 — 구조 깨짐 (매수 후보 자격 상실)</h3>
+          <div class="stock-list">
+            {% for row in broken_table %}
+            <div class="stock-chip danger">
+              <div class="ticker">{{ row.ticker }}</div>
+              <div class="meta">{{ row.setup }} · 9일선 {{ row.dist_ema9_signed_pct|signed_pct }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {# 전체 상세 테이블 #}
+          <h3 style="font-size:14px; margin: 16px 0 6px;">전체 종목 상세 데이터</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ticker</th><th>decision</th><th>setup</th><th>trigger</th>
+                <th>dist_ema9</th><th>dist_ema21</th>
+                <th>vol_ratio</th><th>setup_streak</th><th>trig_age</th><th>risk_tags</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in (enter + probe + watch + trending + avoid + broken_table) %}
+              <tr>
+                <td><b>{{ row.ticker }}</b></td>
+                <td>{{ row.decision }}</td>
+                <td>{{ row.setup }}</td>
+                <td>{{ row.trigger }}</td>
+                <td>{{ row.dist_ema9_signed_pct|signed_pct }}</td>
+                <td>{{ row.dist_ema21_signed_pct|signed_pct }}</td>
+                <td>{{ row.raw.volume_ratio|x_fmt }}</td>
+                <td>{{ row.setup_streak }}</td>
+                <td>{{ row.trigger_age_days|trig_age_label }}</td>
+                <td>{{ (row.raw.risk_tags or [])|join(', ') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+        </div>
+      </details>
+    </section>
+
+    <footer>
+      <p>Lifecycle Phase A · {{ version }} · 추적 {{ (enter + probe + watch + trending + avoid + broken_table)|length }} 종목</p>
+      <p>※ 시장 국면 분류기(RISK_ON / TRENDING / CHOPPY / RISK_OFF)는 Phase B에서 추가 예정</p>
+      <p>※ 본 문서는 정보 제공용이며 투자 권유가 아닙니다.</p>
+    </footer>
 
   </div>
 </main>
 
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="{{ nav_portfolio }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px]">Home</span></a>
+  <a href="{{ nav_scanner }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px]">Scan</span></a>
+  <a href="{{ nav_trend }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px]">Trend</span></a>
+  <a href="{{ nav_backtest }}" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">history</span><span class="text-[10px]">Backtest</span></a>
+</nav>
+
 <script>
-function toggleSidebar() {
-  var sidebar = document.getElementById('sidebar');
-  var overlay = document.getElementById('sidebarOverlay');
-  sidebar.classList.toggle('hidden');
-  overlay.classList.toggle('hidden');
-}
-function toggleTheme() {
-  var html = document.documentElement;
-  var isDark = html.classList.contains('dark');
-  html.classList.toggle('dark', !isDark);
-  html.classList.toggle('light', isDark);
-  localStorage.setItem('theme', !isDark ? 'dark' : 'light');
-}
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
+function toggleTheme(){const h=document.documentElement,d=h.classList.contains('dark');h.classList.remove('dark','light');const t=d?'light':'dark';h.classList.add(t);localStorage.setItem('theme',t);document.getElementById('themeIcon').textContent=t==='dark'?'light_mode':'dark_mode';}
+document.addEventListener('DOMContentLoaded',function(){document.getElementById('themeIcon').textContent=document.documentElement.classList.contains('dark')?'light_mode':'dark_mode';});
 </script>
 </body>
 </html>
