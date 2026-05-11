@@ -17,7 +17,17 @@ DIT = "110990"
 
 
 def _baseline_with_dit():
-    """Baseline with 110990 + AAPL + VOO (KOSDAQ + US tickers)."""
+    """Baseline snapshot containing 110990, AAPL, and VOO entries.
+
+    VOO is intentionally included in ``ticker_v0_krw`` even though NO test's
+    ``holdings`` list contains VOO.  This verifies that
+    ``compute_dit_rest_decomposition`` iterates over the caller-supplied
+    ``holdings`` list — NOT over ``baseline["ticker_v0_krw"]`` — when
+    computing ``rest_v0_krw``.  A Task-2 implementer who writes
+    ``rest_v0 = sum(baseline_v0_krw_values) - dit_v0`` will pick up VOO's
+    700,000 KRW and fail ``test_dit_held_normal_decomposition``'s
+    ``rest_v0_krw == 2_800_000`` assertion.  The failure is the guard.
+    """
     return {
         "anchor_date": "2026-01-02",
         "usd_krw": 1400.0,
@@ -25,7 +35,7 @@ def _baseline_with_dit():
         "ticker_v0_krw": {
             DIT: 15690.0,           # KRW native (KOSDAQ)
             "AAPL": 200.0 * 1400,   # 280000 KRW = 200 USD × 1400
-            "VOO": 500.0 * 1400,    # 700000 KRW
+            "VOO": 500.0 * 1400,    # 700000 KRW — present in baseline but NOT in any test's holdings
         },
         "unmappable": [],
     }
@@ -124,7 +134,19 @@ def test_dit_rest_v0_sum_equals_total_v0():
 
 
 def test_combined_simulation_krw_sum_then_recompute():
-    """합산 뷰 산출: me + wife KRW 합산 후 % 재계산."""
+    """합산 뷰 산출: me + wife KRW 합산 후 % 재계산 — aggregation math contract.
+
+    SCOPE: This test does NOT call ``compute_dit_rest_decomposition``.
+    It validates the pure-arithmetic aggregation formula that will be used
+    in ``report_generator._build_combined_payload`` (Task 11):
+
+        combined_pct = (sum_now / sum_v0 - 1) * 100
+
+    where KRW values from the me-result and wife-result are summed first,
+    and then the percentage is recomputed from the combined totals (NOT by
+    averaging the two individual percentages).  This serves as a regression
+    guard for the aggregation formula itself, independent of the helper.
+    """
     # me: dit_v0=1000만, dit_now=1500만, rest_v0=500만, rest_now=600만
     me = {"dit_v0_krw": 10_000_000.0, "dit_now_krw": 15_000_000.0, "rest_v0_krw": 5_000_000.0, "rest_now_krw": 6_000_000.0}
     # wife: dit_v0=300만, dit_now=400만, rest_v0=200만, rest_now=250만
