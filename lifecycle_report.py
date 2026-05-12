@@ -97,7 +97,9 @@ def _build_verdict_summary(enter: list, probe: list, watch: list,
     total = enter_n + probe_n + watch_n + trending_n + avoid_n
 
     def _ticker_list(rows: list, limit: int = 5) -> str:
-        names = [r["ticker"] for r in rows[:limit]]
+        # Use display name when available (KR Korean name); falls back to ticker
+        # for rows that don't have a name attached (unit-test fixtures).
+        names = [r.get("name") or r["ticker"] for r in rows[:limit]]
         s = ", ".join(names)
         if len(rows) > limit:
             s += f" 외 {len(rows) - limit}개"
@@ -125,8 +127,9 @@ def _build_verdict_summary(enter: list, probe: list, watch: list,
 
     avoid_line = None
     if avoid_n > 0:
-        # _ticker_list uses ', ' separator; mockup uses ' · ' for AVOID line
-        names = [r["ticker"] for r in avoid[:5]]
+        # _ticker_list uses ', ' separator; mockup uses ' · ' for AVOID line.
+        # Use display name when available (KR Korean name); falls back to ticker.
+        names = [r.get("name") or r["ticker"] for r in avoid[:5]]
         tickers = " · ".join(names)
         if avoid_n > 5:
             tickers += f" 외 {avoid_n - 5}개"
