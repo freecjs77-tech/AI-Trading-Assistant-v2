@@ -6,7 +6,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🛡 Portfolio Risk — wife 2026-05-11</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: { extend: {
+    colors: {
+      "surface-container": "rgb(var(--c-surface-container) / <alpha-value>)",
+      "surface-container-high": "rgb(var(--c-surface-container-high) / <alpha-value>)",
+      "surface": "rgb(var(--c-surface) / <alpha-value>)",
+      "primary": "rgb(var(--c-primary) / <alpha-value>)",
+      "on-surface": "rgb(var(--c-on-surface) / <alpha-value>)",
+      "on-surface-variant": "rgb(var(--c-on-surface-variant) / <alpha-value>)",
+      "outline-variant": "rgb(var(--c-outline-variant) / <alpha-value>)",
+    },
+    fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
+  }}
+}
+</script>
 <style>
   /* ── Dark Theme ── */
   html.dark {
@@ -69,7 +88,7 @@
   }
   ::selection { background: rgb(var(--c-primary) / 0.3); color: rgb(var(--c-primary)); }
 
-  /* ── Header ── */
+  /* ── Header (Sidebar 친화) ── */
   .topbar {
     display: flex; justify-content: space-between; align-items: center;
     padding: 16px 32px;
@@ -85,20 +104,34 @@
     font-family: 'Space Grotesk', sans-serif;
     font-size: 20px; font-weight: 700;
     text-transform: uppercase; letter-spacing: -0.025em;
+    color: rgb(var(--c-on-surface));
   }
   .topbar-meta { display: flex; gap: 24px; font-size: 12px; }
   .topbar-meta-item { display: flex; flex-direction: column; }
   .topbar-meta-lbl { color: rgb(var(--c-on-surface) / 0.6); }
   .topbar-meta-val { color: rgb(var(--c-primary)); font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
   .topbar-date { font-size: 11px; color: rgb(var(--c-outline)); font-family: 'Inter', sans-serif; }
+  .topbar-theme-btn {
+    padding: 8px; background: transparent; border: none; cursor: pointer;
+    color: rgb(var(--c-on-surface) / 0.6); display: flex; align-items: center;
+  }
+  .topbar-theme-btn:hover { color: rgb(var(--c-primary)); }
+  .topbar-menu-btn {
+    background: transparent; border: none; cursor: pointer; padding: 4px;
+    color: rgb(var(--c-on-surface)); display: none;
+  }
   @media (max-width: 768px) {
     .topbar-meta { display: none; }
     .topbar { padding: 12px 16px; }
+    .topbar-menu-btn { display: inline-flex; align-items: center; }
   }
 
-  /* ── Container ── */
+  /* ── Container (사이드바 우측 main 영역) ── */
   .container { max-width: 1400px; margin: 0 auto; padding: 32px; }
   @media (max-width: 768px) { .container { padding: 16px; } }
+  /* ── Sidebar 영역 확보 ── */
+  .pr-main { min-height: 100vh; }
+  @media (min-width: 768px) { .pr-main { margin-left: 16rem; } }
 
   /* ── Page Title ── */
   .page-head {
@@ -124,27 +157,6 @@
   .page-subtitle {
     font-size: 13px; color: rgb(var(--c-on-surface-variant));
     margin-top: 8px; font-family: 'Inter', sans-serif;
-  }
-
-  /* ── Nav ── */
-  .pr-nav { display: flex; gap: 8px; flex-wrap: wrap; }
-  .pr-nav a {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 14px;
-    background: rgb(var(--c-surface-container));
-    color: rgb(var(--c-on-surface));
-    border: 1px solid rgb(var(--c-outline-variant) / 0.2);
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    transition: all 0.2s;
-  }
-  .pr-nav a:hover { background: rgb(var(--c-primary) / 0.1); border-color: rgb(var(--c-primary) / 0.3); }
-  .pr-nav a.active {
-    background: rgb(var(--c-primary) / 0.15);
-    border-color: rgb(var(--c-primary) / 0.4);
-    color: rgb(var(--c-primary));
   }
 
   /* ── Summary cards ── */
@@ -497,12 +509,114 @@
   }
 </style>
 </head>
-<body>
+<body class="font-body">
+
+<!-- ── Sidebar Partial ── shared by report_template, momentum, lifecycle pages ── -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center">
+      <span class="material-symbols-outlined text-[#004352]" style="font-variation-settings: 'FILL' 1;">dashboard_customize</span>
+    </div>
+    <div>
+      <h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2>
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p>
+    </div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="report_2026-05-11.html">
+      <span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="report_wife_2026-05-11.html">
+      <span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="scanner_2026-05-11.html">
+      <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="backtest_2026-05-11.html">
+      <span class="material-symbols-outlined">history</span><span>Backtest</span>
+    </a>
+    
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="portfolio_stops_2026-05-11.html">
+      <span class="material-symbols-outlined">shield</span><span>My Risk</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="portfolio_stops_wife_2026-05-11.html">
+      <span class="material-symbols-outlined">shield</span><span>Wife Risk</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="trend_2026-05-11.html">
+      <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html">
+      <span class="material-symbols-outlined">inventory_2</span><span>Archive</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="momentum_us_2026-05-12.html">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum US</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="momentum_kr_2026-05-12.html">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum KR</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="lifecycle_us_2026-05-11.html">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle US</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="lifecycle_kr_2026-05-11.html">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle KR</span>
+    </a>
+    
+  </div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" class="flex items-center gap-3 px-4 py-3 w-full text-left bg-[#6dddff]/10 text-[#6dddff] hover:bg-[#6dddff]/20 rounded-md transition-all font-bold text-sm">
+      <span class="material-symbols-outlined">rocket_launch</span><span>Run Workflow</span>
+    </a>
+    <button id="themeToggle" onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
+      <span class="material-symbols-outlined">light_mode</span><span>Light Mode</span>
+    </button>
+    
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">
+      2026년 5월 11일 (월요일)<br>
+      
+        
+          <span class="text-[#00E5BC]">CLOSED</span>
+        
+      
+    </div>
+  </div>
+</nav>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<main class="pr-main">
 
 <!-- ── Top Bar ── -->
 <div class="topbar">
   <div class="topbar-left">
-    <span class="topbar-title">🛡 Portfolio Risk</span>
+    <button class="topbar-menu-btn" onclick="toggleSidebar()" title="Open menu"><span class="material-symbols-outlined">menu</span></button>
+    <span class="topbar-title">🛡 Portfolio Risk · WIFE</span>
   </div>
   <div class="topbar-meta">
     <div class="topbar-meta-item">
@@ -518,7 +632,10 @@
       <span class="topbar-meta-val">01-02</span>
     </div>
   </div>
-  <div class="topbar-date">2026-05-11</div>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div class="topbar-date">2026-05-11</div>
+    <button class="topbar-theme-btn" onclick="toggleTheme()" title="Toggle Theme"><span class="material-symbols-outlined" id="themeIcon">light_mode</span></button>
+  </div>
 </div>
 
 <div class="container">
@@ -526,17 +643,10 @@
   <!-- ── Page Head ── -->
   <div class="page-head">
     <div class="page-title-block">
-      <div class="uppercase-label">Precision Stop · Trailing</div>
+      <div class="uppercase-label">Precision Stop · Trailing · WIFE</div>
       <h1 class="page-title">Stop Signal Monitor</h1>
       <p class="page-subtitle">22 positions · 보조 reference (자동매도 아님)</p>
     </div>
-    <nav class="pr-nav">
-      
-      <a href="report_wife_2026-05-11.html">📊 Portfolio</a>
-      
-      <a href="trend_2026-05-11.html">📈 Trend</a>
-      <a class="active" href="#">🛡 Risk</a>
-    </nav>
   </div>
 
   <!-- ── Summary ── -->
@@ -583,7 +693,7 @@
       <div class="pr-row-top">
         <div class="pr-name">롯데케미칼<span class="pr-mode">011170 · MOMENTUM · ATR×3</span></div>
         
-        <div class="pr-days">3D</div>
+        <div class="pr-days">4D</div>
         
         <div class="pr-gap red">−6.4%<span class="pr-gap-lbl">Stop Gap</span></div>
         <div class="pr-action exit">Exit</div>
@@ -599,7 +709,7 @@
       <div class="pr-row-top">
         <div class="pr-name">동원시스템즈<span class="pr-mode">014820 · MOMENTUM · ATR×3</span></div>
         
-        <div class="pr-days">8D</div>
+        <div class="pr-days">9D</div>
         
         <div class="pr-gap red">−4.6%<span class="pr-gap-lbl">Stop Gap</span></div>
         <div class="pr-action exit">Exit</div>
@@ -615,7 +725,7 @@
       <div class="pr-row-top">
         <div class="pr-name">WON 초대형IB&금융지주<span class="pr-mode">0154F0 · MOMENTUM · ATR×3</span></div>
         
-        <div class="pr-days">3D</div>
+        <div class="pr-days">4D</div>
         
         <div class="pr-gap red">−0.5%<span class="pr-gap-lbl">Stop Gap</span></div>
         <div class="pr-action exit">Exit</div>
@@ -631,7 +741,7 @@
       <div class="pr-row-top">
         <div class="pr-name">KODEX 주주환원고배당주<span class="pr-mode">0153K0 · MOMENTUM · ATR×3</span></div>
         
-        <div class="pr-days">3D</div>
+        <div class="pr-days">4D</div>
         
         <div class="pr-gap red">−0.4%<span class="pr-gap-lbl">Stop Gap</span></div>
         <div class="pr-action exit">Exit</div>
@@ -825,5 +935,31 @@
 
 </div>
 
+</main>
+
+<script>
+function toggleTheme(){
+  const html = document.documentElement;
+  const next = html.classList.contains('dark') ? 'light' : 'dark';
+  html.classList.remove('dark','light');
+  html.classList.add(next);
+  localStorage.setItem('theme', next);
+  const icon = document.getElementById('themeIcon');
+  if(icon) icon.textContent = next === 'dark' ? 'light_mode' : 'dark_mode';
+}
+function toggleSidebar(){
+  const s = document.getElementById('sidebar');
+  const o = document.getElementById('sidebarOverlay');
+  if(!s) return;
+  s.classList.toggle('hidden');
+  s.classList.toggle('flex');
+  if(o) o.classList.toggle('hidden');
+}
+(function syncThemeIcon(){
+  const icon = document.getElementById('themeIcon');
+  if(!icon) return;
+  icon.textContent = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
+})();
+</script>
 </body>
 </html>
