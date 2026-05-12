@@ -12,7 +12,7 @@
   <div class="stage-action">{{ action_label }}</div>
   <div class="stage-tickers">
     {%- if rows -%}
-      {{ rows|map(attribute='ticker')|join(' · ') }}
+      {{ rows|map(attribute='name')|join(' · ') }}
     {%- else -%}
       <span class="muted">— 오늘 해당 종목 없음 —</span>
     {%- endif -%}
