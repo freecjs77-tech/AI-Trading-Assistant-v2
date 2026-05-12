@@ -174,12 +174,16 @@ def _anchor_short(anchor_date: str) -> str:
 
 def generate_portfolio_stop_page(stop_result: dict, output_dir: str,
                                   anchor_date: str = ANCHOR_DATE,
-                                  template_dir: str | None = None) -> str:
+                                  template_dir: str | None = None,
+                                  nav_ctx: dict | None = None) -> str:
     """stop_result(generate_portfolio_stop_signals 반환) → HTML 파일.
 
     파일명:
       me  → portfolio_stops_<DATE>.html
       其他 → portfolio_stops_<owner>_<DATE>.html
+
+    nav_ctx: shared sidebar context (pipeline._shared_nav). 누락 시 사이드바는
+             최소 모드(My Risk만)로 동작.
     """
     if template_dir is None:
         template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
@@ -218,7 +222,8 @@ def generate_portfolio_stop_page(stop_result: dict, output_dir: str,
         "HOLD":       "{:02d}".format(summary.get("HOLD", 0)),
     }
 
-    html = tmpl.render(
+    ctx = dict(nav_ctx) if nav_ctx else {}
+    ctx.update(dict(
         owner=owner,
         date=date_str,
         anchor_date=anchor_date,
@@ -235,7 +240,9 @@ def generate_portfolio_stop_page(stop_result: dict, output_dir: str,
         exit_total=len(exit_rows),
         tight_total=len(tight_rows),
         hold_total=len(hold_rows),
-    )
+        active_nav=("risk_me" if owner == "me" else "risk_wife"),
+    ))
+    html = tmpl.render(**ctx)
 
     fname = ("portfolio_stops_{}.html".format(date_str) if owner == "me"
              else "portfolio_stops_{}_{}.html".format(owner, date_str))

@@ -545,6 +545,54 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         portfolio = _parse_portfolio_for_report(portfolio_path)
         prev_signals = get_previous_signals(history, today)
 
+        # Shared nav context — Step 5의 모든 페이지(risk/momentum/lifecycle)가 공유
+        # 사이드바를 렌더링하려면 risk page render 전에 build 되어 있어야 함.
+        _meta = market_data.get("_meta", {})
+        _nav_date = _meta.get("date", today)
+        from report_generator import _owner_nav_links, _date_ko
+        _shared_nav = {
+            "nav_portfolio": f"report_{_nav_date}.html",
+            "nav_scanner": f"scanner_{_nav_date}.html",
+            "nav_backtest": f"backtest_{_nav_date}.html",
+            "nav_trend": f"trend_{_nav_date}.html",
+            **_owner_nav_links(_nav_date),
+            "has_momentum_us": momentum_us_result is not None and momentum_us_result.get("status") != "failed",
+            "has_momentum_kr": momentum_kr_result is not None and momentum_kr_result.get("status") != "failed",
+            "momentum_us_url": f"momentum_us_{(momentum_us_result or {}).get('as_of', _nav_date)}.html"
+                               if momentum_us_result and momentum_us_result.get("status") != "failed" else "",
+            "momentum_kr_url": f"momentum_kr_{(momentum_kr_result or {}).get('as_of', _nav_date)}.html"
+                               if momentum_kr_result and momentum_kr_result.get("status") != "failed" else "",
+            "lifecycle_us_page": f"lifecycle_us_{(lifecycle_us_result or {}).get('as_of', _nav_date)}.html"
+                                  if lifecycle_us_result and lifecycle_us_result.get("snapshots") else None,
+            "lifecycle_kr_page": f"lifecycle_kr_{(lifecycle_kr_result or {}).get('as_of', _nav_date)}.html"
+                                  if lifecycle_kr_result and lifecycle_kr_result.get("snapshots") else None,
+            "portfolio_stop_summary": stop_result_me.get("summary")
+                                       if stop_result_me and stop_result_me.get("status") == "ok" else None,
+            "portfolio_stop_page": None,          # legacy (me 우선) — 사이드바 호환용
+            "portfolio_stop_page_me": None,       # NEW: My Risk
+            "portfolio_stop_page_wife": None,     # NEW: Wife Risk (deterministic — Step 5d에서 생성됨)
+            "date_ko": _date_ko(_nav_date),
+            "market_status": _meta.get("market_status"),
+        }
+        if stop_result_me and stop_result_me.get("status") == "ok":
+            _stop_owner = stop_result_me.get("owner", "me")
+            _stop_date = stop_result_me.get("date", _nav_date)
+            _me_path = (f"portfolio_stops_{_stop_date}.html" if _stop_owner == "me"
+                        else f"portfolio_stops_{_stop_owner}_{_stop_date}.html")
+            _shared_nav["portfolio_stop_page"] = _me_path
+            _shared_nav["portfolio_stop_page_me"] = _me_path
+        # Wife (또는 기타 non-me owner) 페이지 경로는 portfolios/ 디스커버리로 사전 계산
+        # (Step 5d에서 실제 렌더링 — 파일명은 결정적이라 미리 링크해도 안전)
+        try:
+            from portfolio_paths import discover_portfolios, PRIMARY_OWNER
+            for _o, _ in discover_portfolios(project_dir):
+                if _o == PRIMARY_OWNER:
+                    continue
+                _key = "portfolio_stop_page_wife" if _o == "wife" else f"portfolio_stop_page_{_o}"
+                _shared_nav[_key] = f"portfolio_stops_{_o}_{_nav_date}.html"
+        except Exception as _de:
+            print(f"  WARN owner risk page discovery failed: {_de}")
+
         # Step 5 (cont.): Stop signal page for me (fail-soft)
         stop_page_path_me = None
         if stop_result_me and stop_result_me.get("status") == "ok":
@@ -552,6 +600,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 from portfolio_stop_report import generate_portfolio_stop_page
                 stop_page_path_me = generate_portfolio_stop_page(
                     stop_result_me, output_dir=reports_dir,
+                    nav_ctx=_shared_nav,
                 )
                 print(f"  OK stop page (me) -> {stop_page_path_me}")
             except Exception as e:
@@ -588,40 +637,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             output_dir=reports_dir,
         )
         print(f"  OK {len(scanner_files)} scanner pages generated")
-
-        # Shared nav context for momentum + lifecycle sidebar
-        _meta = market_data.get("_meta", {})
-        _nav_date = _meta.get("date", today)
-        from report_generator import _owner_nav_links, _date_ko
-        _shared_nav = {
-            "nav_portfolio": f"report_{_nav_date}.html",
-            "nav_scanner": f"scanner_{_nav_date}.html",
-            "nav_backtest": f"backtest_{_nav_date}.html",
-            "nav_trend": f"trend_{_nav_date}.html",
-            **_owner_nav_links(_nav_date),
-            "has_momentum_us": momentum_us_result is not None and momentum_us_result.get("status") != "failed",
-            "has_momentum_kr": momentum_kr_result is not None and momentum_kr_result.get("status") != "failed",
-            "momentum_us_url": f"momentum_us_{(momentum_us_result or {}).get('as_of', _nav_date)}.html"
-                               if momentum_us_result and momentum_us_result.get("status") != "failed" else "",
-            "momentum_kr_url": f"momentum_kr_{(momentum_kr_result or {}).get('as_of', _nav_date)}.html"
-                               if momentum_kr_result and momentum_kr_result.get("status") != "failed" else "",
-            "lifecycle_us_page": f"lifecycle_us_{(lifecycle_us_result or {}).get('as_of', _nav_date)}.html"
-                                  if lifecycle_us_result and lifecycle_us_result.get("snapshots") else None,
-            "lifecycle_kr_page": f"lifecycle_kr_{(lifecycle_kr_result or {}).get('as_of', _nav_date)}.html"
-                                  if lifecycle_kr_result and lifecycle_kr_result.get("snapshots") else None,
-            "portfolio_stop_summary": stop_result_me.get("summary")
-                                       if stop_result_me and stop_result_me.get("status") == "ok" else None,
-            "portfolio_stop_page": None,
-            "date_ko": _date_ko(_nav_date),
-            "market_status": _meta.get("market_status"),
-        }
-        if stop_result_me and stop_result_me.get("status") == "ok":
-            _stop_owner = stop_result_me.get("owner", "me")
-            _stop_date = stop_result_me.get("date", _nav_date)
-            _shared_nav["portfolio_stop_page"] = (
-                f"portfolio_stops_{_stop_date}.html" if _stop_owner == "me"
-                else f"portfolio_stops_{_stop_owner}_{_stop_date}.html"
-            )
 
         # Momentum pages (US + KR)
         try:
@@ -1006,6 +1021,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                         from portfolio_stop_report import generate_portfolio_stop_page
                         _owner_stop_page = generate_portfolio_stop_page(
                             _owner_stop_result, output_dir=reports_dir,
+                            nav_ctx=_shared_nav,
                         )
                         print(f"  OK stop page ({_owner}) -> {_owner_stop_page}")
                     except Exception as e:
