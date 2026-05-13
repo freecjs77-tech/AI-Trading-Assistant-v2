@@ -73,6 +73,19 @@ def _attach_derived(snap: dict, ticker: str,
     # needing to dig into raw.* from the helper, keeps _build_verdict_summary lean).
     out["dist_ema9_pct"] = raw.get("dist_ema9_pct")
 
+    # Surface score_v1 fields (graceful absence for phase_a_legacy snapshots)
+    out["score"]                 = snap.get("score")
+    out["score_track"]           = snap.get("score_track")
+    out["active_components"]     = snap.get("active_components")
+    out["features"]              = snap.get("features")
+    out["score_components"]      = snap.get("score_components")
+    out["decision_badges"]       = snap.get("decision_badges") or []
+    out["veto_reason"]           = snap.get("veto_reason")
+    out["suggested_entry_tier"]  = snap.get("suggested_entry_tier")
+    out["suggested_size_pct"]    = snap.get("suggested_size_pct")
+    out["rs_delta_pct"]          = snap.get("rs_delta_pct")
+    out["engine_version"]        = snap.get("engine_version") or "phase_a_legacy"
+
     return out
 
 
@@ -117,6 +130,10 @@ def _build_verdict_summary(enter: list, probe: list, watch: list,
         headline = f"⚡ 분할 진입 가능 종목 {probe_n}개"
         narration = f"{_ticker_list(probe)}이 약한 트리거 — 절반 진입 검토"
         action_hint = "PROBE 종목 절반 비중 진입"
+        # NEW — count drift-track PROBEs separately
+        drift_probes = [r for r in probe if r.get("score_track") == "drift"]
+        if drift_probes:
+            action_hint += f" (그중 {len(drift_probes)}건은 drift 트랙)"
     else:
         headline = "⏸ 오늘은 신규 진입할 종목이 없습니다 (ENTER 0, PROBE 0)"
         narration = (
@@ -186,6 +203,8 @@ def build_page_context(result: dict,
         "market":       result.get("market", "US"),
         "as_of":        result.get("as_of"),
         "version":      LIFECYCLE_VERSION,
+        "engine_version":     result.get("engine_version"),       # NEW
+        "market_ret_5d_pct":  result.get("market_ret_5d_pct"),    # NEW
         "new_confirmed": new_confirmed,
         "enter":        enter,
         "probe":        probe,
