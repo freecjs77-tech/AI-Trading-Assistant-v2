@@ -9,6 +9,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('debug') === '1') {
+    document.body.classList.add('debug-mode');
+  }
+})();
+</script>
+<style>
+.advanced-debug { display: none; }
+body.debug-mode .advanced-debug { display: block; }
+.chip-score { font-size: 0.85em; opacity: 0.85; margin-top: 4px; }
+.score-dots { letter-spacing: 1px; color: #4a9eff; }
+.score-num { font-weight: 600; margin-left: 6px; }
+.badge-strong { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 1px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 6px; }
+</style>
+<script>
 tailwind.config = {
   darkMode: "class",
   theme: { extend: {
@@ -209,6 +225,9 @@ tailwind.config = {
       <div class="verdict" style="margin-top: 8px;">{{ verdict_summary.avoid_line }}</div>
       {% endif %}
       <div class="verdict" style="margin-top: 12px;">💡 <b>오늘 할 일</b>: {{ verdict_summary.action_hint }}</div>
+      {% if verdict_summary.score_engine_line %}
+      <p class="score-engine-note">{{ verdict_summary.score_engine_line }}</p>
+      {% endif %}
     </div>
 
     {# 파이프라인 partial #}
@@ -252,6 +271,16 @@ tailwind.config = {
           <div class="ticker">{{ row.ticker }} <span class="kr-name">{{ row.name }}</span>{% if row.trigger_age_days == 0 and row.trigger == 'CONFIRMED_TRIGGER' %} 🆕{% endif %}</div>
           <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · vol {{ row.raw.volume_ratio|x_fmt }} · trig {{ row.trigger_age_days|trig_age_label }}</div>
           <div class="meta">{{ row.setup }}</div>
+          {% if row.score is not none %}
+          <div class="chip-score">
+            {% set dot_count = row.active_components or 0 %}
+            <span class="score-dots" title="{{ row.active_components }} components active">{% for i in range(5) %}{% if i < dot_count %}●{% else %}○{% endif %}{% endfor %}</span>
+            <span class="score-num">{{ row.score }}</span>
+            {% if 'PROBE_STRONG' in (row.decision_badges or []) %}
+            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ STRONG</span>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>
@@ -273,6 +302,16 @@ tailwind.config = {
           <div class="ticker">{{ row.ticker }} <span class="kr-name">{{ row.name }}</span></div>
           <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · vol {{ row.raw.volume_ratio|x_fmt }}</div>
           <div class="meta">EARLY · {{ row.setup_streak }}일 압축</div>
+          {% if row.score is not none %}
+          <div class="chip-score">
+            {% set dot_count = row.active_components or 0 %}
+            <span class="score-dots" title="{{ row.active_components }} components active">{% for i in range(5) %}{% if i < dot_count %}●{% else %}○{% endif %}{% endfor %}</span>
+            <span class="score-num">{{ row.score }}</span>
+            {% if 'PROBE_STRONG' in (row.decision_badges or []) %}
+            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ STRONG</span>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>
@@ -294,6 +333,16 @@ tailwind.config = {
           <div class="ticker">{{ row.ticker }} <span class="kr-name">{{ row.name }}</span></div>
           <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · 21일선 {{ row.dist_ema21_signed_pct|signed_pct }}</div>
           <div class="meta">{{ row.setup }} · {{ row.setup_streak }}일 압축</div>
+          {% if row.score is not none %}
+          <div class="chip-score">
+            {% set dot_count = row.active_components or 0 %}
+            <span class="score-dots" title="{{ row.active_components }} components active">{% for i in range(5) %}{% if i < dot_count %}●{% else %}○{% endif %}{% endfor %}</span>
+            <span class="score-num">{{ row.score }}</span>
+            {% if 'PROBE_STRONG' in (row.decision_badges or []) %}
+            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ STRONG</span>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>

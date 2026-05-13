@@ -45,6 +45,9 @@ def test_golden_cooling_off():
 
 # ── Scenario 2: clean_entry — TREND_OK → PULLBACK → EARLY → CONFIRMED ──
 def test_golden_clean_entry():
+    import os
+    from unittest.mock import patch
+
     days = [
         _row(close=104, high=105, low=103, ema9=99.5, ema21=97, ema65=90),
         _row(close=97.5, high=98, low=97, ema9=99,    ema21=97, ema65=90),
@@ -66,11 +69,16 @@ def test_golden_clean_entry():
     assert trig_d3 == "EARLY_TRIGGER"  # day-2 close 97.5 ≤ ema9 99, day-3 close 99.6 > 99
     trig_d4 = evaluate_trigger_state(days[3], days[2], setups[3])
     assert trig_d4 == "CONFIRMED_TRIGGER"  # vol 1.5x + close in upper 20% (101.5 vs high 101.8/low 100)
-    assert evaluate_decision(setups[3], trig_d4) == "ENTER"
+    # Phase A golden: use legacy mode so evaluate_decision returns string.
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        assert evaluate_decision(setups[3], trig_d4) == "ENTER"
 
 
 # ── Scenario 3: failed_breakout ───────────────────────────────────────
 def test_golden_failed_breakout():
+    import os
+    from unittest.mock import patch
+
     confirmed_day = _row(close=101.5, high=101.8, low=100, ema9=99, ema21=97, ema65=90,
                           vol_ratio=1.5)
     today = _row(close=98.5, high=99.5, low=97.5, ema9=100, ema21=97, ema65=90,
@@ -85,7 +93,9 @@ def test_golden_failed_breakout():
     risk_tags = compute_risk_tags(today, yesterday_snapshot)
     assert trig == "WAIT"
     assert "FAILED_BREAKOUT" in risk_tags
-    assert evaluate_decision(setup, trig, risk_tags=risk_tags) == "AVOID"
+    # Phase A golden: use legacy mode so evaluate_decision returns string.
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        assert evaluate_decision(setup, trig, risk_tags=risk_tags) == "AVOID"
 
 
 # ── Scenario 4: structure_break — TREND_OK → BROKEN ────────────────────

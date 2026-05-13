@@ -41,7 +41,11 @@ def load_lifecycle_history(path: str, market: str = "US") -> dict:
     try:
         with open(path, "rb") as f:
             raw = f.read()
-        return json.loads(raw.rstrip(b" \t\n\r\x00").decode("utf-8"))
+        state = json.loads(raw.rstrip(b" \t\n\r\x00").decode("utf-8"))
+        # Auto-fill engine_version for pre-score_v1 history (per spec §9 migration policy)
+        if "current_engine_version" not in state:
+            state["current_engine_version"] = "phase_a_legacy"
+        return state
     except Exception as e:
         print(f"[lifecycle_history] WARN load failed ({e}) -- using empty state")
         return new_empty_state(market)
@@ -231,12 +235,12 @@ def derive_fields(ticker_block: dict) -> dict:
 def compute_transitions(ticker: str,
                          yesterday: Optional[dict],
                          today: dict) -> list[dict]:
-    """Diff yesterday's snapshot against today's. Emit events per spec §5.3.
+    """Diff yesterday's snapshot against today's. Emit events per spec §5.3 + §9.
 
-    Five event types:
-      SETUP_CHANGE / TRIGGER_CHANGE / DECISION_CHANGE
-      FAILED_BREAKOUT (independent — risk_tag presence)
-      RISK_ESCALATION (when EXTENDED newly added to risk_tags)
+    Phase A events: SETUP_CHANGE / TRIGGER_CHANGE / DECISION_CHANGE /
+                    FAILED_BREAKOUT / RISK_ESCALATION
+    Score_v1 events: SCORE_JUMP / DRIFT_PROBE / PROBE_STRONG
+      (first-attach dedup — see spec §9 transitions[] policy)
     """
     if yesterday is None:
         return []
@@ -253,6 +257,7 @@ def compute_transitions(ticker: str,
             "to":       to,
         })
 
+    # ── Existing Phase A transition diffs (unchanged) ──
     if yesterday.get("setup") != today.get("setup"):
         _evt("SETUP_CHANGE", yesterday.get("setup"), today.get("setup"))
     if yesterday.get("trigger") != today.get("trigger"):
@@ -265,9 +270,32 @@ def compute_transitions(ticker: str,
 
     if "FAILED_BREAKOUT" in today_tags:
         _evt("FAILED_BREAKOUT", None, None)
-
     if "EXTENDED" in today_tags and "EXTENDED" not in y_tags:
         _evt("RISK_ESCALATION", None, "EXTENDED")
+
+    # ── Score_v1 transitions (first-attach dedup) ──
+    y_score = yesterday.get("score")
+    t_score = today.get("score")
+    if y_score is not None and t_score is not None:
+        # SCORE_JUMP — Δscore >= 3
+        if abs(t_score - y_score) >= 3:
+            _evt("SCORE_JUMP", y_score, t_score)
+
+    # DRIFT_PROBE — drift_score first crosses >= 4 (drift_probe threshold)
+    from lifecycle_score_config import THRESHOLDS, BADGE_PROBE_STRONG, TRACK_DRIFT
+    drift_thr = THRESHOLDS["drift_probe"]
+    y_track = yesterday.get("score_track")
+    t_track = today.get("score_track")
+    if t_track == TRACK_DRIFT and t_score is not None and t_score >= drift_thr:
+        y_drift_score = y_score if y_track == TRACK_DRIFT else None
+        if y_drift_score is None or y_drift_score < drift_thr:
+            _evt("DRIFT_PROBE", y_drift_score, t_score)
+
+    # PROBE_STRONG — badge first attaches (vs yesterday's badges)
+    t_badges = set(today.get("decision_badges") or [])
+    y_badges = set(yesterday.get("decision_badges") or [])
+    if BADGE_PROBE_STRONG in t_badges and BADGE_PROBE_STRONG not in y_badges:
+        _evt("PROBE_STRONG", None, BADGE_PROBE_STRONG)
 
     return out
 

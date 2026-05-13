@@ -361,3 +361,80 @@ def test_active_set_uses_normalized_momentum_history():
                             today="2026-05-08")
     assert "NVDA" in s
     assert "OLD" not in s
+
+
+def test_score_jump_emits_on_delta_3():
+    from lifecycle_history import compute_transitions
+
+    y = {"date": "2026-05-12", "setup": "PULLBACK", "trigger": "EARLY_TRIGGER",
+         "decision": "PROBE", "raw": {"risk_tags": []}, "score": 3,
+         "score_track": "trigger", "decision_badges": []}
+    t = {"date": "2026-05-13", "setup": "PULLBACK", "trigger": "EARLY_TRIGGER",
+         "decision": "PROBE", "raw": {"risk_tags": []}, "score": 7,
+         "score_track": "trigger", "decision_badges": []}
+    events = compute_transitions("AAPL", y, t)
+    assert any(e["event"] == "SCORE_JUMP" for e in events)
+
+
+def test_score_jump_no_emit_small_delta():
+    from lifecycle_history import compute_transitions
+
+    y = {"date": "2026-05-12", "setup": "PULLBACK", "trigger": "EARLY_TRIGGER",
+         "decision": "PROBE", "raw": {"risk_tags": []}, "score": 4,
+         "score_track": "trigger", "decision_badges": []}
+    t = {"date": "2026-05-13", "setup": "PULLBACK", "trigger": "EARLY_TRIGGER",
+         "decision": "PROBE", "raw": {"risk_tags": []}, "score": 6,  # Δ=2
+         "score_track": "trigger", "decision_badges": []}
+    events = compute_transitions("AAPL", y, t)
+    assert not any(e["event"] == "SCORE_JUMP" for e in events)
+
+
+def test_drift_probe_first_attach():
+    from lifecycle_history import compute_transitions
+
+    y = {"date": "2026-05-12", "setup": "TREND_OK", "trigger": "WAIT",
+         "decision": "TRENDING", "raw": {"risk_tags": []}, "score": 3,
+         "score_track": "drift", "decision_badges": []}
+    t = {"date": "2026-05-13", "setup": "TREND_OK", "trigger": "EARLY_TRIGGER",
+         "decision": "PROBE", "raw": {"risk_tags": []}, "score": 5,
+         "score_track": "drift", "decision_badges": []}
+    events = compute_transitions("META", y, t)
+    assert any(e["event"] == "DRIFT_PROBE" for e in events)
+
+
+def test_drift_probe_dedup_when_already_above_threshold():
+    from lifecycle_history import compute_transitions
+
+    y = {"date": "2026-05-12", "setup": "TREND_OK", "trigger": "EARLY_TRIGGER",
+         "decision": "PROBE", "raw": {"risk_tags": []}, "score": 5,
+         "score_track": "drift", "decision_badges": []}
+    t = {"date": "2026-05-13", "setup": "TREND_OK", "trigger": "EARLY_TRIGGER",
+         "decision": "PROBE", "raw": {"risk_tags": []}, "score": 5,
+         "score_track": "drift", "decision_badges": []}
+    events = compute_transitions("META", y, t)
+    assert not any(e["event"] == "DRIFT_PROBE" for e in events)
+
+
+def test_probe_strong_first_attach():
+    from lifecycle_history import compute_transitions
+
+    y = {"date": "2026-05-12", "setup": "TREND_OK", "trigger": "EARLY_TRIGGER",
+         "decision": "PROBE", "raw": {"risk_tags": []}, "score": 5,
+         "score_track": "drift", "decision_badges": []}
+    t = {"date": "2026-05-13", "setup": "TREND_OK", "trigger": "EARLY_TRIGGER",
+         "decision": "PROBE", "raw": {"risk_tags": []}, "score": 7,
+         "score_track": "drift", "decision_badges": ["PROBE_STRONG"]}
+    events = compute_transitions("NVDA", y, t)
+    assert any(e["event"] == "PROBE_STRONG" for e in events)
+
+
+def test_legacy_load_auto_fills_engine_version(tmp_path):
+    import json
+    from lifecycle_history import load_lifecycle_history
+
+    legacy = {"schema_version": "1.0.0", "tickers": {}, "transitions": []}
+    p = tmp_path / "lifecycle_history_us.json"
+    p.write_text(json.dumps(legacy), encoding="utf-8")
+
+    state = load_lifecycle_history(str(p), market="US")
+    assert state["current_engine_version"] == "phase_a_legacy"

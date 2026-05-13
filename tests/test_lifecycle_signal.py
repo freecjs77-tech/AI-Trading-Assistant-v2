@@ -217,17 +217,28 @@ from lifecycle_signal import evaluate_decision
     ("BROKEN",       "WAIT",              "AVOID"),
 ])
 def test_decision_table(setup, trigger, expected):
-    assert evaluate_decision(setup, trigger) == expected
+    # Phase A state-machine contract. Run under legacy mode so the table
+    # returns plain strings regardless of the PR#2 score_active default.
+    import os
+    from unittest.mock import patch
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        assert evaluate_decision(setup, trigger) == expected
 
 
 def test_decision_failed_breakout_forces_avoid():
-    assert evaluate_decision("PULLBACK", "EARLY_TRIGGER",
-                             risk_tags=["FAILED_BREAKOUT"]) == "AVOID"
+    import os
+    from unittest.mock import patch
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        assert evaluate_decision("PULLBACK", "EARLY_TRIGGER",
+                                 risk_tags=["FAILED_BREAKOUT"]) == "AVOID"
 
 
 def test_decision_regime_none_is_default_phase_b_hook():
     # In Phase A regime=None should be a no-op. The function must accept it.
-    assert evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", regime=None) == "ENTER"
+    import os
+    from unittest.mock import patch
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        assert evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", regime=None) == "ENTER"
 
 
 from lifecycle_signal import compute_risk_tags
@@ -327,3 +338,170 @@ def test_process_universe_uses_yesterday_for_failed_breakout():
     snap = result["snapshots"]["NVDA"]
     assert "FAILED_BREAKOUT" in snap["raw"]["risk_tags"]
     assert snap["decision"] == "AVOID"
+
+
+def test_hard_risk_veto_returns_veto_reasons():
+    from lifecycle_signal import hard_risk_veto
+
+    assert hard_risk_veto("TREND_OK", ["FAILED_BREAKOUT"]) == "FAILED_BREAKOUT"
+    assert hard_risk_veto("BROKEN", []) == "BROKEN"
+    assert hard_risk_veto("EXTENDED", []) == "EXTENDED"
+    assert hard_risk_veto("PULLBACK", []) is None
+    assert hard_risk_veto("TREND_OK", ["OVERHEAT"]) is None  # OVERHEAT is NOT a veto
+
+
+def test_derive_legacy_trigger_state_mapping():
+    from lifecycle_signal import _derive_legacy_trigger_state
+
+    assert _derive_legacy_trigger_state(None, None) == "WAIT"
+    assert _derive_legacy_trigger_state(0, "trigger") == "WAIT"
+    assert _derive_legacy_trigger_state(3, "trigger") == "EARLY_TRIGGER"
+    assert _derive_legacy_trigger_state(7, "trigger") == "CONFIRMED_TRIGGER"
+    # Drift never maps to CONFIRMED
+    assert _derive_legacy_trigger_state(4, "drift") == "EARLY_TRIGGER"
+    assert _derive_legacy_trigger_state(9, "drift") == "EARLY_TRIGGER"
+    assert _derive_legacy_trigger_state(3, "drift") == "WAIT"
+
+
+import os
+from unittest.mock import patch
+
+from lifecycle_signal import evaluate_decision
+
+
+def _score_inputs():
+    """Minimal inputs for score-active path."""
+    today_raw = {
+        "open": 100, "close": 101, "high": 102, "low": 99,
+        "ema9": 100, "ema21": 98, "ema65": 90,
+        "atr14": 2.0, "atr14_pct": 2.0,
+        "atr14_pct_5d_avg": 1.5, "atr14_pct_20d_avg": 2.0,
+        "volume_ratio": 1.0,
+        "high_20d_prior": 105.0,
+        "change_5d_pct": 3.0,
+    }
+    yesterday_snap = {"close": 99, "low": 98, "high": 100, "ema9": 99.5}
+    return today_raw, yesterday_snap
+
+
+def test_legacy_mode_returns_string():
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        result = evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", risk_tags=[])
+    assert result == "ENTER"
+
+
+def test_legacy_mode_failed_breakout_avoid():
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        result = evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER",
+                                   risk_tags=["FAILED_BREAKOUT"])
+    assert result == "AVOID"
+
+
+def test_shadow_mode_returns_phase_a_string():
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_shadow"}):
+        result = evaluate_decision("PULLBACK", "EARLY_TRIGGER", risk_tags=[])
+    assert result == "PROBE"
+
+
+def test_score_active_returns_dict():
+    today_raw, yesterday_snap = _score_inputs()
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
+        result = evaluate_decision("PULLBACK", "EARLY_TRIGGER",
+                                   risk_tags=[],
+                                   today_raw=today_raw, yesterday_snap=yesterday_snap,
+                                   market_ret_5d_pct=1.0)
+    assert isinstance(result, dict)
+    assert "score" in result
+    assert "score_components" in result
+    assert "decision" in result
+    assert "veto_reason" in result
+
+
+def test_score_active_veto_returns_avoid_with_internal_raw():
+    today_raw, yesterday_snap = _score_inputs()
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
+        result = evaluate_decision("EXTENDED", "WAIT", risk_tags=["EXTENDED"],
+                                   today_raw=today_raw, yesterday_snap=yesterday_snap,
+                                   market_ret_5d_pct=1.0)
+    assert result["decision"] == "AVOID"
+    assert result["veto_reason"] == "EXTENDED"
+    assert result["score"] is None
+    assert result["features"] is None
+    # Internal raw still computed for analytics
+    assert result["_raw_score"] is not None
+    assert result["_raw_features"] is not None
+
+
+def test_score_active_trigger_track_inactive_degrades_to_watch():
+    """When TRIGGER_TRACK_ACTIVE=False (explicitly patched), high score still → WATCH."""
+    import lifecycle_score_config as cfg
+    today_raw, yesterday_snap = _score_inputs()
+    # Make sure trigger score would otherwise hit ENTER
+    today_raw["close"] = 110  # ema_reclaim + breakout
+    today_raw["volume_ratio"] = 1.5  # vol_expansion
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}), \
+         patch.object(cfg, "TRIGGER_TRACK_ACTIVE", False):
+        result = evaluate_decision("PULLBACK", "EARLY_TRIGGER", risk_tags=[],
+                                   today_raw=today_raw, yesterday_snap=yesterday_snap,
+                                   market_ret_5d_pct=1.0)
+    # Explicitly disabled: even high score gets WATCH
+    assert result["decision"] == "WATCH"
+    assert result["score"] > 0  # but the score itself is still computed and visible
+
+
+def test_unknown_mode_falls_back_to_legacy(capsys):
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "garbage"}):
+        result = evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", risk_tags=[])
+    assert result == "ENTER"  # Phase A behavior preserved
+    captured = capsys.readouterr()
+    assert "unknown LIFECYCLE_ENGINE_MODE" in captured.out
+
+
+def test_process_universe_writes_score_fields_in_active_mode():
+    """Integration: process_universe → _make_snapshot must write score fields under score_active.
+
+    Closes coverage gap noted in final review: invariant + decision matrix tests
+    cover evaluate_decision directly, but the snapshot-writing path through
+    process_universe was not asserted.
+    """
+    from lifecycle_signal import process_universe
+
+    # Synthetic market data with a TREND_OK ticker
+    market_data = {
+        "AVGO": {
+            "price": 105.0, "open": 104.0, "high": 106.0, "low": 103.5,
+            "ema9": 100.0, "ema21": 98.0, "ema65": 90.0,
+            "ema21_slope_5d": 0.5, "ema65_slope_5d": 0.4,
+            "rsi14": 60.0, "atr14": 2.0, "atr14_pct": 1.5,
+            "atr14_pct_5d_avg": 1.5, "atr14_pct_20d_avg": 2.0,
+            "volume_ratio": 1.0, "volume_5d_avg": 1_000_000,
+            "volume_20d_avg": 1_000_000,
+            "high_20d_prior": 110.0,
+            "change_pct": 1.0, "change_5d_pct": 5.0,
+            "days_sideways": 0, "sector": "Technology",
+        },
+    }
+    yesterday_state = {"tickers": {}}
+
+    # No mode patch — uses PR#2/PR#3 default (score_active)
+    result = process_universe(
+        active_set={"AVGO"}, market_data=market_data,
+        yesterday_state=yesterday_state, today="2026-05-14",
+        market_ret_5d_pct=1.0,
+    )
+    assert "AVGO" in result["snapshots"]
+    snap = result["snapshots"]["AVGO"]
+
+    # Score wiring assertions
+    assert snap["score"] is not None, "score field missing from snapshot"
+    assert snap["engine_version"] == "score_v1"
+    assert snap["score_track"] in ("trigger", "drift")
+    assert "score_components" in snap
+    # AVGO is TREND_OK (ema9>21>65, dist < 12%, close > ema21) → drift track → 7 components
+    if snap["score_track"] == "drift":
+        assert len(snap["score_components"]) == 7
+    else:
+        assert len(snap["score_components"]) == 9
+    # features map should also be present
+    assert isinstance(snap["features"], dict)
+    assert len(snap["features"]) in (7, 9)
