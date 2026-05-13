@@ -155,13 +155,13 @@
 
   <!-- Top Navigation: 다른 주요 페이지로의 이동 링크 -->
   <nav class="detail-topnav" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:12px;">
-    <a href="../report_2026-05-12.html" style="color:var(--accent);text-decoration:none;font-weight:600;padding:4px 10px;border-radius:6px;background:var(--panel2);">My Portfolio</a>
+    <a href="../report_2026-05-13.html" style="color:var(--accent);text-decoration:none;font-weight:600;padding:4px 10px;border-radius:6px;background:var(--panel2);">My Portfolio</a>
     
-    <a href="../report_wife_2026-05-12.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Wife Portfolio</a>
+    <a href="../report_wife_2026-05-13.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Wife Portfolio</a>
     
-    <a href="../scanner_2026-05-12.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Scanner</a>
-    <a href="../backtest_2026-05-12.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Backtest</a>
-    <a href="../trend_2026-05-12.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Trend</a>
+    <a href="../scanner_2026-05-13.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Scanner</a>
+    <a href="../backtest_2026-05-13.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Backtest</a>
+    <a href="../trend_2026-05-13.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Trend</a>
     <a href="../archive.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Archive</a>
     <span style="flex:1"></span>
     <button onclick="toggleTheme()" id="themeToggle" style="background:var(--panel2);border:1px solid var(--border);color:var(--accent);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Light Mode</button>
@@ -169,7 +169,7 @@
 
   <!-- Back Navigation -->
   <div style="margin-bottom:16px;">
-    <a href="../report_2026-05-12.html" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
+    <a href="../report_2026-05-13.html" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
   </div>
 
   <!-- Header -->
@@ -181,7 +181,7 @@
           <span class="ticker-name">TIGER 미국S&P500</span>
           <span class="badge badge-class">ETF</span>
         </h1>
-        <div class="ticker-meta"> &middot; 2026년 5월 12일 (화요일) &middot; Data: yfinance</div>
+        <div class="ticker-meta"> &middot; 2026년 5월 13일 (수요일) &middot; Data: yfinance</div>
       </div>
       <div class="price-block">
         <div class="price">₩27,410</div>
@@ -189,9 +189,9 @@
       </div>
     </div>
     <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-      <span class="badge badge-signal badge-HOLD">HOLD</span>
+      <span class="badge badge-signal badge-exit">TOP_SIGNAL</span>
       
-      <span style="font-size: 12px; color: var(--text-dim);">Exit/Entry 조건 미충족</span>
+      <span style="font-size: 12px; color: var(--text-dim);">RSI >= 75 + BB 상단 2일 연속</span>
     </div>
     
     
@@ -279,15 +279,15 @@
   <div class="signal-section">
     <div class="section-title">&#128269; &#54032;&#51221; &#44540;&#44144; &#49345;&#49464;</div>
     <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
-      <span class="badge badge-signal badge-HOLD" style="font-size: 14px;">HOLD</span>
-      <span style="font-size: 13px; color: var(--text-dim);">Exit/Entry 조건 미충족</span>
+      <span class="badge badge-signal badge-exit" style="font-size: 14px;">TOP_SIGNAL</span>
+      <span style="font-size: 13px; color: var(--text-dim);">RSI >= 75 + BB 상단 2일 연속</span>
     </div>
     
     
     <div class="judge-group exit-group">
       <div class="judge-group-header">
         <span class="group-name">TOP_SIGNAL — 과열 경보 (3개 중 2개 충족 시 발동)</span>
-        <span class="group-count cnt-partial">1/3 충족</span>
+        <span class="group-count cnt-partial">2/3 충족</span>
       </div>
       
       <div class="condition-card-list">
@@ -307,13 +307,13 @@
         
         
         
-        <div class="cond-card cond-card-no">
+        <div class="cond-card cond-card-ok">
           
-          <span class="cond-icon cond-no">&#10007;</span>
+          <span class="cond-icon cond-ok">&#10003;</span>
           
           <div class="cond-card-body">
             <div class="cond-card-title">BB 상단 2일 연속</div>
-            <div class="cond-card-desc">오늘 103.3%, 전일 96.5% — 2일 연속이 아니에요</div>
+            <div class="cond-card-desc">오늘 103.3%, 전일 103.4% — 연속 돌파했어요</div>
           </div>
         </div>
         
@@ -596,12 +596,21 @@
   <!-- Signal History -->
   
   <div class="signal-section">
-    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 30&#51068;)</div>
+    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 7&#51068;)</div>
     <table class="history-table">
       <thead>
         <tr><th>&#45216;&#51676;</th><th>&#49884;&#44536;&#45328;</th><th>&#44032;&#44201;</th><th>RSI</th><th>MACD Hist</th><th>DD</th></tr>
       </thead>
       <tbody>
+        
+        <tr>
+          <td>2026-05-13</td>
+          <td class="sig-exit">TOP_SIGNAL</td>
+          <td>₩27,410</td>
+          <td>87.9</td>
+          <td>92.6074</td>
+          <td>-</td>
+        </tr>
         
         <tr>
           <td>2026-05-12</td>
@@ -624,7 +633,7 @@
         <tr>
           <td>2026-04-16</td>
           <td class="sig-hold">HOLD</td>
-          <td>₩25,780</td>
+          <td>₩25,719</td>
           <td>72.9</td>
           <td>136.9759</td>
           <td>-</td>
@@ -633,7 +642,7 @@
         <tr>
           <td>2026-04-15</td>
           <td class="sig-buy">3rd_BUY</td>
-          <td>₩25,515</td>
+          <td>₩25,455</td>
           <td>69.1</td>
           <td>115.9363</td>
           <td>-</td>
@@ -642,7 +651,7 @@
         <tr>
           <td>2026-04-14</td>
           <td class="sig-buy">3rd_BUY</td>
-          <td>₩25,330</td>
+          <td>₩25,270</td>
           <td>66.0</td>
           <td>99.1584</td>
           <td>-</td>
@@ -651,226 +660,10 @@
         <tr>
           <td>2026-04-13</td>
           <td class="sig-buy">3rd_BUY</td>
-          <td>₩25,065</td>
+          <td>₩25,006</td>
           <td>60.8</td>
           <td>82.8591</td>
           <td>-0.2%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-10</td>
-          <td class="sig-buy">3rd_BUY</td>
-          <td>₩25,105</td>
-          <td>62.1</td>
-          <td>77.1928</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-09</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩24,930</td>
-          <td>58.4</td>
-          <td>58.2115</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-08</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩24,825</td>
-          <td>56.0</td>
-          <td>41.7459</td>
-          <td>-0.2%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-07</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩24,610</td>
-          <td>50.6</td>
-          <td>23.7556</td>
-          <td>-1.0%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-06</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩24,605</td>
-          <td>50.4</td>
-          <td>16.1890</td>
-          <td>-1.1%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-02</td>
-          <td class="sig-hold">HOLD</td>
-          <td>₩24,475</td>
-          <td>47.2</td>
-          <td>-9.3576</td>
-          <td>-2.3%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-01</td>
-          <td class="sig-hold">HOLD</td>
-          <td>₩24,545</td>
-          <td>48.7</td>
-          <td>-19.7614</td>
-          <td>-2.0%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-31</td>
-          <td class="sig-hold">HOLD</td>
-          <td>₩24,345</td>
-          <td>43.8</td>
-          <td>-40.4748</td>
-          <td>-2.8%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-30</td>
-          <td class="sig-tp1">PROFIT_2</td>
-          <td>₩24,010</td>
-          <td>34.0</td>
-          <td>-48.4851</td>
-          <td>-4.1%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-27</td>
-          <td class="sig-hold">HOLD</td>
-          <td>₩24,420</td>
-          <td>42.5</td>
-          <td>-21.9600</td>
-          <td>-2.5%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-26</td>
-          <td class="sig-hold">HOLD</td>
-          <td>₩24,580</td>
-          <td>46.7</td>
-          <td>-18.5844</td>
-          <td>-1.8%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-25</td>
-          <td class="sig-tp1">PROFIT_2</td>
-          <td>₩24,535</td>
-          <td>45.2</td>
-          <td>-27.0507</td>
-          <td>-2.0%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-24</td>
-          <td class="sig-tp1">PROFIT_2</td>
-          <td>₩24,360</td>
-          <td>39.5</td>
-          <td>-32.8967</td>
-          <td>-2.7%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-23</td>
-          <td class="sig-tp1">PROFIT_2</td>
-          <td>₩24,355</td>
-          <td>39.3</td>
-          <td>-20.9353</td>
-          <td>-2.7%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-20</td>
-          <td class="sig-tp1">PROFIT_2</td>
-          <td>₩24,620</td>
-          <td>45.6</td>
-          <td>1.0077</td>
-          <td>-1.7%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-19</td>
-          <td class="sig-hold">HOLD</td>
-          <td>₩24,655</td>
-          <td>46.5</td>
-          <td>9.4740</td>
-          <td>-1.5%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-18</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩24,865</td>
-          <td>52.4</td>
-          <td>19.1523</td>
-          <td>-0.7%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-17</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩24,715</td>
-          <td>48.0</td>
-          <td>12.1711</td>
-          <td>-1.3%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-16</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩24,785</td>
-          <td>50.0</td>
-          <td>15.9186</td>
-          <td>-1.0%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-13</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩24,760</td>
-          <td>49.3</td>
-          <td>14.1142</td>
-          <td>-1.6%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-12</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩24,695</td>
-          <td>47.6</td>
-          <td>13.3332</td>
-          <td>-1.9%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-11</td>
-          <td class="sig-tp1">PROFIT_2</td>
-          <td>₩24,730</td>
-          <td>48.4</td>
-          <td>18.3747</td>
-          <td>-1.8%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-10</td>
-          <td class="sig-tp1">PROFIT_2</td>
-          <td>₩24,750</td>
-          <td>48.8</td>
-          <td>22.1505</td>
-          <td>-1.7%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-03-09</td>
-          <td class="sig-hold">HOLD</td>
-          <td>₩24,625</td>
-          <td>45.9</td>
-          <td>25.1854</td>
-          <td>-2.2%</td>
         </tr>
         
       </tbody>
@@ -880,7 +673,7 @@
 
   <!-- Footer -->
   <div class="detail-footer">
-    AI Trading Assistant v3.0 &middot; 2026-05-12 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
+    AI Trading Assistant v3.0 &middot; 2026-05-13 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
   </div>
 
 </div>
