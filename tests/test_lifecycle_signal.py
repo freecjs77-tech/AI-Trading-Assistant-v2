@@ -327,3 +327,26 @@ def test_process_universe_uses_yesterday_for_failed_breakout():
     snap = result["snapshots"]["NVDA"]
     assert "FAILED_BREAKOUT" in snap["raw"]["risk_tags"]
     assert snap["decision"] == "AVOID"
+
+
+def test_hard_risk_veto_returns_veto_reasons():
+    from lifecycle_signal import hard_risk_veto
+
+    assert hard_risk_veto("TREND_OK", ["FAILED_BREAKOUT"]) == "FAILED_BREAKOUT"
+    assert hard_risk_veto("BROKEN", []) == "BROKEN"
+    assert hard_risk_veto("EXTENDED", []) == "EXTENDED"
+    assert hard_risk_veto("PULLBACK", []) is None
+    assert hard_risk_veto("TREND_OK", ["OVERHEAT"]) is None  # OVERHEAT is NOT a veto
+
+
+def test_derive_legacy_trigger_state_mapping():
+    from lifecycle_signal import _derive_legacy_trigger_state
+
+    assert _derive_legacy_trigger_state(None, None) == "WAIT"
+    assert _derive_legacy_trigger_state(0, "trigger") == "WAIT"
+    assert _derive_legacy_trigger_state(3, "trigger") == "EARLY_TRIGGER"
+    assert _derive_legacy_trigger_state(7, "trigger") == "CONFIRMED_TRIGGER"
+    # Drift never maps to CONFIRMED
+    assert _derive_legacy_trigger_state(4, "drift") == "EARLY_TRIGGER"
+    assert _derive_legacy_trigger_state(9, "drift") == "EARLY_TRIGGER"
+    assert _derive_legacy_trigger_state(3, "drift") == "WAIT"

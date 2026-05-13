@@ -252,6 +252,55 @@ def compute_risk_tags(today: dict, yesterday_snapshot: Optional[dict]) -> list[s
     return tags
 
 
+# ─────────────────────────────────────────────────────────────────
+# Score engine v1 — hard veto + legacy trigger_state derivation
+# Added per docs/superpowers/specs/2026-05-13-lifecycle-probabilistic-engine-design.md
+# ─────────────────────────────────────────────────────────────────
+
+
+def hard_risk_veto(setup_state: str, risk_tags: list[str]) -> Optional[str]:
+    """Layer 0 — deterministic veto. Returns veto reason or None.
+
+    Spec §4.1. Vetoes are structural failures; no probabilistic score can
+    override. FAILED_BREAKOUT / BROKEN / EXTENDED only — see spec §4.2 for
+    why OVERHEAT/PARABOLIC are NOT vetoes.
+    """
+    from lifecycle_score_config import (
+        VETO_FAILED_BREAKOUT, VETO_BROKEN, VETO_EXTENDED,
+    )
+    if VETO_FAILED_BREAKOUT in (risk_tags or []):
+        return VETO_FAILED_BREAKOUT
+    if setup_state == "BROKEN":
+        return VETO_BROKEN
+    if setup_state == "EXTENDED":
+        return VETO_EXTENDED
+    return None
+
+
+def _derive_legacy_trigger_state(score: Optional[int], track: Optional[str]) -> str:
+    """Map score+track to legacy trigger_state enum (WAIT/EARLY/CONFIRMED).
+
+    Spec §7.3. trigger_state is now a DERIVED compatibility field. Primary
+    truth is score + decision. This mapping keeps Phase A consumers (history
+    parsers, Telegram brief, page renderers) working without modification.
+    """
+    from lifecycle_score_config import THRESHOLDS, TRACK_TRIGGER, TRACK_DRIFT
+    if score is None or track is None:
+        return "WAIT"
+    if track == TRACK_TRIGGER:
+        if score >= THRESHOLDS["trigger_enter"]:
+            return "CONFIRMED_TRIGGER"
+        if score >= THRESHOLDS["trigger_probe"]:
+            return "EARLY_TRIGGER"
+        return "WAIT"
+    if track == TRACK_DRIFT:
+        # Drift never maps to CONFIRMED — drift is anticipatory, not confirmation.
+        if score >= THRESHOLDS["drift_probe"]:
+            return "EARLY_TRIGGER"
+        return "WAIT"
+    return "WAIT"
+
+
 # ---------------------------------------------------------------------------
 # Orchestrator
 # ---------------------------------------------------------------------------
