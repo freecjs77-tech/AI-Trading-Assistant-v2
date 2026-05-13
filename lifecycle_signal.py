@@ -196,13 +196,70 @@ def evaluate_decision(
     trigger_state: str,
     *,
     risk_tags: Optional[list[str]] = None,
-    regime: Optional[str] = None,  # Phase B hook — unused in A.
-) -> str:
-    """Decision keys: ENTER, PROBE, WATCH, TRENDING, AVOID.
+    regime: Optional[str] = None,
+    # Score engine inputs (new; optional for legacy callers)
+    today_raw: Optional[dict] = None,
+    yesterday_snap: Optional[dict] = None,
+    recent_3d_closes: Optional[list] = None,
+    market_ret_5d_pct: Optional[float] = None,
+) -> dict | str:
+    """Evaluate decision. Backwards compatible with Phase A boolean signature.
 
-    See module docstring + DECISION_LABELS for Korean display strings.
+    LIFECYCLE_ENGINE_MODE env var dispatches:
+      - "legacy":        Phase A boolean path (returns str: ENTER/PROBE/WATCH/...)
+      - "score_shadow":  Phase A decision (str) + side-channel score computed (NOT used for decision)
+      - "score_active":  Score-driven decision (returns dict with score fields)
+
+    All three modes guarantee the same invariants:
+      - FAILED_BREAKOUT / BROKEN / EXTENDED → AVOID
+      - Drift never ENTER when DRIFT_ALLOW_ENTER=False
+
+    Returns:
+        str: Phase A path (modes "legacy" and "score_shadow"). Decision key only.
+        dict: Score engine path (mode "score_active"). Full snapshot fields.
+              See spec §7.4 for shape.
     """
+    import os
+    from lifecycle_score_config import (
+        DEFAULT_ENGINE_MODE, MODE_LEGACY, MODE_SCORE_SHADOW, MODE_SCORE_ACTIVE,
+    )
+
+    mode = os.environ.get("LIFECYCLE_ENGINE_MODE", DEFAULT_ENGINE_MODE)
     risk_tags = risk_tags or []
+
+    # ── Legacy path (rollback target) — Phase A behavior exactly ──
+    if mode == MODE_LEGACY:
+        return _evaluate_decision_phase_a(setup_state, trigger_state, risk_tags=risk_tags)
+
+    # ── Shadow + active paths both need score computation ──
+    # In shadow mode the score is computed and returned in a side-channel form,
+    # but the decision returned is the Phase A boolean output (str).
+    if mode == MODE_SCORE_SHADOW:
+        phase_a_decision = _evaluate_decision_phase_a(setup_state, trigger_state, risk_tags=risk_tags)
+        # Shadow mode returns Phase A's str decision unchanged. Score computation
+        # for shadow storage is wired into process_universe in Task 14 — not here.
+        return phase_a_decision
+
+    # ── score_active: full new engine ──
+    if mode == MODE_SCORE_ACTIVE:
+        return _evaluate_decision_score(
+            setup_state=setup_state,
+            today_raw=today_raw or {},
+            yesterday_snap=yesterday_snap,
+            recent_3d_closes=recent_3d_closes,
+            risk_tags=risk_tags,
+            market_ret_5d_pct=market_ret_5d_pct,
+        )
+
+    # Unknown mode — safe fallback to legacy
+    print(f"[lifecycle_signal] WARN unknown LIFECYCLE_ENGINE_MODE={mode!r}, "
+          f"falling back to legacy")
+    return _evaluate_decision_phase_a(setup_state, trigger_state, risk_tags=risk_tags)
+
+
+def _evaluate_decision_phase_a(setup_state: str, trigger_state: str,
+                                *, risk_tags: list[str]) -> str:
+    """Phase A boolean path — exact behavior of original evaluate_decision."""
     if "FAILED_BREAKOUT" in risk_tags:
         return "AVOID"
     if setup_state in ("EXTENDED", "BROKEN"):
@@ -212,10 +269,110 @@ def evaluate_decision(
             return "ENTER"
         if trigger_state == "EARLY_TRIGGER":
             return "PROBE"
-        return "WATCH"  # good setup zone, trigger not yet fired
+        return "WATCH"
     if setup_state == "TREND_OK":
         return "TRENDING"
-    return "AVOID"  # unknown setup — safe default
+    return "AVOID"
+
+
+def _evaluate_decision_score(*, setup_state: str, today_raw: dict,
+                              yesterday_snap: Optional[dict],
+                              recent_3d_closes: Optional[list],
+                              risk_tags: list[str],
+                              market_ret_5d_pct: Optional[float]) -> dict:
+    """Score-driven decision evaluator. Returns full snapshot dict.
+
+    See spec §7.4 for the algorithm.
+    """
+    from lifecycle_score import compute_trigger_score, compute_drift_score
+    from lifecycle_score_config import (
+        TRACK_TRIGGER, TRACK_DRIFT,
+        DECISION_ENTER, DECISION_PROBE, DECISION_WATCH,
+        DECISION_TRENDING, DECISION_AVOID,
+        BADGE_PROBE_STRONG, VETO_UNKNOWN_SETUP,
+        THRESHOLDS, DRIFT_ALLOW_ENTER,
+        TRIGGER_TRACK_ACTIVE, DRIFT_TRACK_ACTIVE,
+        SIZE_TIERS, DECISION_TO_TIER,
+    )
+
+    # ── Layer 0: hard risk veto ──
+    veto = hard_risk_veto(setup_state, risk_tags)
+    if veto:
+        # Internal score still computed for analytics (spec §6.3).
+        if setup_state in ("TREND_OK", "EXTENDED"):
+            raw, raw_track = compute_drift_score(
+                today_raw, yesterday_snap, recent_3d_closes, market_ret_5d_pct
+            ), TRACK_DRIFT
+        else:
+            raw, raw_track = compute_trigger_score(
+                today_raw, yesterday_snap, market_ret_5d_pct
+            ), TRACK_TRIGGER
+        return {
+            "decision": DECISION_AVOID, "veto_reason": veto,
+            "score": None, "score_track": None,
+            "features": None, "score_components": None,
+            "active_components": None, "decision_badges": [],
+            "_raw_score": raw.score, "_raw_features": raw.features,
+            "_raw_score_track": raw_track,
+            "suggested_entry_tier": None, "suggested_size_pct": 0.0,
+            "rs_delta_pct": raw.rs_delta_pct,
+            "trigger_state": "WAIT",
+        }
+
+    # ── Layer 2+3: score and promote ──
+    if setup_state in ("PULLBACK", "BASE_FORMING"):
+        sc = compute_trigger_score(today_raw, yesterday_snap, market_ret_5d_pct)
+        track = TRACK_TRIGGER
+        if not TRIGGER_TRACK_ACTIVE:
+            # Trigger track not yet activated — degrade to WATCH but keep score visible.
+            decision, badges = DECISION_WATCH, []
+        elif sc.score >= THRESHOLDS["trigger_enter"]:
+            decision, badges = DECISION_ENTER, []
+        elif sc.score >= THRESHOLDS["trigger_probe"]:
+            decision, badges = DECISION_PROBE, []
+        else:
+            decision, badges = DECISION_WATCH, []
+    elif setup_state == "TREND_OK":
+        sc = compute_drift_score(today_raw, yesterday_snap, recent_3d_closes, market_ret_5d_pct)
+        track = TRACK_DRIFT
+        if not DRIFT_TRACK_ACTIVE:
+            # Drift track not yet activated — keep score visible, decision = TRENDING.
+            decision, badges = DECISION_TRENDING, []
+        elif sc.score >= THRESHOLDS["drift_enter"]:
+            decision = DECISION_ENTER if DRIFT_ALLOW_ENTER else DECISION_PROBE
+            badges   = [] if DRIFT_ALLOW_ENTER else [BADGE_PROBE_STRONG]
+        elif sc.score >= THRESHOLDS["drift_probe"]:
+            decision, badges = DECISION_PROBE, []
+        else:
+            decision, badges = DECISION_TRENDING, []
+    else:
+        # Unknown setup — safe fallback.
+        return {
+            "decision": DECISION_AVOID, "veto_reason": VETO_UNKNOWN_SETUP,
+            "score": None, "score_track": None,
+            "features": None, "score_components": None,
+            "active_components": None, "decision_badges": [],
+            "_raw_score": None, "_raw_features": None, "_raw_score_track": None,
+            "suggested_entry_tier": None, "suggested_size_pct": 0.0,
+            "rs_delta_pct": None, "trigger_state": "WAIT",
+        }
+
+    tier_key = (decision, badges[0] if badges else None)
+    tier = DECISION_TO_TIER.get(tier_key)
+    size_pct = SIZE_TIERS.get(tier, SIZE_TIERS[None])["size_pct"]
+
+    return {
+        "decision": decision, "decision_badges": badges,
+        "veto_reason": None,
+        "score": sc.score, "score_track": track,
+        "active_components": sc.active_count,
+        "features": sc.features, "score_components": sc.components_list,
+        "rs_delta_pct": sc.rs_delta_pct,
+        "suggested_entry_tier": tier,
+        "suggested_size_pct": size_pct,
+        "trigger_state": _derive_legacy_trigger_state(sc.score, track),
+        "_raw_score": None, "_raw_features": None, "_raw_score_track": None,
+    }
 
 
 def compute_risk_tags(today: dict, yesterday_snapshot: Optional[dict]) -> list[str]:
