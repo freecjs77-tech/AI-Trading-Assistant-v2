@@ -225,6 +225,9 @@ tailwind.config = {
       <div class="verdict" style="margin-top: 8px;">{{ verdict_summary.avoid_line }}</div>
       {% endif %}
       <div class="verdict" style="margin-top: 12px;">💡 <b>오늘 할 일</b>: {{ verdict_summary.action_hint }}</div>
+      {% if verdict_summary.score_engine_line %}
+      <p class="score-engine-note">{{ verdict_summary.score_engine_line }}</p>
+      {% endif %}
     </div>
 
     {# 파이프라인 partial #}

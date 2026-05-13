@@ -157,11 +157,24 @@ def _build_verdict_summary(enter: list, probe: list, watch: list,
             f"9일선 +{max_dist:.1f}% 이격, RSI {max_rsi:.0f}+로 과확장 상태"
         )
 
+    # Score-engine activity note (PR#2+ only — when scores are visible)
+    all_rows = enter + probe + watch + trending + avoid
+    score_rows = [r for r in all_rows if r.get("score") is not None]
+    score_engine_line = None
+    if score_rows:
+        avg_score = sum(r["score"] for r in score_rows) / len(score_rows)
+        avg_active = sum(r.get("active_components") or 0 for r in score_rows) / len(score_rows)
+        score_engine_line = (
+            f"\U0001f4ca Score engine active — 평균 score {avg_score:.1f}, "
+            f"활성 컴포넌트 평균 {avg_active:.1f}"
+        )
+
     return {
         "headline":    headline,
         "narration":   narration,
         "avoid_line":  avoid_line,
         "action_hint": action_hint,
+        "score_engine_line": score_engine_line,  # NEW
     }
 
 
