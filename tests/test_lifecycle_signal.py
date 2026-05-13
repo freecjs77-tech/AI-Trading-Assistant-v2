@@ -350,3 +350,95 @@ def test_derive_legacy_trigger_state_mapping():
     assert _derive_legacy_trigger_state(4, "drift") == "EARLY_TRIGGER"
     assert _derive_legacy_trigger_state(9, "drift") == "EARLY_TRIGGER"
     assert _derive_legacy_trigger_state(3, "drift") == "WAIT"
+
+
+import os
+from unittest.mock import patch
+
+from lifecycle_signal import evaluate_decision
+
+
+def _score_inputs():
+    """Minimal inputs for score-active path."""
+    today_raw = {
+        "open": 100, "close": 101, "high": 102, "low": 99,
+        "ema9": 100, "ema21": 98, "ema65": 90,
+        "atr14": 2.0, "atr14_pct": 2.0,
+        "atr14_pct_5d_avg": 1.5, "atr14_pct_20d_avg": 2.0,
+        "volume_ratio": 1.0,
+        "high_20d_prior": 105.0,
+        "change_5d_pct": 3.0,
+    }
+    yesterday_snap = {"close": 99, "low": 98, "high": 100, "ema9": 99.5}
+    return today_raw, yesterday_snap
+
+
+def test_legacy_mode_returns_string():
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        result = evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", risk_tags=[])
+    assert result == "ENTER"
+
+
+def test_legacy_mode_failed_breakout_avoid():
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        result = evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER",
+                                   risk_tags=["FAILED_BREAKOUT"])
+    assert result == "AVOID"
+
+
+def test_shadow_mode_returns_phase_a_string():
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_shadow"}):
+        result = evaluate_decision("PULLBACK", "EARLY_TRIGGER", risk_tags=[])
+    assert result == "PROBE"
+
+
+def test_score_active_returns_dict():
+    today_raw, yesterday_snap = _score_inputs()
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
+        result = evaluate_decision("PULLBACK", "EARLY_TRIGGER",
+                                   risk_tags=[],
+                                   today_raw=today_raw, yesterday_snap=yesterday_snap,
+                                   market_ret_5d_pct=1.0)
+    assert isinstance(result, dict)
+    assert "score" in result
+    assert "score_components" in result
+    assert "decision" in result
+    assert "veto_reason" in result
+
+
+def test_score_active_veto_returns_avoid_with_internal_raw():
+    today_raw, yesterday_snap = _score_inputs()
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
+        result = evaluate_decision("EXTENDED", "WAIT", risk_tags=["EXTENDED"],
+                                   today_raw=today_raw, yesterday_snap=yesterday_snap,
+                                   market_ret_5d_pct=1.0)
+    assert result["decision"] == "AVOID"
+    assert result["veto_reason"] == "EXTENDED"
+    assert result["score"] is None
+    assert result["features"] is None
+    # Internal raw still computed for analytics
+    assert result["_raw_score"] is not None
+    assert result["_raw_features"] is not None
+
+
+def test_score_active_trigger_track_inactive_degrades_to_watch():
+    """When TRIGGER_TRACK_ACTIVE=False (PR#1 default), high score still → WATCH."""
+    today_raw, yesterday_snap = _score_inputs()
+    # Make sure trigger score would otherwise hit ENTER
+    today_raw["close"] = 110  # ema_reclaim + breakout
+    today_raw["volume_ratio"] = 1.5  # vol_expansion
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
+        result = evaluate_decision("PULLBACK", "EARLY_TRIGGER", risk_tags=[],
+                                   today_raw=today_raw, yesterday_snap=yesterday_snap,
+                                   market_ret_5d_pct=1.0)
+    # In PR#1: TRIGGER_TRACK_ACTIVE=False — even high score gets WATCH
+    assert result["decision"] == "WATCH"
+    assert result["score"] > 0  # but the score itself is still computed and visible
+
+
+def test_unknown_mode_falls_back_to_legacy(capsys):
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "garbage"}):
+        result = evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", risk_tags=[])
+    assert result == "ENTER"  # Phase A behavior preserved
+    captured = capsys.readouterr()
+    assert "unknown LIFECYCLE_ENGINE_MODE" in captured.out
