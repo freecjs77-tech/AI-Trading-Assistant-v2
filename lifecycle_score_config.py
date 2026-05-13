@@ -73,7 +73,7 @@ THRESHOLDS = {
 #   PR#2: TRIGGER True, DRIFT False  (PULLBACK/BASE_FORMING decisions from score)
 #   PR#3: both True   (TREND_OK PROBE/PROBE_STRONG from drift_score)
 TRIGGER_TRACK_ACTIVE = True    # PR#2 — trigger track active
-DRIFT_TRACK_ACTIVE   = False
+DRIFT_TRACK_ACTIVE   = True    # PR#3 — drift track active (TREND_OK → PROBE)
 
 # Drift never auto-promotes to ENTER until Phase 4 calibration validates.
 DRIFT_ALLOW_ENTER = False

@@ -49,10 +49,15 @@ def test_drift_allow_enter_default_false():
     assert cfg.DRIFT_ALLOW_ENTER is False
 
 
-def test_trigger_track_active_in_pr2():
-    """PR#2: trigger track promotes scores to PROBE/ENTER."""
+def test_both_tracks_active_in_pr3():
+    """PR#3: trigger AND drift tracks both active."""
     assert cfg.TRIGGER_TRACK_ACTIVE is True
-    assert cfg.DRIFT_TRACK_ACTIVE is False
+    assert cfg.DRIFT_TRACK_ACTIVE is True
+
+
+def test_drift_allow_enter_still_false():
+    """PR#3 only activates drift PROBE, not drift ENTER. Calibration may flip later."""
+    assert cfg.DRIFT_ALLOW_ENTER is False
 
 
 def test_drift_archetype_separation():

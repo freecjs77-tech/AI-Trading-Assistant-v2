@@ -187,15 +187,23 @@ def test_invariant_drift_never_enter_when_disabled():
 
 
 def test_invariant_suggested_size_zero_for_non_actionable():
-    # TREND_OK → TRENDING (drift inactive in PR#2) → size = 0.
     # AVOID, WATCH, TRENDING are all non-actionable; none should carry sizing.
-    today_raw = _today()
+    # PR#3: DRIFT_TRACK_ACTIVE=True — use data with inverted EMA alignment so
+    # drift_score stays below drift_probe threshold → TREND_OK → TRENDING (size=0).
+    today_bad_drift = _today(
+        close=97.0, high=100.0, low=96.0,
+        ema9=98.0, ema21=99.0, ema65=100.0,   # inverted alignment → ema_alignment False
+    )
+    yesterday_bad_drift = _yesterday(close=98.0, low=97.0, high=99.0)  # close>today → no higher_low
     with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
         result = evaluate_decision("TREND_OK", "WAIT", risk_tags=[],
-                                   today_raw=today_raw,
-                                   yesterday_snap=_yesterday(),
+                                   today_raw=today_bad_drift,
+                                   yesterday_snap=yesterday_bad_drift,
                                    market_ret_5d_pct=0.0)
-    assert result["decision"] == "TRENDING"
+    assert result["decision"] == "TRENDING", (
+        f"Expected TRENDING (drift_score<threshold), got {result['decision']} "
+        f"(score={result.get('score')})"
+    )
     assert result["suggested_size_pct"] == 0.0
     assert result["suggested_entry_tier"] is None
 
