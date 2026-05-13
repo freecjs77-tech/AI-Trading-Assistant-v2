@@ -367,24 +367,34 @@ def send_momentum_brief(us_result: dict | None,
 
 def _summarize_lifecycle(result: dict | None) -> dict:
     if not result or not result.get("snapshots"):
-        return {"new_confirmed": [], "enter_ok": 0, "early": 0, "failed_breakout": 0}
+        return {"new_confirmed": [], "enter_ok": 0, "early": 0, "failed_breakout": 0,
+                "drift_probes": [], "probe_strong": []}
     snaps = result["snapshots"]
     nc, ok, early, fb = [], 0, 0, 0
+    drift_probes, probe_strong = [], []
     state = result.get("state") or {}
     for tk, s in snaps.items():
         if s["decision"] == "ENTER":
             ok += 1
-            # New confirmed = trigger_age == 0. Cheaply derive from yesterday absence.
             y = ((state.get("tickers") or {}).get(tk) or {}).get("snapshots", [])
             had_prior_confirmed = any(x.get("trigger") == "CONFIRMED_TRIGGER"
                                          for x in y[:-1])
             if not had_prior_confirmed and s["trigger"] == "CONFIRMED_TRIGGER":
-                nc.append(tk)
+                nc.append((tk, s.get("score")))  # NEW: include score
         elif s["decision"] == "PROBE":
             early += 1
+            # NEW: drift-track PROBEs
+            if s.get("score_track") == "drift":
+                drift_probes.append((tk, s.get("score")))
+            if "PROBE_STRONG" in (s.get("decision_badges") or []):
+                probe_strong.append((tk, s.get("score")))
         if "FAILED_BREAKOUT" in (s.get("raw") or {}).get("risk_tags", []):
             fb += 1
-    return {"new_confirmed": nc, "enter_ok": ok, "early": early, "failed_breakout": fb}
+    return {
+        "new_confirmed": nc, "enter_ok": ok, "early": early,
+        "failed_breakout": fb,
+        "drift_probes": drift_probes, "probe_strong": probe_strong,
+    }
 
 
 def _format_lifecycle_section(result: dict | None, flag: str, market: str,
@@ -394,13 +404,31 @@ def _format_lifecycle_section(result: dict | None, flag: str, market: str,
     summary = result.get("_brief_summary") or _summarize_lifecycle(result)
     lines = [f"{flag} {market}"]
     if summary["new_confirmed"]:
-        nc = " / ".join(summary["new_confirmed"][:5])
+        items = summary["new_confirmed"][:5]
+        # items may be tuple (ticker, score) under score_v1; backwards-compat string under legacy
+        formatted = []
+        for it in items:
+            if isinstance(it, tuple):
+                tk, sc = it
+                formatted.append(f"{tk} (s{sc})" if sc is not None else tk)
+            else:
+                formatted.append(str(it))
+        nc = " / ".join(formatted)
         more = "" if len(summary["new_confirmed"]) <= 5 else f" (+{len(summary['new_confirmed']) - 5})"
         lines.append(f"\U0001f195 New 본 진입 ({len(summary['new_confirmed'])}): {nc}{more}")
     if summary["enter_ok"]:
         lines.append(f"\U0001f7e2 본 진입 total: {summary['enter_ok']}")
     if summary["early"]:
         lines.append(f"\U0001f7e1 분할 진입: {summary['early']}")
+    # NEW: drift events
+    if summary.get("drift_probes"):
+        dp = summary["drift_probes"][:3]
+        formatted = ", ".join(f"{tk}" + (f" (drift {s})" if s else "") for tk, s in dp)
+        lines.append(f"\U0001f30a Drift PROBE ({len(summary['drift_probes'])}): {formatted}")
+    if summary.get("probe_strong"):
+        ps = summary["probe_strong"][:3]
+        formatted = ", ".join(f"{tk}" for tk, s in ps)
+        lines.append(f"⚡ PROBE_STRONG: {formatted}")
     if summary["failed_breakout"]:
         lines.append(f"\U0001f534 FAILED_BREAKOUT: {summary['failed_breakout']}")
     base = base_url.rstrip("/") + "/" if base_url else ""
