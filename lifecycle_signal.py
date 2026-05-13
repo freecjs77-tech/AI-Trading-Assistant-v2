@@ -682,14 +682,17 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
         compute_transitions, bootstrap_active_set,
         normalize_momentum_history,
     )
+    from market_benchmark import get_market_ret_5d
 
     history_dir = _os.path.join(project_dir, "history")
     _os.makedirs(history_dir, exist_ok=True)
     state_path = _os.path.join(history_dir, f"lifecycle_history_{market.lower()}.json")
 
-    # Momentum history (read-only seed for active set).
-    # momentum_scanner writes a date-keyed dict ({"data": {TICKER: {DATE: ...}}});
-    # active-set logic expects a snapshot-list shape — normalize at the boundary.
+    # NEW: fetch market benchmark ONCE per run (cached, with 3d fallback).
+    market_ret_5d_pct = get_market_ret_5d(market, project_dir=project_dir)
+    print(f"[lifecycle:{market}] market_ret_5d_pct = {market_ret_5d_pct}")
+
+    # ── existing momentum_state / active_set logic unchanged ──
     momentum_state = {"tickers": {}}
     if _os.path.exists(momentum_history_path):
         try:
@@ -715,11 +718,7 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
                 "snapshots": {}, "transitions": [], "skipped": [],
                 "active_set_size": 0}
 
-    # Active set may contain tickers absent from main market_data (which only
-    # holds portfolio.md tickers). Lifecycle's active set comes from momentum
-    # scanner's universe (SP100/IWB/KOSPI200) which uses a separate fetch
-    # pipeline that doesn't emit ema9/21/65. Fetch the missing tickers
-    # directly here so process_universe has the indicators it needs.
+    # ── existing missing-ticker fetch logic unchanged ──
     flat = market_data.get("data") if isinstance(market_data, dict) and "data" in market_data else market_data
     flat = flat or {}
     missing = sorted(tk for tk in active if tk not in flat)
@@ -737,14 +736,15 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
             except Exception as fetch_err:
                 print(f"  WARN [lifecycle:{market}] fetch {tk}: {fetch_err}")
         print(f"[lifecycle:{market}] fetched {fetched_count}/{len(missing)} successfully")
-        # Rebuild market_data envelope so process_universe sees the merge.
         if isinstance(market_data, dict) and "data" in market_data:
             market_data = {**market_data, "data": merged}
         else:
             market_data = merged
 
+    # NEW: pass market_ret_5d_pct into process_universe
     proc = process_universe(active_set=active, market_data=market_data,
-                            yesterday_state=state, today=today)
+                            yesterday_state=state, today=today,
+                            market_ret_5d_pct=market_ret_5d_pct)
 
     new_transitions: list[dict] = []
     for ticker, today_snap in proc["snapshots"].items():
@@ -756,6 +756,10 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
         append_snapshot(state, ticker, today_snap)
 
     state["transitions"].extend(new_transitions)
+    # Mark current engine version on the state (top-level)
+    from lifecycle_score_config import ENGINE_VERSION as _EV
+    state["current_engine_version"] = _EV
+    state["market"] = market
     save_lifecycle_history(state, state_path)
 
     return {
@@ -766,5 +770,7 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
         "transitions": new_transitions,
         "skipped":     proc["skipped"],
         "active_set_size": len(active),
-        "state":       state,  # for the report renderer
+        "state":       state,
+        "engine_version": _EV,
+        "market_ret_5d_pct": market_ret_5d_pct,
     }
