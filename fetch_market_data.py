@@ -472,6 +472,7 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
 
     return {
         "price":             round(last_close, 2),
+        "open":              round(float(df["Open"].iloc[-1]), 2),  # NEW — for lower_wick + intraday_reversal score components
         "prev_close":        round(float(close.iloc[-2]), 2) if len(close) >= 2 else None,
         "change_pct":        round((last_close / float(close.iloc[-2]) - 1) * 100, 2) if len(close) >= 2 else None,
         "change_3d_pct":     round((last_close / float(close.iloc[-4]) - 1) * 100, 2) if len(close) >= 4 else None,
