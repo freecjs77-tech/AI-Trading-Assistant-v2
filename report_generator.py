@@ -514,12 +514,24 @@ def generate_report(
     if portfolio_stop_result and portfolio_stop_result.get("status") == "ok":
         _stop_owner = portfolio_stop_result.get("owner", "me")
         _stop_date = portfolio_stop_result.get("date", date_str)
-        context["portfolio_stop_page"] = (
-            f"portfolio_stops_{_stop_date}.html" if _stop_owner == "me"
-            else f"portfolio_stops_{_stop_owner}_{_stop_date}.html"
-        )
+        _me_path = (f"portfolio_stops_{_stop_date}.html" if _stop_owner == "me"
+                    else f"portfolio_stops_{_stop_owner}_{_stop_date}.html")
+        context["portfolio_stop_page"] = _me_path     # legacy
+        context["portfolio_stop_page_me"] = _me_path  # NEW: My Risk
     else:
         context["portfolio_stop_page"] = None
+        context["portfolio_stop_page_me"] = None
+    # NEW: Wife Risk — portfolios/ 디스커버리로 사전 계산 (파일명은 결정적)
+    try:
+        from portfolio_paths import discover_portfolios, PRIMARY_OWNER
+        _proj = os.path.dirname(os.path.abspath(__file__))
+        for _o, _ in discover_portfolios(_proj):
+            if _o == PRIMARY_OWNER:
+                continue
+            _key = "portfolio_stop_page_wife" if _o == "wife" else f"portfolio_stop_page_{_o}"
+            context[_key] = f"portfolio_stops_{_o}_{date_str}.html"
+    except Exception:
+        context.setdefault("portfolio_stop_page_wife", None)
 
     # ── Lifecycle pages ────────────────────────
     _lc_date = (lifecycle_us or {}).get("as_of") or (lifecycle_kr or {}).get("as_of") or date_str

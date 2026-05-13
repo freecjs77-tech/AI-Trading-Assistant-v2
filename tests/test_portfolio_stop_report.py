@@ -45,9 +45,13 @@ def test_render_creates_html_file(tmp_path):
                                         anchor_date="2026-01-02")
     assert os.path.exists(out)
     text = open(out, encoding="utf-8").read()
-    assert "Portfolio Risk Dashboard" in text
+    assert "Portfolio Risk" in text
+    assert "Stop Signal Monitor" in text
     assert "TSLA" in text and "NVDA" in text and "VOO" in text
-    assert "🟠 EXIT READY" in text or "EXIT_READY" in text
+    # 새 디자인: 시그널은 humanized label로 표기
+    assert "Exit Ready" in text
+    # USD 통화 분리 band가 렌더링되는지
+    assert "USD" in text and "미국 종목" in text
 
 
 if __name__ == "__main__":
