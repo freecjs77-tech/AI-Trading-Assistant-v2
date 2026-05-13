@@ -455,3 +455,53 @@ def test_unknown_mode_falls_back_to_legacy(capsys):
     assert result == "ENTER"  # Phase A behavior preserved
     captured = capsys.readouterr()
     assert "unknown LIFECYCLE_ENGINE_MODE" in captured.out
+
+
+def test_process_universe_writes_score_fields_in_active_mode():
+    """Integration: process_universe → _make_snapshot must write score fields under score_active.
+
+    Closes coverage gap noted in final review: invariant + decision matrix tests
+    cover evaluate_decision directly, but the snapshot-writing path through
+    process_universe was not asserted.
+    """
+    from lifecycle_signal import process_universe
+
+    # Synthetic market data with a TREND_OK ticker
+    market_data = {
+        "AVGO": {
+            "price": 105.0, "open": 104.0, "high": 106.0, "low": 103.5,
+            "ema9": 100.0, "ema21": 98.0, "ema65": 90.0,
+            "ema21_slope_5d": 0.5, "ema65_slope_5d": 0.4,
+            "rsi14": 60.0, "atr14": 2.0, "atr14_pct": 1.5,
+            "atr14_pct_5d_avg": 1.5, "atr14_pct_20d_avg": 2.0,
+            "volume_ratio": 1.0, "volume_5d_avg": 1_000_000,
+            "volume_20d_avg": 1_000_000,
+            "high_20d_prior": 110.0,
+            "change_pct": 1.0, "change_5d_pct": 5.0,
+            "days_sideways": 0, "sector": "Technology",
+        },
+    }
+    yesterday_state = {"tickers": {}}
+
+    # No mode patch — uses PR#2/PR#3 default (score_active)
+    result = process_universe(
+        active_set={"AVGO"}, market_data=market_data,
+        yesterday_state=yesterday_state, today="2026-05-14",
+        market_ret_5d_pct=1.0,
+    )
+    assert "AVGO" in result["snapshots"]
+    snap = result["snapshots"]["AVGO"]
+
+    # Score wiring assertions
+    assert snap["score"] is not None, "score field missing from snapshot"
+    assert snap["engine_version"] == "score_v1"
+    assert snap["score_track"] in ("trigger", "drift")
+    assert "score_components" in snap
+    # AVGO is TREND_OK (ema9>21>65, dist < 12%, close > ema21) → drift track → 7 components
+    if snap["score_track"] == "drift":
+        assert len(snap["score_components"]) == 7
+    else:
+        assert len(snap["score_components"]) == 9
+    # features map should also be present
+    assert isinstance(snap["features"], dict)
+    assert len(snap["features"]) in (7, 9)
