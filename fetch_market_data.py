@@ -433,6 +433,44 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
     ema_fields = compute_ema_fields(close)
 
     last_close  = float(close.iloc[-1])
+
+    # ── Score v1 averages (drift atr_contraction / low_vol_drift, BASE_FORMING) ──
+    def _avg_atr_pct(series, window: int):
+        if len(series) < window or last_close <= 0:
+            return None
+        vals = series.iloc[-window:].dropna()
+        if len(vals) == 0:
+            return None
+        return round(float(vals.mean()) / last_close * 100, 4)
+
+    atr14_pct_5d_avg  = _avg_atr_pct(atr14_series, 5)
+    atr14_pct_20d_avg = _avg_atr_pct(atr14_series, 20)
+
+    def _avg_volume(window: int):
+        if len(volume) < window:
+            return None
+        vals = volume.iloc[-window:].dropna()
+        if len(vals) == 0:
+            return None
+        return int(vals.mean())
+
+    volume_5d_avg  = _avg_volume(5)
+    volume_20d_avg = _avg_volume(20)
+
+    # days_sideways — consecutive days where high-low range <= atr14 (compression).
+    # Used by BASE_FORMING setup_state predicate.
+    if atr14_val and atr14_val > 0 and len(df) >= 2:
+        days = 0
+        for i in range(1, min(len(df), 20) + 1):
+            r = float(high.iloc[-i]) - float(low.iloc[-i])
+            if r <= atr14_val:
+                days += 1
+            else:
+                break
+        days_sideways = days
+    else:
+        days_sideways = 0
+
     recent_high = float(close.iloc[-20:].max())
     # high_20d_prior — rolling 20-day high EXCLUDING today's bar.
     # Used by score_v1 'breakout' component to avoid self-reference contamination.
@@ -506,14 +544,18 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
         # ADX
         "adx":               safe(adx),
         # ATR — trailing stop 시스템에서 사용
-        "atr14":     round(atr14_val, 4) if atr14_val is not None else None,
-        "atr14_pct": round((atr14_val / last_close) * 100, 2)
-                     if atr14_val is not None and last_close > 0
-                     else None,
+        "atr14":               round(atr14_val, 4) if atr14_val is not None else None,
+        "atr14_pct":           round((atr14_val / last_close) * 100, 2)
+                                if atr14_val is not None and last_close > 0
+                                else None,
+        "atr14_pct_5d_avg":    atr14_pct_5d_avg,    # NEW
+        "atr14_pct_20d_avg":   atr14_pct_20d_avg,   # NEW
         # 거래량
-        "volume":            int(volume.iloc[-1]),
-        "volume_ma20":       int(vol_ma20.iloc[-1]) if safe(vol_ma20) else None,
-        "volume_ratio":      round(float(volume.iloc[-1]) / float(vol_ma20.iloc[-1]), 2) if safe(vol_ma20) else None,
+        "volume":              int(volume.iloc[-1]),
+        "volume_ma20":         int(vol_ma20.iloc[-1]) if safe(vol_ma20) else None,
+        "volume_5d_avg":       volume_5d_avg,       # NEW
+        "volume_20d_avg":      volume_20d_avg,      # NEW
+        "volume_ratio":        round(float(volume.iloc[-1]) / float(vol_ma20.iloc[-1]), 2) if safe(vol_ma20) else None,
         # 기타
         "drawdown_20d_pct":  round(drawdown, 2),
         "drawdown_52w_pct":  round(drawdown_52w, 2),
@@ -545,6 +587,8 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
         "dist_ema21_pct":     ema_fields["dist_ema21_pct"],
         "ema21_slope_3d_pct": ema_fields["ema21_slope_3d_pct"],
         "ema65_slope_5d_pct": ema_fields["ema65_slope_5d_pct"],
+        # Score v1 / BASE_FORMING
+        "days_sideways":       days_sideways,       # NEW
     }
 
 
