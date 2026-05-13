@@ -434,6 +434,12 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
 
     last_close  = float(close.iloc[-1])
     recent_high = float(close.iloc[-20:].max())
+    # high_20d_prior — rolling 20-day high EXCLUDING today's bar.
+    # Used by score_v1 'breakout' component to avoid self-reference contamination.
+    if len(high) >= 21:
+        high_20d_prior = float(high.iloc[-21:-1].max())
+    else:
+        high_20d_prior = None
     drawdown    = (last_close - recent_high) / recent_high * 100
     high_52w    = float(close.max())  # 전체 기간(~1년) 최고점
     low_52w     = float(close.min())  # 전체 기간(~1년) 최저점
@@ -513,6 +519,7 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
         "drawdown_52w_pct":  round(drawdown_52w, 2),
         "high_52w":          round(high_52w, 2),
         "low_52w":           round(low_52w, 2),
+        "high_20d_prior":    round(high_20d_prior, 2) if high_20d_prior is not None else None,  # NEW
         "market_cap":        market_cap,
         "data_days":         len(df),
         "fetched_at":        datetime.now(KST).strftime("%Y-%m-%d %H:%M"),
