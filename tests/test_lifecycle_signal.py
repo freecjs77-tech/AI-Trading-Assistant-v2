@@ -217,17 +217,28 @@ from lifecycle_signal import evaluate_decision
     ("BROKEN",       "WAIT",              "AVOID"),
 ])
 def test_decision_table(setup, trigger, expected):
-    assert evaluate_decision(setup, trigger) == expected
+    # Phase A state-machine contract. Run under legacy mode so the table
+    # returns plain strings regardless of the PR#2 score_active default.
+    import os
+    from unittest.mock import patch
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        assert evaluate_decision(setup, trigger) == expected
 
 
 def test_decision_failed_breakout_forces_avoid():
-    assert evaluate_decision("PULLBACK", "EARLY_TRIGGER",
-                             risk_tags=["FAILED_BREAKOUT"]) == "AVOID"
+    import os
+    from unittest.mock import patch
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        assert evaluate_decision("PULLBACK", "EARLY_TRIGGER",
+                                 risk_tags=["FAILED_BREAKOUT"]) == "AVOID"
 
 
 def test_decision_regime_none_is_default_phase_b_hook():
     # In Phase A regime=None should be a no-op. The function must accept it.
-    assert evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", regime=None) == "ENTER"
+    import os
+    from unittest.mock import patch
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "legacy"}):
+        assert evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", regime=None) == "ENTER"
 
 
 from lifecycle_signal import compute_risk_tags
@@ -422,16 +433,18 @@ def test_score_active_veto_returns_avoid_with_internal_raw():
 
 
 def test_score_active_trigger_track_inactive_degrades_to_watch():
-    """When TRIGGER_TRACK_ACTIVE=False (PR#1 default), high score still → WATCH."""
+    """When TRIGGER_TRACK_ACTIVE=False (explicitly patched), high score still → WATCH."""
+    import lifecycle_score_config as cfg
     today_raw, yesterday_snap = _score_inputs()
     # Make sure trigger score would otherwise hit ENTER
     today_raw["close"] = 110  # ema_reclaim + breakout
     today_raw["volume_ratio"] = 1.5  # vol_expansion
-    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}), \
+         patch.object(cfg, "TRIGGER_TRACK_ACTIVE", False):
         result = evaluate_decision("PULLBACK", "EARLY_TRIGGER", risk_tags=[],
                                    today_raw=today_raw, yesterday_snap=yesterday_snap,
                                    market_ret_5d_pct=1.0)
-    # In PR#1: TRIGGER_TRACK_ACTIVE=False — even high score gets WATCH
+    # Explicitly disabled: even high score gets WATCH
     assert result["decision"] == "WATCH"
     assert result["score"] > 0  # but the score itself is still computed and visible
 

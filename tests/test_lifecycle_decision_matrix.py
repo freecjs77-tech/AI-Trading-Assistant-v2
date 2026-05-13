@@ -243,14 +243,13 @@ def test_matrix_broken_setup_avoid(score_active_with_tracks_on):
 # ── PR#1 behavior: tracks not yet active ─────────────────────────
 
 
-def test_pr1_default_trigger_track_inactive_means_watch():
-    """Without TRIGGER_TRACK_ACTIVE patch, even high score gets WATCH in PR#1."""
-    today = _today(close=110, ema9=100, change_5d_pct=5.0)
+def test_pr2_default_trigger_track_active_promotes_score():
+    """With TRIGGER_TRACK_ACTIVE=True (PR#2 default), high score → ENTER."""
+    today = _today(close=110, ema9=100, low=99.5, high=110.5, change_5d_pct=5.0)
     yesterday = _yesterday(close=99, low=98)
     with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
-        # No DRIFT/TRIGGER_TRACK_ACTIVE patches — use PR#1 defaults
         result = evaluate_decision("PULLBACK", "CONFIRMED_TRIGGER", risk_tags=[],
                                     today_raw=today, yesterday_snap=yesterday,
                                     market_ret_5d_pct=1.0)
-    assert result["score"] > 0
-    assert result["decision"] == "WATCH"  # downgraded since track inactive
+    assert result["score"] >= 7
+    assert result["decision"] == "ENTER"

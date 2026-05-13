@@ -30,8 +30,8 @@ MODE_LEGACY        = "legacy"        # Phase A boolean path (rollback target)
 MODE_SCORE_SHADOW  = "score_shadow"  # Scores computed/stored; decision from Phase A
 MODE_SCORE_ACTIVE  = "score_active"  # Score-driven decisions
 
-# Default mode for this PR (PR#1 = shadow). PR#2 flips to score_active.
-DEFAULT_ENGINE_MODE = MODE_SCORE_SHADOW
+# Default mode for this PR (PR#2 = score_active). PR#3 keeps this and flips DRIFT_TRACK_ACTIVE.
+DEFAULT_ENGINE_MODE = MODE_SCORE_ACTIVE   # PR#2 — score_active is new default
 
 # IMPORTANT — Component ordering invariant:
 # `score_components[]` lists in the history JSON MUST follow the iteration
@@ -72,7 +72,7 @@ THRESHOLDS = {
 #   PR#1: both False  (scores computed but decisions still from Phase A in shadow mode)
 #   PR#2: TRIGGER True, DRIFT False  (PULLBACK/BASE_FORMING decisions from score)
 #   PR#3: both True   (TREND_OK PROBE/PROBE_STRONG from drift_score)
-TRIGGER_TRACK_ACTIVE = False
+TRIGGER_TRACK_ACTIVE = True    # PR#2 — trigger track active
 DRIFT_TRACK_ACTIVE   = False
 
 # Drift never auto-promotes to ENTER until Phase 4 calibration validates.

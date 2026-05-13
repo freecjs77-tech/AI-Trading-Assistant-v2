@@ -10,9 +10,9 @@ def test_engine_version_present():
     assert cfg.ENGINE_VERSION == "score_v1"
 
 
-def test_default_mode_is_shadow():
-    """PR#1 default = shadow. PR#2 will flip to score_active."""
-    assert cfg.DEFAULT_ENGINE_MODE == cfg.MODE_SCORE_SHADOW
+def test_default_mode_is_active():
+    """PR#2 default = score_active. PR#3 will keep this and flip DRIFT_TRACK_ACTIVE."""
+    assert cfg.DEFAULT_ENGINE_MODE == cfg.MODE_SCORE_ACTIVE
 
 
 def test_track_strings_lowercase():
@@ -49,9 +49,9 @@ def test_drift_allow_enter_default_false():
     assert cfg.DRIFT_ALLOW_ENTER is False
 
 
-def test_track_active_flags_default_false_in_pr1():
-    """PR#1: scores computed but decisions still from Phase A (shadow)."""
-    assert cfg.TRIGGER_TRACK_ACTIVE is False
+def test_trigger_track_active_in_pr2():
+    """PR#2: trigger track promotes scores to PROBE/ENTER."""
+    assert cfg.TRIGGER_TRACK_ACTIVE is True
     assert cfg.DRIFT_TRACK_ACTIVE is False
 
 
@@ -98,9 +98,7 @@ def test_every_threshold_has_rationale_comment():
     for name in THRESHOLD_NAMES:
         idx = next((i for i, l in enumerate(lines)
                     if re.match(rf"^{name}\s*=", l)), None)
-        if idx is None:
-            missing.append(f"{name}: not found")
-            continue
+        assert idx is not None, f"{name} not found in lifecycle_score_config.py"
         # Look for a # comment within 5 lines above OR inline on same line.
         line_with_value = lines[idx]
         if "#" in line_with_value:

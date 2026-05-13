@@ -187,13 +187,15 @@ def test_invariant_drift_never_enter_when_disabled():
 
 
 def test_invariant_suggested_size_zero_for_non_actionable():
+    # TREND_OK → TRENDING (drift inactive in PR#2) → size = 0.
+    # AVOID, WATCH, TRENDING are all non-actionable; none should carry sizing.
     today_raw = _today()
     with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
-        result = evaluate_decision("PULLBACK", "WAIT", risk_tags=[],
+        result = evaluate_decision("TREND_OK", "WAIT", risk_tags=[],
                                    today_raw=today_raw,
                                    yesterday_snap=_yesterday(),
                                    market_ret_5d_pct=0.0)
-    # WATCH (default for PR#1 since TRIGGER_TRACK_ACTIVE=False) → 0
+    assert result["decision"] == "TRENDING"
     assert result["suggested_size_pct"] == 0.0
     assert result["suggested_entry_tier"] is None
 
