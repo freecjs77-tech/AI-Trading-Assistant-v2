@@ -465,15 +465,12 @@ def _derive_legacy_trigger_state(score: Optional[int], track: Optional[str]) -> 
 def _build_today_raw_for_signal(md_entry: dict) -> dict:
     """Map fetch_market_data row to lifecycle_signal raw shape.
 
-    fetch_market_data does not yet emit days_sideways / atr14_pct_5d_avg /
-    volume_5d_avg / atr14_pct_20d_avg / volume_20d_avg. For Phase A, these
-    optional fields are passed through if the upstream provides them; if
-    absent, BASE_FORMING simply cannot match — that's acceptable. A later
-    Phase A polish task can add them to fetch_market_data if BASE_FORMING
-    coverage is too low in real data.
+    score_v1 adds: open, high_20d_prior, atr14_pct_5d_avg, atr14_pct_20d_avg,
+    days_sideways (now consistently populated by fetch_market_data).
     """
     return {
         "close": md_entry.get("price") or md_entry.get("close"),
+        "open":  md_entry.get("open"),           # NEW — score_v1 lower_wick + intraday_reversal
         "high":  md_entry.get("high"),
         "low":   md_entry.get("low"),
         "ema9":  md_entry.get("ema9"),
@@ -482,28 +479,43 @@ def _build_today_raw_for_signal(md_entry: dict) -> dict:
         "ema21_slope_5d": md_entry.get("ema21_slope_5d"),
         "ema65_slope_5d": md_entry.get("ema65_slope_5d"),
         "rsi14": md_entry.get("rsi14"),
+        "atr14": md_entry.get("atr14"),           # NEW — score_v1 tight_range + tight_close_cluster
         "atr14_pct": md_entry.get("atr14_pct"),
+        "atr14_pct_5d_avg":   md_entry.get("atr14_pct_5d_avg"),   # NEW (was passed-None before)
+        "atr14_pct_20d_avg":  md_entry.get("atr14_pct_20d_avg"),  # NEW
         "volume_ratio": md_entry.get("volume_ratio"),
+        "volume_5d_avg":  md_entry.get("volume_5d_avg"),
+        "volume_20d_avg": md_entry.get("volume_20d_avg"),
+        "high_20d_prior": md_entry.get("high_20d_prior"),  # NEW — score_v1 breakout
         "change_pct":   md_entry.get("change_pct"),
+        "change_5d_pct": md_entry.get("change_5d_pct"),    # NEW — score_v1 rs_strong
         "days_sideways":      md_entry.get("days_sideways"),
-        "atr14_pct_5d_avg":   md_entry.get("atr14_pct_5d_avg"),
-        "atr14_pct_20d_avg":  md_entry.get("atr14_pct_20d_avg"),
-        "volume_5d_avg":      md_entry.get("volume_5d_avg"),
-        "volume_20d_avg":     md_entry.get("volume_20d_avg"),
         "sector": md_entry.get("sector") or md_entry.get("sector_etf"),
     }
 
 
 def _make_snapshot(date_str: str, raw: dict, setup: str, trigger: str,
-                   decision: str, risk_tags: list[str]) -> dict:
+                   decision: str, risk_tags: list[str],
+                   score_payload: Optional[dict] = None) -> dict:
+    """Build a snapshot dict.
+
+    score_payload (when present) merges in the new score_v1 fields:
+      score, score_track, active_components, features, score_components,
+      decision_badges, veto_reason, suggested_entry_tier, suggested_size_pct,
+      rs_delta_pct, engine_version, _raw_score / _raw_features / _raw_score_track.
+    """
+    from lifecycle_score_config import ENGINE_VERSION
+
     e9, e21, c = raw.get("ema9"), raw.get("ema21"), raw.get("close")
-    return {
-        "date":     date_str,
-        "setup":    setup,
-        "trigger":  trigger,
-        "decision": decision,
+    snap = {
+        "date":            date_str,
+        "engine_version":  ENGINE_VERSION,
+        "setup":           setup,
+        "trigger":         trigger,
+        "decision":        decision,
         "raw": {
             "close": c,
+            "open":  raw.get("open"),
             "high":  raw.get("high"),
             "low":   raw.get("low"),
             "ema9":  e9,
@@ -514,26 +526,43 @@ def _make_snapshot(date_str: str, raw: dict, setup: str, trigger: str,
             "dist_ema21_pct": round(abs(c - e21) / e21 * 100, 4) if (c and e21) else None,
             "volume_ratio":   raw.get("volume_ratio"),
             "atr_pct":        raw.get("atr14_pct"),
+            "high_20d_prior": raw.get("high_20d_prior"),
             "sector":         raw.get("sector"),
             "risk_tags":      risk_tags,
         },
     }
 
+    if score_payload:
+        # Merge new fields verbatim — they were built by _evaluate_decision_score.
+        for k in ("score", "score_track", "active_components", "features",
+                  "score_components", "decision_badges", "veto_reason",
+                  "suggested_entry_tier", "suggested_size_pct", "rs_delta_pct",
+                  "_raw_score", "_raw_features", "_raw_score_track"):
+            snap[k] = score_payload.get(k)
+
+    return snap
+
 
 def process_universe(*, active_set: set[str], market_data: dict,
                      yesterday_state: dict, today: str,
-                     regime: Optional[str] = None) -> dict:
+                     regime: Optional[str] = None,
+                     market_ret_5d_pct: Optional[float] = None) -> dict:
     """Run setup/trigger/decision/risk_tags across the active set.
 
+    Now also computes scores (when LIFECYCLE_ENGINE_MODE != legacy) and
+    passes them through to snapshots.
+
     Returns:
-      {
-        "as_of": today,
-        "snapshots": {ticker: snapshot_dict},
-        "skipped":   [ticker, ...],
-      }
+      {"as_of": today, "snapshots": {ticker: snapshot}, "skipped": [...]}
     """
-    # market_data may be either a flat ticker -> entry map OR a
-    # {"data": {ticker: entry}} envelope from screenshots/market_data_*.json.
+    import os
+    from lifecycle_score_config import (
+        DEFAULT_ENGINE_MODE, MODE_SCORE_SHADOW, MODE_SCORE_ACTIVE,
+    )
+    from lifecycle_score import compute_trigger_score, compute_drift_score
+
+    mode = os.environ.get("LIFECYCLE_ENGINE_MODE", DEFAULT_ENGINE_MODE)
+
     flat = market_data.get("data") if isinstance(market_data, dict) and "data" in market_data else market_data
     snapshots: dict[str, dict] = {}
     skipped: list[str] = []
@@ -547,21 +576,93 @@ def process_universe(*, active_set: set[str], market_data: dict,
         if today_raw["close"] is None or today_raw["ema9"] is None:
             skipped.append(ticker)
             continue
+
+        # Pull yesterday snapshot from history
         y_block = (yesterday_state.get("tickers") or {}).get(ticker)
-        y_snap = (y_block or {}).get("snapshots", [])
-        yesterday = y_snap[-1] if y_snap else None
-        # Yesterday raw for trigger evaluation.
-        y_for_trigger = {
-            "close": (yesterday or {}).get("raw", {}).get("close"),
-            "ema9":  (yesterday or {}).get("raw", {}).get("ema9"),
-            "high":  (yesterday or {}).get("raw", {}).get("high"),
+        y_snap_list = (y_block or {}).get("snapshots", [])
+        yesterday = y_snap_list[-1] if y_snap_list else None
+        y_raw = (yesterday or {}).get("raw") or {}
+        y_for_legacy_trigger = {
+            "close": y_raw.get("close"),
+            "ema9":  y_raw.get("ema9"),
+            "high":  y_raw.get("high"),
         }
+
+        # Layer 1 — setup state (unchanged from Phase A)
         setup = evaluate_setup_state(today_raw)
-        trigger = evaluate_trigger_state(today_raw, y_for_trigger, setup)
+        trigger = evaluate_trigger_state(today_raw, y_for_legacy_trigger, setup)
         risk_tags = compute_risk_tags(today_raw, yesterday)
-        decision = evaluate_decision(setup, trigger, risk_tags=risk_tags, regime=regime)
-        snapshots[ticker] = _make_snapshot(today, today_raw, setup, trigger,
-                                           decision, risk_tags)
+
+        # Last 3 closes for drift's tight_close_cluster
+        recent_3d_closes = []
+        for s in y_snap_list[-3:]:
+            c = (s.get("raw") or {}).get("close")
+            if c is not None:
+                recent_3d_closes.append(c)
+        recent_3d_closes.append(today_raw["close"])  # include today
+
+        # Build yesterday_snap for higher_low / ema_reclaim component access
+        yesterday_snap_for_score = {
+            "close": y_raw.get("close"),
+            "low":   y_raw.get("low"),
+            "high":  y_raw.get("high"),
+            "ema9":  y_raw.get("ema9"),
+        } if yesterday else None
+
+        score_payload = None
+        if mode in (MODE_SCORE_SHADOW, MODE_SCORE_ACTIVE):
+            # Compute scores in BOTH shadow and active modes.
+            # Shadow: scores stored, decision from Phase A path.
+            # Active: scores drive decision (via evaluate_decision dispatch).
+            decision = evaluate_decision(
+                setup, trigger, risk_tags=risk_tags, regime=regime,
+                today_raw=today_raw,
+                yesterday_snap=yesterday_snap_for_score,
+                recent_3d_closes=recent_3d_closes,
+                market_ret_5d_pct=market_ret_5d_pct,
+            )
+            if isinstance(decision, dict):
+                # score_active path — payload is the full evaluator result.
+                score_payload = decision
+                final_decision = decision["decision"]
+                final_trigger = decision["trigger_state"]
+            else:
+                # score_shadow path — decision is Phase A str. Compute scores
+                # for storage WITHOUT affecting the decision.
+                final_decision = decision
+                final_trigger = trigger
+                if setup in ("TREND_OK", "EXTENDED"):
+                    sc = compute_drift_score(
+                        today_raw, yesterday_snap_for_score,
+                        recent_3d_closes, market_ret_5d_pct,
+                    )
+                    track = "drift"
+                else:
+                    sc = compute_trigger_score(
+                        today_raw, yesterday_snap_for_score, market_ret_5d_pct,
+                    )
+                    track = "trigger"
+                score_payload = {
+                    "score": sc.score, "score_track": track,
+                    "active_components": sc.active_count,
+                    "features": sc.features,
+                    "score_components": sc.components_list,
+                    "decision_badges": [], "veto_reason": None,
+                    "suggested_entry_tier": None, "suggested_size_pct": 0.0,
+                    "rs_delta_pct": sc.rs_delta_pct,
+                    "_raw_score": None, "_raw_features": None, "_raw_score_track": None,
+                }
+        else:
+            # mode == "legacy" — call without score inputs.
+            decision = evaluate_decision(setup, trigger,
+                                          risk_tags=risk_tags, regime=regime)
+            final_decision = decision
+            final_trigger = trigger
+
+        snapshots[ticker] = _make_snapshot(
+            today, today_raw, setup, final_trigger, final_decision, risk_tags,
+            score_payload=score_payload,
+        )
 
     return {"as_of": today, "snapshots": snapshots, "skipped": skipped}
 
