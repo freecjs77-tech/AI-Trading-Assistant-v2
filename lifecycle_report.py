@@ -84,6 +84,8 @@ def _attach_derived(snap: dict, ticker: str,
     out["suggested_entry_tier"]  = snap.get("suggested_entry_tier")
     out["suggested_size_pct"]    = snap.get("suggested_size_pct")
     out["rs_delta_pct"]          = snap.get("rs_delta_pct")
+    out["score_tier"]            = snap.get("score_tier")           # NEW
+    out["rs_tier"]               = snap.get("rs_tier")              # NEW
     out["engine_version"]        = snap.get("engine_version") or "phase_a_legacy"
 
     return out
@@ -178,6 +180,19 @@ def _build_verdict_summary(enter: list, probe: list, watch: list,
     }
 
 
+def _tier_sort_key(row):
+    """Tier-aware sort: score desc, rs_delta_pct desc, active_components desc.
+
+    None values sort last via sentinel (-999 / -9999 / 0).
+    Used for PROBE/WATCH/TRENDING sections per spec §5.3.
+    """
+    return (
+        -(row.get("score") if row.get("score") is not None else -999),
+        -(row.get("rs_delta_pct") if row.get("rs_delta_pct") is not None else -9999),
+        -(row.get("active_components") or 0),
+    )
+
+
 def build_page_context(result: dict,
                          lifecycle_state: Optional[dict] = None) -> dict:
     market = result.get("market", "US")
@@ -208,9 +223,9 @@ def build_page_context(result: dict,
 
     enter.sort(key=lambda r: ((r["trigger_age_days"] if r["trigger_age_days"] is not None else 999),
                                -(r["raw"].get("volume_ratio") or 0)))
-    probe.sort(key=lambda r: -(r["raw"].get("volume_ratio") or 0))
-    watch.sort(key=lambda r: -(r["setup_streak"] or 0))
-    trending.sort(key=lambda r: -(r["setup_streak"] or 0))
+    probe.sort(key=_tier_sort_key)
+    watch.sort(key=_tier_sort_key)
+    trending.sort(key=_tier_sort_key)
 
     return {
         "market":       result.get("market", "US"),
