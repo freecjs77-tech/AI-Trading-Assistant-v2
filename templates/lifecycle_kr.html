@@ -23,6 +23,28 @@ body.debug-mode .advanced-debug { display: block; }
 .score-dots { letter-spacing: 1px; color: #4a9eff; }
 .score-num { font-weight: 600; margin-left: 6px; }
 .badge-strong { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 1px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 6px; }
+  /* Tier badges (Score Tier + RS Tier) — see docs/superpowers/specs/2026-05-14-probe-tiering-design.md */
+  .tier-badge { font-size: 0.75em; margin-left: 4px; padding: 1px 6px; border-radius: 3px; font-weight: 600; }
+  .tier-strong { background: #d4a017; color: #000; }
+  .tier-mid    { background: #4a9eff; color: #fff; }
+  .tier-weak   { background: #555;    color: #ccc; }
+  .tier-null   { background: transparent; color: var(--muted); }
+  .score-num.tier-strong,
+  .rs-num.tier-strong { color: #d4a017; font-weight: 600; background: transparent; padding: 0; }
+  .score-num.tier-mid,
+  .rs-num.tier-mid    { color: #4a9eff; font-weight: 600; background: transparent; padding: 0; }
+  .score-num.tier-weak,
+  .rs-num.tier-weak   { color: #aaa; background: transparent; padding: 0; }
+  .rs-num { margin-left: 10px; font-size: 0.95em; }
+
+  /* Filter toolbar */
+  .filter-toolbar { display: flex; gap: 6px; margin: 6px 0 10px; flex-wrap: wrap; }
+  .filter-btn {
+    background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.1);
+    padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: inherit;
+  }
+  .filter-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+  .filter-btn.active { background: var(--primary-bg); color: var(--primary-c); border-color: var(--primary-c); }
 </style>
 <script>
 tailwind.config = {
@@ -275,9 +297,14 @@ tailwind.config = {
           <div class="chip-score">
             {% set dot_count = row.active_components or 0 %}
             <span class="score-dots" title="{{ row.active_components }} components active">{% for i in range(5) %}{% if i < dot_count %}●{% else %}○{% endif %}{% endfor %}</span>
-            <span class="score-num">{{ row.score }}</span>
+            <span class="score-num tier-{{ (row.score_tier or 'null')|lower }}">{{ row.score }}</span>
+            {% if row.score_tier %}<span class="tier-badge tier-{{ row.score_tier|lower }}">S·{{ row.score_tier }}</span>{% endif %}
+            {% if row.rs_delta_pct is not none %}
+              <span class="rs-num tier-{{ (row.rs_tier or 'null')|lower }}">RS {{ '%+.1f'|format(row.rs_delta_pct) }}%</span>
+              {% if row.rs_tier %}<span class="tier-badge tier-{{ row.rs_tier|lower }}">R·{{ row.rs_tier }}</span>{% endif %}
+            {% endif %}
             {% if 'PROBE_STRONG' in (row.decision_badges or []) %}
-            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ STRONG</span>
+            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ PROBE_STRONG</span>
             {% endif %}
           </div>
           {% endif %}
@@ -296,9 +323,18 @@ tailwind.config = {
         <div class="head">⚡ 오늘 할 일</div>
         <div class="desc">약한 트리거 발화 — 거래량 부족으로 신뢰도가 풀 트리거보다 낮습니다. <b>절반 비중</b>으로 진입하고 다음 거래일 확인 후 추가 진입 결정.</div>
       </div>
-      <div class="stock-list">
+      <div class="filter-toolbar" data-section="probe">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="s-strong">Score STRONG</button>
+        <button class="filter-btn" data-filter="rs-strong-mid">RS STRONG+MID</button>
+        <button class="filter-btn" data-filter="active-4plus">활성 ≥ 4</button>
+      </div>
+      <div class="stock-list" data-grid="probe">
         {% for row in probe %}
-        <div class="stock-chip">
+        <div class="stock-chip"
+             data-score-tier="{{ row.score_tier or 'null' }}"
+             data-rs-tier="{{ row.rs_tier or 'null' }}"
+             data-active-components="{{ row.active_components or 0 }}">
           <div class="ticker">{{ row.ticker }} <span class="kr-name">{{ row.name }}</span></div>
           <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · vol {{ row.raw.volume_ratio|x_fmt }}</div>
           <div class="meta">EARLY · {{ row.setup_streak }}일 압축</div>
@@ -306,9 +342,14 @@ tailwind.config = {
           <div class="chip-score">
             {% set dot_count = row.active_components or 0 %}
             <span class="score-dots" title="{{ row.active_components }} components active">{% for i in range(5) %}{% if i < dot_count %}●{% else %}○{% endif %}{% endfor %}</span>
-            <span class="score-num">{{ row.score }}</span>
+            <span class="score-num tier-{{ (row.score_tier or 'null')|lower }}">{{ row.score }}</span>
+            {% if row.score_tier %}<span class="tier-badge tier-{{ row.score_tier|lower }}">S·{{ row.score_tier }}</span>{% endif %}
+            {% if row.rs_delta_pct is not none %}
+              <span class="rs-num tier-{{ (row.rs_tier or 'null')|lower }}">RS {{ '%+.1f'|format(row.rs_delta_pct) }}%</span>
+              {% if row.rs_tier %}<span class="tier-badge tier-{{ row.rs_tier|lower }}">R·{{ row.rs_tier }}</span>{% endif %}
+            {% endif %}
             {% if 'PROBE_STRONG' in (row.decision_badges or []) %}
-            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ STRONG</span>
+            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ PROBE_STRONG</span>
             {% endif %}
           </div>
           {% endif %}
@@ -327,9 +368,18 @@ tailwind.config = {
         <div class="head">👀 오늘 할 일</div>
         <div class="desc">지금 사지 마세요. 이 종목들이 <b>"반등 신호 + 거래량 증가"</b>를 보이면 시스템이 자동으로 ENTER로 올려줍니다. 다음 거래일에 이 페이지를 다시 확인하세요.<br>👉 <b>관전 포인트</b>: 거래량 평균 대비 {{ lifecycle_thresholds.TRIGGER_CONFIRM_VOL_RATIO_MIN }}배 이상 + 종가가 일중 상위 {{ ((1 - lifecycle_thresholds.TRIGGER_CONFIRM_CLOSE_HIGH_RATIO) * 100)|round(0)|int }}% 마감.</div>
       </div>
-      <div class="stock-list">
+      <div class="filter-toolbar" data-section="watch">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="s-strong">Score STRONG</button>
+        <button class="filter-btn" data-filter="rs-strong-mid">RS STRONG+MID</button>
+        <button class="filter-btn" data-filter="active-4plus">활성 ≥ 4</button>
+      </div>
+      <div class="stock-list" data-grid="watch">
         {% for row in watch %}
-        <div class="stock-chip">
+        <div class="stock-chip"
+             data-score-tier="{{ row.score_tier or 'null' }}"
+             data-rs-tier="{{ row.rs_tier or 'null' }}"
+             data-active-components="{{ row.active_components or 0 }}">
           <div class="ticker">{{ row.ticker }} <span class="kr-name">{{ row.name }}</span></div>
           <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · 21일선 {{ row.dist_ema21_signed_pct|signed_pct }}</div>
           <div class="meta">{{ row.setup }} · {{ row.setup_streak }}일 압축</div>
@@ -337,9 +387,14 @@ tailwind.config = {
           <div class="chip-score">
             {% set dot_count = row.active_components or 0 %}
             <span class="score-dots" title="{{ row.active_components }} components active">{% for i in range(5) %}{% if i < dot_count %}●{% else %}○{% endif %}{% endfor %}</span>
-            <span class="score-num">{{ row.score }}</span>
+            <span class="score-num tier-{{ (row.score_tier or 'null')|lower }}">{{ row.score }}</span>
+            {% if row.score_tier %}<span class="tier-badge tier-{{ row.score_tier|lower }}">S·{{ row.score_tier }}</span>{% endif %}
+            {% if row.rs_delta_pct is not none %}
+              <span class="rs-num tier-{{ (row.rs_tier or 'null')|lower }}">RS {{ '%+.1f'|format(row.rs_delta_pct) }}%</span>
+              {% if row.rs_tier %}<span class="tier-badge tier-{{ row.rs_tier|lower }}">R·{{ row.rs_tier }}</span>{% endif %}
+            {% endif %}
             {% if 'PROBE_STRONG' in (row.decision_badges or []) %}
-            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ STRONG</span>
+            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ PROBE_STRONG</span>
             {% endif %}
           </div>
           {% endif %}
@@ -358,11 +413,35 @@ tailwind.config = {
         <div class="head">📍 오늘 할 일</div>
         <div class="desc">이 종목들은 <b>이미 추세 중</b>이라 따라잡기 매수는 평균단가가 높아질 위험이 있습니다. 다음에 <b>EMA9 근처까지 단기 조정</b>이 오면 그때 WATCH로 이동하고 진입 검토 가능.<br>👉 지금은 <b>관망</b>만, 차트 알람만 걸어두기.</div>
       </div>
-      <div class="stock-list">
+      <div class="filter-toolbar" data-section="trending">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="s-strong">Score STRONG</button>
+        <button class="filter-btn" data-filter="rs-strong-mid">RS STRONG+MID</button>
+        <button class="filter-btn" data-filter="active-4plus">활성 ≥ 4</button>
+      </div>
+      <div class="stock-list" data-grid="trending">
         {% for row in trending %}
-        <div class="stock-chip">
+        <div class="stock-chip"
+             data-score-tier="{{ row.score_tier or 'null' }}"
+             data-rs-tier="{{ row.rs_tier or 'null' }}"
+             data-active-components="{{ row.active_components or 0 }}">
           <div class="ticker">{{ row.ticker }} <span class="kr-name">{{ row.name }}</span></div>
           <div class="meta">9일선 {{ row.dist_ema9_signed_pct|signed_pct }} · {{ row.setup_streak }}일 추세 유지</div>
+          {% if row.score is not none %}
+          <div class="chip-score">
+            {% set dot_count = row.active_components or 0 %}
+            <span class="score-dots" title="{{ row.active_components }} components active">{% for i in range(5) %}{% if i < dot_count %}●{% else %}○{% endif %}{% endfor %}</span>
+            <span class="score-num tier-{{ (row.score_tier or 'null')|lower }}">{{ row.score }}</span>
+            {% if row.score_tier %}<span class="tier-badge tier-{{ row.score_tier|lower }}">S·{{ row.score_tier }}</span>{% endif %}
+            {% if row.rs_delta_pct is not none %}
+              <span class="rs-num tier-{{ (row.rs_tier or 'null')|lower }}">RS {{ '%+.1f'|format(row.rs_delta_pct) }}%</span>
+              {% if row.rs_tier %}<span class="tier-badge tier-{{ row.rs_tier|lower }}">R·{{ row.rs_tier }}</span>{% endif %}
+            {% endif %}
+            {% if 'PROBE_STRONG' in (row.decision_badges or []) %}
+            <span class="badge badge-strong" title="Drift score ≥ 6">⚡ PROBE_STRONG</span>
+            {% endif %}
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>
@@ -461,6 +540,32 @@ tailwind.config = {
 function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
 function toggleTheme(){const h=document.documentElement,d=h.classList.contains('dark');h.classList.remove('dark','light');const t=d?'light':'dark';h.classList.add(t);localStorage.setItem('theme',t);document.getElementById('themeIcon').textContent=t==='dark'?'light_mode':'dark_mode';}
 document.addEventListener('DOMContentLoaded',function(){document.getElementById('themeIcon').textContent=document.documentElement.classList.contains('dark')?'light_mode':'dark_mode';});
+</script>
+<script>
+// Tier filter toolbar — see docs/superpowers/specs/2026-05-14-probe-tiering-design.md §5.4
+(function() {
+  document.querySelectorAll('.filter-toolbar').forEach(function(toolbar) {
+    var section = toolbar.dataset.section;
+    var grid = document.querySelector('[data-grid="' + section + '"]');
+    if (!grid) return;
+    toolbar.addEventListener('click', function(e) {
+      if (!e.target.classList.contains('filter-btn')) return;
+      toolbar.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+      e.target.classList.add('active');
+      var filter = e.target.dataset.filter;
+      grid.querySelectorAll('.stock-chip').forEach(function(chip) {
+        var st = chip.dataset.scoreTier;
+        var rt = chip.dataset.rsTier;
+        var ac = parseInt(chip.dataset.activeComponents || '0', 10);
+        var show = true;
+        if (filter === 's-strong')      show = (st === 'STRONG');
+        if (filter === 'rs-strong-mid') show = (rt === 'STRONG' || rt === 'MID');
+        if (filter === 'active-4plus')  show = (ac >= 4);
+        chip.style.display = show ? '' : 'none';
+      });
+    });
+  });
+})();
 </script>
 </body>
 </html>
