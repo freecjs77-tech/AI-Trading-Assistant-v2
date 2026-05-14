@@ -270,22 +270,29 @@ def test_invariant_score_tier_band_membership():
 def test_invariant_drift_strong_implies_probe_strong_badge():
     """Spec §3.4: score_tier='STRONG' AND track='drift' → 'PROBE_STRONG' in decision_badges."""
     import lifecycle_score_config as cfg
-    # Construct inputs producing drift score >= 6
-    today_raw = _today(close=101, ema9=100, ema21=98, ema65=90,
-                       atr14_pct=1.0, atr14_pct_5d_avg=1.0, atr14_pct_20d_avg=2.0,
-                       atr14=2.0, change_5d_pct=5.0)
-    yesterday = _yesterday(close=99, low=98)
     with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}), \
          patch.object(cfg, "DRIFT_TRACK_ACTIVE", True):
         result = evaluate_decision("TREND_OK", "WAIT", risk_tags=[],
-                                   today_raw=today_raw, yesterday_snap=yesterday,
+                                   today_raw=_today(close=101.0, ema9=100, ema21=98, ema65=90,
+                                                     atr14_pct=1.0, atr14_pct_5d_avg=1.0,
+                                                     atr14_pct_20d_avg=2.0, atr14=2.0,
+                                                     change_5d_pct=5.0),
+                                   yesterday_snap=_yesterday(close=99, low=98),
                                    recent_3d_closes=[100.5, 101.0, 101.0],
                                    market_ret_5d_pct=1.0)
-        if result.get("score_tier") == "STRONG" and result.get("score_track") == "drift":
-            assert "PROBE_STRONG" in result.get("decision_badges", []), (
-                f"drift STRONG must imply PROBE_STRONG badge; got decision_badges="
-                f"{result.get('decision_badges')}"
-            )
+        # Test-data precondition pin: inputs above produce drift score ≥ 6
+        assert result.get("score_track") == "drift", (
+            f"test data should produce drift track; got {result.get('score_track')}"
+        )
+        assert result.get("score_tier") == "STRONG", (
+            f"test data should produce STRONG tier (drift score ≥ 6); "
+            f"got score_tier={result.get('score_tier')} score={result.get('score')}"
+        )
+        # Invariant: drift STRONG implies PROBE_STRONG badge
+        assert "PROBE_STRONG" in result.get("decision_badges", []), (
+            f"drift STRONG must imply PROBE_STRONG badge; got decision_badges="
+            f"{result.get('decision_badges')}"
+        )
 
 
 def test_invariant_rs_tier_threshold_consistency():
