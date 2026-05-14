@@ -18,6 +18,7 @@ from lifecycle_score_config import (
     LOWER_WICK_MIN_RATIO, CLOSE_STRONG_MIN_RATIO,
     TIGHT_RANGE_MAX_ATR, VOL_EXPANSION_MIN_RATIO,
     LOW_VOL_DRIFT_RATIO, TIGHT_CLUSTER_MAX_ATR,
+    SCORE_TIER_BANDS, RS_TIER_BANDS,        # NEW
 )
 
 
@@ -38,6 +39,8 @@ class ScoreResult:
     features: dict = field(default_factory=dict)
     components_list: list = field(default_factory=list)
     rs_delta_pct: Optional[float] = None  # ret_5d - market_ret_5d (raw margin)
+    score_tier: Optional[str] = None      # NEW: "WEAK"|"MID"|"STRONG"|None
+    rs_tier: Optional[str] = None         # NEW: "WEAK"|"MID"|"STRONG"|None
 
 
 # ── Component predicates (each returns bool) ───────────────────────
@@ -181,6 +184,37 @@ def _tight_close_cluster(today, recent_3d_closes) -> bool:
 # ── Score assembly ─────────────────────────────────────────────────
 
 
+def compute_score_tier(score: Optional[int], track: Optional[str]) -> Optional[str]:
+    """Map score+track to tier string. Returns None when score is None or
+    falls outside any band (e.g., trigger score 0-2 = WATCH territory).
+
+    Spec §3.1 / §4.3.
+    """
+    if score is None or track is None:
+        return None
+    bands = SCORE_TIER_BANDS.get(track)
+    if not bands:
+        return None
+    for tier_name, (lo, hi) in bands.items():
+        if lo <= score <= hi:
+            return tier_name
+    return None  # below WEAK band — e.g., trigger score 0-2
+
+
+def compute_rs_tier(rs_delta_pct: Optional[float]) -> Optional[str]:
+    """Map rs_delta_pct to tier. Returns None when not computed.
+    Negative rs_delta_pct (underperforming market) → None, not WEAK.
+
+    Spec §3.2 / §4.3.
+    """
+    if rs_delta_pct is None:
+        return None
+    for tier_name in ("STRONG", "MID", "WEAK"):
+        if rs_delta_pct >= RS_TIER_BANDS[tier_name]:
+            return tier_name
+    return None  # rs_delta_pct < 0
+
+
 def _assemble(weights: dict, features: dict, track: str,
               rs_delta_pct: Optional[float] = None) -> ScoreResult:
     """Build a ScoreResult preserving config-declaration ordering."""
@@ -198,6 +232,8 @@ def _assemble(weights: dict, features: dict, track: str,
         track=track, score=score, active_count=active_count,
         features=dict(features), components_list=components_list,
         rs_delta_pct=rs_delta_pct,
+        score_tier=compute_score_tier(score, track),    # NEW
+        rs_tier=compute_rs_tier(rs_delta_pct),          # NEW
     )
 
 
