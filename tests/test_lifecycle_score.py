@@ -245,3 +245,143 @@ def test_rs_delta_pct_none_when_missing():
     res = compute_trigger_score(_today(change_5d_pct=None), _yesterday(),
                                 market_ret_5d_pct=1.5)
     assert res.rs_delta_pct is None
+
+
+# ── score_tier helper ─────────────────────────────────────────────
+
+
+def test_compute_score_tier_trigger_weak():
+    from lifecycle_score import compute_score_tier
+    assert compute_score_tier(3, "trigger") == "WEAK"
+
+
+def test_compute_score_tier_trigger_mid():
+    from lifecycle_score import compute_score_tier
+    assert compute_score_tier(4, "trigger") == "MID"
+    assert compute_score_tier(5, "trigger") == "MID"
+
+
+def test_compute_score_tier_trigger_strong():
+    from lifecycle_score import compute_score_tier
+    assert compute_score_tier(6, "trigger") == "STRONG"
+
+
+def test_compute_score_tier_trigger_below_probe_none():
+    """Trigger score 0-2 = WATCH territory → no tier."""
+    from lifecycle_score import compute_score_tier
+    for s in (0, 1, 2):
+        assert compute_score_tier(s, "trigger") is None
+
+
+def test_compute_score_tier_trigger_above_enter_none():
+    """Trigger score 7+ = ENTER (out of PROBE bucket) → no tier."""
+    from lifecycle_score import compute_score_tier
+    assert compute_score_tier(7, "trigger") is None
+    assert compute_score_tier(14, "trigger") is None
+
+
+def test_compute_score_tier_drift_weak():
+    from lifecycle_score import compute_score_tier
+    assert compute_score_tier(4, "drift") == "WEAK"
+
+
+def test_compute_score_tier_drift_mid():
+    from lifecycle_score import compute_score_tier
+    assert compute_score_tier(5, "drift") == "MID"
+
+
+def test_compute_score_tier_drift_strong():
+    from lifecycle_score import compute_score_tier
+    assert compute_score_tier(6, "drift") == "STRONG"
+    assert compute_score_tier(9, "drift") == "STRONG"
+
+
+def test_compute_score_tier_drift_below_probe_none():
+    """Drift score 0-3 = TRENDING territory → no tier."""
+    from lifecycle_score import compute_score_tier
+    for s in (0, 1, 2, 3):
+        assert compute_score_tier(s, "drift") is None
+
+
+def test_compute_score_tier_none_inputs():
+    from lifecycle_score import compute_score_tier
+    assert compute_score_tier(None, "trigger") is None
+    assert compute_score_tier(5, None) is None
+    assert compute_score_tier(None, None) is None
+
+
+def test_compute_score_tier_unknown_track_none():
+    from lifecycle_score import compute_score_tier
+    assert compute_score_tier(5, "unknown_track") is None
+
+
+# ── rs_tier helper ────────────────────────────────────────────────
+
+
+def test_compute_rs_tier_strong():
+    from lifecycle_score import compute_rs_tier
+    assert compute_rs_tier(10.0) == "STRONG"
+    assert compute_rs_tier(15.5) == "STRONG"
+
+
+def test_compute_rs_tier_mid():
+    from lifecycle_score import compute_rs_tier
+    assert compute_rs_tier(5.0) == "MID"
+    assert compute_rs_tier(9.99) == "MID"
+
+
+def test_compute_rs_tier_weak():
+    from lifecycle_score import compute_rs_tier
+    assert compute_rs_tier(0.0) == "WEAK"
+    assert compute_rs_tier(4.99) == "WEAK"
+
+
+def test_compute_rs_tier_below_zero_none():
+    """Negative rs_delta_pct = underperforming market → None (not WEAK)."""
+    from lifecycle_score import compute_rs_tier
+    assert compute_rs_tier(-0.01) is None
+    assert compute_rs_tier(-5.0) is None
+
+
+def test_compute_rs_tier_none_input():
+    from lifecycle_score import compute_rs_tier
+    assert compute_rs_tier(None) is None
+
+
+# ── ScoreResult tier fields populated by _assemble() ──────────────
+
+
+def test_score_result_includes_score_tier_field():
+    """compute_trigger_score must produce score_tier in result."""
+    from lifecycle_score import compute_trigger_score
+    today = _today(close=110, ema9=100, low=99.5, high=110.5, change_5d_pct=5.0)
+    yesterday = _yesterday(close=99, low=98)
+    res = compute_trigger_score(today, yesterday, market_ret_5d_pct=1.0)
+    assert hasattr(res, "score_tier")
+    assert res.score_tier in ("WEAK", "MID", "STRONG", None)
+
+
+def test_score_result_includes_rs_tier_field():
+    """compute_drift_score must produce rs_tier in result."""
+    from lifecycle_score import compute_drift_score
+    today = _today(close=101, ema9=100, ema21=98, ema65=90,
+                   atr14_pct=1.5, atr14_pct_5d_avg=1.5, atr14_pct_20d_avg=2.0,
+                   change_5d_pct=5.0)
+    yesterday = _yesterday(close=99, low=98)
+    res = compute_drift_score(today, yesterday,
+                              recent_3d_closes=[100, 100.5, 101], market_ret_5d_pct=1.0)
+    assert hasattr(res, "rs_tier")
+    # 5.0 - 1.0 = 4.0 → WEAK tier
+    assert res.rs_tier == "WEAK"
+
+
+def test_score_result_tier_consistent_with_score():
+    """score_tier band must contain the score."""
+    from lifecycle_score import compute_trigger_score
+    from lifecycle_score_config import SCORE_TIER_BANDS
+    today = _today(close=110, ema9=100, low=99.5, high=110.5, change_5d_pct=5.0)
+    yesterday = _yesterday(close=99, low=98)
+    res = compute_trigger_score(today, yesterday, market_ret_5d_pct=1.0)
+    if res.score_tier is not None:
+        lo, hi = SCORE_TIER_BANDS[res.track][res.score_tier]
+        assert lo <= res.score <= hi

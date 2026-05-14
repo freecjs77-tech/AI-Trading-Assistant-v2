@@ -68,6 +68,8 @@ def test_matrix_pullback_score_7_enter(score_active_with_tracks_on):
                                 market_ret_5d_pct=1.0)
     assert result["score"] >= 7
     assert result["decision"] == "ENTER"
+    # ENTER has no PROBE-tier (score_tier is for PROBE bucket only)
+    assert result.get("score_tier") is None
 
 
 def test_matrix_pullback_score_3_to_6_probe(score_active_with_tracks_on):
@@ -95,6 +97,8 @@ def test_matrix_pullback_score_3_to_6_probe(score_active_with_tracks_on):
                                 market_ret_5d_pct=0.0)
     assert 3 <= result["score"] <= 6
     assert result["decision"] == "PROBE"
+    # PROBE in trigger track: score 4-5 = MID; score 3 = WEAK
+    assert result["score_tier"] in ("WEAK", "MID")
 
 
 def test_matrix_pullback_score_below_3_watch(score_active_with_tracks_on):
@@ -121,6 +125,8 @@ def test_matrix_pullback_score_below_3_watch(score_active_with_tracks_on):
                                 market_ret_5d_pct=2.0)
     assert result["score"] < 3
     assert result["decision"] == "WATCH"
+    # WATCH score < 3 → tier is None (below WEAK band)
+    assert result.get("score_tier") is None
 
 
 # ── BASE_FORMING shares trigger track ─────────────────────────────
@@ -166,6 +172,7 @@ def test_matrix_trend_ok_drift_above_6_probe_strong(score_active_with_tracks_on)
     assert result["decision"] == "PROBE"
     assert "PROBE_STRONG" in result["decision_badges"]
     assert result["suggested_entry_tier"] == "starter_plus"
+    assert result["score_tier"] == "STRONG"
 
 
 def test_matrix_trend_ok_drift_4_to_5_probe(score_active_with_tracks_on):
@@ -195,6 +202,8 @@ def test_matrix_trend_ok_drift_4_to_5_probe(score_active_with_tracks_on):
     assert 4 <= result["score"] <= 5
     assert result["decision"] == "PROBE"
     assert "PROBE_STRONG" not in result["decision_badges"]
+    assert result["score_tier"] in ("WEAK", "MID")
+    assert result["score_tier"] != "STRONG"
 
 
 def test_matrix_trend_ok_drift_below_4_trending(score_active_with_tracks_on):
@@ -217,6 +226,8 @@ def test_matrix_trend_ok_drift_below_4_trending(score_active_with_tracks_on):
                                 market_ret_5d_pct=2.0)
     assert result["score"] < 4
     assert result["decision"] == "TRENDING"
+    # TRENDING score < 4 (drift_probe threshold) → tier is None
+    assert result.get("score_tier") is None
 
 
 # ── Veto rows ─────────────────────────────────────────────────────

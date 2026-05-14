@@ -310,6 +310,8 @@ def _evaluate_decision_score(*, setup_state: str, today_raw: dict,
         return {
             "decision": DECISION_AVOID, "veto_reason": veto,
             "score": None, "score_track": None,
+            "score_tier": None,                       # NEW
+            "rs_tier": raw.rs_tier,                   # NEW (preserve RS tier for analytics)
             "features": None, "score_components": None,
             "active_components": None, "decision_badges": [],
             "_raw_score": raw.score, "_raw_features": raw.features,
@@ -350,6 +352,8 @@ def _evaluate_decision_score(*, setup_state: str, today_raw: dict,
         return {
             "decision": DECISION_AVOID, "veto_reason": VETO_UNKNOWN_SETUP,
             "score": None, "score_track": None,
+            "score_tier": None,                       # NEW
+            "rs_tier": None,                          # NEW
             "features": None, "score_components": None,
             "active_components": None, "decision_badges": [],
             "_raw_score": None, "_raw_features": None, "_raw_score_track": None,
@@ -365,6 +369,8 @@ def _evaluate_decision_score(*, setup_state: str, today_raw: dict,
         "decision": decision, "decision_badges": badges,
         "veto_reason": None,
         "score": sc.score, "score_track": track,
+        "score_tier": sc.score_tier,        # NEW
+        "rs_tier":    sc.rs_tier,           # NEW
         "active_components": sc.active_count,
         "features": sc.features, "score_components": sc.components_list,
         "rs_delta_pct": sc.rs_delta_pct,
@@ -534,7 +540,8 @@ def _make_snapshot(date_str: str, raw: dict, setup: str, trigger: str,
 
     if score_payload:
         # Merge new fields verbatim — they were built by _evaluate_decision_score.
-        for k in ("score", "score_track", "active_components", "features",
+        for k in ("score", "score_track", "score_tier", "rs_tier",
+                  "active_components", "features",
                   "score_components", "decision_badges", "veto_reason",
                   "suggested_entry_tier", "suggested_size_pct", "rs_delta_pct",
                   "_raw_score", "_raw_features", "_raw_score_track"):
@@ -644,6 +651,8 @@ def process_universe(*, active_set: set[str], market_data: dict,
                     track = "trigger"
                 score_payload = {
                     "score": sc.score, "score_track": track,
+                    "score_tier": sc.score_tier,         # NEW
+                    "rs_tier":    sc.rs_tier,            # NEW
                     "active_components": sc.active_count,
                     "features": sc.features,
                     "score_components": sc.components_list,

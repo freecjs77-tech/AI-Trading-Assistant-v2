@@ -217,3 +217,102 @@ def test_invariant_legacy_trigger_state_consistent_with_score():
     assert _derive_legacy_trigger_state(THRESHOLDS["trigger_probe"] - 1, "trigger") == "WAIT"
     # Drift never CONFIRMED
     assert _derive_legacy_trigger_state(9, "drift") == "EARLY_TRIGGER"
+
+
+# ──────────────────────────────────────────────────────────────────
+# Invariant Group F: Tier integrity (spec §7)
+# ──────────────────────────────────────────────────────────────────
+
+
+def test_invariant_score_tier_exhaustive():
+    """score_tier must be in {WEAK, MID, STRONG, None} across all paths."""
+    import lifecycle_score_config as cfg
+    valid = {"WEAK", "MID", "STRONG", None}
+    today_raw = _today(close=110, ema9=100, low=99.5, change_5d_pct=5.0)
+    yesterday = _yesterday(close=99, low=98)
+
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}):
+        # Patch both tracks active so we exercise the full grid
+        with patch.object(cfg, "TRIGGER_TRACK_ACTIVE", True), \
+             patch.object(cfg, "DRIFT_TRACK_ACTIVE", True):
+            for setup in ("PULLBACK", "BASE_FORMING", "TREND_OK"):
+                result = evaluate_decision(setup, "WAIT", risk_tags=[],
+                                           today_raw=today_raw, yesterday_snap=yesterday,
+                                           recent_3d_closes=[109, 110, 110.5],
+                                           market_ret_5d_pct=1.0)
+                assert result.get("score_tier") in valid, (
+                    f"setup={setup}: score_tier={result.get('score_tier')} not in {valid}"
+                )
+
+
+def test_invariant_score_tier_band_membership():
+    """When score_tier is non-null, the score must fall within that band."""
+    import lifecycle_score_config as cfg
+    from lifecycle_score import compute_score_tier
+
+    # trigger track at each tier
+    for score_target, expected_tier in [(3, "WEAK"), (4, "MID"), (5, "MID"), (6, "STRONG")]:
+        actual_tier = compute_score_tier(score_target, "trigger")
+        if actual_tier is not None:
+            lo, hi = cfg.SCORE_TIER_BANDS["trigger"][actual_tier]
+            assert lo <= score_target <= hi
+            assert actual_tier == expected_tier
+
+    # drift track at each tier
+    for score_target, expected_tier in [(4, "WEAK"), (5, "MID"), (6, "STRONG"), (9, "STRONG")]:
+        actual_tier = compute_score_tier(score_target, "drift")
+        if actual_tier is not None:
+            lo, hi = cfg.SCORE_TIER_BANDS["drift"][actual_tier]
+            assert lo <= score_target <= hi
+            assert actual_tier == expected_tier
+
+
+def test_invariant_drift_strong_implies_probe_strong_badge():
+    """Spec §3.4: score_tier='STRONG' AND track='drift' → 'PROBE_STRONG' in decision_badges."""
+    import lifecycle_score_config as cfg
+    with patch.dict(os.environ, {"LIFECYCLE_ENGINE_MODE": "score_active"}), \
+         patch.object(cfg, "DRIFT_TRACK_ACTIVE", True):
+        result = evaluate_decision("TREND_OK", "WAIT", risk_tags=[],
+                                   today_raw=_today(close=101.0, ema9=100, ema21=98, ema65=90,
+                                                     atr14_pct=1.0, atr14_pct_5d_avg=1.0,
+                                                     atr14_pct_20d_avg=2.0, atr14=2.0,
+                                                     change_5d_pct=5.0),
+                                   yesterday_snap=_yesterday(close=99, low=98),
+                                   recent_3d_closes=[100.5, 101.0, 101.0],
+                                   market_ret_5d_pct=1.0)
+        # Test-data precondition pin: inputs above produce drift score ≥ 6
+        assert result.get("score_track") == "drift", (
+            f"test data should produce drift track; got {result.get('score_track')}"
+        )
+        assert result.get("score_tier") == "STRONG", (
+            f"test data should produce STRONG tier (drift score ≥ 6); "
+            f"got score_tier={result.get('score_tier')} score={result.get('score')}"
+        )
+        # Invariant: drift STRONG implies PROBE_STRONG badge
+        assert "PROBE_STRONG" in result.get("decision_badges", []), (
+            f"drift STRONG must imply PROBE_STRONG badge; got decision_badges="
+            f"{result.get('decision_badges')}"
+        )
+
+
+def test_invariant_rs_tier_threshold_consistency():
+    """rs_tier matches band semantics."""
+    from lifecycle_score import compute_rs_tier
+    # STRONG ≥ 10
+    assert compute_rs_tier(10.0) == "STRONG"
+    assert compute_rs_tier(99.0) == "STRONG"
+    # MID [5, 10)
+    assert compute_rs_tier(5.0) == "MID"
+    assert compute_rs_tier(9.99) == "MID"
+    # WEAK [0, 5)
+    assert compute_rs_tier(0.0) == "WEAK"
+    assert compute_rs_tier(4.99) == "WEAK"
+    # Below 0 → None
+    assert compute_rs_tier(-0.01) is None
+    assert compute_rs_tier(-100.0) is None
+
+
+def test_invariant_rs_tier_null_when_no_market_data():
+    """rs_delta_pct=None → rs_tier=None (no market benchmark)."""
+    from lifecycle_score import compute_rs_tier
+    assert compute_rs_tier(None) is None
