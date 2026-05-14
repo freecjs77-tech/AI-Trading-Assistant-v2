@@ -107,3 +107,23 @@ DECISION_TO_TIER = {
     (DECISION_TRENDING, None):               None,
     (DECISION_AVOID,    None):               None,
 }
+
+# ── Score Tier Bands (Phase 4 calibration helper — display-only) ────
+# Maps (track, tier_name) → (low_inclusive, high_inclusive) score range.
+# Scores outside any band → score_tier = None (e.g., trigger score 0-2 = WATCH,
+# drift score 0-3 = TRENDING). 7+ trigger = ENTER (no PROBE tier).
+# Drift max is 9 — 99 high bound is a safe sentinel.
+SCORE_TIER_BANDS = {
+    "trigger": {"WEAK": (3, 3), "MID": (4, 5), "STRONG": (6, 6)},
+    "drift":   {"WEAK": (4, 4), "MID": (5, 5), "STRONG": (6, 99)},
+}
+
+# ── RS Tier Bands (track-independent — display-only) ────────────────
+# rs_delta_pct >= threshold → that tier. Below WEAK (negative rs_delta_pct,
+# i.e., underperforming market) → rs_tier = None.
+# Calibrated to 2026-05-13 distribution: produces ~1:3:5 STRONG:MID:WEAK split.
+RS_TIER_BANDS = {
+    "STRONG": 10.0,
+    "MID":     5.0,
+    "WEAK":    0.0,
+}

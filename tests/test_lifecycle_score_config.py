@@ -112,3 +112,64 @@ def test_every_threshold_has_rationale_comment():
         if not any(l.strip().startswith("#") for l in window):
             missing.append(f"{name}: no rationale comment within 5 lines above")
     assert not missing, "Missing rationale comments:\n" + "\n".join(missing)
+
+
+# ── Score tier bands ─────────────────────────────────────────────
+
+
+def test_score_tier_bands_present_per_track():
+    assert "trigger" in cfg.SCORE_TIER_BANDS
+    assert "drift" in cfg.SCORE_TIER_BANDS
+    for track in ("trigger", "drift"):
+        for tier in ("WEAK", "MID", "STRONG"):
+            assert tier in cfg.SCORE_TIER_BANDS[track], (
+                f"Track {track} missing tier {tier}"
+            )
+
+
+def test_score_tier_bands_monotonic_per_track():
+    """Within each track, WEAK upper < MID lower; MID upper < STRONG lower."""
+    for track, bands in cfg.SCORE_TIER_BANDS.items():
+        w_lo, w_hi = bands["WEAK"]
+        m_lo, m_hi = bands["MID"]
+        s_lo, s_hi = bands["STRONG"]
+        assert w_lo <= w_hi <= m_lo - 0 <= m_hi <= s_lo - 0 <= s_hi, (
+            f"Track {track} bands not monotonic: WEAK={bands['WEAK']} "
+            f"MID={bands['MID']} STRONG={bands['STRONG']}"
+        )
+
+
+def test_score_tier_trigger_weak_starts_at_probe_threshold():
+    """Trigger WEAK lower bound = trigger_probe threshold."""
+    assert cfg.SCORE_TIER_BANDS["trigger"]["WEAK"][0] == cfg.THRESHOLDS["trigger_probe"]
+
+
+def test_score_tier_trigger_strong_ends_below_enter():
+    """Trigger STRONG upper bound = trigger_enter - 1 (score 7+ = ENTER)."""
+    assert cfg.SCORE_TIER_BANDS["trigger"]["STRONG"][1] == cfg.THRESHOLDS["trigger_enter"] - 1
+
+
+def test_score_tier_drift_weak_starts_at_drift_probe():
+    """Drift WEAK lower bound = drift_probe threshold."""
+    assert cfg.SCORE_TIER_BANDS["drift"]["WEAK"][0] == cfg.THRESHOLDS["drift_probe"]
+
+
+def test_score_tier_drift_strong_starts_at_drift_enter():
+    """Drift STRONG lower bound = drift_enter (matches existing PROBE_STRONG semantic)."""
+    assert cfg.SCORE_TIER_BANDS["drift"]["STRONG"][0] == cfg.THRESHOLDS["drift_enter"]
+
+
+# ── RS tier bands ────────────────────────────────────────────────
+
+
+def test_rs_tier_bands_present():
+    for tier in ("STRONG", "MID", "WEAK"):
+        assert tier in cfg.RS_TIER_BANDS
+
+
+def test_rs_tier_bands_monotonic():
+    """STRONG threshold > MID > WEAK >= 0."""
+    s = cfg.RS_TIER_BANDS["STRONG"]
+    m = cfg.RS_TIER_BANDS["MID"]
+    w = cfg.RS_TIER_BANDS["WEAK"]
+    assert s > m > w >= 0, f"RS bands not monotonic: STRONG={s} MID={m} WEAK={w}"
