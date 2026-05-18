@@ -18,12 +18,13 @@ def teardown(tmp):
 
 
 def test_build_us_universe_unions_sources():
-    """US universe = IWB ∪ weekly_top100 ∪ daily_movers."""
+    """US universe = SP100∪NDX100 ∪ weekly_top100 ∪ daily_movers."""
     tmp = setup()
     try:
-        md.save_cache("iwb_holdings", ["AAPL", "MSFT", "NVDA"], status="ok")
+        fake_base = ["AAPL", "MSFT", "NVDA"]
         md.save_cache("weekly_liquidity_us", ["TSLA"], status="ok")
-        with patch("momentum_universe.fetch_daily_movers_for", return_value=["AMD"]):
+        with patch("market_scanner.SP100_TICKERS", fake_base), \
+             patch("momentum_universe.fetch_daily_movers_for", return_value=["AMD"]):
             uni = mu.build_us_universe()
         assert set(uni) == {"AAPL", "MSFT", "NVDA", "TSLA", "AMD"}
     finally:
@@ -31,13 +32,14 @@ def test_build_us_universe_unions_sources():
 
 
 def test_build_us_universe_caps_at_1500():
-    """V1.0 안전장치 — universe 1500개 초과 절대 금지."""
+    """V1.0 안전장치 — universe 1500개 초과 절대 금지. (현실에서는 169
+    base + 작은 weekly/daily 보강이라 cap에 닿을 일이 없지만 안전장치 검증.)"""
     tmp = setup()
     try:
-        big = [f"T{i}" for i in range(2000)]
-        md.save_cache("iwb_holdings", big, status="ok")
+        big_base = [f"T{i}" for i in range(2000)]
         md.save_cache("weekly_liquidity_us", [], status="ok")
-        with patch("momentum_universe.fetch_daily_movers_for", return_value=[]):
+        with patch("market_scanner.SP100_TICKERS", big_base), \
+             patch("momentum_universe.fetch_daily_movers_for", return_value=[]):
             uni = mu.build_us_universe()
         assert len(uni) <= 1500
     finally:
@@ -62,12 +64,13 @@ def test_build_kr_universe_uses_kospi_tickers():
 
 
 def test_build_us_universe_dedup_preserves_order():
-    """중복 제거되지만 IWB가 먼저 등장한 순서를 유지."""
+    """중복 제거되지만 base가 먼저 등장한 순서를 유지."""
     tmp = setup()
     try:
-        md.save_cache("iwb_holdings", ["AAPL", "MSFT"], status="ok")
+        fake_base = ["AAPL", "MSFT"]
         md.save_cache("weekly_liquidity_us", ["MSFT", "TSLA"], status="ok")
-        with patch("momentum_universe.fetch_daily_movers_for", return_value=["AAPL"]):
+        with patch("market_scanner.SP100_TICKERS", fake_base), \
+             patch("momentum_universe.fetch_daily_movers_for", return_value=["AAPL"]):
             uni = mu.build_us_universe()
         assert uni.index("AAPL") < uni.index("MSFT") < uni.index("TSLA")
         assert uni.count("AAPL") == 1
