@@ -1,7 +1,10 @@
 """
 Market Momentum Scanner — Universe 조립.
 
-US: IWB ∪ weekly_top100 ∪ daily_movers (≤ 1500 cap)
+US: SP100∪NDX100 ∪ weekly_top100 ∪ daily_movers (≤ 1500 cap)
+    Source: market_scanner.SP100_TICKERS (169 ticker, S&P 100 ∪ NASDAQ 100).
+    이전 design (IWB Russell 1000)은 BlackRock anti-bot 차단 + universe
+    과대로 인한 처리 시간 문제로 2026-05-18 폐기.
 KR: KOSPI_TICKERS (market_scanner 101-ticker curated list)
     ∪ weekly_top100 ∪ daily_movers (잡주 필터: 거래대금 5일평균 ≥ 100억원만)
     Note: KRX public API requires auth since 2025 — using static list instead.
@@ -68,15 +71,27 @@ def get_weekly_top_liquidity(name: str, base: list[str], market: str = "us") -> 
 
 def build_us_universe() -> list[str]:
     """
-    US_BASE = IWB
-    US_WEEKLY = IWB 거래대금 5일 평균 Top100
-    US_DAILY  = IWB 중 (1d ≥ +5% OR 3d ≥ +8%) AND close > MA20
-    Return: 합집합 (≤ 1500 cap)
+    US_BASE = SP100∪NDX100 (market_scanner.SP100_TICKERS, 169 ticker)
+    US_WEEKLY = base 거래대금 5일 평균 Top100
+    US_DAILY  = base 중 (1d ≥ +5% OR 3d ≥ +8%) AND close > MA20
+    Return: 합집합 (≤ 1500 cap — 169 base에서는 사실상 cap 미적용)
+
+    Note: 2026-05-18 이전에는 IWB Russell 1000 holdings (~1007 ticker)을
+    base로 사용했으나, (a) BlackRock CSV endpoint의 anti-bot 차단, (b) ~1000
+    ticker × yfinance 90d bulk fetch의 처리 시간 문제로 SP100∪NDX100 base로
+    교체. EM tier의 mid-cap structural inflection 노출은 design tradeoff로
+    수용 (Russell 1000 600~1000위 mid-cap 노출 손실).
     """
-    iwb = md.get_iwb_holdings()
-    weekly = get_weekly_top_liquidity("weekly_liquidity_us", iwb, market="us")
-    daily = fetch_daily_movers_for(iwb, market="us")
-    uni = _dedup_preserve_order(list(iwb) + list(weekly) + list(daily))
+    try:
+        from market_scanner import SP100_TICKERS
+    except ImportError:
+        print("[universe] WARN market_scanner.SP100_TICKERS unavailable")
+        return []
+    base = list(SP100_TICKERS)
+
+    weekly = get_weekly_top_liquidity("weekly_liquidity_us", base, market="us")
+    daily = fetch_daily_movers_for(base, market="us")
+    uni = _dedup_preserve_order(base + list(weekly) + list(daily))
     if len(uni) > UNIVERSE_CAP:
         print(f"[universe] WARN US universe {len(uni)} > cap {UNIVERSE_CAP} — truncating")
         uni = uni[:UNIVERSE_CAP]
