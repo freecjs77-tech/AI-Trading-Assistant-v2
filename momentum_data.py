@@ -2,15 +2,15 @@
 Market Momentum Scanner — Data access layer.
 
 책임:
-  1. yfinance bulk fetch (Task 4-7에서 추가)
-  2. iShares CSV / KRX API 호출 (Task 4-5)
-  3. 캐시 I/O 공통 (load/save/age + fallback helper) ← Task 2
+  1. yfinance bulk fetch
+  2. KRX ETF 구성종목 API 호출
+  3. 캐시 I/O 공통 (load/save/age + fallback helper)
   4. EMA 필드 계산 공통 헬퍼 (compute_ema_fields — EMA9/21/65 + dist + slope)
 
 캐시 메타 스키마:
   {
     "last_updated": "2026-05-06T13:42:11+09:00",
-    "source": "ishares" | "krx" | "yfinance" | "test",
+    "source": "krx" | "yfinance" | "test",
     "fetch_status": "ok" | "stale_fallback" | "failed",
     "fallback_count": int,
     "row_count": int,
