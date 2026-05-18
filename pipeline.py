@@ -763,14 +763,19 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             print(f"  WARN Telegram error: {e} (pipeline continues)")
 
         # Step 5b momentum brief
-        try:
-            from telegram_sender import send_momentum_brief
-            if momentum_us_result or momentum_kr_result:
-                sent = send_momentum_brief(momentum_us_result, momentum_kr_result)
-                if sent:
-                    print("  OK momentum brief sent to Telegram")
-        except Exception as e:
-            print(f"  WARN momentum brief telegram failed: {e}")
+        # 사용자 요청에 따라 secondary brief (momentum/risk/lifecycle)는 기본 비활성화.
+        # 재활성화: TELEGRAM_BRIEFS_OFF=0 환경변수 설정.
+        if os.environ.get("TELEGRAM_BRIEFS_OFF", "1") == "1":
+            print("  SKIP momentum brief telegram (TELEGRAM_BRIEFS_OFF=1)")
+        else:
+            try:
+                from telegram_sender import send_momentum_brief
+                if momentum_us_result or momentum_kr_result:
+                    sent = send_momentum_brief(momentum_us_result, momentum_kr_result)
+                    if sent:
+                        print("  OK momentum brief sent to Telegram")
+            except Exception as e:
+                print(f"  WARN momentum brief telegram failed: {e}")
 
         # Step 5c: Portfolio snapshot + Trend page
         print("[Step 5c] Saving portfolio snapshot & trend page...")
@@ -1086,30 +1091,38 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             print(f"  WARN secondary portfolio reports failed: {e} (pipeline continues)")
 
         # Portfolio Risk Telegram (Step 5d 끝난 후 wife 결과 합산해서 1회 발송)
-        try:
-            from telegram_sender import send_portfolio_risk_summary
-            _base_url = os.environ.get(
-                "REPORT_BASE_URL",
-                "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2",
-            )
-            _wife_stop = (_wife_stop_results or {}).get("wife")
-            send_portfolio_risk_summary(
-                stop_me=stop_result_me,
-                stop_wife=_wife_stop,
-                base_url=_base_url,
-                date_str=today,
-            )
-        except Exception as e:
-            print(f"  WARN portfolio risk telegram failed: {e} (pipeline continues)")
+        # 사용자 요청에 따라 비활성화. TELEGRAM_BRIEFS_OFF=0 으로 재활성화.
+        if os.environ.get("TELEGRAM_BRIEFS_OFF", "1") == "1":
+            print("  SKIP portfolio risk telegram (TELEGRAM_BRIEFS_OFF=1)")
+        else:
+            try:
+                from telegram_sender import send_portfolio_risk_summary
+                _base_url = os.environ.get(
+                    "REPORT_BASE_URL",
+                    "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2",
+                )
+                _wife_stop = (_wife_stop_results or {}).get("wife")
+                send_portfolio_risk_summary(
+                    stop_me=stop_result_me,
+                    stop_wife=_wife_stop,
+                    base_url=_base_url,
+                    date_str=today,
+                )
+            except Exception as e:
+                print(f"  WARN portfolio risk telegram failed: {e} (pipeline continues)")
 
-        try:
-            from telegram_sender import send_lifecycle_brief
-            _base = os.environ.get("REPORT_BASE_URL",
-                                  "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/")
-            send_lifecycle_brief(lifecycle_us_result, lifecycle_kr_result,
-                                  base_url=_base, date_str=today)
-        except Exception as e:
-            print(f"  WARN lifecycle telegram brief failed: {e}")
+        # Lifecycle Telegram brief — 사용자 요청에 따라 비활성화.
+        if os.environ.get("TELEGRAM_BRIEFS_OFF", "1") == "1":
+            print("  SKIP lifecycle brief telegram (TELEGRAM_BRIEFS_OFF=1)")
+        else:
+            try:
+                from telegram_sender import send_lifecycle_brief
+                _base = os.environ.get("REPORT_BASE_URL",
+                                      "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/")
+                send_lifecycle_brief(lifecycle_us_result, lifecycle_kr_result,
+                                      base_url=_base, date_str=today)
+            except Exception as e:
+                print(f"  WARN lifecycle telegram brief failed: {e}")
 
         # Step 6: History update (비거래일 스킵)
         if is_trading_day:
