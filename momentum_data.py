@@ -17,7 +17,7 @@ Market Momentum Scanner — Data access layer.
     "data": [...]
   }
 """
-import os, json, sys, io, csv, re, requests
+import os, json, sys, io, requests
 from datetime import datetime, timezone, timedelta
 
 if sys.platform == "win32":
@@ -122,85 +122,6 @@ def fetch_with_fallback(name: str, fetch_fn, source: str = "yfinance"):
                        status="stale_fallback", fallback_count=new_count)
             return cache["data"]
         raise
-
-
-# ───────────────────────────────────────────────────────────────────────────────
-# iShares CSV 파싱 (Task 4)
-# ───────────────────────────────────────────────────────────────────────────────
-
-IWB_URL = (
-    "https://www.ishares.com/us/products/239707/ishares-russell-1000-etf/"
-    "1467271812596.ajax?fileType=csv&fileName=IWB_holdings&dataType=fund"
-)
-
-# iShares CSV는 종종 컬럼명이 변경됨 — fallback 후보
-ISHARES_TICKER_COLS = ["Ticker", "Ticker Symbol", "Issuer Ticker"]
-
-
-def normalize_symbol(symbol: str) -> str | None:
-    """
-    iShares 심볼을 yfinance 호환 형식으로 정규화.
-
-    Examples:
-      'BRK.B' -> 'BRK-B'
-      'AAPL'  -> 'AAPL'
-      '-' / '' / '   ' -> None  (cash, 빈줄)
-    """
-    if not symbol:
-        return None
-    s = symbol.strip().upper()
-    if not s or s == "-" or not re.match(r"^[A-Z0-9.\-]+$", s):
-        return None
-    return s.replace(".", "-")
-
-
-def parse_ishares_csv(csv_bytes: bytes) -> list[str]:
-    """
-    iShares CSV 바이트 → 정규화된 ticker 리스트.
-
-    CSV 헤더 행이 첫 줄이 아닐 수 있어 (앞에 메타 행들), 알려진 ticker 컬럼명을
-    찾을 때까지 한 줄씩 스킵.
-    """
-    text = csv_bytes.decode("utf-8", errors="replace")
-    lines = text.splitlines()
-    header_idx = -1
-    for i, line in enumerate(lines):
-        cols = next(csv.reader([line]), [])
-        if any(c.strip() in ISHARES_TICKER_COLS for c in cols):
-            header_idx = i
-            break
-    if header_idx < 0:
-        raise ValueError(
-            f"No known ticker column ({ISHARES_TICKER_COLS}) in CSV. "
-            f"First 5 lines: {lines[:5]}"
-        )
-    reader = csv.DictReader(lines[header_idx:])
-    ticker_col = next((c for c in ISHARES_TICKER_COLS if c in reader.fieldnames), None)
-    tickers = []
-    for row in reader:
-        sym = normalize_symbol(row.get(ticker_col, ""))
-        if sym:
-            tickers.append(sym)
-    return tickers
-
-
-def fetch_iwb_holdings() -> list[str]:
-    """IWB Russell 1000 ETF holdings CSV 다운로드 + 정규화."""
-    resp = requests.get(IWB_URL, timeout=30,
-                        headers={"User-Agent": "Mozilla/5.0"})
-    resp.raise_for_status()
-    return parse_ishares_csv(resp.content)
-
-
-def get_iwb_holdings(force_refresh: bool = False) -> list[str]:
-    """캐시 + fallback. TTL 7일."""
-    from momentum_config import CACHE_TTL_DAYS
-    name = "iwb_holdings"
-    if not force_refresh and cache_age_days(name) < CACHE_TTL_DAYS:
-        cache = load_cache(name)
-        if cache and cache.get("fetch_status") in ("ok", "stale_fallback"):
-            return cache["data"]
-    return fetch_with_fallback(name, fetch_iwb_holdings, source="ishares")
 
 
 # ───────────────────────────────────────────────────────────────────────────────
