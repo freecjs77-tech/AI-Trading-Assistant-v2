@@ -27,10 +27,27 @@ def test_mode_keyword_auto():
 
 
 def test_mode_category_default():
-    assert get_stop_mode("VOO", "Vanguard S&P 500 ETF", "ETF Core") == "CORE"
+    # VOO/AAPL는 OVERRIDES에 의해 STABLE로 승격되므로 category-only는 다른 ETF/Growth 종목으로 검증
+    assert get_stop_mode("XLE", "Energy Select Sector SPDR", "ETF Core") == "CORE"
     assert get_stop_mode("BIL", "SPDR 1-3M T-bill", "Bond") == "DEFENSIVE"
-    assert get_stop_mode("AAPL", "Apple Inc", "Growth") == "MOMENTUM"
+    assert get_stop_mode("NVDA", "NVIDIA Corp", "Growth") == "MOMENTUM"
     assert get_stop_mode("SLV", "iShares Silver", "Metal") == "HIGH_VOL"
+
+
+def test_mode_alias_categories_from_portfolio_data():
+    """portfolio_data.TICKER_META가 쓰는 짧은 라벨도 매핑돼야 (alias 회귀)."""
+    # VOO/AAPL는 OVERRIDES로 STABLE이므로, alias 동작은 미override 종목으로 검증
+    assert get_stop_mode("XLF", "Financial Select Sector SPDR", "ETF") == "CORE"
+    assert get_stop_mode("O",   "Realty Income",                 "Value") == "CORE"
+    assert get_stop_mode("BIL", "SPDR 1-3M T-bill",              "CASH") == "DEFENSIVE"
+
+
+def test_mode_stable_overrides_apply():
+    """STABLE 승격은 OVERRIDES로 동작하며 class 매핑보다 우선."""
+    for tk in ("VOO", "SPY", "QQQ", "SCHD", "JEPI"):
+        assert get_stop_mode(tk, tk, "ETF") == "STABLE"
+    for tk in ("MSFT", "AAPL", "GOOGL", "AMZN"):
+        assert get_stop_mode(tk, tk, "Growth") == "STABLE"
 
 
 def test_mode_unknown_category_default():
@@ -67,23 +84,38 @@ def test_calculate_stop_momentum_atr_floor_applied():
 
 
 def test_calculate_stop_momentum_atr_in_range():
-    """8% ≤ ATR×3 ≤ 20% → 그대로 적용."""
-    # ATR×3 = 12 → distance = 12 → stop = 88
-    assert calculate_stop(100.0, atr14=4.0, mode="MOMENTUM", ticker="NVDA") == 88.0
+    """8% ≤ ATR×3 ≤ 12% → 그대로 적용."""
+    # ATR×3 = 10 → distance = 10 → stop = 90
+    assert calculate_stop(100.0, atr14=10.0 / 3, mode="MOMENTUM", ticker="NVDA") == 90.0
 
 
 def test_calculate_stop_momentum_atr_ceiling_applied():
-    """ATR×3 > 20% max → max_pct ceiling 적용."""
-    # ATR×3 = 30 → distance = min(30, 20) = 20 → stop = 80
-    assert calculate_stop(100.0, atr14=10.0, mode="MOMENTUM", ticker="TSLA") == 80.0
+    """ATR×3 > 12% max → max_pct ceiling 적용 (자산보호 cap)."""
+    # ATR×3 = 30 → distance = min(30, 12) = 12 → stop = 88
+    assert calculate_stop(100.0, atr14=10.0, mode="MOMENTUM", ticker="TSLA") == 88.0
 
 
 def test_calculate_stop_high_vol_atr_clamps():
-    """HIGH_VOL: ATR×4, [12%, 30%]."""
+    """HIGH_VOL: ATR×4, [12%, 12%] — 자산보호 cap으로 사실상 12% 고정."""
     # ATR×4 = 8 < 12 min → 12 → stop = 88
     assert calculate_stop(100.0, atr14=2.0, mode="HIGH_VOL", ticker="QLD") == 88.0
-    # ATR×4 = 80 > 30 max → 30 → stop = 70
-    assert calculate_stop(100.0, atr14=20.0, mode="HIGH_VOL", ticker="QLD") == 70.0
+    # ATR×4 = 80 > 12 max → 12 → stop = 88 (cap 적용)
+    assert calculate_stop(100.0, atr14=20.0, mode="HIGH_VOL", ticker="QLD") == 88.0
+
+
+def test_calculate_stop_stable_atr_clamps():
+    """STABLE: ATR×2, [5%, 8%] — 저변동 대형주용 타이트 cap."""
+    # ATR×2 = 2 < 5 min → 5 → stop = 95
+    assert calculate_stop(100.0, atr14=1.0, mode="STABLE", ticker="VOO") == 95.0
+    # ATR×2 = 7 (in range 5~8) → 그대로 → stop = 93
+    assert calculate_stop(100.0, atr14=3.5, mode="STABLE", ticker="SPY") == 93.0
+    # ATR×2 = 20 > 8 max → 8 → stop = 92 (cap)
+    assert calculate_stop(100.0, atr14=10.0, mode="STABLE", ticker="QQQ") == 92.0
+
+
+def test_calculate_stop_stable_atr_none_fallback():
+    """STABLE: ATR 없으면 min_pct (5%) fallback."""
+    assert calculate_stop(100.0, atr14=None, mode="STABLE", ticker="VOO") == 95.0
 
 
 def test_calculate_stop_atr_none_fallback():

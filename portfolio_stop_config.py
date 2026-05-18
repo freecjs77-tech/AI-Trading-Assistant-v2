@@ -14,15 +14,22 @@ ANCHOR_DATE = "2026-01-02"
 DEFAULT_MODE = "MOMENTUM"
 
 CATEGORY_TO_MODE = {
+    # Canonical labels (spec)
     "ETF Core":        "CORE",
     "Bond":            "DEFENSIVE",
     "Value/Dividend":  "CORE",
     "Growth":          "MOMENTUM",
     "KOSPI Stock":     "MOMENTUM",
-    "KOSPI ETF":       "MOMENTUM",   # broad ETF만 OVERRIDES로 CORE 승격
+    "KOSPI ETF":       "MOMENTUM",   # broad ETF만 OVERRIDES로 CORE/STABLE 승격
     "Speculative":     "HIGH_VOL",
     "Metal":           "HIGH_VOL",
     "Other":           "MOMENTUM",
+    # portfolio_data.TICKER_META 가 실제로 사용하는 짧은 라벨 (alias)
+    # 매핑 누락 시 DEFAULT_MODE = MOMENTUM 로 폴백돼 의도된 CORE/DEFENSIVE 가
+    # 적용되지 않는 버그를 막기 위해 명시 등록.
+    "ETF":             "CORE",       # alias: ETF Core
+    "Value":           "CORE",       # alias: Value/Dividend
+    "CASH":            "DEFENSIVE",  # T-bill 등 현금성
 }
 
 # 종목명에 포함되면 HIGH_VOL 자동 승격 (테마/레버리지 자동 대응)
@@ -32,6 +39,18 @@ HIGH_VOL_KEYWORDS = [
 
 # Explicit overrides (categry/keyword 룰을 깨고 싶은 종목만)
 MODE_OVERRIDES = {
+    # US broad / income ETFs → STABLE (저변동 대형 인덱스 5~8%)
+    "VOO":    "STABLE",   # S&P 500
+    "SPY":    "STABLE",   # S&P 500
+    "IVV":    "STABLE",   # S&P 500
+    "QQQ":    "STABLE",   # NASDAQ 100
+    "SCHD":   "STABLE",   # Broad dividend
+    "JEPI":   "STABLE",   # Equity premium income (저변동)
+    # US mega-cap 안정주 → STABLE
+    "MSFT":   "STABLE",
+    "AAPL":   "STABLE",
+    "GOOGL":  "STABLE",
+    "AMZN":   "STABLE",
     # KR broad ETFs → CORE (KOSPI ETF 기본 MOMENTUM 깨고 CORE)
     "102110": "CORE",   # TIGER 200
     "458730": "CORE",   # TIGER 미국배당다우존스
@@ -52,8 +71,9 @@ MODE_OVERRIDES = {
 STOP_PARAMS = {
     "CORE":      {"type": "pct",  "ratio": 0.88, "min_pct": None, "max_pct": None},  # 12%
     "DEFENSIVE": {"type": "pct",  "ratio": 0.92, "min_pct": None, "max_pct": None},  # 8%
-    "MOMENTUM":  {"type": "atr",  "multiplier": 3, "min_pct": 0.08, "max_pct": 0.20},
-    "HIGH_VOL":  {"type": "atr",  "multiplier": 4, "min_pct": 0.12, "max_pct": 0.30},
+    "STABLE":    {"type": "atr",  "multiplier": 2, "min_pct": 0.05, "max_pct": 0.08},
+    "MOMENTUM":  {"type": "atr",  "multiplier": 3, "min_pct": 0.08, "max_pct": 0.12},
+    "HIGH_VOL":  {"type": "atr",  "multiplier": 4, "min_pct": 0.12, "max_pct": 0.12},
 }
 
 # ── 시그널 임계값 ───────────────────────────────────────────
