@@ -5,6 +5,7 @@
 GitHub Pages에서 리포트를 서빙하고, GitHub Actions로 파이프라인을 자동/수동 실행한다.
 
 ## 진행 중인 계획
+- [Momentum US Universe Swap (IWB→SP100∪NDX100)](docs/superpowers/plans/2026-05-18-momentum-us-universe-swap-to-sp100ndx.md) — Pipeline Step 4c2 base 교체 · `momentum_universe.build_us_universe` base를 IWB Russell 1000 (~1007) → `market_scanner.SP100_TICKERS` (169) · BlackRock anti-bot 의존성 제거 · IWB fetch/parse 코드 + 테스트 + fixture 삭제 · M1/M2/M3/EM 시그널 로직·history·캐시키 모두 무변경 · EM tier의 mid-cap 노출 손실은 design tradeoff
 - [Market Momentum Scanner v1.0](docs/superpowers/plans/2026-05-06-momentum-scanner.md) — Step 4c2 신규 추가 · US/KR 별도 스캐너 · IWB 1000 + KODEX 200/KOSDAQ 150 universe · M1/M2/M3 + Risk Tags + Streak/Change · leg 백테스트 + 연속 손실 alert · momentum_us/kr.html + Telegram brief · 기존 strategy v5.3 시그널 무영향
 - [Capitol Trades 의원 거래 보조 지표 통합 V2c](docs/plans/capitol-trades-integration.md) — Politician Watchlist 독립 섹션 · Capitol Trades 스크랩 · 가중 스코어 + 별점 0-5 + 색상 (파랑=매수/빨강=매도) · 시그널 로직 불변
 - [SP100 + NDX100 통합 + 섹터 표시](docs/plans/sp100-ndx-merge-with-sectors.md) — SP100_TICKERS 50→~169 (S&P 100 ∪ NASDAQ 100) · GICS 섹터 매핑(Tech/Comm/금융/헬스케어 등 11분류) · 스캐너 표에 Sector 컬럼 추가 · 시그널 로직/캐시키/히스토리 불변
