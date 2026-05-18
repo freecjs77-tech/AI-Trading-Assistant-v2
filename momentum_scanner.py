@@ -224,7 +224,7 @@ def _scan_market(market: str, build_universe_fn, sector_etfs: list[str],
 
         # Bulk indicators on the full evaluation universe
         if market == "US" and em_enabled:
-            # M+ uses Top sectors only; EM uses Full IWB.
+            # M+ uses Top sectors only; EM uses Full base (SP100∪NDX100).
             # We fetch indicators for the union (full universe) once.
             eval_universe = list(set(top_tickers) | set(universe))
         else:
