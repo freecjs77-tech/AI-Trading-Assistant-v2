@@ -25,21 +25,29 @@ def test_pct_modes_no_atr_keys():
 
 
 def test_atr_modes_have_clamps():
-    """MOMENTUM/HIGH_VOL은 multiplier + min_pct + max_pct 모두 정의."""
+    """MOMENTUM/HIGH_VOL은 multiplier + min_pct + max_pct 모두 정의.
+
+    자산보호 cap 12% 적용 후 HIGH_VOL은 min==max (degenerate 12% fix) 허용.
+    """
     for mode in ("MOMENTUM", "HIGH_VOL"):
         p = cfg.STOP_PARAMS[mode]
         assert p["type"] == "atr"
         assert p["multiplier"] >= 1
-        assert 0 < p["min_pct"] < p["max_pct"] <= 0.5
+        assert 0 < p["min_pct"] <= p["max_pct"] <= 0.5
 
 
-def test_high_vol_stricter_than_momentum():
-    """HIGH_VOL은 MOMENTUM보다 stop이 멀어야 (변동성 큼)."""
+def test_max_pct_capped_at_12_percent():
+    """자산보호 정책: ATR 모드의 max_pct는 12% 이내."""
+    for mode in ("MOMENTUM", "HIGH_VOL"):
+        assert cfg.STOP_PARAMS[mode]["max_pct"] <= 0.12 + 1e-9
+
+
+def test_high_vol_min_floor_at_least_momentum():
+    """HIGH_VOL의 노이즈 흡수 하한은 MOMENTUM 이상 (multiplier도 더 큼)."""
     m = cfg.STOP_PARAMS["MOMENTUM"]
     h = cfg.STOP_PARAMS["HIGH_VOL"]
     assert h["multiplier"] > m["multiplier"]
-    assert h["min_pct"] > m["min_pct"]
-    assert h["max_pct"] > m["max_pct"]
+    assert h["min_pct"] >= m["min_pct"]
 
 
 def test_category_to_mode_complete():
@@ -101,7 +109,8 @@ if __name__ == "__main__":
     test_modes_complete()
     test_pct_modes_no_atr_keys()
     test_atr_modes_have_clamps()
-    test_high_vol_stricter_than_momentum()
+    test_max_pct_capped_at_12_percent()
+    test_high_vol_min_floor_at_least_momentum()
     test_category_to_mode_complete()
     test_kospi_etf_default_momentum()
     test_overrides_broad_kr_etfs()

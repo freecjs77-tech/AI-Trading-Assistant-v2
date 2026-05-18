@@ -67,23 +67,23 @@ def test_calculate_stop_momentum_atr_floor_applied():
 
 
 def test_calculate_stop_momentum_atr_in_range():
-    """8% ≤ ATR×3 ≤ 20% → 그대로 적용."""
-    # ATR×3 = 12 → distance = 12 → stop = 88
-    assert calculate_stop(100.0, atr14=4.0, mode="MOMENTUM", ticker="NVDA") == 88.0
+    """8% ≤ ATR×3 ≤ 12% → 그대로 적용."""
+    # ATR×3 = 10 → distance = 10 → stop = 90
+    assert calculate_stop(100.0, atr14=10.0 / 3, mode="MOMENTUM", ticker="NVDA") == 90.0
 
 
 def test_calculate_stop_momentum_atr_ceiling_applied():
-    """ATR×3 > 20% max → max_pct ceiling 적용."""
-    # ATR×3 = 30 → distance = min(30, 20) = 20 → stop = 80
-    assert calculate_stop(100.0, atr14=10.0, mode="MOMENTUM", ticker="TSLA") == 80.0
+    """ATR×3 > 12% max → max_pct ceiling 적용 (자산보호 cap)."""
+    # ATR×3 = 30 → distance = min(30, 12) = 12 → stop = 88
+    assert calculate_stop(100.0, atr14=10.0, mode="MOMENTUM", ticker="TSLA") == 88.0
 
 
 def test_calculate_stop_high_vol_atr_clamps():
-    """HIGH_VOL: ATR×4, [12%, 30%]."""
+    """HIGH_VOL: ATR×4, [12%, 12%] — 자산보호 cap으로 사실상 12% 고정."""
     # ATR×4 = 8 < 12 min → 12 → stop = 88
     assert calculate_stop(100.0, atr14=2.0, mode="HIGH_VOL", ticker="QLD") == 88.0
-    # ATR×4 = 80 > 30 max → 30 → stop = 70
-    assert calculate_stop(100.0, atr14=20.0, mode="HIGH_VOL", ticker="QLD") == 70.0
+    # ATR×4 = 80 > 12 max → 12 → stop = 88 (cap 적용)
+    assert calculate_stop(100.0, atr14=20.0, mode="HIGH_VOL", ticker="QLD") == 88.0
 
 
 def test_calculate_stop_atr_none_fallback():

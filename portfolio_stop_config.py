@@ -52,8 +52,8 @@ MODE_OVERRIDES = {
 STOP_PARAMS = {
     "CORE":      {"type": "pct",  "ratio": 0.88, "min_pct": None, "max_pct": None},  # 12%
     "DEFENSIVE": {"type": "pct",  "ratio": 0.92, "min_pct": None, "max_pct": None},  # 8%
-    "MOMENTUM":  {"type": "atr",  "multiplier": 3, "min_pct": 0.08, "max_pct": 0.20},
-    "HIGH_VOL":  {"type": "atr",  "multiplier": 4, "min_pct": 0.12, "max_pct": 0.30},
+    "MOMENTUM":  {"type": "atr",  "multiplier": 3, "min_pct": 0.08, "max_pct": 0.12},
+    "HIGH_VOL":  {"type": "atr",  "multiplier": 4, "min_pct": 0.12, "max_pct": 0.12},
 }
 
 # ── 시그널 임계값 ───────────────────────────────────────────
