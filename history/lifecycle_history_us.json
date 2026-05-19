@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "generator_version": "lifecycle_phase_a/0.1.0",
   "market": "US",
-  "last_updated": "2026-05-18T21:26:14",
+  "last_updated": "2026-05-19T05:49:31",
   "tickers": {
     "AMD": {
       "first_seen": "2026-05-08",
@@ -1440,6 +1440,101 @@
             "dist_ema9_pct": 0.2915,
             "dist_ema21_pct": 10.845,
             "volume_ratio": 0.59,
+            "atr_pct": 5.58,
+            "high_20d_prior": 469.22,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -8.15,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 420.99,
+            "open": 429.5,
+            "high": null,
+            "low": null,
+            "ema9": 422.2209,
+            "ema21": 379.8007,
+            "ema65": 297.9171,
+            "rsi14": 66.2294,
+            "dist_ema9_pct": 0.2915,
+            "dist_ema21_pct": 10.845,
+            "volume_ratio": 0.61,
             "atr_pct": 5.58,
             "high_20d_prior": 469.22,
             "sector": null,
@@ -2995,6 +3090,89 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "WAIT",
+          "decision": "TRENDING",
+          "raw": {
+            "close": 108.17,
+            "open": 113.47,
+            "high": null,
+            "low": null,
+            "ema9": 111.7712,
+            "ema21": 100.0555,
+            "ema65": 73.9481,
+            "rsi14": 61.6589,
+            "dist_ema9_pct": 3.2219,
+            "dist_ema21_pct": 8.11,
+            "volume_ratio": 0.91,
+            "atr_pct": 7.41,
+            "high_20d_prior": 132.75,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "drift",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 2,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": false,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": false,
+            "low_vol_drift": false,
+            "tight_close_cluster": true
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": true
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -16.34,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -4441,6 +4619,89 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "WAIT",
+          "decision": "TRENDING",
+          "raw": {
+            "close": 681.54,
+            "open": 750.46,
+            "high": null,
+            "low": null,
+            "ema9": 710.3109,
+            "ema21": 633.9346,
+            "ema65": 501.9677,
+            "rsi14": 59.6253,
+            "dist_ema9_pct": 4.0505,
+            "dist_ema21_pct": 7.5095,
+            "volume_ratio": 1.22,
+            "atr_pct": 7.18,
+            "high_20d_prior": 818.67,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 1,
+          "score_track": "drift",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": false,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": false,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -14.22,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -5819,6 +6080,101 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 222.32,
+            "open": 229.87,
+            "high": null,
+            "low": null,
+            "ema9": 220.4157,
+            "ema21": 211.6257,
+            "ema65": 197.3328,
+            "rsi14": 61.6593,
+            "dist_ema9_pct": 0.864,
+            "dist_ema21_pct": 5.0534,
+            "volume_ratio": 0.94,
+            "atr_pct": 3.5,
+            "high_20d_prior": 236.54,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 1.4,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -7095,6 +7451,101 @@
           "suggested_entry_tier": null,
           "suggested_size_pct": 0.0,
           "rs_delta_pct": 2.24,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 297.84,
+            "open": 300.24,
+            "high": null,
+            "low": null,
+            "ema9": 293.6321,
+            "ema21": 284.3236,
+            "ema65": 271.3051,
+            "rsi14": 71.6749,
+            "dist_ema9_pct": 1.4331,
+            "dist_ema21_pct": 4.7539,
+            "volume_ratio": 0.71,
+            "atr_pct": 2.08,
+            "high_20d_prior": 303.2,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 1.85,
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
@@ -8567,6 +9018,101 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 418.58,
+            "open": 426.9,
+            "high": null,
+            "low": null,
+            "ema9": 417.2119,
+            "ema21": 401.7021,
+            "ema65": 361.6989,
+            "rsi14": 63.672,
+            "dist_ema9_pct": 0.3279,
+            "dist_ema21_pct": 4.2016,
+            "volume_ratio": 1.21,
+            "atr_pct": 2.85,
+            "high_20d_prior": 435.72,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": true,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -0.89,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -9820,6 +10366,101 @@
           "raw": {
             "close": 413.57,
             "open": 441.71,
+            "high": null,
+            "low": null,
+            "ema9": 425.6824,
+            "ema21": 413.2358,
+            "ema65": 377.7672,
+            "rsi14": 52.1791,
+            "dist_ema9_pct": 2.8454,
+            "dist_ema21_pct": 0.0809,
+            "volume_ratio": 1.1,
+            "atr_pct": 4.53,
+            "high_20d_prior": 448.45,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -6.68,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 413.57,
+            "open": 441.31,
             "high": null,
             "low": null,
             "ema9": 425.6824,
@@ -11267,6 +11908,101 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 420.71,
+            "open": 421.41,
+            "high": null,
+            "low": null,
+            "ema9": 423.353,
+            "ema21": 412.3497,
+            "ema65": 377.4199,
+            "rsi14": 56.5382,
+            "dist_ema9_pct": 0.6243,
+            "dist_ema21_pct": 2.0275,
+            "volume_ratio": 0.92,
+            "atr_pct": 3.7,
+            "high_20d_prior": 442.36,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -1.71,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -12389,6 +13125,55 @@
             "intraday_reversal": false
           },
           "_raw_score_track": "trigger"
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "BROKEN",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 220.61,
+            "open": 220.48,
+            "high": null,
+            "low": null,
+            "ema9": 228.558,
+            "ema21": 227.4582,
+            "ema65": 223.3029,
+            "rsi14": 44.6956,
+            "dist_ema9_pct": 3.4775,
+            "dist_ema21_pct": 3.0108,
+            "volume_ratio": 0.9,
+            "atr_pct": 3.31,
+            "high_20d_prior": 244.07,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "BROKEN",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -7.3,
+          "_raw_score": 0,
+          "_raw_features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "_raw_score_track": "trigger"
         }
       ]
     },
@@ -13330,6 +14115,91 @@
             "dist_ema9_pct": 11.4229,
             "dist_ema21_pct": 20.9966,
             "volume_ratio": 0.99,
+            "atr_pct": 3.0,
+            "high_20d_prior": 119.36,
+            "sector": null,
+            "risk_tags": [
+              "OVERHEAT"
+            ]
+          },
+          "score": 5,
+          "score_track": "drift",
+          "score_tier": "MID",
+          "rs_tier": "STRONG",
+          "active_components": 4,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": true
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": true
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 20.51,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 118.88,
+            "open": 118.8,
+            "high": null,
+            "low": null,
+            "ema9": 106.6926,
+            "ema21": 98.2507,
+            "ema65": 87.8076,
+            "rsi14": 88.7324,
+            "dist_ema9_pct": 11.4229,
+            "dist_ema21_pct": 20.9966,
+            "volume_ratio": 1.0,
             "atr_pct": 3.0,
             "high_20d_prior": 119.36,
             "sector": null,
@@ -14746,6 +15616,89 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "WAIT",
+          "decision": "TRENDING",
+          "raw": {
+            "close": 1756.45,
+            "open": 1820.88,
+            "high": null,
+            "low": null,
+            "ema9": 1809.046,
+            "ema21": 1783.8486,
+            "ema65": 1646.4059,
+            "rsi14": 49.3434,
+            "dist_ema9_pct": 2.9074,
+            "dist_ema21_pct": 1.5359,
+            "volume_ratio": 0.88,
+            "atr_pct": 4.56,
+            "high_20d_prior": 1936.89,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 1,
+          "score_track": "drift",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": false,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": false,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -4.6,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -16132,6 +17085,89 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "WAIT",
+          "decision": "TRENDING",
+          "raw": {
+            "close": 1486.33,
+            "open": 1563.28,
+            "high": null,
+            "low": null,
+            "ema9": 1575.3121,
+            "ema21": 1537.9921,
+            "ema65": 1351.1094,
+            "rsi14": 48.2579,
+            "dist_ema9_pct": 5.6485,
+            "dist_ema21_pct": 3.3591,
+            "volume_ratio": 1.2,
+            "atr_pct": 4.88,
+            "high_20d_prior": 1675.42,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 1,
+          "score_track": "drift",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": false,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": false,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -10.43,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -17422,6 +18458,89 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 242.16,
+            "open": 233.35,
+            "high": null,
+            "low": null,
+            "ema9": 232.0725,
+            "ema21": 223.6604,
+            "ema65": 217.2524,
+            "rsi14": 75.4744,
+            "dist_ema9_pct": 4.3467,
+            "dist_ema21_pct": 8.2713,
+            "volume_ratio": 1.4,
+            "atr_pct": 3.06,
+            "high_20d_prior": 246.25,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 5,
+          "score_track": "drift",
+          "score_tier": "MID",
+          "rs_tier": "MID",
+          "active_components": 4,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": true
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": true
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 9.43,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -18639,6 +19758,101 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 946.36,
+            "open": 947.74,
+            "high": null,
+            "low": null,
+            "ema9": 944.9197,
+            "ema21": 930.557,
+            "ema65": 900.2131,
+            "rsi14": 57.4079,
+            "dist_ema9_pct": 0.1524,
+            "dist_ema21_pct": 1.6982,
+            "volume_ratio": 0.86,
+            "atr_pct": 2.51,
+            "high_20d_prior": 975.66,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 0.25,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -19772,6 +20986,101 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 92.76,
+            "open": 95.82,
+            "high": null,
+            "low": null,
+            "ema9": 95.5261,
+            "ema21": 91.5976,
+            "ema65": 80.8934,
+            "rsi14": 56.9104,
+            "dist_ema9_pct": 2.8956,
+            "dist_ema21_pct": 1.269,
+            "volume_ratio": 0.84,
+            "atr_pct": 4.22,
+            "high_20d_prior": 105.91,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -6.24,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -20637,6 +21946,89 @@
           "raw": {
             "close": 88.54,
             "open": 87.41,
+            "high": null,
+            "low": null,
+            "ema9": 84.6758,
+            "ema21": 81.3013,
+            "ema65": 78.3587,
+            "rsi14": 75.2681,
+            "dist_ema9_pct": 4.5635,
+            "dist_ema21_pct": 8.9035,
+            "volume_ratio": 0.89,
+            "atr_pct": 2.54,
+            "high_20d_prior": 88.77,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 4,
+          "score_track": "drift",
+          "score_tier": "WEAK",
+          "rs_tier": "WEAK",
+          "active_components": 3,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 2.55,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 88.54,
+            "open": 87.49,
             "high": null,
             "low": null,
             "ema9": 84.6758,
@@ -21720,6 +23112,101 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 168.93,
+            "open": 181.77,
+            "high": null,
+            "low": null,
+            "ema9": 171.2823,
+            "ema21": 161.249,
+            "ema65": 130.1393,
+            "rsi14": 59.1538,
+            "dist_ema9_pct": 1.3733,
+            "dist_ema21_pct": 4.7634,
+            "volume_ratio": 0.95,
+            "atr_pct": 6.21,
+            "high_20d_prior": 192.15,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -1.03,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -22151,6 +23638,101 @@
           "raw": {
             "close": 492.38,
             "open": 495.84,
+            "high": null,
+            "low": null,
+            "ema9": 481.9346,
+            "ema21": 469.9404,
+            "ema65": 467.9552,
+            "rsi14": 56.1727,
+            "dist_ema9_pct": 2.1674,
+            "dist_ema21_pct": 4.775,
+            "volume_ratio": 0.94,
+            "atr_pct": 6.08,
+            "high_20d_prior": 512.69,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 3.01,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 492.38,
+            "open": 496.49,
             "high": null,
             "low": null,
             "ema9": 481.9346,
@@ -22800,6 +24382,89 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "WAIT",
+          "decision": "TRENDING",
+          "raw": {
+            "close": 863.95,
+            "open": 893.32,
+            "high": null,
+            "low": null,
+            "ema9": 891.4169,
+            "ema21": 865.9183,
+            "ema65": 785.517,
+            "rsi14": 52.5358,
+            "dist_ema9_pct": 3.0813,
+            "dist_ema21_pct": 0.2273,
+            "volume_ratio": 1.07,
+            "atr_pct": 3.43,
+            "high_20d_prior": 931.35,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 1,
+          "score_track": "drift",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": false,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": false,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -6.69,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -23310,6 +24975,89 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 160.49,
+            "open": 157.32,
+            "high": null,
+            "low": null,
+            "ema9": 153.1592,
+            "ema21": 151.913,
+            "ema65": 149.2375,
+            "rsi14": 63.6748,
+            "dist_ema9_pct": 4.7864,
+            "dist_ema21_pct": 5.646,
+            "volume_ratio": 1.19,
+            "atr_pct": 2.69,
+            "high_20d_prior": 158.0,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 5,
+          "score_track": "drift",
+          "score_tier": "MID",
+          "rs_tier": "MID",
+          "active_components": 4,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": true,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 8.04,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
@@ -23335,6 +25083,101 @@
             "dist_ema9_pct": 2.7875,
             "dist_ema21_pct": 4.4328,
             "volume_ratio": 1.21,
+            "atr_pct": 2.12,
+            "high_20d_prior": 80.97,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 6,
+          "score_track": "trigger",
+          "score_tier": "STRONG",
+          "rs_tier": "MID",
+          "active_components": 3,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": true,
+            "breakout": true,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 5.29,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 81.41,
+            "open": 79.7,
+            "high": null,
+            "low": null,
+            "ema9": 79.2022,
+            "ema21": 77.9544,
+            "ema65": 75.7841,
+            "rsi14": 68.319,
+            "dist_ema9_pct": 2.7875,
+            "dist_ema21_pct": 4.4328,
+            "volume_ratio": 1.22,
             "atr_pct": 2.12,
             "high_20d_prior": 80.97,
             "sector": null,
@@ -23509,6 +25352,190 @@
           "suggested_entry_tier": null,
           "suggested_size_pct": 0.0,
           "rs_delta_pct": 4.6,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 133.34,
+            "open": 131.52,
+            "high": null,
+            "low": null,
+            "ema9": 131.2029,
+            "ema21": 129.8238,
+            "ema65": 126.0885,
+            "rsi14": 61.4121,
+            "dist_ema9_pct": 1.6289,
+            "dist_ema21_pct": 2.7084,
+            "volume_ratio": 1.07,
+            "atr_pct": 2.0,
+            "high_20d_prior": 133.95,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 4.6,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        }
+      ]
+    },
+    "WDC": {
+      "first_seen": "2026-05-18",
+      "last_seen": "2026-05-18",
+      "snapshots": [
+        {
+          "date": "2026-05-18",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "WAIT",
+          "decision": "TRENDING",
+          "raw": {
+            "close": 458.68,
+            "open": 485.34,
+            "high": null,
+            "low": null,
+            "ema9": 473.594,
+            "ema21": 443.1614,
+            "ema65": 360.4627,
+            "rsi14": 58.4691,
+            "dist_ema9_pct": 3.1491,
+            "dist_ema21_pct": 3.5018,
+            "volume_ratio": 1.09,
+            "atr_pct": 6.48,
+            "high_20d_prior": 525.15,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 1,
+          "score_track": "drift",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": false,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": false,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -10.99,
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
