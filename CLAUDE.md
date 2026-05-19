@@ -76,6 +76,7 @@ python app.py
 - Growth 거부 RSI>55 (기존 50), 2nd/3rd BUY ALL 유지
 - **v5.3c 노이즈 감소**: 2nd_BUY volume 1.2x→1.5x, 3rd_BUY volume 1.3x→1.5x (백테스트 검증)
 - **v5.3d 2nd BUY 재설계**: 이중바닥→MA20 돌파 확인 교체 · RSI > 35→40 · MACD 골든크로스+hist 2일증가(페이크아웃 방지) · 거래량 1.5x · 3rd BUY volume 판정 1.3x→1.5x 불일치 해소 · 1st(바닥)→2nd(MA20 돌파)→3rd(추세 확립) 계단식 구조 명확화
+- **v5.3e 3rd_BUY momentum reject**: Growth/ETF 3rd_BUY에 `macd_hist_trend == "decreasing_2d"` 거부 필터 추가 · increasing_2d/mixed/N/A 통과 · PARAMS toggle (`entry_*.3rd_buy.reject_decreasing_hist`, default `true`)로 즉시 롤백 가능 · 2nd_BUY/1st_BUY/Exit 무변경
 - **스캐너 종목 축소**: SP100 101→50, ETF 20→10, KOSPI 101→50 (대형주 집중)
 - Value Entry 독립화 (거부 RSI>70)
 - **1st BUY 통합 (v5.3b)**: Growth/ETF 동일 — 필수 4개 ALL(RSI≤45 + 가격<MA20 + MACD hist 2일증가 + DD_52w≤-15%), 선택 면제

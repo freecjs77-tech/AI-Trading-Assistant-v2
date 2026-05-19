@@ -310,7 +310,14 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     if rsi is not None and rsi > _g3_reject:
         c3.append(("no", f"[거부] RSI > {_g3_reject}", f"RSI {rsi:.1f} — 과열 구간이라 3차 매수 금지예요"))
 
-    if all(c[0] == "ok" for c in c3) and not (rsi and rsi > _g3_reject):
+    # 3rd BUY 추가 거부: MACD hist 2일 감속 (v5.3e momentum quality)
+    _g3_hist_filter = _p("entry_growth.3rd_buy.reject_decreasing_hist", True)
+    hist_decel = _g3_hist_filter and macd_hist_trend == "decreasing_2d"
+    if hist_decel:
+        c3.append(("no", "[거부] MACD hist 2일 감속",
+                   "MACD hist 2일 연속 감소 — 추세 둔화로 3차 매수 보류예요"))
+
+    if all(c[0] == "ok" for c in c3) and not (rsi and rsi > _g3_reject) and not hist_decel:
         return "3rd_BUY", c3
 
     # ── 2nd BUY — ALL 충족  [v5.3d: MA20 돌파 확인 단계. 이중바닥→MA20 교체] ──
@@ -498,7 +505,15 @@ def _check_entry_etf(d: dict) -> tuple[str | None, list]:
                    f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden_etf else '<'} signal {macd_signal_val:.4f}"))
     else:
         c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
-    if all(c[0] == "ok" for c in c3):
+
+    # 3rd BUY 추가 거부: MACD hist 2일 감속 (v5.3e momentum quality)
+    _e3_hist_filter = _p("entry_etf.3rd_buy.reject_decreasing_hist", True)
+    hist_decel_etf = _e3_hist_filter and macd_hist_trend == "decreasing_2d"
+    if hist_decel_etf:
+        c3.append(("no", "[거부] MACD hist 2일 감속",
+                   "MACD hist 2일 연속 감소 — 추세 둔화로 3차 매수 보류예요"))
+
+    if all(c[0] == "ok" for c in c3) and not hist_decel_etf:
         return "3rd_BUY", c3
 
     # ── 2nd BUY (30%) — Pick 3 of 4 ──
@@ -886,13 +901,27 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
     else:
         c3.append(("no", "RSI > 55", "RSI 데이터가 없어요"))
     c3_reject = rsi is not None and rsi > 75
+    _g3_hist_filter_display = _p("entry_growth.3rd_buy.reject_decreasing_hist", True)
+    c3_hist_reject = _g3_hist_filter_display and macd_hist_trend == "decreasing_2d"
+    if c3_hist_reject:
+        c3.append(("no", "[거부] MACD hist 2일 감속",
+                   "MACD hist 2일 연속 감소 — 추세 둔화로 3차 매수 보류예요"))
+    # gate priority: RSI overheat > daily drop > hist deceleration
+    if c3_reject:
+        c3_gate = "[거부] RSI > 75"
+    elif reject_drop:
+        c3_gate = "[거부] 당일 급락"
+    elif c3_hist_reject:
+        c3_gate = "[거부] MACD hist 2일 감속"
+    else:
+        c3_gate = None
     sections.append({
-        "name": f"3차 매수 조건 - {group_label} v2.2",
+        "name": f"3차 매수 조건 - {group_label} v2.3",
         "rule": "4개 모두 충족",
         "conditions": c3,
         "met": _count_ok(c3),
         "total": len(c3),
-        "gate": "[거부] RSI > 75" if c3_reject else ("[거부] 당일 급락" if reject_drop else None),
+        "gate": c3_gate,
     })
 
     # ── 2nd BUY ──  [v5.3d: MA20 돌파 확인 단계]
@@ -1012,13 +1041,25 @@ def _build_entry_sections_etf(d: dict) -> list:
                    f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden else '<'} signal {macd_signal_val:.4f}"))
     else:
         c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
+    _e3_hist_filter_display = _p("entry_etf.3rd_buy.reject_decreasing_hist", True)
+    c3_hist_reject_etf = _e3_hist_filter_display and macd_hist_trend == "decreasing_2d"
+    if c3_hist_reject_etf:
+        c3.append(("no", "[거부] MACD hist 2일 감속",
+                   "MACD hist 2일 연속 감소 — 추세 둔화로 3차 매수 보류예요"))
+    # gate priority: RSI overheat > hist deceleration
+    if reject_rsi:
+        etf_c3_gate = f"[거부] RSI {rsi:.1f} > 70"
+    elif c3_hist_reject_etf:
+        etf_c3_gate = "[거부] MACD hist 2일 감속"
+    else:
+        etf_c3_gate = None
     sections.append({
-        "name": "3차 매수 조건 - ETF v2.4",
+        "name": "3차 매수 조건 - ETF v2.5",
         "rule": "3개 ALL 충족",
         "conditions": c3,
         "met": _count_ok(c3),
         "total": len(c3),
-        "gate": f"[거부] RSI {rsi:.1f} > 70" if reject_rsi else None,
+        "gate": etf_c3_gate,
     })
 
     # ── 2nd BUY ──
