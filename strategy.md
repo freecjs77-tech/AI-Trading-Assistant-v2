@@ -341,9 +341,9 @@ Growth v5.3b 로직 동일 적용.
 ### 스캐너별 적용 규칙
 | 스캐너 | Entry 규칙 | Exit 체크 | 연속일 |
 |--------|-----------|----------|--------|
-| **SP100** `/scanner` | Growth v5.3b | ✅ | `scanner_sp100_history.json` |
-| **ETF** `/scanner-etf` | ETF v5.3b | ✅ | `scanner_etf_history.json` |
-| **KOSPI** (메인 리포트 내) | Growth v5.3b | ✅ | `scanner_kospi_history.json` |
+| **SP100** `/scanner` | Growth v5.3e | ✅ | `scanner_sp100_history.json` |
+| **ETF** `/scanner-etf` | ETF v5.3e | ✅ | `scanner_etf_history.json` |
+| **KOSPI** (메인 리포트 내) | Growth v5.3e | ✅ | `scanner_kospi_history.json` |
 
 ---
 
@@ -370,7 +370,7 @@ Growth v5.3b 로직 동일 적용.
 
 ### v5.3e
 - **3rd_BUY momentum quality reject** (Growth + ETF): `macd_hist_trend == "decreasing_2d"` 시 3차 매수 거부 (cascade → 2nd/1st/WATCH).
-- `increasing_2d`, `mixed`, `N/A`, `""` 모두 통과 — 오직 명확한 2일 감속만 reject.
+- `decreasing_2d` 외 모든 trend 값 통과 (`increasing_2d`, `mixed`, `N/A` 등) — 오직 명확한 2일 감속만 reject.
 - PARAMS toggle: `entry_growth.3rd_buy.reject_decreasing_hist`, `entry_etf.3rd_buy.reject_decreasing_hist` (default `true`). False 설정 시 v5.3d 동작과 bit-identical.
 - 디스플레이: 3차 매수 섹션에 `[거부] MACD hist 2일 감속` 행 + gate 라벨 표시 → WATCH/HOLD 진단에서도 이유 노출.
 - **철학**: 3rd_BUY는 단순 강세 상태가 아니라 momentum persistence / re-acceleration을 요구한다.
