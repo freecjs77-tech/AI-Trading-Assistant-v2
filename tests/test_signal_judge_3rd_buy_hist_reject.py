@@ -166,3 +166,70 @@ def test_etf_3rd_buy_toggle_off_disables_filter(monkeypatch):
     d["macd_hist_trend"] = "decreasing_2d"
     signal, _ = _check_entry_etf(d)
     assert signal == "3rd_BUY"
+
+
+# ─── Display-layer tests ──────────────────────────────────────────────────
+
+def _find_3rd_buy_section(sections):
+    """Pick the 3rd_BUY section out of the list (matches by name prefix)."""
+    for s in sections:
+        if "3차 매수" in s["name"]:
+            return s
+    raise AssertionError("3rd_BUY section not found in sections list")
+
+
+def test_growth_display_3rd_buy_no_reject_row_on_increasing(monkeypatch):
+    """Baseline display: increasing_2d → no reject row, gate is None."""
+    _patch_param(monkeypatch, "entry_growth.3rd_buy.reject_decreasing_hist", True)
+    d = _growth_3rd_buy_base()
+    sections = _build_entry_sections_growth(d)
+    section = _find_3rd_buy_section(sections)
+    labels = [c[1] for c in section["conditions"]]
+    assert "[거부] MACD hist 2일 감속" not in labels
+    assert section["gate"] != "[거부] MACD hist 2일 감속"
+
+
+def test_growth_display_3rd_buy_shows_reject_row_on_decreasing(monkeypatch):
+    """v5.3e display: decreasing_2d → reject row appears AND gate is set."""
+    _patch_param(monkeypatch, "entry_growth.3rd_buy.reject_decreasing_hist", True)
+    d = _growth_3rd_buy_base()
+    d["macd_hist_trend"] = "decreasing_2d"
+    sections = _build_entry_sections_growth(d)
+    section = _find_3rd_buy_section(sections)
+    labels = [c[1] for c in section["conditions"]]
+    assert "[거부] MACD hist 2일 감속" in labels, \
+        f"Expected reject row in display; got labels: {labels}"
+    assert section["gate"] == "[거부] MACD hist 2일 감속"
+
+
+def test_growth_display_toggle_off_hides_reject_row(monkeypatch):
+    """Toggle off → no reject row even when hist is decreasing_2d."""
+    _patch_param(monkeypatch, "entry_growth.3rd_buy.reject_decreasing_hist", False)
+    d = _growth_3rd_buy_base()
+    d["macd_hist_trend"] = "decreasing_2d"
+    sections = _build_entry_sections_growth(d)
+    section = _find_3rd_buy_section(sections)
+    labels = [c[1] for c in section["conditions"]]
+    assert "[거부] MACD hist 2일 감속" not in labels
+
+
+def test_etf_display_3rd_buy_shows_reject_row_on_decreasing(monkeypatch):
+    """v5.3e ETF display: decreasing_2d → reject row AND gate set."""
+    _patch_param(monkeypatch, "entry_etf.3rd_buy.reject_decreasing_hist", True)
+    d = _etf_3rd_buy_base()
+    d["macd_hist_trend"] = "decreasing_2d"
+    sections = _build_entry_sections_etf(d)
+    section = _find_3rd_buy_section(sections)
+    labels = [c[1] for c in section["conditions"]]
+    assert "[거부] MACD hist 2일 감속" in labels
+    assert section["gate"] == "[거부] MACD hist 2일 감속"
+
+
+def test_etf_display_toggle_off_hides_reject_row(monkeypatch):
+    _patch_param(monkeypatch, "entry_etf.3rd_buy.reject_decreasing_hist", False)
+    d = _etf_3rd_buy_base()
+    d["macd_hist_trend"] = "decreasing_2d"
+    sections = _build_entry_sections_etf(d)
+    section = _find_3rd_buy_section(sections)
+    labels = [c[1] for c in section["conditions"]]
+    assert "[거부] MACD hist 2일 감속" not in labels
