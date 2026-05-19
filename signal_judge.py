@@ -901,13 +901,27 @@ def _build_entry_sections_growth(d: dict, reject_rsi_threshold: float = 55) -> l
     else:
         c3.append(("no", "RSI > 55", "RSI 데이터가 없어요"))
     c3_reject = rsi is not None and rsi > 75
+    _g3_hist_filter_display = _p("entry_growth.3rd_buy.reject_decreasing_hist", True)
+    c3_hist_reject = _g3_hist_filter_display and macd_hist_trend == "decreasing_2d"
+    if c3_hist_reject:
+        c3.append(("no", "[거부] MACD hist 2일 감속",
+                   "MACD hist 2일 연속 감소 — 추세 둔화로 3차 매수 보류예요"))
+    # gate priority: RSI overheat > daily drop > hist deceleration
+    if c3_reject:
+        c3_gate = "[거부] RSI > 75"
+    elif reject_drop:
+        c3_gate = "[거부] 당일 급락"
+    elif c3_hist_reject:
+        c3_gate = "[거부] MACD hist 2일 감속"
+    else:
+        c3_gate = None
     sections.append({
-        "name": f"3차 매수 조건 - {group_label} v2.2",
+        "name": f"3차 매수 조건 - {group_label} v2.3",
         "rule": "4개 모두 충족",
         "conditions": c3,
         "met": _count_ok(c3),
         "total": len(c3),
-        "gate": "[거부] RSI > 75" if c3_reject else ("[거부] 당일 급락" if reject_drop else None),
+        "gate": c3_gate,
     })
 
     # ── 2nd BUY ──  [v5.3d: MA20 돌파 확인 단계]
