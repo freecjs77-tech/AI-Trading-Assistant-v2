@@ -310,7 +310,14 @@ def _check_entry_growth(d: dict, reject_rsi_threshold: float = 55, skip_volume: 
     if rsi is not None and rsi > _g3_reject:
         c3.append(("no", f"[거부] RSI > {_g3_reject}", f"RSI {rsi:.1f} — 과열 구간이라 3차 매수 금지예요"))
 
-    if all(c[0] == "ok" for c in c3) and not (rsi and rsi > _g3_reject):
+    # 3rd BUY 추가 거부: MACD hist 2일 감속 (v5.3e momentum quality)
+    _g3_hist_filter = _p("entry_growth.3rd_buy.reject_decreasing_hist", True)
+    hist_decel = _g3_hist_filter and macd_hist_trend == "decreasing_2d"
+    if hist_decel:
+        c3.append(("no", "[거부] MACD hist 2일 감속",
+                   "MACD hist 2일 연속 감소 — 추세 둔화로 3차 매수 보류예요"))
+
+    if all(c[0] == "ok" for c in c3) and not (rsi and rsi > _g3_reject) and not hist_decel:
         return "3rd_BUY", c3
 
     # ── 2nd BUY — ALL 충족  [v5.3d: MA20 돌파 확인 단계. 이중바닥→MA20 교체] ──
