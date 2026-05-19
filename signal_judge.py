@@ -1041,13 +1041,25 @@ def _build_entry_sections_etf(d: dict) -> list:
                    f"MACD {macd:.4f} {'>' if macd_above_zero else '<'} 0, {'>' if macd_golden else '<'} signal {macd_signal_val:.4f}"))
     else:
         c3.append(("no", "MACD > 0 + 골든크로스", "MACD 데이터가 없어요"))
+    _e3_hist_filter_display = _p("entry_etf.3rd_buy.reject_decreasing_hist", True)
+    c3_hist_reject_etf = _e3_hist_filter_display and macd_hist_trend == "decreasing_2d"
+    if c3_hist_reject_etf:
+        c3.append(("no", "[거부] MACD hist 2일 감속",
+                   "MACD hist 2일 연속 감소 — 추세 둔화로 3차 매수 보류예요"))
+    # gate priority: RSI overheat > hist deceleration
+    if reject_rsi:
+        etf_c3_gate = f"[거부] RSI {rsi:.1f} > 70"
+    elif c3_hist_reject_etf:
+        etf_c3_gate = "[거부] MACD hist 2일 감속"
+    else:
+        etf_c3_gate = None
     sections.append({
-        "name": "3차 매수 조건 - ETF v2.4",
+        "name": "3차 매수 조건 - ETF v2.5",
         "rule": "3개 ALL 충족",
         "conditions": c3,
         "met": _count_ok(c3),
         "total": len(c3),
-        "gate": f"[거부] RSI {rsi:.1f} > 70" if reject_rsi else None,
+        "gate": etf_c3_gate,
     })
 
     # ── 2nd BUY ──
