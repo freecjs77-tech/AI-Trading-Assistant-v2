@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🇰🇷 KR Momentum — 2026-05-21</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container": "rgb(var(--c-surface-container) / <alpha-value>)",
+        "surface-container-highest": "rgb(var(--c-surface-container-highest) / <alpha-value>)",
+        "surface-dim": "rgb(var(--c-surface-dim) / <alpha-value>)",
+        "surface": "rgb(var(--c-surface) / <alpha-value>)",
+        "surface-container-high": "rgb(var(--c-surface-container-high) / <alpha-value>)",
+        "surface-container-low": "rgb(var(--c-surface-container-low) / <alpha-value>)",
+        "surface-container-lowest": "rgb(var(--c-surface-container-lowest) / <alpha-value>)",
+        "surface-bright": "rgb(var(--c-surface-bright) / <alpha-value>)",
+        "surface-variant": "rgb(var(--c-surface-variant) / <alpha-value>)",
+        "surface-tint": "rgb(var(--c-surface-tint) / <alpha-value>)",
+        "background": "rgb(var(--c-background) / <alpha-value>)",
+        "primary": "rgb(var(--c-primary) / <alpha-value>)",
+        "primary-dim": "rgb(var(--c-primary-dim) / <alpha-value>)",
+        "primary-container": "rgb(var(--c-primary-container) / <alpha-value>)",
+        "on-primary": "rgb(var(--c-on-primary) / <alpha-value>)",
+        "on-primary-container": "rgb(var(--c-on-primary-container) / <alpha-value>)",
+        "secondary": "rgb(var(--c-secondary) / <alpha-value>)",
+        "on-surface": "rgb(var(--c-on-surface) / <alpha-value>)",
+        "on-surface-variant": "rgb(var(--c-on-surface-variant) / <alpha-value>)",
+        "on-background": "rgb(var(--c-on-background) / <alpha-value>)",
+        "outline": "rgb(var(--c-outline) / <alpha-value>)",
+        "outline-variant": "rgb(var(--c-outline-variant) / <alpha-value>)",
+        "error": "rgb(var(--c-error) / <alpha-value>)",
+        "tertiary": "rgb(var(--c-tertiary) / <alpha-value>)",
+      },
+      fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
+    },
+  },
+}
+</script>
+<style>
+  /* ── Dark Theme ── */
+  html.dark {
+    --c-surface-container: 15 25 48; --c-surface-container-highest: 25 37 64;
+    --c-surface-dim: 6 14 32; --c-surface: 6 14 32;
+    --c-surface-container-high: 20 31 56; --c-surface-container-low: 9 19 40;
+    --c-surface-container-lowest: 0 0 0; --c-surface-bright: 31 43 73;
+    --c-surface-variant: 25 37 64; --c-surface-tint: 109 221 255;
+    --c-background: 6 14 32;
+    --c-primary: 109 221 255; --c-primary-dim: 0 195 235;
+    --c-primary-container: 0 210 253; --c-on-primary: 0 76 94;
+    --c-on-primary-container: 0 67 82;
+    --c-secondary: 0 229 188;
+    --c-tertiary: 255 113 102;
+    --c-on-surface: 222 229 255; --c-on-surface-variant: 163 170 196;
+    --c-on-background: 222 229 255;
+    --c-outline: 109 117 140; --c-outline-variant: 64 72 93;
+    --c-error: 255 113 108;
+    --grad-start: #6dddff; --grad-end: #00d2fd;
+  }
+  /* ── Light Theme ── */
+  html.light {
+    --c-surface-container: 255 255 255; --c-surface-container-highest: 226 232 240;
+    --c-surface-dim: 241 245 249; --c-surface: 241 243 245;
+    --c-surface-container-high: 255 255 255; --c-surface-container-low: 248 250 252;
+    --c-surface-container-lowest: 255 255 255; --c-surface-bright: 255 255 255;
+    --c-surface-variant: 248 250 252; --c-surface-tint: 37 99 235;
+    --c-background: 241 243 245;
+    --c-primary: 37 99 235; --c-primary-dim: 30 64 175;
+    --c-primary-container: 219 234 254; --c-on-primary: 255 255 255;
+    --c-on-primary-container: 30 64 175;
+    --c-secondary: 16 185 129;
+    --c-tertiary: 225 29 72;
+    --c-on-surface: 15 23 42; --c-on-surface-variant: 71 85 105;
+    --c-on-background: 15 23 42;
+    --c-outline: 100 116 139; --c-outline-variant: 148 163 184;
+    --c-error: 225 29 72;
+    --grad-start: #2563EB; --grad-end: #1E40AF;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  /* maturity class names kept for test compatibility */
+  .maturity-early    { color: #22c55e; font-weight: bold; }
+  .maturity-mid      { color: #eab308; }
+  .maturity-extended { color: #ef4444; font-weight: bold; }
+  /* tier classes kept for test compatibility */
+  .tier-em { background: rgba(109,221,255,0.15); color: #6dddff; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 12px; }
+  .tier-MOMENTUM_3, .M3 { color: #ef4444; font-weight: bold; }
+  .tier-MOMENTUM_2, .M2 { color: #f97316; font-weight: bold; }
+  .tier-MOMENTUM_1, .M1 { color: #eab308; }
+  .pos { color: #22c55e; font-weight: 600; }
+  .neg { color: #ef4444; font-weight: 600; }
+  .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin: 0 2px 2px 0; font-weight: 600; }
+  .badge-OVERHEAT { background: #7f1d1d; color: #fca5a5; }
+  .badge-PARABOLIC { background: #78350f; color: #fde68a; }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body">
+
+<!-- ── Sidebar Partial ── shared by report_template, momentum, lifecycle pages ── -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center">
+      <span class="material-symbols-outlined text-[#004352]" style="font-variation-settings: 'FILL' 1;">dashboard_customize</span>
+    </div>
+    <div>
+      <h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2>
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p>
+    </div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="report_2026-05-20.html">
+      <span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="report_wife_2026-05-20.html">
+      <span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="scanner_2026-05-20.html">
+      <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="backtest_2026-05-20.html">
+      <span class="material-symbols-outlined">history</span><span>Backtest</span>
+    </a>
+    
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="portfolio_stops_2026-05-20.html">
+      <span class="material-symbols-outlined">shield</span><span>My Risk</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="portfolio_stops_wife_2026-05-20.html">
+      <span class="material-symbols-outlined">shield</span><span>Wife Risk</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="trend_2026-05-20.html">
+      <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="archive.html">
+      <span class="material-symbols-outlined">inventory_2</span><span>Archive</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="momentum_us_2026-05-21.html">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum US</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="momentum_kr_2026-05-21.html">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum KR</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="lifecycle_us_2026-05-20.html">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle US</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="lifecycle_kr_2026-05-20.html">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle KR</span>
+    </a>
+    
+  </div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" class="flex items-center gap-3 px-4 py-3 w-full text-left bg-[#6dddff]/10 text-[#6dddff] hover:bg-[#6dddff]/20 rounded-md transition-all font-bold text-sm">
+      <span class="material-symbols-outlined">rocket_launch</span><span>Run Workflow</span>
+    </a>
+    <button id="themeToggle" onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
+      <span class="material-symbols-outlined">light_mode</span><span>Light Mode</span>
+    </button>
+    
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">
+      2026년 5월 20일 (수요일)<br>
+      
+        
+          <span class="text-[#00E5BC]">CLOSED</span>
+        
+      
+    </div>
+  </div>
+</nav>
+
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<main class="md:ml-64 min-h-screen">
+
+  <!-- Top header bar -->
+  <header class="px-6 lg:px-10 py-5 border-b border-outline-variant/20 flex items-center justify-between sticky top-0 bg-surface/80 backdrop-blur-xl z-30">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div>
+        <h1 class="font-headline font-bold text-xl text-primary flex items-center gap-2">
+          <span class="material-symbols-outlined text-2xl">local_fire_department</span>
+          🇰🇷 KR Momentum
+        </h1>
+        <p class="text-xs text-on-surface-variant mt-0.5 font-label">
+          2026-05-21 &middot; Scanned 101 tickers &middot;
+          15.9s &middot; Momentum v1.5
+        </p>
+      </div>
+    </div>
+    <button onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme">
+      <span class="material-symbols-outlined">light_mode</span>
+    </button>
+  </header>
+
+  <div class="p-6 lg:p-10 space-y-8">
+
+    
+
+    <!-- Summary counts -->
+    
+    
+    <div class="flex flex-wrap gap-4 text-sm font-label">
+      <span>Leaders:
+        <span class="tier-MOMENTUM_3 font-bold">M3=0</span> /
+        <span class="tier-MOMENTUM_2 font-bold">M2=0</span> /
+        <span class="tier-MOMENTUM_1">M1=0</span>
+      </span>
+      <span class="text-on-surface-variant">&middot;</span>
+      <span>Emerging: <span class="tier-em">8</span></span>
+    </div>
+
+    <!-- Sector Leaders -->
+    <section class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+      <h2 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">pie_chart</span>
+        Sector Leaders
+      </h2>
+      
+      <p class="text-on-surface-variant text-sm">&#8212; No sector qualifies for momentum today.</p>
+      
+    </section>
+
+    
+    <section class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+      <h2 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">local_fire_department</span>
+        Momentum Leaders (M1/M2/M3)
+      </h2>
+      
+        
+        <h3 class="M3 font-headline font-semibold text-base mb-3 mt-5 first:mt-0">M3 (0)</h3>
+        
+        <p class="text-on-surface-variant text-sm mb-4">&#8212; No M3 signals today.</p>
+        
+      
+        
+        <h3 class="M2 font-headline font-semibold text-base mb-3 mt-5 first:mt-0">M2 (0)</h3>
+        
+        <p class="text-on-surface-variant text-sm mb-4">&#8212; No M2 signals today.</p>
+        
+      
+        
+        <h3 class="M1 font-headline font-semibold text-base mb-3 mt-5 first:mt-0">M1 (0)</h3>
+        
+        <p class="text-on-surface-variant text-sm mb-4">&#8212; No M1 signals today.</p>
+        
+      
+    </section>
+
+    
+    <section class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+      <h2 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-green-400">eco</span>
+        Emerging Momentum (EM)
+      </h2>
+
+      
+      <div class="mb-4 p-4 rounded-lg bg-surface-container border-l-4 border-primary/60">
+        <h4 class="text-sm font-semibold text-primary mb-2">Potential Sector Rotation</h4>
+        
+        <div class="text-sm text-yellow-300 font-semibold py-0.5">
+          Technology (3 EM, non-Top)
+        </div>
+        
+        <div class="text-sm text-on-surface-variant py-0.5">
+          Industrials (2 EM, non-Top)
+        </div>
+        
+      </div>
+      
+
+      
+      <h3 class="font-semibold text-sm mb-3"><span class="tier-em">EM (8)</span></h3>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full table-fixed border-collapse text-sm">
+          <colgroup>
+            <col style="width:16%">
+            <col style="width:6%">
+            <col style="width:9%">
+            <col style="width:6%">
+            <col style="width:10%">
+            <col style="width:5%">
+            <col style="width:8%">
+            <col style="width:6%">
+            <col style="width:6%">
+            <col style="width:7%">
+            <col style="width:6%">
+            <col style="width:8%">
+            <col style="width:7%">
+          </colgroup>
+          <thead>
+            <tr class="border-b border-outline-variant/30">
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Name</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Tier</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Maturity</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Streak</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Sector</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">RSI</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">dist_ema9</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">1d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">5d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">20d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider"></th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Risk Tags</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Hint</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/10">
+          
+            <tr class="hover:bg-surface-container/50 transition-colors">
+              <td class="px-3 py-2">
+                <a href="details/000660.KS.html" title="000660.KS" class="text-primary hover:underline font-medium">SK하이닉스</a>
+                <span class="text-on-surface-variant/60 text-xs ml-1">000660.KS</span>
+              </td>
+              <td class="px-3 py-2"><span class="tier-em">EM</span></td>
+              <td class="px-3 py-2"><span class="maturity-mid">MID</span></td>
+              <td class="px-3 py-2 text-on-surface-variant">2d</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">Technology</td>
+              <td class="px-3 py-2 text-on-surface-variant">70.9</td>
+              <td class="px-3 py-2 text-on-surface-variant">-0.9%</td>
+              <td class="px-3 py-2 pos">0.00%</td>
+              <td class="px-3 py-2 neg">-11.69%</td>
+              <td class="px-3 py-2 pos">49.66%</td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">적극</td>
+            </tr>
+          
+            <tr class="hover:bg-surface-container/50 transition-colors">
+              <td class="px-3 py-2">
+                <a href="details/005930.KS.html" title="005930.KS" class="text-primary hover:underline font-medium">삼성전자</a>
+                <span class="text-on-surface-variant/60 text-xs ml-1">005930.KS</span>
+              </td>
+              <td class="px-3 py-2"><span class="tier-em">EM</span></td>
+              <td class="px-3 py-2"><span class="maturity-mid">MID</span></td>
+              <td class="px-3 py-2 text-on-surface-variant">2d</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">Technology</td>
+              <td class="px-3 py-2 text-on-surface-variant">68.5</td>
+              <td class="px-3 py-2 text-on-surface-variant">+0.9%</td>
+              <td class="px-3 py-2 pos">0.18%</td>
+              <td class="px-3 py-2 neg">-2.82%</td>
+              <td class="px-3 py-2 pos">28.67%</td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">적극</td>
+            </tr>
+          
+            <tr class="hover:bg-surface-container/50 transition-colors">
+              <td class="px-3 py-2">
+                <a href="details/006260.KS.html" title="006260.KS" class="text-primary hover:underline font-medium">LS Corp</a>
+                <span class="text-on-surface-variant/60 text-xs ml-1">006260.KS</span>
+              </td>
+              <td class="px-3 py-2"><span class="tier-em">EM</span></td>
+              <td class="px-3 py-2"><span class="maturity-early">EARLY</span></td>
+              <td class="px-3 py-2 text-on-surface-variant">2d</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">Industrials</td>
+              <td class="px-3 py-2 text-on-surface-variant">62.7</td>
+              <td class="px-3 py-2 text-on-surface-variant">-1.2%</td>
+              <td class="px-3 py-2 neg">-7.58%</td>
+              <td class="px-3 py-2 neg">-3.29%</td>
+              <td class="px-3 py-2 pos">50.60%</td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">관찰</td>
+            </tr>
+          
+            <tr class="hover:bg-surface-container/50 transition-colors">
+              <td class="px-3 py-2">
+                <a href="details/007070.KS.html" title="007070.KS" class="text-primary hover:underline font-medium">GS리테일</a>
+                <span class="text-on-surface-variant/60 text-xs ml-1">007070.KS</span>
+              </td>
+              <td class="px-3 py-2"><span class="tier-em">EM</span></td>
+              <td class="px-3 py-2"><span class="maturity-early">EARLY</span></td>
+              <td class="px-3 py-2 text-on-surface-variant">2d</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">Consumer Defensive</td>
+              <td class="px-3 py-2 text-on-surface-variant">62.4</td>
+              <td class="px-3 py-2 text-on-surface-variant">-2.0%</td>
+              <td class="px-3 py-2 neg">-4.02%</td>
+              <td class="px-3 py-2 neg">-0.57%</td>
+              <td class="px-3 py-2 pos">11.23%</td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">관찰</td>
+            </tr>
+          
+            <tr class="hover:bg-surface-container/50 transition-colors">
+              <td class="px-3 py-2">
+                <a href="details/012330.KS.html" title="012330.KS" class="text-primary hover:underline font-medium">현대모비스</a>
+                <span class="text-on-surface-variant/60 text-xs ml-1">012330.KS</span>
+              </td>
+              <td class="px-3 py-2"><span class="tier-em">EM</span></td>
+              <td class="px-3 py-2"><span class="maturity-early">EARLY</span></td>
+              <td class="px-3 py-2 text-on-surface-variant">2d</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">Consumer Cyclical</td>
+              <td class="px-3 py-2 text-on-surface-variant">61.2</td>
+              <td class="px-3 py-2 text-on-surface-variant">-3.0%</td>
+              <td class="px-3 py-2 pos">1.90%</td>
+              <td class="px-3 py-2 neg">-17.57%</td>
+              <td class="px-3 py-2 pos">27.38%</td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">관찰</td>
+            </tr>
+          
+            <tr class="hover:bg-surface-container/50 transition-colors">
+              <td class="px-3 py-2">
+                <a href="details/034730.KS.html" title="034730.KS" class="text-primary hover:underline font-medium">SK</a>
+                <span class="text-on-surface-variant/60 text-xs ml-1">034730.KS</span>
+              </td>
+              <td class="px-3 py-2"><span class="tier-em">EM</span></td>
+              <td class="px-3 py-2"><span class="maturity-mid">MID</span></td>
+              <td class="px-3 py-2 text-on-surface-variant">2d</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">Industrials</td>
+              <td class="px-3 py-2 text-on-surface-variant">69.4</td>
+              <td class="px-3 py-2 text-on-surface-variant">+1.1%</td>
+              <td class="px-3 py-2 pos">1.35%</td>
+              <td class="px-3 py-2 neg">-4.36%</td>
+              <td class="px-3 py-2 pos">39.52%</td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">적극</td>
+            </tr>
+          
+            <tr class="hover:bg-surface-container/50 transition-colors">
+              <td class="px-3 py-2">
+                <a href="details/066570.KS.html" title="066570.KS" class="text-primary hover:underline font-medium">LG전자</a>
+                <span class="text-on-surface-variant/60 text-xs ml-1">066570.KS</span>
+              </td>
+              <td class="px-3 py-2"><span class="tier-em">EM</span></td>
+              <td class="px-3 py-2"><span class="maturity-early">EARLY</span></td>
+              <td class="px-3 py-2 text-on-surface-variant">2d</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">Technology</td>
+              <td class="px-3 py-2 text-on-surface-variant">61.3</td>
+              <td class="px-3 py-2 text-on-surface-variant">-4.7%</td>
+              <td class="px-3 py-2 neg">-5.58%</td>
+              <td class="px-3 py-2 neg">-5.43%</td>
+              <td class="px-3 py-2 pos">45.38%</td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">관찰</td>
+            </tr>
+          
+            <tr class="hover:bg-surface-container/50 transition-colors">
+              <td class="px-3 py-2">
+                <a href="details/096530.KS.html" title="096530.KS" class="text-primary hover:underline font-medium">씨젠</a>
+                <span class="text-on-surface-variant/60 text-xs ml-1">096530.KS</span>
+              </td>
+              <td class="px-3 py-2"><span class="tier-em">EM</span></td>
+              <td class="px-3 py-2"><span class="maturity-mid">MID</span></td>
+              <td class="px-3 py-2 text-on-surface-variant">1d</td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">Healthcare</td>
+              <td class="px-3 py-2 text-on-surface-variant">70.1</td>
+              <td class="px-3 py-2 text-on-surface-variant">+3.0%</td>
+              <td class="px-3 py-2 neg">-0.99%</td>
+              <td class="px-3 py-2 pos">7.17%</td>
+              <td class="px-3 py-2 pos">16.80%</td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2"></td>
+              <td class="px-3 py-2 text-on-surface-variant text-xs">적극</td>
+            </tr>
+          
+          </tbody>
+        </table>
+      </div>
+      
+    </section>
+
+    <!-- Backtest Summary -->
+    
+    
+    <section class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/20">
+      <h2 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">history</span>
+        Backtest Summary (Direct 90-day rolling)
+      </h2>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-outline-variant/30">
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Stage</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">#legs</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Win 5d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Avg 3d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Avg 5d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Avg 10d %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">MDD %</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">Avg dur (days)</th>
+              <th class="text-left px-3 py-2 text-xs font-medium text-on-surface-variant uppercase tracking-wider">EM&#8594;M1 %</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/10">
+          
+            
+            
+            <tr class="hover:bg-surface-container/50">
+              <td class="px-3 py-2 font-medium">MOMENTUM_3</td>
+              <td class="px-3 py-2 text-on-surface-variant">5</td>
+              <td class="px-3 py-2 text-secondary">0.0%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 neg">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">2.8</td>
+              <td class="px-3 py-2 text-on-surface-variant">&#8212;</td>
+            </tr>
+            
+          
+            
+            
+            <tr class="hover:bg-surface-container/50">
+              <td class="px-3 py-2 font-medium">MOMENTUM_2</td>
+              <td class="px-3 py-2 text-on-surface-variant">8</td>
+              <td class="px-3 py-2 text-secondary">0.0%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 neg">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">2.8</td>
+              <td class="px-3 py-2 text-on-surface-variant">&#8212;</td>
+            </tr>
+            
+          
+            
+            
+            <tr class="hover:bg-surface-container/50">
+              <td class="px-3 py-2 font-medium">MOMENTUM_1</td>
+              <td class="px-3 py-2 text-on-surface-variant">2</td>
+              <td class="px-3 py-2 text-secondary">0.0%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 neg">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">1.0</td>
+              <td class="px-3 py-2 text-on-surface-variant">&#8212;</td>
+            </tr>
+            
+          
+            
+            
+            <tr class="hover:bg-surface-container/50">
+              <td class="px-3 py-2 font-medium">EM</td>
+              <td class="px-3 py-2 text-on-surface-variant">31</td>
+              <td class="px-3 py-2 text-secondary">0.0%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">0.00%</td>
+              <td class="px-3 py-2 neg">0.00%</td>
+              <td class="px-3 py-2 text-on-surface-variant">1.7</td>
+              <td class="px-3 py-2 text-on-surface-variant">4.3%</td>
+            </tr>
+            
+          
+          </tbody>
+        </table>
+      </div>
+      
+      <p class="mt-4 text-sm text-green-400">
+        &#128293; <strong>Edge:</strong> M3 streak 3+ days &#8594; 5d avg 0.0%
+      </p>
+      
+    </section>
+    
+
+    
+
+    <!-- Footer -->
+    <div class="pt-4 border-t border-outline-variant/20 text-xs text-on-surface-variant">
+      
+      <p>Universe: 101 | Version: Momentum v1.5</p>
+      <p>&#9888; Backtest assumes close entry &#8212; slippage expected in live trading</p>
+      
+    </div>
+
+  </div>
+</main>
+
+<script>
+function toggleSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('hidden');
+  overlay.classList.toggle('hidden');
+}
+function toggleTheme() {
+  var html = document.documentElement;
+  var isDark = html.classList.contains('dark');
+  html.classList.toggle('dark', !isDark);
+  html.classList.toggle('light', isDark);
+  localStorage.setItem('theme', !isDark ? 'dark' : 'light');
+}
+</script>
+</body>
+</html>
