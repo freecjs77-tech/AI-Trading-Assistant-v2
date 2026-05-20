@@ -34,8 +34,10 @@ TICKER_META = {
     "XLE":   {"name": "Energy Select Sector SPDR",       "cls": "ETF",    "cls_tag": "cls-etf"},
     "XLF":   {"name": "Financial Select Sector SPDR",    "cls": "ETF",    "cls_tag": "cls-etf"},
     "NKE":   {"name": "Nike Inc.",                       "cls": "Growth", "cls_tag": "cls-growth"},
+    "BMNR":  {"name": "Bitmine Immersion Technologies",  "cls": "Speculative", "cls_tag": "cls-growth"},
     "BTDR":  {"name": "Bitdeer Technologies",            "cls": "Speculative", "cls_tag": "cls-growth"},
     "IONQ":  {"name": "IonQ Inc.",                       "cls": "Speculative", "cls_tag": "cls-growth"},
+    "SOXS":  {"name": "Direxion Semiconductor Bear 3X",  "cls": "Speculative", "cls_tag": "cls-growth"},
     # KOSPI 개별주식
     "110990": {"name": "디아이티",              "cls": "Growth", "cls_tag": "cls-growth"},
     "005930": {"name": "삼성전자",              "cls": "Growth", "cls_tag": "cls-growth"},
@@ -104,12 +106,13 @@ KR_TO_TICKER = {
     # Speculative
     "ProShares QQQ 2배 ETF": "QLD",
     "Direxion 미국 반도체 3X ETF": "SOXL",
+    "Direxion 미국 반도체 -3X 인버스 ETF": "SOXS",
     "이더리움 2X ETF": "ETHU",
     "써클 인터넷 그룹": "CRCL",
     "SPDR 에너지 ETF": "XLE",
     "SPDR 금융 ETF": "XLF",
     "나이키": "NKE",
-    "비트마인 이머전 테크놀로지스": "BTDR",
+    "비트마인 이머전 테크놀로지스": "BMNR",
     "아이온큐": "IONQ",
     "이마트": "139480",
 }
@@ -117,7 +120,7 @@ KR_TO_TICKER = {
 # ── 종목 카테고리 분류 (시그널 판정 전략 그룹) ───────────
 STRATEGY_GROUP = {
     "growth": ["NVDA", "TSLA", "PLTR", "AAPL", "MSFT", "GOOGL", "AMZN", "NKE",
-               "QLD", "SOXL", "ETHU", "CRCL", "BTDR", "IONQ",
+               "QLD", "SOXL", "SOXS", "ETHU", "CRCL", "BMNR", "BTDR", "IONQ",
                "110990", "005930", "000660", "006400", "373220"],
     "etf":    ["VOO", "QQQ", "SCHD", "SOXX", "JEPI", "SPY", "XLE", "XLF",
                "102110", "458730", "379800", "379810", "396500", "0153K0", "232080", "466920",
