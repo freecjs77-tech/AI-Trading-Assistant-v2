@@ -5,8 +5,11 @@ generate_lifecycle_pages(us_result, kr_result, output_dir) → {market: path}
 """
 from __future__ import annotations
 
+import json
 import os
+from datetime import datetime
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -259,6 +262,37 @@ def build_page_context(result: dict,
     }
 
 
+def _export_json(ctx: dict, result: dict, output_dir: str) -> None:
+    """Emit lifecycle_{market}_{as_of}.json + lifecycle_{market}_latest.json.
+
+    Sister-repo contract: stable JSON of ENTER/PROBE candidates so consumers
+    don't have to parse the 67KB HTML page (template-drift sensitive).
+    """
+    market = ctx["market"].lower()
+    as_of = result.get("as_of")
+    generated_at = datetime.now(ZoneInfo("America/New_York")).isoformat()
+    candidates = []
+    for decision_key, track in (("enter", "trigger"), ("probe", "drift")):
+        for row in ctx.get(decision_key, []):
+            candidates.append({
+                "ticker":            row["ticker"],
+                "track":             track,
+                "institution_score": row.get("score"),
+                "entry_badges":      row.get("decision_badges") or [],
+            })
+    payload = {
+        "schema_version":   1,
+        "publish_complete": True,
+        "generated_at":     generated_at,
+        "market":           market.upper(),
+        "as_of":            as_of,
+        "candidates":       candidates,
+    }
+    for fname in (f"lifecycle_{market}_{as_of}.json", f"lifecycle_{market}_latest.json"):
+        with open(os.path.join(output_dir, fname), "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+
+
 def _render(market: str, result: dict, output_dir: str,
               template_dir: Optional[str], lifecycle_state: Optional[dict],
               nav_ctx: Optional[dict] = None) -> str:
@@ -308,6 +342,7 @@ def _render(market: str, result: dict, output_dir: str,
     path = os.path.join(output_dir, fname)
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)
+    _export_json(ctx, result, output_dir)
     return path
 
 
