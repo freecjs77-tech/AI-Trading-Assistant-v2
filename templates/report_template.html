@@ -338,7 +338,10 @@ tailwind.config = {
                   <span class="block">${{ h.price|f2 }}</span>
                   <span class="text-[10px] text-on-surface-variant">${{ h.avg_cost|f2 }} avg</span>
                 </td>
-                <td class="px-6 py-4 money" data-usd="{{ h.value }}">${{ h.value|comma }}</td>
+                <td class="px-6 py-4">
+                  <span class="block money" data-usd="{{ h.value }}">${{ h.value|comma }}</span>
+                  <span class="block text-[10px] money {{ 'text-secondary' if h.pnl >= 0 else 'text-tertiary' }}" data-usd="{{ h.pnl }}" data-signed="1">{{ '+' if h.pnl >= 0 else '' }}${{ h.pnl|comma }}</span>
+                </td>
                 <td class="px-6 py-4">{{ h.weight|f1 }}%</td>
                 <td class="px-6 py-4 font-bold {{ 'text-secondary' if h.pnl_pct >= 0 else 'text-tertiary' }}">{{ h.pnl_pct|sign_pct }}</td>
                 <td class="px-6 py-4 text-on-surface">${{ h.div_annual|comma }}</td>
@@ -412,7 +415,10 @@ tailwind.config = {
                   <span class="block">&#8361;{{ h.price|comma }}</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;{{ h.avg_cost|comma }} avg</span>
                 </td>
-                <td class="px-6 py-4">&#8361;{{ h.value|comma }}</td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;{{ h.value|comma }}</span>
+                  <span class="block text-[10px] {{ 'text-secondary' if h.pnl >= 0 else 'text-tertiary' }}">{{ '+' if h.pnl >= 0 else '' }}&#8361;{{ h.pnl|comma }}</span>
+                </td>
                 <td class="px-6 py-4">{{ h.weight|f1 }}%</td>
                 <td class="px-6 py-4 font-bold {{ 'text-secondary' if h.pnl_pct >= 0 else 'text-tertiary' }}">{{ h.pnl_pct|sign_pct }}</td>
                 <td class="px-6 py-4 text-on-surface">&#8361;{{ h.div_annual_krw|comma }}</td>
