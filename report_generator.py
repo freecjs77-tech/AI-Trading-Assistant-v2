@@ -131,6 +131,7 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict,
         shares = p.get("shares", 0)
         avg_cost = p.get("avg_cost", 0)
         value = shares * price if price else 0
+        pnl = (price - avg_cost) * shares if (price and avg_cost) else 0
         pnl_pct = ((price - avg_cost) / avg_cost * 100) if avg_cost > 0 else 0
         sig = signals.get(ticker, {})
         div_info = div_per_ticker.get(ticker, {})
@@ -144,6 +145,7 @@ def _build_holdings(portfolio: list, market_data: dict, signals: dict,
             "avg_cost": avg_cost,
             "price": price,
             "value": value,
+            "pnl": pnl,
             "pnl_pct": pnl_pct,
             "signal": sig.get("signal", "HOLD"),
             "rsi": sig.get("rsi"),
