@@ -85,6 +85,13 @@ def prepare_deploy():
     if lifecycle_files:
         print(f"lifecycle pages copied ({len(lifecycle_files)} files)")
 
+    # Lifecycle JSON 복사 (자매 레포 컨슈머용 — HTML 파싱 대신 안정적 schema)
+    lifecycle_json_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "lifecycle_*.json")))
+    for f in lifecycle_json_files:
+        shutil.copy2(f, DEPLOY_DIR)
+    if lifecycle_json_files:
+        print(f"lifecycle JSON copied ({len(lifecycle_json_files)} files)")
+
     # details/ 복사 (종목 상세 페이지)
     details_src = os.path.join(REPORTS_DIR, "details")
     if os.path.exists(details_src):
