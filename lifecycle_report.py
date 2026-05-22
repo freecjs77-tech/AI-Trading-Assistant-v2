@@ -20,6 +20,7 @@ from lifecycle_config import (
     TRIGGER_CONFIRM_VOL_RATIO_MIN, TRIGGER_CONFIRM_CLOSE_HIGH_RATIO,
     BASE_FORMING_DAYS_MIN, BASE_FORMING_DAYS_MAX,
 )
+from lifecycle_buy_candidates import select_top5_buy_candidates
 from lifecycle_history import derive_fields
 from lifecycle_signal import DECISION_LABELS, DECISION_TOOLTIPS
 
@@ -296,7 +297,9 @@ def _export_json(ctx: dict, result: dict, output_dir: str) -> None:
 def _render(market: str, result: dict, output_dir: str,
               template_dir: Optional[str], lifecycle_state: Optional[dict],
               nav_ctx: Optional[dict] = None,
-              portfolio_tickers: Optional[set] = None) -> str:
+              portfolio_tickers: Optional[set] = None,
+              momentum_today: list | dict | None = None,
+              market_data: Optional[dict] = None) -> str:
     if template_dir is None:
         template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
@@ -332,12 +335,14 @@ def _render(market: str, result: dict, output_dir: str,
     ctx = build_page_context(result, lifecycle_state=lifecycle_state)
 
     # Top 5 Buy Candidates section
-    from lifecycle_buy_candidates import select_top5_buy_candidates
     top5 = select_top5_buy_candidates(
         snapshots=result.get("snapshots") or {},
         portfolio_tickers=portfolio_tickers or set(),
         momentum_history=result.get("momentum_history") or {"data": {}},
         today=result["as_of"],
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=result.get("market_ret_5d_pct"),
     )
     ctx["top5_candidates"] = top5["candidates"]
     ctx["top5_count"]      = top5["count"]
@@ -368,6 +373,9 @@ def generate_lifecycle_pages(*, us_result: Optional[dict],
                                 kr_state: Optional[dict] = None,
                                 nav_ctx: Optional[dict] = None,
                                 portfolio_tickers: Optional[set] = None,
+                                momentum_today_us: list | dict | None = None,
+                                momentum_today_kr: list | dict | None = None,
+                                market_data: Optional[dict] = None,
                                 ) -> dict[str, str]:
     """Render lifecycle pages for US and/or KR markets.
 
@@ -383,14 +391,25 @@ def generate_lifecycle_pages(*, us_result: Optional[dict],
                  momentum_us_url, etc.) — passed directly into template context
         portfolio_tickers: set of tickers currently held in the portfolio
                            (passed to select_top5_buy_candidates)
+        momentum_today_us: (optional) today's US momentum scanner result (flat
+                           list or scanner_*_result dict) — forwarded into the
+                           US Top 5 selector to expand universe with
+                           momentum-only tickers.
+        momentum_today_kr: (optional) same shape, KR market.
+        market_data: (optional) market_data dict used by the Top 5 selector to
+                     synthesize snapshots for momentum-only tickers.
     """
     out: dict[str, str] = {}
     if us_result and us_result.get("snapshots"):
         out["us"] = _render("US", us_result, output_dir, template_dir,
                               us_state, nav_ctx,
-                              portfolio_tickers=portfolio_tickers)
+                              portfolio_tickers=portfolio_tickers,
+                              momentum_today=momentum_today_us,
+                              market_data=market_data)
     if kr_result and kr_result.get("snapshots"):
         out["kr"] = _render("KR", kr_result, output_dir, template_dir,
                               kr_state, nav_ctx,
-                              portfolio_tickers=portfolio_tickers)
+                              portfolio_tickers=portfolio_tickers,
+                              momentum_today=momentum_today_kr,
+                              market_data=market_data)
     return out

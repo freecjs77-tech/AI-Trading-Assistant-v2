@@ -154,6 +154,32 @@ def rank_top_n(pool: list[dict], momentum_data: dict, *,
     return scored[:cap]
 
 
+def _flatten_scanner_signals(momentum_today: list[dict] | dict | None) -> list[dict]:
+    """Accept either:
+      - flat list of evaluate_stock dicts: [{ticker, stage, ...}, ...]
+      - scanner_*_result dict: {"signals": {"MOMENTUM_3": [...], ...}, ...}
+    Returns a flat list of per-ticker dicts. Malformed inputs return [].
+    """
+    if momentum_today is None:
+        return []
+    if isinstance(momentum_today, list):
+        return [s for s in momentum_today if isinstance(s, dict)]
+    if isinstance(momentum_today, dict):
+        signals = momentum_today.get("signals")
+        if not isinstance(signals, dict):
+            return []
+        flat: list[dict] = []
+        for tier in ("MOMENTUM_3", "MOMENTUM_2", "MOMENTUM_1", "EM"):
+            tier_list = signals.get(tier) or []
+            if not isinstance(tier_list, list):
+                continue
+            for sig in tier_list:
+                if isinstance(sig, dict):
+                    flat.append(sig)
+        return flat
+    return []
+
+
 def _extract_today_momentum(momentum_history: dict, today: str) -> dict:
     """Pull {ticker: today_entry_dict} from scanner_momentum_*_history.json.
 
@@ -180,8 +206,26 @@ def _size_hint_label(setup: str, is_portfolio: bool) -> str:
 
 def select_top5_buy_candidates(*, snapshots: dict, portfolio_tickers: set,
                                   momentum_history: dict, today: str,
-                                  threshold: float = 5.0, cap: int = 5) -> dict:
+                                  threshold: float = 5.0, cap: int = 5,
+                                  momentum_today: list[dict] | dict | None = None,
+                                  market_data: dict | None = None,
+                                  market_ret_5d_pct: float | None = None) -> dict:
     """One-call entry. Returns dict ready for template ctx injection.
+
+    Args:
+        snapshots: lifecycle process_universe result snapshots (active_set 종목).
+        portfolio_tickers: 보유 종목 set — is_portfolio 마킹용.
+        momentum_history: scanner_momentum_*_history.json raw dict (fallback path,
+            기존 기능 유지 — momentum_bonus 산정 시 활용).
+        today: "YYYY-MM-DD".
+        threshold / cap: ranking 임계 / 상한 (기본 5.0 / 5).
+        momentum_today: (선택) 오늘 momentum 스캐너 라이브 결과. flat list 또는
+            scanner_*_result dict. snapshots에 없는 ticker를 즉석 합성 snapshot
+            으로 pool에 추가 — universe 확장 경로.
+        market_data: (선택) momentum-only ticker의 합성 snapshot 계산 source.
+            pipeline의 market_data dict (`{"data": {ticker: entry, ...}}` 또는
+            `{ticker: entry, ...}`).
+        market_ret_5d_pct: (선택) RS bonus 계산을 위한 시장 5일 수익률.
 
     Returns:
         {
@@ -192,8 +236,56 @@ def select_top5_buy_candidates(*, snapshots: dict, portfolio_tickers: set,
         }
     """
     pool = build_candidate_pool(snapshots, portfolio_tickers)
-    momentum_today = _extract_today_momentum(momentum_history, today)
-    ranked = rank_top_n(pool, momentum_today, threshold=threshold, cap=cap)
+
+    # --- Universe expansion: momentum-only tickers (NEW) ---
+    if (momentum_today is None) != (market_data is None):
+        print("[top5] WARN: momentum_today and market_data must both be provided "
+              "to enable universe expansion; got one without the other — skipping.",
+              flush=True)
+    if momentum_today is not None and market_data is not None:
+        from lifecycle_signal import compute_single_snapshot
+        scanner_list = _flatten_scanner_signals(momentum_today)
+        existing_tickers = {entry["ticker"] for entry in pool}
+        market_data_flat = (market_data.get("data")
+                             if isinstance(market_data, dict) and "data" in market_data
+                             else market_data) or {}
+        seen_extra: set[str] = set()
+        for sig in scanner_list:
+            tk = sig.get("ticker")
+            if not tk or tk in existing_tickers or tk in seen_extra:
+                continue
+            md_entry = market_data_flat.get(tk)
+            if not md_entry:
+                continue
+            synthetic = compute_single_snapshot(
+                ticker=tk,
+                market_data_entry=md_entry,
+                market_ret_5d_pct=market_ret_5d_pct,
+                yesterday=None,
+                today=today,
+            )
+            if synthetic is None:
+                continue
+            if synthetic.get("setup") == "BROKEN":
+                continue
+            synthetic["_scanner_only"] = True
+            pool.append({
+                "ticker":       tk,
+                "snapshot":     synthetic,
+                "is_portfolio": tk in (portfolio_tickers or set()),
+            })
+            seen_extra.add(tk)
+
+    momentum_today_for_bonus = _extract_today_momentum(momentum_history, today)
+    # Also include live scanner stages so momentum-only tickers get momentum_bonus
+    if momentum_today is not None:
+        for sig in _flatten_scanner_signals(momentum_today):
+            tk = sig.get("ticker")
+            if tk and tk not in momentum_today_for_bonus:
+                momentum_today_for_bonus[tk] = {"stage": sig.get("stage")}
+
+    ranked = rank_top_n(pool, momentum_today_for_bonus,
+                          threshold=threshold, cap=cap)
 
     for c in ranked:
         setup = (c["snapshot"] or {}).get("setup")

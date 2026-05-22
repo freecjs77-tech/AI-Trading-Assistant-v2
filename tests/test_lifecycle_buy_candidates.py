@@ -377,3 +377,388 @@ def test_pipeline_passes_portfolio_tickers_to_generate(monkeypatch):
     holdings = pipeline._parse_portfolio_for_report(md.name)
     tickers = {h["ticker"] for h in holdings}
     assert tickers == {"AAPL", "NVDA"}
+
+
+def _scanner_signal_entry(ticker: str, stage: str = "MOMENTUM_2",
+                           rsi: float = 65.0, dist_ema9_pct: float = 4.0,
+                           ret_5d_pct: float = 8.0) -> dict:
+    """Mock momentum_scanner per-ticker output (subset of evaluate_stock result)."""
+    return {
+        "ticker": ticker, "stage": stage, "tier": stage,
+        "maturity": "MID", "risk_tags": [], "hint": "",
+        "rs_vs_sector": True, "sector": "Tech",
+        "price": 100.0, "rsi": rsi,
+        "ret_1d_pct": 1.0, "ret_3d_pct": 3.0, "ret_5d_pct": ret_5d_pct,
+        "ret_20d_pct": 12.0, "dist_ema9_pct": dist_ema9_pct,
+    }
+
+
+def _market_data_entry_for_trend_ok(ticker: str) -> dict:
+    """Build market_data entry that classifies as TREND_OK in lifecycle setup state."""
+    return {
+        "ticker": ticker,
+        "close": 110.0, "high": 111.0, "low": 108.0,
+        "ema9": 105.0, "ema21": 100.0, "ema65": 95.0,
+        "ema9_slope_3d": 0.5, "ema21_slope_5d": 0.3,
+        "ema65_slope_5d": 0.2, "ema65_slope_20d": 0.2,
+        "rsi14": 65.0, "atr14": 2.5, "atr14_pct": 2.27,
+        "volume_ratio": 1.1, "macd": 1.0, "macd_signal": 0.5, "macd_hist": 0.5,
+        "ret_5d_pct": 8.0, "ret_20d_pct": 12.0, "change_pct": 1.2,
+        "ret_3d_pct": 3.0, "dist_ema9_pct": 4.76,
+    }
+
+
+def test_select_top5_includes_momentum_only_ticker():
+    """LRCX is in today's scanner but NOT in lifecycle snapshots → must enter Top 5."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    snapshots = {
+        # Lifecycle universe — 1 ticker only
+        "AAPL": {"setup": "TREND_OK", "score": 5, "score_track": "drift",
+                  "rs_delta_pct": 3.0,
+                  "raw": {"close": 200, "rsi14": 60, "dist_ema9_pct": 1.0,
+                          "volume_ratio": 1.0, "risk_tags": []}},
+    }
+    # LRCX is in scanner today, but NOT in snapshots
+    momentum_today = [_scanner_signal_entry("LRCX", stage="MOMENTUM_2")]
+    market_data = {"data": {"LRCX": _market_data_entry_for_trend_ok("LRCX")}}
+
+    result = select_top5_buy_candidates(
+        snapshots=snapshots,
+        portfolio_tickers={"AAPL"},
+        momentum_history={"data": {}},
+        today="2026-05-22",
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=0.0,
+    )
+    tickers = [c["ticker"] for c in result["candidates"]]
+    assert "LRCX" in tickers, f"LRCX should be in candidates, got {tickers}"
+
+
+def test_select_top5_momentum_only_marked_scanner_only():
+    """momentum-only ticker's snapshot must carry _scanner_only=True for badge."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    momentum_today = [_scanner_signal_entry("LRCX", stage="MOMENTUM_3")]
+    market_data = {"data": {"LRCX": _market_data_entry_for_trend_ok("LRCX")}}
+
+    result = select_top5_buy_candidates(
+        snapshots={},
+        portfolio_tickers=set(),
+        momentum_history={"data": {}},
+        today="2026-05-22",
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=0.0,
+    )
+    lrcx = next((c for c in result["candidates"] if c["ticker"] == "LRCX"), None)
+    assert lrcx is not None
+    assert lrcx["snapshot"].get("_scanner_only") is True
+
+
+def test_select_top5_momentum_only_gets_base_score():
+    """momentum-only ticker uses compute_single_snapshot → real base_score, not 0."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    momentum_today = [_scanner_signal_entry("LRCX", stage="MOMENTUM_3")]
+    market_data = {"data": {"LRCX": _market_data_entry_for_trend_ok("LRCX")}}
+
+    result = select_top5_buy_candidates(
+        snapshots={},
+        portfolio_tickers=set(),
+        momentum_history={"data": {}},
+        today="2026-05-22",
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=0.0,
+    )
+    lrcx = next((c for c in result["candidates"] if c["ticker"] == "LRCX"), None)
+    assert lrcx is not None
+    # base_score should be > 0 (TREND_OK setup with positive drift score)
+    assert lrcx["base_score"] > 0
+    # momentum_bonus = 4 (M3)
+    assert lrcx["momentum_bonus"] == 4
+
+
+def test_select_top5_momentum_today_none_unchanged():
+    """momentum_today=None (or absent) → existing behavior, no momentum-only pool."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    snapshots = {
+        "AAPL": {"setup": "TREND_OK", "score": 5, "score_track": "drift",
+                  "rs_delta_pct": 3.0,
+                  "raw": {"close": 200, "rsi14": 60, "dist_ema9_pct": 1.0,
+                          "volume_ratio": 1.0, "risk_tags": []}},
+    }
+    # Call WITHOUT momentum_today / market_data — must work as before
+    result = select_top5_buy_candidates(
+        snapshots=snapshots,
+        portfolio_tickers=set(),
+        momentum_history={"data": {}},
+        today="2026-05-22",
+    )
+    tickers = [c["ticker"] for c in result["candidates"]]
+    assert tickers == ["AAPL"]
+
+
+def test_select_top5_momentum_only_skipped_when_market_data_missing():
+    """Scanner ticker not in market_data → silently skipped, others unaffected."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    momentum_today = [
+        _scanner_signal_entry("LRCX", stage="MOMENTUM_3"),
+        _scanner_signal_entry("GHOST", stage="MOMENTUM_3"),  # no market_data
+    ]
+    market_data = {"data": {"LRCX": _market_data_entry_for_trend_ok("LRCX")}}
+
+    result = select_top5_buy_candidates(
+        snapshots={},
+        portfolio_tickers=set(),
+        momentum_history={"data": {}},
+        today="2026-05-22",
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=0.0,
+    )
+    tickers = [c["ticker"] for c in result["candidates"]]
+    assert "LRCX" in tickers
+    assert "GHOST" not in tickers
+
+
+def test_select_top5_momentum_only_skipped_when_already_in_snapshots():
+    """Scanner ticker that's also in snapshots → use snapshot path, no double-add."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    # NVDA is in lifecycle snapshots AND in today's scanner
+    snapshots = {
+        "NVDA": {"setup": "PULLBACK", "score": 8, "score_track": "trigger",
+                  "rs_delta_pct": 7.0,
+                  "raw": {"close": 1200, "rsi14": 65, "dist_ema9_pct": 1.5,
+                          "volume_ratio": 1.1, "risk_tags": []}},
+    }
+    momentum_today = [_scanner_signal_entry("NVDA", stage="MOMENTUM_3")]
+    market_data = {"data": {"NVDA": _market_data_entry_for_trend_ok("NVDA")}}
+
+    result = select_top5_buy_candidates(
+        snapshots=snapshots,
+        portfolio_tickers=set(),
+        momentum_history={"data": {}},
+        today="2026-05-22",
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=0.0,
+    )
+    # Count: exactly 1 NVDA entry (snapshot path), not 2
+    nvda_entries = [c for c in result["candidates"] if c["ticker"] == "NVDA"]
+    assert len(nvda_entries) == 1
+    # Should use the lifecycle snapshot, not the scanner one
+    assert nvda_entries[0]["snapshot"].get("_scanner_only") is not True
+
+
+def _market_data_entry_for_broken(ticker: str) -> dict:
+    """Build market_data entry that classifies as BROKEN setup.
+
+    BROKEN requires close < ema65 AND ema65_slope_5d < 0 (per evaluate_setup_state).
+    """
+    return {
+        "ticker": ticker,
+        "close": 85.0, "high": 86.0, "low": 84.0,
+        "ema9": 90.0, "ema21": 95.0, "ema65": 100.0,
+        "ema9_slope_3d": -0.5, "ema21_slope_5d": -0.3,
+        "ema65_slope_5d": -0.2, "ema65_slope_20d": -0.2,
+        "rsi14": 35.0, "atr14": 2.5, "atr14_pct": 2.94,
+        "volume_ratio": 1.0, "macd": -1.0, "macd_signal": 0.5, "macd_hist": -1.5,
+        "ret_5d_pct": -8.0, "ret_20d_pct": -12.0, "change_pct": -1.5,
+        "ret_3d_pct": -3.0, "dist_ema9_pct": -5.56,
+    }
+
+
+def test_select_top5_momentum_only_skipped_when_synthetic_broken():
+    """Scanner ticker whose synthetic snapshot is BROKEN must not enter Top 5."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    momentum_today = [_scanner_signal_entry("DEAD", stage="MOMENTUM_1")]
+    market_data = {"data": {"DEAD": _market_data_entry_for_broken("DEAD")}}
+
+    result = select_top5_buy_candidates(
+        snapshots={},
+        portfolio_tickers=set(),
+        momentum_history={"data": {}},
+        today="2026-05-22",
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=0.0,
+    )
+    tickers = [c["ticker"] for c in result["candidates"]]
+    assert "DEAD" not in tickers
+
+
+def test_select_top5_orders_mixed_pool_by_score_desc():
+    """5 candidates total — 2 from snapshots + 3 momentum-only. Must rank by final_score desc."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+
+    # Snapshot-path: 2 lifecycle tickers
+    snapshots = {
+        "SNAP_HIGH": {"setup": "PULLBACK", "score": 10, "score_track": "trigger",
+                       "rs_delta_pct": 8.0,
+                       "raw": {"close": 100, "rsi14": 55, "dist_ema9_pct": -1.0,
+                               "volume_ratio": 1.2, "risk_tags": []}},
+        "SNAP_LOW":  {"setup": "PULLBACK", "score": 4, "score_track": "trigger",
+                       "rs_delta_pct": 1.0,
+                       "raw": {"close": 100, "rsi14": 55, "dist_ema9_pct": -1.0,
+                               "volume_ratio": 1.0, "risk_tags": []}},
+    }
+
+    # Momentum-only: 3 tickers, all TREND_OK synthetic, varying tiers/RS
+    momentum_today = [
+        _scanner_signal_entry("M3_TKR", stage="MOMENTUM_3"),
+        _scanner_signal_entry("M2_TKR", stage="MOMENTUM_2"),
+        _scanner_signal_entry("M1_TKR", stage="MOMENTUM_1"),
+    ]
+    market_data = {"data": {
+        "M3_TKR": _market_data_entry_for_trend_ok("M3_TKR"),
+        "M2_TKR": _market_data_entry_for_trend_ok("M2_TKR"),
+        "M1_TKR": _market_data_entry_for_trend_ok("M1_TKR"),
+    }}
+
+    result = select_top5_buy_candidates(
+        snapshots=snapshots,
+        portfolio_tickers=set(),
+        momentum_history={"data": {}},
+        today="2026-05-22",
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=0.0,
+    )
+    # Verify: candidates are sorted final_score desc (no insertion-order leak)
+    scores = [c["final_score"] for c in result["candidates"]]
+    assert scores == sorted(scores, reverse=True), \
+        f"candidates not sorted desc: {[(c['ticker'], c['final_score']) for c in result['candidates']]}"
+    # Verify: SNAP_HIGH (base 10 + RS bonus) outranks M1_TKR (base ~drift + M1 bonus +2)
+    tickers = [c["ticker"] for c in result["candidates"]]
+    assert tickers.index("SNAP_HIGH") < tickers.index("M1_TKR")
+
+
+def test_render_passes_momentum_today_and_market_data(monkeypatch, tmp_path):
+    """_render must forward momentum_today + market_data to select_top5."""
+    import lifecycle_report as lr
+
+    captured: dict = {}
+
+    def fake_select(**kwargs):
+        captured.update(kwargs)
+        return {"candidates": [], "count": 0, "max": 5, "threshold": 5.0}
+
+    monkeypatch.setattr(lr, "select_top5_buy_candidates", fake_select)
+
+    # Also stub the Jinja render to avoid pulling full template
+    from jinja2 import Template
+    monkeypatch.setattr(Template, "render", lambda self, **ctx: "<html></html>")
+
+    result = {
+        "as_of": "2026-05-22", "market": "US",
+        "snapshots": {},
+        "transitions": [], "skipped": [], "active_set_size": 0,
+        "market_ret_5d_pct": 0.42,
+        "momentum_history": {"data": {}},
+        "engine_version": "score_v1",
+    }
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._render("US", result, str(out_dir), template_dir=None,
+                lifecycle_state={"tickers": {}, "transitions": []},
+                portfolio_tickers={"AAA"},
+                momentum_today=[{"ticker": "LRCX", "stage": "MOMENTUM_3"}],
+                market_data={"data": {"LRCX": {"close": 100, "ema9": 95}}})
+
+    assert captured.get("momentum_today") == [{"ticker": "LRCX", "stage": "MOMENTUM_3"}]
+    assert "LRCX" in (captured.get("market_data", {}).get("data", {}) or {})
+    assert captured.get("market_ret_5d_pct") == 0.42
+
+
+def test_generate_lifecycle_pages_dispatches_us_momentum(monkeypatch, tmp_path):
+    """generate_lifecycle_pages must pass us-scoped kwargs to _render('US', ...)."""
+    import lifecycle_report as lr
+
+    captured_calls: list[dict] = []
+
+    def fake_render(market, result, output_dir, template_dir, lifecycle_state,
+                     nav_ctx=None, portfolio_tickers=None,
+                     momentum_today=None, market_data=None):
+        captured_calls.append({
+            "market": market,
+            "momentum_today": momentum_today,
+            "has_market_data": market_data is not None,
+        })
+        return str(tmp_path / f"{market.lower()}.html")
+
+    monkeypatch.setattr(lr, "_render", fake_render)
+
+    us_result = {"snapshots": {"AAA": {"setup": "TREND_OK"}}, "as_of": "2026-05-22"}
+    kr_result = {"snapshots": {"005930": {"setup": "PULLBACK"}}, "as_of": "2026-05-22"}
+
+    lr.generate_lifecycle_pages(
+        us_result=us_result, kr_result=kr_result,
+        output_dir=str(tmp_path),
+        portfolio_tickers={"AAA"},
+        momentum_today_us=[{"ticker": "LRCX", "stage": "MOMENTUM_3"}],
+        momentum_today_kr=None,
+        market_data={"data": {"LRCX": {"close": 100}}},
+    )
+
+    us_call = next(c for c in captured_calls if c["market"] == "US")
+    kr_call = next(c for c in captured_calls if c["market"] == "KR")
+    assert us_call["momentum_today"] == [{"ticker": "LRCX", "stage": "MOMENTUM_3"}]
+    assert us_call["has_market_data"] is True
+    assert kr_call["momentum_today"] is None  # KR not provided
+
+
+def test_template_renders_scanner_only_badge(tmp_path):
+    """Rendered HTML contains the '🚀 스캐너 신규' chip for _scanner_only candidates."""
+    import os
+    from jinja2 import Environment, FileSystemLoader, ChainableUndefined
+
+    project_dir = os.path.join(os.path.dirname(__file__), "..")
+    env = Environment(
+        loader=FileSystemLoader(os.path.join(project_dir, "templates")),
+        autoescape=True,
+        undefined=ChainableUndefined,
+    )
+    env.filters["signed_pct"] = lambda x: "—" if x is None else f"{x:+.1f}%"
+    env.filters["x_fmt"]      = lambda x: "—" if x is None else f"{x:.1f}×"
+    env.filters["trig_age_label"] = lambda d: "—" if d is None else (
+        "오늘" if d == 0 else "어제" if d == 1 else f"{d}일전")
+
+    class DefaultNumDict(dict):
+        def __getattr__(self, name):
+            return self.get(name, 0)
+
+    thresholds = DefaultNumDict({
+        "EXTENDED_DIST_FROM_EMA9": 0.08, "EXTENDED_RSI_MIN": 70,
+        "RISK_OVERHEAT_RSI": 75, "PULLBACK_MAX_DIST_FROM_EMA9": 0.05,
+    })
+
+    tmpl = env.get_template("lifecycle_us.html")
+    ctx = {
+        "market": "US", "as_of": "2026-05-22", "engine_version": "score_v1",
+        "active_nav": "lifecycle_us", "version": "test",
+        "snapshots_list": [], "transitions": [], "skipped": [],
+        "active_set_size": 1, "summary": {"counts": {}}, "score_tier_bands": {},
+        "lifecycle_thresholds": thresholds,
+        "verdict_summary": {
+            "headline": "Test Headline", "narration": "Test narration",
+            "avoid_line": None, "action_hint": "Test action",
+            "score_engine_line": None,
+        },
+        "avoid": [], "enter": [], "probe": [], "watch": [], "trending": [],
+        "broken_table": [],
+        "top5_candidates": [{
+            "ticker": "LRCX", "is_portfolio": False,
+            "snapshot": {"setup": "TREND_OK", "decision": "ENTER",
+                          "_scanner_only": True,
+                          "raw": {"close": 1050, "rsi14": 64,
+                                  "dist_ema9_pct": 3.1, "volume_ratio": 1.2,
+                                  "risk_tags": []},
+                          "rs_delta_pct": 8.0},
+            "base_score": 9.33, "momentum_bonus": 4, "rs_bonus": 2,
+            "final_score": 15.33, "size_hint_label": "신규 50%",
+        }],
+        "top5_count": 1, "top5_max": 5, "top5_threshold": 5.0,
+    }
+    html = tmpl.render(**ctx)
+    assert "LRCX" in html
+    assert "🚀 스캐너 신규" in html or "scanner-only" in html
