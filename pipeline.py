@@ -660,12 +660,17 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         # Lifecycle pages (US + KR)
         try:
             from lifecycle_report import generate_lifecycle_pages
+            _lifecycle_portfolio_tickers = {
+                h["ticker"] for h in _parse_portfolio_for_report(portfolio_path)
+                if h.get("ticker")
+            }
             _lc_paths = generate_lifecycle_pages(
                 us_result=lifecycle_us_result, kr_result=lifecycle_kr_result,
                 output_dir=os.path.join(project_dir, "reports"),
                 us_state=(lifecycle_us_result or {}).get("state"),
                 kr_state=(lifecycle_kr_result or {}).get("state"),
                 nav_ctx=_shared_nav,
+                portfolio_tickers=_lifecycle_portfolio_tickers,
             )
             for m, p in _lc_paths.items():
                 print(f"  Generated {m}: {p}")

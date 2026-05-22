@@ -357,3 +357,23 @@ def test_template_renders_top5_section(tmp_path):
     assert "추가 25%" in html
     # Portfolio items show holding indicator
     assert "보유 중" in html or "\U0001f3e6" in html
+
+
+def test_pipeline_passes_portfolio_tickers_to_generate(monkeypatch):
+    """generate_lifecycle_pages should receive portfolio_tickers=set of all holdings."""
+    # Construct a minimal portfolio markdown
+    import tempfile, textwrap
+    md = tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False,
+                                       encoding="utf-8")
+    md.write(textwrap.dedent("""
+        | Ticker | 종목명 | 보유수량 | 평가금액 | 수익금액 | 수익률 |
+        |--------|--------|---------|---------|---------|--------|
+        | AAPL | 애플 | 100주 | $20,000.00 | +$5,000.00 | +33.33% |
+        | NVDA | 엔비디아 | 50주 | $50,000.00 | +$10,000.00 | +25.00% |
+    """).strip() + "\n")
+    md.close()
+
+    import pipeline
+    holdings = pipeline._parse_portfolio_for_report(md.name)
+    tickers = {h["ticker"] for h in holdings}
+    assert tickers == {"AAPL", "NVDA"}
