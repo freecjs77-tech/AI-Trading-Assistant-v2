@@ -39,12 +39,10 @@
 - 데이터 결손 (close/ema9 등 핵심 필드 누락)
 
 **Portfolio 종목 lifecycle 평가**:
-- 현재 `compute_active_set`은 portfolio tickers를 적극 제외 → portfolio 종목은 lifecycle snapshot 없음
-- 본 feature는 **stateless one-shot** 으로 portfolio 종목의 lifecycle 상태를 별도 계산
-  - `evaluate_setup_state(today_raw)` + `evaluate_trigger_state(today_raw, yesterday_raw, setup)` 호출
-  - yesterday raw는 어제의 market_data JSON에서 직접 stub
-  - trigger 연속성 추적은 못 함 (수용 한계 — 본 feature는 daily snapshot용)
-- 글로벌 lifecycle 파이프라인 / active_set 계산식 **무변경**
+- [pipeline.py:438](pipeline.py:438) 에서 이미 `_portfolio_tickers = set()` (빈 집합) 으로 `run_lifecycle` 호출 → `compute_active_set`의 portfolio 제외 룰이 작동하지 않음
+- **결과적으로 portfolio 종목은 이미 active_set에 포함되어 lifecycle snapshot으로 평가됨** (2026-05-09 사용자 결정)
+- 본 feature는 `result['snapshots']` 을 그대로 풀로 사용. 별도 stateless 평가 불필요.
+- Portfolio 식별: `portfolio_paths.discover_portfolios()` 의 holdings ticker 집합을 `_render`에 전달하여 "보유 중" 배지 표시 용도로만 사용
 
 ---
 
