@@ -631,3 +631,77 @@ def test_select_top5_orders_mixed_pool_by_score_desc():
     # Verify: SNAP_HIGH (base 10 + RS bonus) outranks M1_TKR (base ~drift + M1 bonus +2)
     tickers = [c["ticker"] for c in result["candidates"]]
     assert tickers.index("SNAP_HIGH") < tickers.index("M1_TKR")
+
+
+def test_render_passes_momentum_today_and_market_data(monkeypatch, tmp_path):
+    """_render must forward momentum_today + market_data to select_top5."""
+    import lifecycle_report as lr
+
+    captured: dict = {}
+
+    def fake_select(**kwargs):
+        captured.update(kwargs)
+        return {"candidates": [], "count": 0, "max": 5, "threshold": 5.0}
+
+    monkeypatch.setattr(lr, "select_top5_buy_candidates", fake_select)
+
+    # Also stub the Jinja render to avoid pulling full template
+    from jinja2 import Template
+    monkeypatch.setattr(Template, "render", lambda self, **ctx: "<html></html>")
+
+    result = {
+        "as_of": "2026-05-22", "market": "US",
+        "snapshots": {},
+        "transitions": [], "skipped": [], "active_set_size": 0,
+        "market_ret_5d_pct": 0.42,
+        "momentum_history": {"data": {}},
+        "engine_version": "score_v1",
+    }
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._render("US", result, str(out_dir), template_dir=None,
+                lifecycle_state={"tickers": {}, "transitions": []},
+                portfolio_tickers={"AAA"},
+                momentum_today=[{"ticker": "LRCX", "stage": "MOMENTUM_3"}],
+                market_data={"data": {"LRCX": {"close": 100, "ema9": 95}}})
+
+    assert captured.get("momentum_today") == [{"ticker": "LRCX", "stage": "MOMENTUM_3"}]
+    assert "LRCX" in (captured.get("market_data", {}).get("data", {}) or {})
+    assert captured.get("market_ret_5d_pct") == 0.42
+
+
+def test_generate_lifecycle_pages_dispatches_us_momentum(monkeypatch, tmp_path):
+    """generate_lifecycle_pages must pass us-scoped kwargs to _render('US', ...)."""
+    import lifecycle_report as lr
+
+    captured_calls: list[dict] = []
+
+    def fake_render(market, result, output_dir, template_dir, lifecycle_state,
+                     nav_ctx=None, portfolio_tickers=None,
+                     momentum_today=None, market_data=None):
+        captured_calls.append({
+            "market": market,
+            "momentum_today": momentum_today,
+            "has_market_data": market_data is not None,
+        })
+        return str(tmp_path / f"{market.lower()}.html")
+
+    monkeypatch.setattr(lr, "_render", fake_render)
+
+    us_result = {"snapshots": {"AAA": {"setup": "TREND_OK"}}, "as_of": "2026-05-22"}
+    kr_result = {"snapshots": {"005930": {"setup": "PULLBACK"}}, "as_of": "2026-05-22"}
+
+    lr.generate_lifecycle_pages(
+        us_result=us_result, kr_result=kr_result,
+        output_dir=str(tmp_path),
+        portfolio_tickers={"AAA"},
+        momentum_today_us=[{"ticker": "LRCX", "stage": "MOMENTUM_3"}],
+        momentum_today_kr=None,
+        market_data={"data": {"LRCX": {"close": 100}}},
+    )
+
+    us_call = next(c for c in captured_calls if c["market"] == "US")
+    kr_call = next(c for c in captured_calls if c["market"] == "KR")
+    assert us_call["momentum_today"] == [{"ticker": "LRCX", "stage": "MOMENTUM_3"}]
+    assert us_call["has_market_data"] is True
+    assert kr_call["momentum_today"] is None  # KR not provided
