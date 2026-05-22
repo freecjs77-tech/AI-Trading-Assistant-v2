@@ -550,6 +550,137 @@ def _make_snapshot(date_str: str, raw: dict, setup: str, trigger: str,
     return snap
 
 
+def compute_single_snapshot(*, ticker: str,
+                              market_data_entry: dict,
+                              market_ret_5d_pct: Optional[float],
+                              yesterday: Optional[dict],
+                              today: str,
+                              regime: Optional[str] = None,
+                              _y_snap_list_for_drift: Optional[list] = None,
+                              ) -> Optional[dict]:
+    """Build a lifecycle snapshot for one ticker without touching history.
+
+    Mirrors the per-ticker body of process_universe. Returns None for skipped
+    tickers (missing close/ema9, or `error` in market_data_entry).
+
+    `yesterday` may be None — internally normalized to an empty raw dict so the
+    Phase A trigger helpers (which call yesterday.get(...)) remain None-safe.
+    With no yesterday, trigger will resolve to WAIT.
+
+    The internal `_y_snap_list_for_drift` kwarg is used ONLY by process_universe
+    to preserve the 3-day-close window for drift scoring across the full
+    yesterday-snapshots list. External callers should leave it as None — in
+    that case we fall back to just `yesterday` (if present) for the window.
+    """
+    import os
+    from lifecycle_score_config import (
+        DEFAULT_ENGINE_MODE, MODE_SCORE_SHADOW, MODE_SCORE_ACTIVE,
+    )
+    from lifecycle_score import compute_trigger_score, compute_drift_score
+
+    mode = os.environ.get("LIFECYCLE_ENGINE_MODE", DEFAULT_ENGINE_MODE)
+
+    if not market_data_entry or "error" in market_data_entry:
+        return None
+    today_raw = _build_today_raw_for_signal(market_data_entry)
+    if today_raw["close"] is None or today_raw["ema9"] is None:
+        return None
+
+    # Normalize yesterday: process_universe builds y_for_legacy_trigger from y_raw
+    # (which is {} when no history). Same here — pass {} so .get() is safe inside
+    # _is_early_trigger / _is_confirmed_trigger.
+    y_raw = (yesterday or {}).get("raw") or {}
+    y_for_legacy_trigger = {
+        "close": y_raw.get("close"),
+        "ema9":  y_raw.get("ema9"),
+        "high":  y_raw.get("high"),
+    }
+
+    # Layer 1 — setup state (unchanged from Phase A)
+    setup = evaluate_setup_state(today_raw)
+    trigger = evaluate_trigger_state(today_raw, y_for_legacy_trigger, setup)
+    risk_tags = compute_risk_tags(today_raw, yesterday)
+
+    # Last 3 closes for drift's tight_close_cluster.
+    # For active_set tickers, process_universe passes the full y_snap_list via
+    # _y_snap_list_for_drift to preserve the original window. For momentum-only
+    # callers (no history), we use just `yesterday` if present.
+    recent_3d_closes = []
+    src_list = _y_snap_list_for_drift if _y_snap_list_for_drift is not None else (
+        [yesterday] if yesterday else []
+    )
+    for s in src_list[-3:]:
+        c = (s.get("raw") or {}).get("close")
+        if c is not None:
+            recent_3d_closes.append(c)
+    recent_3d_closes.append(today_raw["close"])  # include today
+
+    # Build yesterday_snap for higher_low / ema_reclaim component access
+    yesterday_snap_for_score = {
+        "close": y_raw.get("close"),
+        "low":   y_raw.get("low"),
+        "high":  y_raw.get("high"),
+        "ema9":  y_raw.get("ema9"),
+    } if yesterday else None
+
+    score_payload = None
+    if mode in (MODE_SCORE_SHADOW, MODE_SCORE_ACTIVE):
+        # Compute scores in BOTH shadow and active modes.
+        # Shadow: scores stored, decision from Phase A path.
+        # Active: scores drive decision (via evaluate_decision dispatch).
+        decision = evaluate_decision(
+            setup, trigger, risk_tags=risk_tags, regime=regime,
+            today_raw=today_raw,
+            yesterday_snap=yesterday_snap_for_score,
+            recent_3d_closes=recent_3d_closes,
+            market_ret_5d_pct=market_ret_5d_pct,
+        )
+        if isinstance(decision, dict):
+            # score_active path — payload is the full evaluator result.
+            score_payload = decision
+            final_decision = decision["decision"]
+            final_trigger = decision["trigger_state"]
+        else:
+            # score_shadow path — decision is Phase A str. Compute scores
+            # for storage WITHOUT affecting the decision.
+            final_decision = decision
+            final_trigger = trigger
+            if setup in ("TREND_OK", "EXTENDED"):
+                sc = compute_drift_score(
+                    today_raw, yesterday_snap_for_score,
+                    recent_3d_closes, market_ret_5d_pct,
+                )
+                track = "drift"
+            else:
+                sc = compute_trigger_score(
+                    today_raw, yesterday_snap_for_score, market_ret_5d_pct,
+                )
+                track = "trigger"
+            score_payload = {
+                "score": sc.score, "score_track": track,
+                "score_tier": sc.score_tier,         # NEW
+                "rs_tier":    sc.rs_tier,            # NEW
+                "active_components": sc.active_count,
+                "features": sc.features,
+                "score_components": sc.components_list,
+                "decision_badges": [], "veto_reason": None,
+                "suggested_entry_tier": None, "suggested_size_pct": 0.0,
+                "rs_delta_pct": sc.rs_delta_pct,
+                "_raw_score": None, "_raw_features": None, "_raw_score_track": None,
+            }
+    else:
+        # mode == "legacy" — call without score inputs.
+        decision = evaluate_decision(setup, trigger,
+                                      risk_tags=risk_tags, regime=regime)
+        final_decision = decision
+        final_trigger = trigger
+
+    return _make_snapshot(
+        today, today_raw, setup, final_trigger, final_decision, risk_tags,
+        score_payload=score_payload,
+    )
+
+
 def process_universe(*, active_set: set[str], market_data: dict,
                      yesterday_state: dict, today: str,
                      regime: Optional[str] = None,
@@ -562,14 +693,6 @@ def process_universe(*, active_set: set[str], market_data: dict,
     Returns:
       {"as_of": today, "snapshots": {ticker: snapshot}, "skipped": [...]}
     """
-    import os
-    from lifecycle_score_config import (
-        DEFAULT_ENGINE_MODE, MODE_SCORE_SHADOW, MODE_SCORE_ACTIVE,
-    )
-    from lifecycle_score import compute_trigger_score, compute_drift_score
-
-    mode = os.environ.get("LIFECYCLE_ENGINE_MODE", DEFAULT_ENGINE_MODE)
-
     flat = market_data.get("data") if isinstance(market_data, dict) and "data" in market_data else market_data
     snapshots: dict[str, dict] = {}
     skipped: list[str] = []
@@ -579,99 +702,29 @@ def process_universe(*, active_set: set[str], market_data: dict,
         if not entry or "error" in entry:
             skipped.append(ticker)
             continue
-        today_raw = _build_today_raw_for_signal(entry)
-        if today_raw["close"] is None or today_raw["ema9"] is None:
-            skipped.append(ticker)
-            continue
 
-        # Pull yesterday snapshot from history
+        # Resolve yesterday from history
         y_block = (yesterday_state.get("tickers") or {}).get(ticker)
         y_snap_list = (y_block or {}).get("snapshots", [])
         yesterday = y_snap_list[-1] if y_snap_list else None
-        y_raw = (yesterday or {}).get("raw") or {}
-        y_for_legacy_trigger = {
-            "close": y_raw.get("close"),
-            "ema9":  y_raw.get("ema9"),
-            "high":  y_raw.get("high"),
-        }
 
-        # Layer 1 — setup state (unchanged from Phase A)
-        setup = evaluate_setup_state(today_raw)
-        trigger = evaluate_trigger_state(today_raw, y_for_legacy_trigger, setup)
-        risk_tags = compute_risk_tags(today_raw, yesterday)
-
-        # Last 3 closes for drift's tight_close_cluster
-        recent_3d_closes = []
-        for s in y_snap_list[-3:]:
-            c = (s.get("raw") or {}).get("close")
-            if c is not None:
-                recent_3d_closes.append(c)
-        recent_3d_closes.append(today_raw["close"])  # include today
-
-        # Build yesterday_snap for higher_low / ema_reclaim component access
-        yesterday_snap_for_score = {
-            "close": y_raw.get("close"),
-            "low":   y_raw.get("low"),
-            "high":  y_raw.get("high"),
-            "ema9":  y_raw.get("ema9"),
-        } if yesterday else None
-
-        score_payload = None
-        if mode in (MODE_SCORE_SHADOW, MODE_SCORE_ACTIVE):
-            # Compute scores in BOTH shadow and active modes.
-            # Shadow: scores stored, decision from Phase A path.
-            # Active: scores drive decision (via evaluate_decision dispatch).
-            decision = evaluate_decision(
-                setup, trigger, risk_tags=risk_tags, regime=regime,
-                today_raw=today_raw,
-                yesterday_snap=yesterday_snap_for_score,
-                recent_3d_closes=recent_3d_closes,
-                market_ret_5d_pct=market_ret_5d_pct,
-            )
-            if isinstance(decision, dict):
-                # score_active path — payload is the full evaluator result.
-                score_payload = decision
-                final_decision = decision["decision"]
-                final_trigger = decision["trigger_state"]
-            else:
-                # score_shadow path — decision is Phase A str. Compute scores
-                # for storage WITHOUT affecting the decision.
-                final_decision = decision
-                final_trigger = trigger
-                if setup in ("TREND_OK", "EXTENDED"):
-                    sc = compute_drift_score(
-                        today_raw, yesterday_snap_for_score,
-                        recent_3d_closes, market_ret_5d_pct,
-                    )
-                    track = "drift"
-                else:
-                    sc = compute_trigger_score(
-                        today_raw, yesterday_snap_for_score, market_ret_5d_pct,
-                    )
-                    track = "trigger"
-                score_payload = {
-                    "score": sc.score, "score_track": track,
-                    "score_tier": sc.score_tier,         # NEW
-                    "rs_tier":    sc.rs_tier,            # NEW
-                    "active_components": sc.active_count,
-                    "features": sc.features,
-                    "score_components": sc.components_list,
-                    "decision_badges": [], "veto_reason": None,
-                    "suggested_entry_tier": None, "suggested_size_pct": 0.0,
-                    "rs_delta_pct": sc.rs_delta_pct,
-                    "_raw_score": None, "_raw_features": None, "_raw_score_track": None,
-                }
-        else:
-            # mode == "legacy" — call without score inputs.
-            decision = evaluate_decision(setup, trigger,
-                                          risk_tags=risk_tags, regime=regime)
-            final_decision = decision
-            final_trigger = trigger
-
-        snapshots[ticker] = _make_snapshot(
-            today, today_raw, setup, final_trigger, final_decision, risk_tags,
-            score_payload=score_payload,
+        # Delegate per-ticker computation to compute_single_snapshot. Pass the
+        # full y_snap_list via the internal _y_snap_list_for_drift kwarg so the
+        # 3-day-close window used for drift scoring matches the original loop
+        # exactly (byte-equivalent for golden-test parity).
+        snap = compute_single_snapshot(
+            ticker=ticker,
+            market_data_entry=entry,
+            market_ret_5d_pct=market_ret_5d_pct,
+            yesterday=yesterday,
+            today=today,
+            regime=regime,
+            _y_snap_list_for_drift=y_snap_list,
         )
+        if snap is None:
+            skipped.append(ticker)
+            continue
+        snapshots[ticker] = snap
 
     return {"as_of": today, "snapshots": snapshots, "skipped": skipped}
 
