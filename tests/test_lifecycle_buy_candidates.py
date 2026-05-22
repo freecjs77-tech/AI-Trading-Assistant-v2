@@ -137,3 +137,54 @@ def test_build_candidate_pool_attaches_snapshot():
                           "raw": {"close": 100.0, "rsi14": 65}}}
     pool = build_candidate_pool(snapshots, portfolio_tickers=set())
     assert pool[0]["snapshot"]["raw"]["close"] == 100.0
+
+
+def test_rank_top_n_sorts_desc_caps_at_5():
+    from lifecycle_buy_candidates import rank_top_n
+    pool = [
+        {"ticker": "A", "snapshot": {"setup": "PULLBACK", "score": 10, "rs_delta_pct": 5.0}, "is_portfolio": False},
+        {"ticker": "B", "snapshot": {"setup": "PULLBACK", "score": 8,  "rs_delta_pct": 12.0}, "is_portfolio": False},
+        {"ticker": "C", "snapshot": {"setup": "PULLBACK", "score": 6,  "rs_delta_pct": 7.0}, "is_portfolio": False},
+        {"ticker": "D", "snapshot": {"setup": "PULLBACK", "score": 5,  "rs_delta_pct": 3.0}, "is_portfolio": False},
+        {"ticker": "E", "snapshot": {"setup": "PULLBACK", "score": 4,  "rs_delta_pct": 1.0}, "is_portfolio": False},
+        {"ticker": "F", "snapshot": {"setup": "PULLBACK", "score": 3,  "rs_delta_pct": 0.5}, "is_portfolio": False},
+    ]
+    momentum_data = {}  # no momentum bonuses for any
+    ranked = rank_top_n(pool, momentum_data, threshold=5, cap=5)
+    assert [c["ticker"] for c in ranked] == ["B", "A", "C", "D", "E"]
+    # B: 8 + 0 + 3 (RS>10) = 11
+    # A: 10 + 0 + 1 (RS>0) = 11 -- tied with B
+    # → B wins tiebreak (higher rs_delta_pct)
+    # C: 6 + 0 + 2 = 8
+    # D: 5 + 0 + 1 = 6
+    # E: 4 + 0 + 1 = 5
+    # F: 3 + 0 + 1 = 4 → below threshold
+
+
+def test_rank_top_n_threshold_excludes_low_scores():
+    from lifecycle_buy_candidates import rank_top_n
+    pool = [
+        {"ticker": "X", "snapshot": {"setup": "PULLBACK", "score": 2, "rs_delta_pct": 1.0}, "is_portfolio": False},
+        {"ticker": "Y", "snapshot": {"setup": "PULLBACK", "score": 3, "rs_delta_pct": 0.0}, "is_portfolio": False},
+    ]
+    # X: 2+0+1=3 ; Y: 3+0+0=3 → both below threshold 5
+    ranked = rank_top_n(pool, {}, threshold=5, cap=5)
+    assert ranked == []
+
+
+def test_rank_top_n_attaches_score_breakdown():
+    """Each ranked entry includes final_score + breakdown for display."""
+    from lifecycle_buy_candidates import rank_top_n
+    pool = [{"ticker": "AAA",
+             "snapshot": {"setup": "PULLBACK", "score": 6, "rs_delta_pct": 7.0},
+             "is_portfolio": True}]
+    momentum_data = {"AAA": {"stage": "MOMENTUM_2"}}
+    ranked = rank_top_n(pool, momentum_data, threshold=5, cap=5)
+    assert len(ranked) == 1
+    entry = ranked[0]
+    assert entry["final_score"] == 11.0  # 6 + 3 (M2) + 2 (RS>5)
+    assert entry["base_score"] == 6.0
+    assert entry["momentum_bonus"] == 3
+    assert entry["rs_bonus"] == 2
+    assert entry["is_portfolio"] is True
+    assert entry["ticker"] == "AAA"

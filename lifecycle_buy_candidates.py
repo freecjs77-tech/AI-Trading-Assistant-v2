@@ -115,3 +115,40 @@ def build_candidate_pool(snapshots: dict, portfolio_tickers: set) -> list[dict]:
             "is_portfolio": ticker in portfolio_tickers,
         })
     return pool
+
+
+def rank_top_n(pool: list[dict], momentum_data: dict, *,
+                threshold: float = 5.0, cap: int = 5) -> list[dict]:
+    """Rank candidates, filter by threshold, cap at top N.
+
+    Args:
+        pool: list of {ticker, snapshot, is_portfolio} from build_candidate_pool.
+        momentum_data: {ticker: today_entry_dict} from
+            scanner_momentum_us_history.json data → today section.
+            Pass {} if no momentum data available.
+        threshold: minimum final_score to include (default 5.0).
+        cap: maximum number of candidates returned (default 5).
+
+    Returns: list of dicts with keys: ticker, snapshot, is_portfolio,
+        base_score, momentum_bonus, rs_bonus, final_score.
+        Sorted by final_score desc, then rs_delta_pct desc.
+    """
+    scored: list[dict] = []
+    for entry in pool:
+        snap = entry["snapshot"]
+        m_today = momentum_data.get(entry["ticker"])
+        breakdown = compute_final_score(snap, m_today)
+        if breakdown["final_score"] < threshold:
+            continue
+        scored.append({
+            "ticker":         entry["ticker"],
+            "snapshot":       snap,
+            "is_portfolio":   entry["is_portfolio"],
+            "base_score":     breakdown["base_score"],
+            "momentum_bonus": breakdown["momentum_bonus"],
+            "rs_bonus":       breakdown["rs_bonus"],
+            "final_score":    breakdown["final_score"],
+        })
+    scored.sort(key=lambda c: (-c["final_score"],
+                                 -(c["snapshot"].get("rs_delta_pct") or 0)))
+    return scored[:cap]
