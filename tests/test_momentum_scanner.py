@@ -204,6 +204,50 @@ def test_signals_enriched_with_streak_after_history_update(monkeypatch, tmp_path
         assert all_sigs[0].get("change") == "NEW"
 
 
+def test_mplus_sector_fallback_when_no_sector_qualifies(monkeypatch, tmp_path):
+    """When all sector ETFs fail the momentum gate (top_sectors=[]), the M+
+    track should still evaluate stocks satisfying prefilter+classify.
+
+    Otherwise IBM-style cases (M1 clearly passing on a day of broad market
+    pullback) get silently dropped because in_top_sector=False for everyone.
+    """
+    import os, pandas as pd
+    import momentum_scanner as msc, momentum_data as md
+
+    import momentum_config as cfg
+    n = 90
+    # AAA: flat then sharp 5-day spike → M1 (r3≥8, rsi≥60, close>ma20)
+    aaa = [50.0] * 84 + [50.0, 55.0, 60.0, 65.0, 70.0, 75.0]
+    flat = [100 + i * 0.01 for i in range(n)]
+    cols = {"AAA": aaa, "SPY": flat, "QQQ": flat}
+    for etf in cfg.US_SECTOR_ETFS:
+        cols[etf] = flat   # all sectors flat → none qualify
+    closes = pd.DataFrame(cols)
+    volumes = pd.DataFrame({k: [2_000_000] * n for k in closes.columns})
+    monkeypatch.setattr(md, "fetch_yf_bulk",
+                         lambda tickers, period="90d": (closes[tickers], volumes[tickers]))
+    monkeypatch.setattr("momentum_scanner.build_us_universe", lambda: ["AAA"])
+    monkeypatch.setattr(md, "get_us_sector_holdings", lambda: {})
+    monkeypatch.setattr(md, "build_sector_mapping",
+                         lambda h, market: {"AAA": "XLK"})
+
+    proj = str(tmp_path)
+    os.makedirs(os.path.join(proj, "history"), exist_ok=True)
+    result = msc.scan_momentum_us(proj)
+
+    assert result["status"] == "ok", f"scan failed: {result.get('error_message')}"
+    assert result["top_sectors"] == [], "no sector should qualify in this fixture"
+    all_mplus = (result["signals"]["MOMENTUM_3"]
+                 + result["signals"]["MOMENTUM_2"]
+                 + result["signals"]["MOMENTUM_1"])
+    assert any(s["ticker"] == "AAA" for s in all_mplus), \
+        "AAA satisfies M+ gates but is dropped — sector fallback missing"
+    # sector_top_rank should still be None (no sector qualified)
+    for s in all_mplus:
+        if s["ticker"] == "AAA":
+            assert s.get("sector_top_rank") is None
+
+
 def test_momentum_disable_em_env_skips_em_track(monkeypatch, tmp_path):
     """MOMENTUM_DISABLE_EM=1 → EM signals empty, rotation_radar empty."""
     import os, pandas as pd
