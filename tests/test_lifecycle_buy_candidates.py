@@ -247,3 +247,49 @@ def test_select_top5_empty_snapshots():
     )
     assert result["count"] == 0
     assert result["candidates"] == []
+
+
+def test_render_injects_top5_into_ctx(monkeypatch, tmp_path):
+    """_render must call select_top5 and inject ctx vars."""
+    import os, json
+    import lifecycle_report as lr
+
+    captured_ctx = {}
+
+    def fake_render(self, **ctx):
+        captured_ctx.update(ctx)
+        return "<html></html>"
+
+    # Monkeypatch the Jinja2 template.render
+    from jinja2 import Template
+    monkeypatch.setattr(Template, "render", fake_render)
+
+    # Minimal result fixture
+    result = {
+        "as_of": "2026-05-21", "market": "US",
+        "snapshots": {
+            "AAA": {"setup": "PULLBACK", "score": 8, "score_track": "trigger",
+                     "decision": "PROBE", "trigger": "EARLY_TRIGGER",
+                     "rs_delta_pct": 6.0,
+                     "raw": {"close": 100, "rsi14": 65, "dist_ema9_pct": 1.0,
+                             "volume_ratio": 1.1, "risk_tags": []}},
+        },
+        "transitions": [], "skipped": [], "active_set_size": 1,
+        "market_ret_5d_pct": 0.0,
+        "momentum_history": {"data": {}},
+        "engine_version": "score_v1",
+    }
+
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._render("US", result, str(out_dir), template_dir=None,
+                lifecycle_state={"tickers": {}, "transitions": []},
+                portfolio_tickers={"AAA"})
+
+    assert "top5_candidates" in captured_ctx
+    assert "top5_count" in captured_ctx
+    assert "top5_max" in captured_ctx
+    assert captured_ctx["top5_max"] == 5
+    assert captured_ctx["top5_count"] == 1
+    assert captured_ctx["top5_candidates"][0]["ticker"] == "AAA"
+    assert captured_ctx["top5_candidates"][0]["is_portfolio"] is True

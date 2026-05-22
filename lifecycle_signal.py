@@ -782,4 +782,5 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
         "state":       state,
         "engine_version": _EV,
         "market_ret_5d_pct": market_ret_5d_pct,
+        "momentum_history": momentum_state,   # for top5 selector
     }
