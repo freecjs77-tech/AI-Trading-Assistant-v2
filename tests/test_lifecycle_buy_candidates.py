@@ -103,3 +103,37 @@ def test_compute_final_score_no_momentum_entry():
     assert result["momentum_bonus"] == 0
     assert result["rs_bonus"] == 1
     assert abs(result["base_score"] - (4 * 14 / 9)) < 0.01
+
+
+def test_build_candidate_pool_excludes_broken():
+    from lifecycle_buy_candidates import build_candidate_pool
+    snapshots = {
+        "AAA": {"setup": "PULLBACK", "score": 5},
+        "BBB": {"setup": "BROKEN", "score": None},
+        "CCC": {"setup": "TREND_OK", "score": 6, "score_track": "drift"},
+        "DDD": {"setup": "EXTENDED", "score": None, "_raw_score": 5},
+    }
+    pool = build_candidate_pool(snapshots, portfolio_tickers=set())
+    tickers = {c["ticker"] for c in pool}
+    assert tickers == {"AAA", "CCC", "DDD"}  # BBB excluded
+
+
+def test_build_candidate_pool_marks_portfolio():
+    from lifecycle_buy_candidates import build_candidate_pool
+    snapshots = {
+        "AAPL": {"setup": "TREND_OK", "score": 5, "score_track": "drift"},
+        "INTC": {"setup": "PULLBACK", "score": 4, "score_track": "trigger"},
+    }
+    pool = build_candidate_pool(snapshots, portfolio_tickers={"AAPL"})
+    by_ticker = {c["ticker"]: c for c in pool}
+    assert by_ticker["AAPL"]["is_portfolio"] is True
+    assert by_ticker["INTC"]["is_portfolio"] is False
+
+
+def test_build_candidate_pool_attaches_snapshot():
+    """Each candidate carries the full snapshot dict (so downstream can read raw)."""
+    from lifecycle_buy_candidates import build_candidate_pool
+    snapshots = {"AAA": {"setup": "PULLBACK", "score": 5,
+                          "raw": {"close": 100.0, "rsi14": 65}}}
+    pool = build_candidate_pool(snapshots, portfolio_tickers=set())
+    assert pool[0]["snapshot"]["raw"]["close"] == 100.0

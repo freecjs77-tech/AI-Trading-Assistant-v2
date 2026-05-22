@@ -95,3 +95,23 @@ def compute_final_score(snapshot: dict, momentum_today: dict | None) -> dict:
         "rs_bonus":       rs_bonus,
         "final_score":    base + m_bonus + rs_bonus,
     }
+
+
+def build_candidate_pool(snapshots: dict, portfolio_tickers: set) -> list[dict]:
+    """Pool = snapshots minus BROKEN, with portfolio membership marked.
+
+    Returns list of dicts: {ticker, snapshot, is_portfolio}.
+    """
+    portfolio_tickers = portfolio_tickers or set()
+    pool: list[dict] = []
+    for ticker, snap in (snapshots or {}).items():
+        if not snap:
+            continue
+        if snap.get("setup") == "BROKEN":
+            continue
+        pool.append({
+            "ticker":       ticker,
+            "snapshot":     snap,
+            "is_portfolio": ticker in portfolio_tickers,
+        })
+    return pool
