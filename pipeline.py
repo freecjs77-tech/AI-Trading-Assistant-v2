@@ -671,6 +671,9 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 kr_state=(lifecycle_kr_result or {}).get("state"),
                 nav_ctx=_shared_nav,
                 portfolio_tickers=_lifecycle_portfolio_tickers,
+                momentum_today_us=momentum_us_result,
+                momentum_today_kr=momentum_kr_result,
+                market_data=market_data,
             )
             for m, p in _lc_paths.items():
                 print(f"  Generated {m}: {p}")
