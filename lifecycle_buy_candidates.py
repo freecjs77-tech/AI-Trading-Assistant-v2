@@ -88,7 +88,7 @@ def compute_final_score(snapshot: dict, momentum_today: dict | None) -> dict:
     """
     base = normalize_base_score(snapshot)
     m_bonus = compute_momentum_bonus(momentum_today)
-    rs_bonus = compute_rs_bonus((snapshot or {}).get("rs_delta_pct"))
+    rs_bonus = compute_rs_bonus(snapshot.get("rs_delta_pct"))
     return {
         "base_score":     base,
         "momentum_bonus": m_bonus,
