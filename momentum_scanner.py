@@ -184,6 +184,10 @@ def _scan_market(market: str, build_universe_fn, sector_etfs: list[str],
             )
         top_sectors = msig.select_top_sectors(evaluated_sectors)
         result["top_sectors"] = top_sectors
+        # Sector fallback: when no sector qualifies (broad pullback day),
+        # let M+ track still evaluate the full universe instead of dropping
+        # every stock because in_top_sector=False for everyone.
+        sector_fallback = (market == "US" and len(top_sectors) == 0)
 
         # ticker → sector 매핑 (Task 6)
         if market == "US":
@@ -250,8 +254,10 @@ def _scan_market(market: str, build_universe_fn, sector_etfs: list[str],
             sd["sector"] = sector_etf
 
             evaluation = None
-            # Track 1 — M+ scan: only top-sector stocks (US) or all (KR), prefilter required
-            if (in_top_sector or market == "KR") and msig.passes_prefilter(sd):
+            # Track 1 — M+ scan: only top-sector stocks (US) or all (KR), prefilter required.
+            # sector_fallback: on days where no US sector qualifies, evaluate the full
+            # universe so strong individual stocks (e.g. IBM +12% on catalyst) aren't lost.
+            if (in_top_sector or sector_fallback or market == "KR") and msig.passes_prefilter(sd):
                 evaluation = msig.evaluate_stock(
                     sd, sector_5d_return=sector_5d, sector_top_rank=sector_top_rank
                 )
