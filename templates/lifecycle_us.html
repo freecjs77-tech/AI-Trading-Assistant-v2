@@ -266,6 +266,9 @@ tailwind.config = {
   .badge.portfolio-badge { display: inline-block; padding: 0.1rem 0.4rem;
                             margin-left: 0.3rem; border-radius: 4px;
                             background: #d4edda; color: #155724; font-size: 0.85em; }
+  .badge.scanner-only-badge { display: inline-block; padding: 0.1rem 0.4rem;
+                                margin-left: 0.3rem; border-radius: 4px;
+                                background: #cce5ff; color: #004085; font-size: 0.85em; }
   .empty-state, .partial-notice { font-style: italic; color: #666; }
   .disclaimer { color: #888; margin-top: 0.5rem; }
 </style>
@@ -298,6 +301,7 @@ tailwind.config = {
           <td>
             <strong>{{ c.ticker }}</strong>
             {% if c.is_portfolio %}<span class="badge portfolio-badge">🏦 보유 중</span>{% endif %}
+            {% if c.snapshot._scanner_only %}<span class="badge scanner-only-badge">🚀 스캐너 신규</span>{% endif %}
           </td>
           <td>{{ c.snapshot.decision }}</td>
           <td>
