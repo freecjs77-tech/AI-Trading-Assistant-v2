@@ -293,3 +293,67 @@ def test_render_injects_top5_into_ctx(monkeypatch, tmp_path):
     assert captured_ctx["top5_count"] == 1
     assert captured_ctx["top5_candidates"][0]["ticker"] == "AAA"
     assert captured_ctx["top5_candidates"][0]["is_portfolio"] is True
+
+
+def test_template_renders_top5_section(tmp_path):
+    """Rendered HTML contains the top5 section with expected text + tickers."""
+    import os
+    from jinja2 import Environment, FileSystemLoader, ChainableUndefined
+
+    project_dir = os.path.join(os.path.dirname(__file__), "..")
+    env = Environment(
+        loader=FileSystemLoader(os.path.join(project_dir, "templates")),
+        autoescape=True,
+        undefined=ChainableUndefined,
+    )
+    # Custom filters mimicking lifecycle_report._render
+    env.filters["signed_pct"] = lambda x: "—" if x is None else f"{x:+.1f}%"
+    env.filters["x_fmt"]      = lambda x: "—" if x is None else f"{x:.1f}×"
+    env.filters["trig_age_label"] = lambda d: "—" if d is None else (
+        "오늘" if d == 0 else "어제" if d == 1 else f"{d}일전")
+
+    # A dict that returns 0 for any missing numeric attribute access
+    class DefaultNumDict(dict):
+        def __getattr__(self, name):
+            return self.get(name, 0)
+
+    thresholds = DefaultNumDict({
+        "EXTENDED_DIST_FROM_EMA9": 0.08, "EXTENDED_RSI_MIN": 70,
+        "RISK_OVERHEAT_RSI": 75, "PULLBACK_MAX_DIST_FROM_EMA9": 0.05,
+    })
+
+    tmpl = env.get_template("lifecycle_us.html")
+    ctx = {
+        "market": "US", "as_of": "2026-05-21", "engine_version": "score_v1",
+        "active_nav": "lifecycle_us", "version": "test",
+        "snapshots_list": [], "transitions": [], "skipped": [],
+        "active_set_size": 1, "summary": {"counts": {}}, "score_tier_bands": {},
+        "lifecycle_thresholds": thresholds,
+        "verdict_summary": {
+            "headline": "Test Headline", "narration": "Test narration",
+            "avoid_line": None, "action_hint": "Test action",
+            "score_engine_line": None,
+        },
+        "avoid": [], "enter": [], "probe": [], "watch": [], "trending": [],
+        "broken_table": [],
+        "top5_candidates": [{
+            "ticker": "NVDA", "is_portfolio": True,
+            "snapshot": {"setup": "EXTENDED", "decision": "AVOID",
+                          "raw": {"close": 1200, "rsi14": 76,
+                                  "dist_ema9_pct": 11.5, "volume_ratio": 1.5,
+                                  "risk_tags": ["EXTENDED"]},
+                          "rs_delta_pct": 12.0},
+            "base_score": 9.33, "momentum_bonus": 4, "rs_bonus": 3,
+            "final_score": 16.33, "size_hint_label": "추가 25%",
+        }],
+        "top5_count": 1, "top5_max": 5, "top5_threshold": 5.0,
+    }
+    html = tmpl.render(**ctx)
+    assert "오늘의 매수 후보" in html
+    assert "NVDA" in html
+    assert "1/5" in html or "(1/5)" in html
+    # EXTENDED items show overheat warning + size 25%
+    assert "과열" in html or "EXTENDED" in html
+    assert "추가 25%" in html
+    # Portfolio items show holding indicator
+    assert "보유 중" in html or "\U0001f3e6" in html
