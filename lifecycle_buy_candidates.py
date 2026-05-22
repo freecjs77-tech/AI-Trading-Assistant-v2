@@ -14,6 +14,45 @@ if sys.platform == "win32":
 _DRIFT_MAX = 9
 _TRIGGER_MAX = 14
 
+_MOMENTUM_BONUS = {
+    "MOMENTUM_3": 4,
+    "MOMENTUM_2": 3,
+    "MOMENTUM_1": 2,
+    "EM": 1,
+}
+
+
+def compute_momentum_bonus(momentum_today: dict | None) -> int:
+    """Map today's momentum scanner stage to bonus points.
+
+    momentum_today is the per-ticker entry from
+    scanner_momentum_us_history.json data[<ticker>][<today>] dict,
+    or None when the ticker had no momentum entry today.
+    """
+    if not momentum_today:
+        return 0
+    return _MOMENTUM_BONUS.get(momentum_today.get("stage"), 0)
+
+
+def compute_rs_bonus(rs_delta_pct: float | None) -> int:
+    """rs_delta_pct (vs market): >10:+3 / >5:+2 / >0:+1 / else 0.
+
+    Boundary semantics: strictly greater than threshold. e.g. 5.0 → +1 (not +2).
+    """
+    if rs_delta_pct is None:
+        return 0
+    try:
+        v = float(rs_delta_pct)
+    except (TypeError, ValueError):
+        return 0
+    if v > 10:
+        return 3
+    if v > 5:
+        return 2
+    if v > 0:
+        return 1
+    return 0
+
 
 def normalize_base_score(snapshot: dict) -> float:
     """Return lifecycle score on 0~14 scale, regardless of original track.
