@@ -152,3 +152,56 @@ def rank_top_n(pool: list[dict], momentum_data: dict, *,
     scored.sort(key=lambda c: (-c["final_score"],
                                  -(c["snapshot"].get("rs_delta_pct") or 0)))
     return scored[:cap]
+
+
+def _extract_today_momentum(momentum_history: dict, today: str) -> dict:
+    """Pull {ticker: today_entry_dict} from scanner_momentum_*_history.json.
+
+    History shape (from momentum_history.py):
+        {"_meta": {...}, "data": {ticker: {date_str: entry, ...}}}
+    """
+    data = (momentum_history or {}).get("data") or {}
+    out: dict = {}
+    for ticker, by_date in data.items():
+        if not isinstance(by_date, dict):
+            continue
+        entry = by_date.get(today)
+        if entry:
+            out[ticker] = entry
+    return out
+
+
+def _size_hint_label(setup: str, is_portfolio: bool) -> str:
+    """Display label: 신규/추가 + percent based on EXTENDED override."""
+    prefix = "추가" if is_portfolio else "신규"
+    pct = "25%" if setup == "EXTENDED" else "50%"
+    return f"{prefix} {pct}"
+
+
+def select_top5_buy_candidates(*, snapshots: dict, portfolio_tickers: set,
+                                  momentum_history: dict, today: str,
+                                  threshold: float = 5.0, cap: int = 5) -> dict:
+    """One-call entry. Returns dict ready for template ctx injection.
+
+    Returns:
+        {
+            "candidates": list of ranked dicts (with size_hint_label, snapshot, scores),
+            "count":      len(candidates),
+            "max":        cap,
+            "threshold":  threshold,
+        }
+    """
+    pool = build_candidate_pool(snapshots, portfolio_tickers)
+    momentum_today = _extract_today_momentum(momentum_history, today)
+    ranked = rank_top_n(pool, momentum_today, threshold=threshold, cap=cap)
+
+    for c in ranked:
+        setup = (c["snapshot"] or {}).get("setup")
+        c["size_hint_label"] = _size_hint_label(setup, c["is_portfolio"])
+
+    return {
+        "candidates": ranked,
+        "count":      len(ranked),
+        "max":        cap,
+        "threshold":  threshold,
+    }

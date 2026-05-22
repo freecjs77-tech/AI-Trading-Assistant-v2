@@ -188,3 +188,62 @@ def test_rank_top_n_attaches_score_breakdown():
     assert entry["rs_bonus"] == 2
     assert entry["is_portfolio"] is True
     assert entry["ticker"] == "AAA"
+
+
+def test_select_top5_orchestrator_end_to_end():
+    """E2E mini scenario: 3 candidates, only 2 pass threshold."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    snapshots = {
+        "AAPL": {"setup": "TREND_OK", "score": 6, "score_track": "drift",
+                  "rs_delta_pct": 8.0},
+        "INTC": {"setup": "PULLBACK", "score": 5, "score_track": "trigger",
+                  "rs_delta_pct": 6.0},
+        "WEAK": {"setup": "PULLBACK", "score": 1, "rs_delta_pct": 0.0},
+    }
+    momentum_history = {"data": {"AAPL": {"2026-05-21": {"stage": "MOMENTUM_2"}}}}
+    result = select_top5_buy_candidates(
+        snapshots=snapshots,
+        portfolio_tickers={"AAPL"},
+        momentum_history=momentum_history,
+        today="2026-05-21",
+    )
+    assert result["max"] == 5
+    assert result["count"] == 2  # AAPL + INTC; WEAK below threshold
+    tickers = [c["ticker"] for c in result["candidates"]]
+    assert "AAPL" in tickers
+    assert "INTC" in tickers
+    assert "WEAK" not in tickers
+
+
+def test_select_top5_size_hint_labels_extended_portfolio():
+    """size_hint string varies by EXTENDED + portfolio state."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    snapshots = {
+        "EXT_NEW":  {"setup": "EXTENDED", "score": None, "_raw_score": 6,
+                       "_raw_score_track": "drift", "rs_delta_pct": 12.0},
+        "EXT_HOLD": {"setup": "EXTENDED", "score": None, "_raw_score": 6,
+                       "_raw_score_track": "drift", "rs_delta_pct": 12.0},
+        "NORM_NEW":  {"setup": "PULLBACK", "score": 8, "rs_delta_pct": 7.0},
+        "NORM_HOLD": {"setup": "PULLBACK", "score": 8, "rs_delta_pct": 7.0},
+    }
+    result = select_top5_buy_candidates(
+        snapshots=snapshots,
+        portfolio_tickers={"EXT_HOLD", "NORM_HOLD"},
+        momentum_history={"data": {}}, today="2026-05-21",
+    )
+    by_ticker = {c["ticker"]: c for c in result["candidates"]}
+    assert by_ticker["EXT_NEW"]["size_hint_label"] == "신규 25%"
+    assert by_ticker["EXT_HOLD"]["size_hint_label"] == "추가 25%"
+    assert by_ticker["NORM_NEW"]["size_hint_label"] == "신규 50%"
+    assert by_ticker["NORM_HOLD"]["size_hint_label"] == "추가 50%"
+
+
+def test_select_top5_empty_snapshots():
+    """No snapshots → count=0, candidates=[]."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    result = select_top5_buy_candidates(
+        snapshots={}, portfolio_tickers=set(),
+        momentum_history={"data": {}}, today="2026-05-21",
+    )
+    assert result["count"] == 0
+    assert result["candidates"] == []
