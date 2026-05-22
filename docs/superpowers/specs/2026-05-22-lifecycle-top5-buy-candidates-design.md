@@ -22,6 +22,9 @@
 - 그 위에 **actionable 1-stop 섹션** 추가: 오늘 매수 후보 Top 5
 - 자동매매 ❌ / display only · 사용자 최종 판단
 
+### 의도된 chase 성격 (중요)
+점수 구조상 **M3 (+4 보너스)** 는 사실상 EXTENDED 조건과 거의 동치 (52주 신고가 + RSI≥65). 반면 **EM (+1 보너스)** 은 명시적 anti-overheat 게이트(RSI<72, dist_ema9<8%) 보유. EXTENDED 페널티도 제거되어, 결과적으로 **"신고가 + 과열 + 강RS"** 종목이 자연스럽게 top 1~2위에 정렬되는 momentum chase 구조. 이는 사용자 의도된 선택 ("강세 종목 우선, setup 좋으면 ENTER로 보너스").
+
 ---
 
 ## 2. Source Pool
