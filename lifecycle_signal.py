@@ -703,10 +703,12 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
 
     # ── existing momentum_state / active_set logic unchanged ──
     momentum_state = {"tickers": {}}
+    _scanner_raw: dict = {}          # raw scanner format for top5 selector
     if _os.path.exists(momentum_history_path):
         try:
             with open(momentum_history_path, "rb") as f:
                 raw_momentum = json.loads(f.read().rstrip(b" \t\n\r\x00").decode("utf-8"))
+            _scanner_raw = raw_momentum          # keep {"data": {ticker: {date: entry}}}
             momentum_state = normalize_momentum_history(raw_momentum)
         except Exception as e:
             print(f"[lifecycle:{market}] WARN momentum history load failed ({e})")
@@ -782,5 +784,5 @@ def run_lifecycle(market: str, *, project_dir: str, market_data: dict,
         "state":       state,
         "engine_version": _EV,
         "market_ret_5d_pct": market_ret_5d_pct,
-        "momentum_history": momentum_state,   # for top5 selector
+        "momentum_history": _scanner_raw,     # raw scanner format for top5 selector
     }
