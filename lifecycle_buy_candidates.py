@@ -158,16 +158,24 @@ def _flatten_scanner_signals(momentum_today: list[dict] | dict | None) -> list[d
     """Accept either:
       - flat list of evaluate_stock dicts: [{ticker, stage, ...}, ...]
       - scanner_*_result dict: {"signals": {"MOMENTUM_3": [...], ...}, ...}
-    Returns a flat list of per-ticker dicts.
+    Returns a flat list of per-ticker dicts. Malformed inputs return [].
     """
     if momentum_today is None:
         return []
     if isinstance(momentum_today, list):
-        return list(momentum_today)
-    if isinstance(momentum_today, dict) and "signals" in momentum_today:
+        return [s for s in momentum_today if isinstance(s, dict)]
+    if isinstance(momentum_today, dict):
+        signals = momentum_today.get("signals")
+        if not isinstance(signals, dict):
+            return []
         flat: list[dict] = []
         for tier in ("MOMENTUM_3", "MOMENTUM_2", "MOMENTUM_1", "EM"):
-            flat.extend(momentum_today["signals"].get(tier, []) or [])
+            tier_list = signals.get(tier) or []
+            if not isinstance(tier_list, list):
+                continue
+            for sig in tier_list:
+                if isinstance(sig, dict):
+                    flat.append(sig)
         return flat
     return []
 
@@ -230,6 +238,10 @@ def select_top5_buy_candidates(*, snapshots: dict, portfolio_tickers: set,
     pool = build_candidate_pool(snapshots, portfolio_tickers)
 
     # --- Universe expansion: momentum-only tickers (NEW) ---
+    if (momentum_today is None) != (market_data is None):
+        print("[top5] WARN: momentum_today and market_data must both be provided "
+              "to enable universe expansion; got one without the other — skipping.",
+              flush=True)
     if momentum_today is not None and market_data is not None:
         from lifecycle_signal import compute_single_snapshot
         scanner_list = _flatten_scanner_signals(momentum_today)

@@ -548,3 +548,86 @@ def test_select_top5_momentum_only_skipped_when_already_in_snapshots():
     assert len(nvda_entries) == 1
     # Should use the lifecycle snapshot, not the scanner one
     assert nvda_entries[0]["snapshot"].get("_scanner_only") is not True
+
+
+def _market_data_entry_for_broken(ticker: str) -> dict:
+    """Build market_data entry that classifies as BROKEN setup.
+
+    BROKEN requires close < ema65 AND ema65_slope_5d < 0 (per evaluate_setup_state).
+    """
+    return {
+        "ticker": ticker,
+        "close": 85.0, "high": 86.0, "low": 84.0,
+        "ema9": 90.0, "ema21": 95.0, "ema65": 100.0,
+        "ema9_slope_3d": -0.5, "ema21_slope_5d": -0.3,
+        "ema65_slope_5d": -0.2, "ema65_slope_20d": -0.2,
+        "rsi14": 35.0, "atr14": 2.5, "atr14_pct": 2.94,
+        "volume_ratio": 1.0, "macd": -1.0, "macd_signal": 0.5, "macd_hist": -1.5,
+        "ret_5d_pct": -8.0, "ret_20d_pct": -12.0, "change_pct": -1.5,
+        "ret_3d_pct": -3.0, "dist_ema9_pct": -5.56,
+    }
+
+
+def test_select_top5_momentum_only_skipped_when_synthetic_broken():
+    """Scanner ticker whose synthetic snapshot is BROKEN must not enter Top 5."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    momentum_today = [_scanner_signal_entry("DEAD", stage="MOMENTUM_1")]
+    market_data = {"data": {"DEAD": _market_data_entry_for_broken("DEAD")}}
+
+    result = select_top5_buy_candidates(
+        snapshots={},
+        portfolio_tickers=set(),
+        momentum_history={"data": {}},
+        today="2026-05-22",
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=0.0,
+    )
+    tickers = [c["ticker"] for c in result["candidates"]]
+    assert "DEAD" not in tickers
+
+
+def test_select_top5_orders_mixed_pool_by_score_desc():
+    """5 candidates total — 2 from snapshots + 3 momentum-only. Must rank by final_score desc."""
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+
+    # Snapshot-path: 2 lifecycle tickers
+    snapshots = {
+        "SNAP_HIGH": {"setup": "PULLBACK", "score": 10, "score_track": "trigger",
+                       "rs_delta_pct": 8.0,
+                       "raw": {"close": 100, "rsi14": 55, "dist_ema9_pct": -1.0,
+                               "volume_ratio": 1.2, "risk_tags": []}},
+        "SNAP_LOW":  {"setup": "PULLBACK", "score": 4, "score_track": "trigger",
+                       "rs_delta_pct": 1.0,
+                       "raw": {"close": 100, "rsi14": 55, "dist_ema9_pct": -1.0,
+                               "volume_ratio": 1.0, "risk_tags": []}},
+    }
+
+    # Momentum-only: 3 tickers, all TREND_OK synthetic, varying tiers/RS
+    momentum_today = [
+        _scanner_signal_entry("M3_TKR", stage="MOMENTUM_3"),
+        _scanner_signal_entry("M2_TKR", stage="MOMENTUM_2"),
+        _scanner_signal_entry("M1_TKR", stage="MOMENTUM_1"),
+    ]
+    market_data = {"data": {
+        "M3_TKR": _market_data_entry_for_trend_ok("M3_TKR"),
+        "M2_TKR": _market_data_entry_for_trend_ok("M2_TKR"),
+        "M1_TKR": _market_data_entry_for_trend_ok("M1_TKR"),
+    }}
+
+    result = select_top5_buy_candidates(
+        snapshots=snapshots,
+        portfolio_tickers=set(),
+        momentum_history={"data": {}},
+        today="2026-05-22",
+        momentum_today=momentum_today,
+        market_data=market_data,
+        market_ret_5d_pct=0.0,
+    )
+    # Verify: candidates are sorted final_score desc (no insertion-order leak)
+    scores = [c["final_score"] for c in result["candidates"]]
+    assert scores == sorted(scores, reverse=True), \
+        f"candidates not sorted desc: {[(c['ticker'], c['final_score']) for c in result['candidates']]}"
+    # Verify: SNAP_HIGH (base 10 + RS bonus) outranks M1_TKR (base ~drift + M1 bonus +2)
+    tickers = [c["ticker"] for c in result["candidates"]]
+    assert tickers.index("SNAP_HIGH") < tickers.index("M1_TKR")
