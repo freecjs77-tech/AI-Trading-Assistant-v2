@@ -251,6 +251,80 @@ tailwind.config = {
       {% endif %}
     </div>
 
+    {# ── Top 5 Buy Candidates (2026-05-22 spec) ─────────────────── #}
+<style>
+  .top5-section { margin: 1.5rem 0; padding: 1rem; border-radius: 8px;
+                   background: rgba(60, 130, 200, 0.08); }
+  .top5-section h2 { margin-top: 0; }
+  .top5-table { width: 100%; border-collapse: collapse; }
+  .top5-table th, .top5-table td { padding: 0.4rem 0.6rem; text-align: left;
+                                     border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .top5-row.extended-row { background: rgba(255, 165, 0, 0.06); }
+  .chip.overheat-chip { display: inline-block; padding: 0.1rem 0.4rem;
+                         margin-left: 0.3rem; border-radius: 4px;
+                         background: #fff3cd; color: #856404; font-size: 0.85em; }
+  .badge.portfolio-badge { display: inline-block; padding: 0.1rem 0.4rem;
+                            margin-left: 0.3rem; border-radius: 4px;
+                            background: #d4edda; color: #155724; font-size: 0.85em; }
+  .empty-state, .partial-notice { font-style: italic; color: #666; }
+  .disclaimer { color: #888; margin-top: 0.5rem; }
+</style>
+<section id="top5-buy-candidates" class="top5-section">
+  <h2>🎯 오늘의 매수 후보 (보유 추가 포함) — Top {{ top5_count }}/{{ top5_max }}</h2>
+
+  {% if top5_count == 0 %}
+    <p class="empty-state">
+      오늘 매수 후보 없음 — 모든 종목 score &lt; {{ top5_threshold }}
+      (시장이 약하거나 강한 setup 부족)
+    </p>
+  {% else %}
+    {% if top5_count < top5_max %}
+      <p class="partial-notice">
+        오늘은 {{ top5_count }}/{{ top5_max }} — 시장이 약하거나 강한 setup 부족
+      </p>
+    {% endif %}
+
+    <table class="top5-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Ticker</th><th>Decision</th><th>Setup</th>
+          <th>Score</th><th>RS</th><th>키 지표</th><th>사이즈 hint</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in top5_candidates %}
+        <tr class="top5-row{% if c.snapshot.setup == 'EXTENDED' %} extended-row{% endif %}">
+          <td>{{ loop.index }}</td>
+          <td>
+            <strong>{{ c.ticker }}</strong>
+            {% if c.is_portfolio %}<span class="badge portfolio-badge">🏦 보유 중</span>{% endif %}
+          </td>
+          <td>{{ c.snapshot.decision }}</td>
+          <td>
+            {{ c.snapshot.setup }}
+            {% if c.snapshot.setup == 'EXTENDED' %}<span class="chip overheat-chip">⚠️ 과열</span>{% endif %}
+          </td>
+          <td>
+            <strong>{{ '%.1f' % c.final_score }}</strong>
+            <small>= {{ '%.1f' % c.base_score }} + {{ c.momentum_bonus }} + {{ c.rs_bonus }}</small>
+          </td>
+          <td>{{ c.snapshot.rs_delta_pct | signed_pct }}</td>
+          <td>
+            RSI {{ '%.0f' % c.snapshot.raw.rsi14 }} ·
+            EMA9 {{ c.snapshot.raw.dist_ema9_pct | signed_pct }} ·
+            Vol {{ c.snapshot.raw.volume_ratio | x_fmt }}
+          </td>
+          <td>{{ c.size_hint_label }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="disclaimer">
+      <small>⚠️ 자동매매 아님 — display only. 매수 결정은 사용자 판단. 사이즈는 권장치이며 강제 아님.</small>
+    </p>
+  {% endif %}
+</section>
+
     {# 파이프라인 partial #}
     {% include "_lifecycle_pipeline.html" %}
 

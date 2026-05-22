@@ -295,7 +295,8 @@ def _export_json(ctx: dict, result: dict, output_dir: str) -> None:
 
 def _render(market: str, result: dict, output_dir: str,
               template_dir: Optional[str], lifecycle_state: Optional[dict],
-              nav_ctx: Optional[dict] = None) -> str:
+              nav_ctx: Optional[dict] = None,
+              portfolio_tickers: Optional[set] = None) -> str:
     if template_dir is None:
         template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
     env = Environment(loader=FileSystemLoader(template_dir), autoescape=True)
@@ -330,6 +331,19 @@ def _render(market: str, result: dict, output_dir: str,
     tmpl = env.get_template(f"lifecycle_{market.lower()}.html")
     ctx = build_page_context(result, lifecycle_state=lifecycle_state)
 
+    # Top 5 Buy Candidates section
+    from lifecycle_buy_candidates import select_top5_buy_candidates
+    top5 = select_top5_buy_candidates(
+        snapshots=result.get("snapshots") or {},
+        portfolio_tickers=portfolio_tickers or set(),
+        momentum_history=result.get("momentum_history") or {"data": {}},
+        today=result["as_of"],
+    )
+    ctx["top5_candidates"] = top5["candidates"]
+    ctx["top5_count"]      = top5["count"]
+    ctx["top5_max"]        = top5["max"]
+    ctx["top5_threshold"]  = top5["threshold"]
+
     # Merge nav vars for sidebar rendering
     if nav_ctx:
         ctx.update(nav_ctx)
@@ -352,7 +366,9 @@ def generate_lifecycle_pages(*, us_result: Optional[dict],
                                 template_dir: Optional[str] = None,
                                 us_state: Optional[dict] = None,
                                 kr_state: Optional[dict] = None,
-                                nav_ctx: Optional[dict] = None) -> dict[str, str]:
+                                nav_ctx: Optional[dict] = None,
+                                portfolio_tickers: Optional[set] = None,
+                                ) -> dict[str, str]:
     """Render lifecycle pages for US and/or KR markets.
 
     Args:
@@ -365,10 +381,16 @@ def generate_lifecycle_pages(*, us_result: Optional[dict],
         nav_ctx: optional dict with sidebar nav keys (nav_portfolio, nav_wife,
                  nav_scanner, nav_backtest, nav_trend, has_momentum_us,
                  momentum_us_url, etc.) — passed directly into template context
+        portfolio_tickers: set of tickers currently held in the portfolio
+                           (passed to select_top5_buy_candidates)
     """
     out: dict[str, str] = {}
     if us_result and us_result.get("snapshots"):
-        out["us"] = _render("US", us_result, output_dir, template_dir, us_state, nav_ctx)
+        out["us"] = _render("US", us_result, output_dir, template_dir,
+                              us_state, nav_ctx,
+                              portfolio_tickers=portfolio_tickers)
     if kr_result and kr_result.get("snapshots"):
-        out["kr"] = _render("KR", kr_result, output_dir, template_dir, kr_state, nav_ctx)
+        out["kr"] = _render("KR", kr_result, output_dir, template_dir,
+                              kr_state, nav_ctx,
+                              portfolio_tickers=portfolio_tickers)
     return out
