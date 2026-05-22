@@ -65,3 +65,41 @@ def test_rs_bonus_thresholds():
     assert compute_rs_bonus(0.0) == 0
     assert compute_rs_bonus(-3.0) == 0
     assert compute_rs_bonus(None) == 0
+
+
+def test_compute_final_score_pullback_with_momentum():
+    """PULLBACK score 5 + EM bonus 1 + RS 7%p (+2) = 8."""
+    from lifecycle_buy_candidates import compute_final_score
+    snap = {"setup": "PULLBACK", "score": 5, "score_track": "trigger",
+            "rs_delta_pct": 7.0}
+    momentum = {"stage": "EM"}
+    result = compute_final_score(snap, momentum)
+    assert result["base_score"] == 5.0
+    assert result["momentum_bonus"] == 1
+    assert result["rs_bonus"] == 2
+    assert result["final_score"] == 8.0
+
+
+def test_compute_final_score_extended_no_penalty():
+    """EXTENDED + M3 + strong RS → very high score (no penalty per spec §3)."""
+    from lifecycle_buy_candidates import compute_final_score
+    snap = {"setup": "EXTENDED", "score": None, "_raw_score": 6,
+            "_raw_score_track": "drift", "rs_delta_pct": 12.5}
+    momentum = {"stage": "MOMENTUM_3"}
+    result = compute_final_score(snap, momentum)
+    # base = 6 * 14/9 ≈ 9.33; +4 (M3); +3 (RS>10) = 16.33
+    assert abs(result["base_score"] - (6 * 14 / 9)) < 0.01
+    assert result["momentum_bonus"] == 4
+    assert result["rs_bonus"] == 3
+    assert abs(result["final_score"] - (6 * 14 / 9 + 7)) < 0.01
+
+
+def test_compute_final_score_no_momentum_entry():
+    """ticker not in today's momentum → momentum_bonus 0."""
+    from lifecycle_buy_candidates import compute_final_score
+    snap = {"setup": "TREND_OK", "score": 4, "score_track": "drift",
+            "rs_delta_pct": 3.0}
+    result = compute_final_score(snap, None)
+    assert result["momentum_bonus"] == 0
+    assert result["rs_bonus"] == 1
+    assert abs(result["base_score"] - (4 * 14 / 9)) < 0.01

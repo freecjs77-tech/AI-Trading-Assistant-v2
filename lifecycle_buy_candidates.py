@@ -79,3 +79,19 @@ def normalize_base_score(snapshot: dict) -> float:
             return 0.0
         return float(s) * _TRIGGER_MAX / _DRIFT_MAX
     return 0.0
+
+
+def compute_final_score(snapshot: dict, momentum_today: dict | None) -> dict:
+    """Compute hybrid ranking score breakdown.
+
+    Returns dict with keys: base_score, momentum_bonus, rs_bonus, final_score.
+    """
+    base = normalize_base_score(snapshot)
+    m_bonus = compute_momentum_bonus(momentum_today)
+    rs_bonus = compute_rs_bonus((snapshot or {}).get("rs_delta_pct"))
+    return {
+        "base_score":     base,
+        "momentum_bonus": m_bonus,
+        "rs_bonus":       rs_bonus,
+        "final_score":    base + m_bonus + rs_bonus,
+    }
