@@ -762,3 +762,67 @@ def test_template_renders_scanner_only_badge(tmp_path):
     html = tmpl.render(**ctx)
     assert "LRCX" in html
     assert "🚀 스캐너 신규" in html or "scanner-only" in html
+
+
+def test_render_uses_kr_threshold_3(monkeypatch, tmp_path):
+    """_render('KR', ...) must call select_top5 with threshold=3.0."""
+    import lifecycle_report as lr
+
+    captured: dict = {}
+
+    def fake_select(**kwargs):
+        captured.update(kwargs)
+        return {"candidates": [], "count": 0, "max": 5, "threshold": kwargs.get("threshold", 5.0)}
+
+    monkeypatch.setattr(lr, "select_top5_buy_candidates", fake_select)
+
+    from jinja2 import Template
+    monkeypatch.setattr(Template, "render", lambda self, **ctx: "<html></html>")
+
+    result = {
+        "as_of": "2026-05-26", "market": "KR",
+        "snapshots": {"005930": {"setup": "TREND_OK", "decision": "WATCH", "trigger": "WAIT", "raw": {}}},
+        "transitions": [], "skipped": [], "active_set_size": 1,
+        "market_ret_5d_pct": 0.0,
+        "momentum_history": {"data": {}},
+        "engine_version": "score_v1",
+    }
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._render("KR", result, str(out_dir), template_dir=None,
+                lifecycle_state={"tickers": {}, "transitions": []},
+                portfolio_tickers=set())
+
+    assert captured.get("threshold") == 3.0
+
+
+def test_render_uses_us_threshold_5(monkeypatch, tmp_path):
+    """_render('US', ...) must call select_top5 with threshold=5.0."""
+    import lifecycle_report as lr
+
+    captured: dict = {}
+
+    def fake_select(**kwargs):
+        captured.update(kwargs)
+        return {"candidates": [], "count": 0, "max": 5, "threshold": kwargs.get("threshold", 5.0)}
+
+    monkeypatch.setattr(lr, "select_top5_buy_candidates", fake_select)
+
+    from jinja2 import Template
+    monkeypatch.setattr(Template, "render", lambda self, **ctx: "<html></html>")
+
+    result = {
+        "as_of": "2026-05-26", "market": "US",
+        "snapshots": {"AAPL": {"setup": "TREND_OK", "decision": "WATCH", "trigger": "WAIT", "raw": {}}},
+        "transitions": [], "skipped": [], "active_set_size": 1,
+        "market_ret_5d_pct": 0.0,
+        "momentum_history": {"data": {}},
+        "engine_version": "score_v1",
+    }
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._render("US", result, str(out_dir), template_dir=None,
+                lifecycle_state={"tickers": {}, "transitions": []},
+                portfolio_tickers=set())
+
+    assert captured.get("threshold") == 5.0

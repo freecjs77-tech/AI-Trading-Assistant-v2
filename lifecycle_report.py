@@ -334,7 +334,8 @@ def _render(market: str, result: dict, output_dir: str,
     tmpl = env.get_template(f"lifecycle_{market.lower()}.html")
     ctx = build_page_context(result, lifecycle_state=lifecycle_state)
 
-    # Top 5 Buy Candidates section
+    # Top 5 Buy Candidates section — KR universe is smaller, lower threshold
+    top5_threshold_for_market = 3.0 if market == "KR" else 5.0
     top5 = select_top5_buy_candidates(
         snapshots=result.get("snapshots") or {},
         portfolio_tickers=portfolio_tickers or set(),
@@ -343,6 +344,7 @@ def _render(market: str, result: dict, output_dir: str,
         momentum_today=momentum_today,
         market_data=market_data,
         market_ret_5d_pct=result.get("market_ret_5d_pct"),
+        threshold=top5_threshold_for_market,
     )
     ctx["top5_candidates"] = top5["candidates"]
     ctx["top5_count"]      = top5["count"]
