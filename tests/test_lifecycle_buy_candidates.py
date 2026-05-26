@@ -826,3 +826,111 @@ def test_render_uses_us_threshold_5(monkeypatch, tmp_path):
                 portfolio_tickers=set())
 
     assert captured.get("threshold") == 5.0
+
+
+def test_render_kr_attaches_korean_name_to_top5(monkeypatch, tmp_path):
+    """_render('KR', ...) attaches `name` to each top5 candidate."""
+    import lifecycle_report as lr
+
+    captured_ctx: dict = {}
+
+    def fake_select(**kwargs):
+        return {
+            "candidates": [
+                {"ticker": "005930", "is_portfolio": False,
+                 "snapshot": {"setup": "TREND_OK", "decision": "ENTER",
+                               "rs_delta_pct": 5.0, "trigger": "CONFIRMED_TRIGGER",
+                               "raw": {"close": 70000, "rsi14": 62,
+                                       "dist_ema9_pct": 2.0,
+                                       "volume_ratio": 1.1, "risk_tags": []}},
+                 "base_score": 7.0, "momentum_bonus": 0, "rs_bonus": 1,
+                 "final_score": 8.0, "size_hint_label": "신규 50%"},
+            ],
+            "count": 1, "max": 5, "threshold": 3.0,
+        }
+
+    monkeypatch.setattr(lr, "select_top5_buy_candidates", fake_select)
+    # Force _lookup_ticker_name to return a known KR name
+    monkeypatch.setattr(lr, "_lookup_ticker_name",
+                          lambda t, m: "삼성전자" if t == "005930" else t)
+
+    from jinja2 import Template
+
+    def capture_render(self, **ctx):
+        captured_ctx.update(ctx)
+        return "<html></html>"
+
+    monkeypatch.setattr(Template, "render", capture_render)
+
+    result = {
+        "as_of": "2026-05-26", "market": "KR",
+        "snapshots": {"005930": {"setup": "TREND_OK", "decision": "WATCH",
+                                   "trigger": "WAIT", "raw": {}}},
+        "transitions": [], "skipped": [], "active_set_size": 1,
+        "market_ret_5d_pct": 0.0,
+        "momentum_history": {"data": {}},
+        "engine_version": "score_v1",
+    }
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._render("KR", result, str(out_dir), template_dir=None,
+                lifecycle_state={"tickers": {}, "transitions": []},
+                portfolio_tickers=set())
+
+    candidates = captured_ctx.get("top5_candidates")
+    assert candidates is not None
+    assert len(candidates) == 1
+    assert candidates[0]["name"] == "삼성전자"
+
+
+def test_render_us_does_not_attach_name_to_top5(monkeypatch, tmp_path):
+    """_render('US', ...) leaves candidates without `name` field."""
+    import lifecycle_report as lr
+
+    captured_ctx: dict = {}
+
+    def fake_select(**kwargs):
+        return {
+            "candidates": [
+                {"ticker": "AAPL", "is_portfolio": False,
+                 "snapshot": {"setup": "TREND_OK", "decision": "ENTER",
+                               "rs_delta_pct": 5.0, "trigger": "CONFIRMED_TRIGGER",
+                               "raw": {"close": 200, "rsi14": 60,
+                                       "dist_ema9_pct": 1.0,
+                                       "volume_ratio": 1.0, "risk_tags": []}},
+                 "base_score": 7.0, "momentum_bonus": 0, "rs_bonus": 1,
+                 "final_score": 8.0, "size_hint_label": "신규 50%"},
+            ],
+            "count": 1, "max": 5, "threshold": 5.0,
+        }
+
+    monkeypatch.setattr(lr, "select_top5_buy_candidates", fake_select)
+
+    from jinja2 import Template
+
+    def capture_render(self, **ctx):
+        captured_ctx.update(ctx)
+        return "<html></html>"
+
+    monkeypatch.setattr(Template, "render", capture_render)
+
+    result = {
+        "as_of": "2026-05-26", "market": "US",
+        "snapshots": {"AAPL": {"setup": "TREND_OK", "decision": "WATCH",
+                                 "trigger": "WAIT", "raw": {}}},
+        "transitions": [], "skipped": [], "active_set_size": 1,
+        "market_ret_5d_pct": 0.0,
+        "momentum_history": {"data": {}},
+        "engine_version": "score_v1",
+    }
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._render("US", result, str(out_dir), template_dir=None,
+                lifecycle_state={"tickers": {}, "transitions": []},
+                portfolio_tickers=set())
+
+    candidates = captured_ctx.get("top5_candidates")
+    assert candidates is not None
+    assert len(candidates) == 1
+    # US: no name attached
+    assert "name" not in candidates[0]

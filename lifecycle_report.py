@@ -346,6 +346,10 @@ def _render(market: str, result: dict, output_dir: str,
         market_ret_5d_pct=result.get("market_ret_5d_pct"),
         threshold=top5_threshold_for_market,
     )
+    # KR display: attach 한글 종목명 for ticker rows (active_set + 스캐너 신규 모두 일관)
+    if market == "KR":
+        for c in top5["candidates"]:
+            c["name"] = _lookup_ticker_name(c["ticker"], "KR")
     ctx["top5_candidates"] = top5["candidates"]
     ctx["top5_count"]      = top5["count"]
     ctx["top5_max"]        = top5["max"]
