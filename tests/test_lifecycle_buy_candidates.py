@@ -934,3 +934,73 @@ def test_render_us_does_not_attach_name_to_top5(monkeypatch, tmp_path):
     assert len(candidates) == 1
     # US: no name attached
     assert "name" not in candidates[0]
+
+
+def test_template_renders_top5_section_kr(tmp_path):
+    """lifecycle_kr.html renders Top 5 section with ticker + Korean name + badges."""
+    import os
+    from jinja2 import Environment, FileSystemLoader
+
+    project_dir = os.path.join(os.path.dirname(__file__), "..")
+    env = Environment(loader=FileSystemLoader(
+        os.path.join(project_dir, "templates")), autoescape=True)
+    env.filters["signed_pct"]      = lambda x: "—" if x is None else f"{x:+.1f}%"
+    env.filters["x_fmt"]            = lambda x: "—" if x is None else f"{x:.1f}×"
+    env.filters["trig_age_label"]   = lambda d: "—" if d is None else (
+        "오늘" if d == 0 else "어제" if d == 1 else f"{d}일전")
+
+    tmpl = env.get_template("lifecycle_kr.html")
+    ctx = {
+        "market": "KR", "as_of": "2026-05-26", "engine_version": "score_v1",
+        "active_nav": "lifecycle_kr", "version": "v1",
+        "snapshots_list": [], "transitions": [], "skipped": [],
+        "active_set_size": 1, "summary": {"counts": {}}, "score_tier_bands": {},
+        "lifecycle_thresholds": {
+            "EXTENDED_DIST_FROM_EMA9": 0.10,
+            "EXTENDED_RSI_MIN": 70,
+            "RISK_OVERHEAT_RSI": 75,
+            "PULLBACK_MAX_DIST_FROM_EMA9": 0.05,
+            "BASE_FORMING_DAYS_MIN": 5,
+            "BASE_FORMING_DAYS_MAX": 30,
+            "TRIGGER_CONFIRM_VOL_RATIO_MIN": 1.2,
+            "TRIGGER_CONFIRM_CLOSE_HIGH_RATIO": 0.2,
+            "RISK_PARABOLIC_RET_1D": 0.05,
+            "RISK_PARABOLIC_VOL_RATIO": 2.0,
+        },
+        "verdict_summary": {"headline": "", "narration": "",
+                              "action_hint": "", "avoid_line": "",
+                              "score_engine_line": ""},
+        "enter": [], "probe": [], "watch": [], "trending": [], "avoid": [],
+        "broken_table": [], "new_confirmed": [],
+        "top5_candidates": [{
+            "ticker": "005930", "name": "삼성전자", "is_portfolio": True,
+            "snapshot": {"setup": "TREND_OK", "decision": "ENTER",
+                          "raw": {"close": 70000, "rsi14": 62,
+                                  "dist_ema9_pct": 2.0, "volume_ratio": 1.1,
+                                  "risk_tags": []},
+                          "rs_delta_pct": 5.0},
+            "base_score": 7.0, "momentum_bonus": 0, "rs_bonus": 1,
+            "final_score": 8.0, "size_hint_label": "추가 50%",
+        }, {
+            "ticker": "035720", "name": "카카오", "is_portfolio": False,
+            "snapshot": {"setup": "PULLBACK", "decision": "PROBE",
+                          "_scanner_only": True,
+                          "raw": {"close": 50000, "rsi14": 50,
+                                  "dist_ema9_pct": -1.0, "volume_ratio": 1.0,
+                                  "risk_tags": []},
+                          "rs_delta_pct": 2.0},
+            "base_score": 4.0, "momentum_bonus": 2, "rs_bonus": 1,
+            "final_score": 7.0, "size_hint_label": "신규 50%",
+        }],
+        "top5_count": 2, "top5_max": 5, "top5_threshold": 3.0,
+    }
+    html = tmpl.render(**ctx)
+    assert "오늘의 매수 후보" in html
+    assert "005930" in html
+    assert "삼성전자" in html
+    assert "035720" in html
+    assert "카카오" in html
+    assert "보유 중" in html or "🏦" in html
+    assert "스캐너 신규" in html or "🚀" in html
+    # partial-notice 노출 (2/5)
+    assert "2/5" in html

@@ -212,6 +212,42 @@ tailwind.config = {
     .pipe-flow { flex-direction: column; }
     .pipe-arrow { transform: rotate(90deg); padding: 4px 0; }
   }
+
+  /* ── Top 5 Buy Candidates (2026-05-26 spec) ── */
+  .top5-section { margin: 20px 0 28px; padding: 18px 22px;
+                   background: var(--card); border: 1px solid var(--border);
+                   border-radius: 12px; }
+  .top5-section h2 { margin: 0 0 6px; font-size: 17px; color: var(--primary-c);
+                      display: flex; align-items: center; gap: 8px; }
+  .top5-section .partial-notice,
+  .top5-section .empty-state { color: var(--muted); font-size: 13px;
+                                 margin: 6px 0 12px; }
+  .top5-table { width: 100%; border-collapse: collapse; margin-top: 10px;
+                 font-size: 13px; }
+  .top5-table th { color: var(--muted); font-weight: 500; font-size: 11px;
+                    text-transform: uppercase; text-align: left;
+                    padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .top5-table td { padding: 8px; border-bottom: 1px solid var(--border);
+                    vertical-align: middle; color: var(--text); }
+  .top5-row.extended-row { background: rgba(239, 68, 68, 0.05); }
+  .top5-table .kr-name { font-weight: 400; color: var(--muted);
+                          font-size: 12px; margin-left: 6px; }
+  .top5-table small { color: var(--muted); display: block; font-size: 11px;
+                       margin-top: 2px; }
+  .top5-section .disclaimer { color: var(--muted); font-size: 12px;
+                                margin-top: 10px; }
+  .badge.portfolio-badge { display: inline-block; padding: 1px 6px;
+                            margin-left: 4px; border-radius: 3px;
+                            font-size: 11px; font-weight: 600;
+                            background: rgba(34,197,94,0.18); color: #86efac; }
+  .badge.scanner-only-badge { display: inline-block; padding: 1px 6px;
+                                margin-left: 4px; border-radius: 3px;
+                                font-size: 11px; font-weight: 600;
+                                background: rgba(59,130,246,0.18); color: #93c5fd; }
+  .chip.overheat-chip { display: inline-block; padding: 1px 6px;
+                         margin-left: 4px; border-radius: 3px;
+                         font-size: 11px; font-weight: 600;
+                         background: rgba(239,68,68,0.18); color: #fca5a5; }
 </style>
 </head>
 <body class="font-body">
@@ -251,6 +287,65 @@ tailwind.config = {
       <p class="score-engine-note">{{ verdict_summary.score_engine_line }}</p>
       {% endif %}
     </div>
+
+    {# ── Top 5 Buy Candidates (2026-05-26 spec) ─────────────────── #}
+    <section id="top5-buy-candidates" class="top5-section">
+      <h2>🎯 오늘의 매수 후보 (보유 추가 포함) — Top {{ top5_count }}/{{ top5_max }}</h2>
+
+      {% if top5_count == 0 %}
+        <p class="empty-state">
+          오늘 매수 후보 없음 — 모든 종목 score &lt; {{ top5_threshold }}
+          (시장이 약하거나 강한 setup 부족)
+        </p>
+      {% else %}
+        {% if top5_count < top5_max %}
+          <p class="partial-notice">
+            오늘은 {{ top5_count }}/{{ top5_max }} — 시장이 약하거나 강한 setup 부족
+          </p>
+        {% endif %}
+
+        <table class="top5-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Ticker</th><th>Decision</th><th>Setup</th>
+              <th>Score</th><th>RS</th><th>키 지표</th><th>사이즈 hint</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for c in top5_candidates %}
+            <tr class="top5-row{% if c.snapshot.setup == 'EXTENDED' %} extended-row{% endif %}">
+              <td>{{ loop.index }}</td>
+              <td>
+                <strong>{{ c.ticker }}</strong>
+                {% if c.name and c.name != c.ticker %}<span class="kr-name">{{ c.name }}</span>{% endif %}
+                {% if c.is_portfolio %}<span class="badge portfolio-badge">🏦 보유 중</span>{% endif %}
+                {% if c.snapshot._scanner_only %}<span class="badge scanner-only-badge">🚀 스캐너 신규</span>{% endif %}
+              </td>
+              <td>{{ c.snapshot.decision }}</td>
+              <td>
+                {{ c.snapshot.setup }}
+                {% if c.snapshot.setup == 'EXTENDED' %}<span class="chip overheat-chip">⚠️ 과열</span>{% endif %}
+              </td>
+              <td>
+                <strong>{{ '%.1f' % c.final_score }}</strong>
+                <small>= {{ '%.1f' % c.base_score }} + {{ c.momentum_bonus }} + {{ c.rs_bonus }}</small>
+              </td>
+              <td>{{ c.snapshot.rs_delta_pct | signed_pct }}</td>
+              <td>
+                RSI {{ '%.0f' % c.snapshot.raw.rsi14 }} ·
+                EMA9 {{ c.snapshot.raw.dist_ema9_pct | signed_pct }} ·
+                Vol {{ c.snapshot.raw.volume_ratio | x_fmt }}
+              </td>
+              <td>{{ c.size_hint_label }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <p class="disclaimer">
+          <small>⚠️ 자동매매 아님 — display only. 매수 결정은 사용자 판단. 사이즈는 권장치이며 강제 아님.</small>
+        </p>
+      {% endif %}
+    </section>
 
     {# 파이프라인 partial #}
     {% include "_lifecycle_pipeline.html" %}
