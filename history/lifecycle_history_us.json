@@ -2,11 +2,11 @@
   "schema_version": "1.0.0",
   "generator_version": "lifecycle_phase_a/0.1.0",
   "market": "US",
-  "last_updated": "2026-05-27T22:09:49",
+  "last_updated": "2026-05-28T22:07:17",
   "tickers": {
     "AMD": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -3141,12 +3141,95 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 518.09,
+            "open": 498.67,
+            "high": null,
+            "low": null,
+            "ema9": 471.6927,
+            "ema21": 427.1682,
+            "ema65": 331.8288,
+            "rsi14": 76.7083,
+            "dist_ema9_pct": 9.8363,
+            "dist_ema21_pct": 21.2848,
+            "volume_ratio": 0.76,
+            "atr_pct": 5.14,
+            "high_20d_prior": 510.21,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 4,
+          "score_track": "drift",
+          "score_tier": "WEAK",
+          "rs_tier": "STRONG",
+          "active_components": 3,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 13.95,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "INTC": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -6233,12 +6316,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 120.89,
+            "open": 121.62,
+            "high": null,
+            "low": null,
+            "ema9": 118.4963,
+            "ema21": 109.6221,
+            "ema65": 82.7475,
+            "rsi14": 66.8315,
+            "dist_ema9_pct": 2.0201,
+            "dist_ema21_pct": 10.2789,
+            "volume_ratio": 0.67,
+            "atr_pct": 6.57,
+            "high_20d_prior": 132.75,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -0.18,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "MU": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -9284,12 +9462,61 @@
             "tight_close_cluster": false
           },
           "_raw_score_track": "drift"
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "EXTENDED",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 923.52,
+            "open": 930.22,
+            "high": null,
+            "low": null,
+            "ema9": 820.8247,
+            "ema21": 729.092,
+            "ema65": 563.2813,
+            "rsi14": 75.6769,
+            "dist_ema9_pct": 12.5112,
+            "dist_ema21_pct": 26.6671,
+            "volume_ratio": 0.89,
+            "atr_pct": 6.05,
+            "high_20d_prior": 956.16,
+            "sector": null,
+            "risk_tags": [
+              "EXTENDED"
+            ]
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": "STRONG",
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "EXTENDED",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 24.37,
+          "_raw_score": 4,
+          "_raw_features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "_raw_score_track": "drift"
         }
       ]
     },
     "NVDA": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -12455,12 +12682,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 214.25,
+            "open": 211.27,
+            "high": null,
+            "low": null,
+            "ema9": 216.8363,
+            "ema21": 214.06,
+            "ema65": 201.1523,
+            "rsi14": 52.5951,
+            "dist_ema9_pct": 1.1927,
+            "dist_ema21_pct": 0.0888,
+            "volume_ratio": 0.87,
+            "atr_pct": 3.34,
+            "high_20d_prior": 236.54,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -5.93,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "AAPL": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -15634,12 +15956,109 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 312.51,
+            "open": 310.68,
+            "high": null,
+            "low": null,
+            "ema9": 305.3742,
+            "ema21": 295.6017,
+            "ema65": 278.2076,
+            "rsi14": 80.0282,
+            "dist_ema9_pct": 2.3367,
+            "dist_ema21_pct": 5.72,
+            "volume_ratio": 0.89,
+            "atr_pct": 1.78,
+            "high_20d_prior": 313.26,
+            "sector": null,
+            "risk_tags": [
+              "OVERHEAT"
+            ]
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 1.59,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "ADI": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -18657,12 +19076,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 419.01,
+            "open": 416.9,
+            "high": null,
+            "low": null,
+            "ema9": 411.6936,
+            "ema21": 404.9385,
+            "ema65": 370.5638,
+            "rsi14": 58.877,
+            "dist_ema9_pct": 1.7771,
+            "dist_ema21_pct": 3.475,
+            "volume_ratio": 0.82,
+            "atr_pct": 3.69,
+            "high_20d_prior": 435.72,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 3.47,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "AMAT": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -21740,12 +22254,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 449.68,
+            "open": 446.13,
+            "high": null,
+            "low": null,
+            "ema9": 437.5523,
+            "ema21": 424.8665,
+            "ema65": 388.6493,
+            "rsi14": 61.8617,
+            "dist_ema9_pct": 2.7717,
+            "dist_ema21_pct": 5.8403,
+            "volume_ratio": 0.74,
+            "atr_pct": 4.1,
+            "high_20d_prior": 462.4,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 3.68,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "AVGO": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -24871,12 +25480,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 426.58,
+            "open": 421.14,
+            "high": null,
+            "low": null,
+            "ema9": 420.9142,
+            "ema21": 415.655,
+            "ema65": 385.3967,
+            "rsi14": 58.4536,
+            "dist_ema9_pct": 1.3461,
+            "dist_ema21_pct": 2.6284,
+            "volume_ratio": 0.95,
+            "atr_pct": 3.58,
+            "high_20d_prior": 442.36,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 0.31,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "BA": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -26924,12 +27628,61 @@
             "intraday_reversal": false
           },
           "_raw_score_track": "trigger"
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "BROKEN",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 228.78,
+            "open": 224.0,
+            "high": null,
+            "low": null,
+            "ema9": 223.8482,
+            "ema21": 224.6751,
+            "ema65": 222.9193,
+            "rsi14": 54.2143,
+            "dist_ema9_pct": 2.2032,
+            "dist_ema21_pct": 1.827,
+            "volume_ratio": 0.81,
+            "atr_pct": 3.03,
+            "high_20d_prior": 244.07,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "BROKEN",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 1.16,
+          "_raw_score": 2,
+          "_raw_features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "_raw_score_track": "trigger"
         }
       ]
     },
     "CSCO": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -29518,12 +30271,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 118.64,
+            "open": 120.53,
+            "high": null,
+            "low": null,
+            "ema9": 115.9527,
+            "ema21": 107.923,
+            "ema65": 93.647,
+            "rsi14": 74.2255,
+            "dist_ema9_pct": 2.3176,
+            "dist_ema21_pct": 9.9302,
+            "volume_ratio": 0.71,
+            "atr_pct": 3.01,
+            "high_20d_prior": 120.79,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 1.95,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "KLAC": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -32553,12 +33401,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 1927.63,
+            "open": 1950.0,
+            "high": null,
+            "low": null,
+            "ema9": 1890.9529,
+            "ema21": 1839.4573,
+            "ema65": 1693.5156,
+            "rsi14": 58.6003,
+            "dist_ema9_pct": 1.9396,
+            "dist_ema21_pct": 4.7934,
+            "volume_ratio": 0.83,
+            "atr_pct": 4.32,
+            "high_20d_prior": 2060.08,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 3.57,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "MPWR": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -35684,12 +36627,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 1633.17,
+            "open": 1617.75,
+            "high": null,
+            "low": null,
+            "ema9": 1598.55,
+            "ema21": 1565.0864,
+            "ema65": 1396.8679,
+            "rsi14": 58.2912,
+            "dist_ema9_pct": 2.1657,
+            "dist_ema21_pct": 4.3501,
+            "volume_ratio": 0.74,
+            "atr_pct": 4.71,
+            "high_20d_prior": 1714.09,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 3.34,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "TTWO": {
       "first_seen": "2026-05-08",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-08",
@@ -38709,12 +39747,61 @@
             "intraday_reversal": false
           },
           "_raw_score_track": "trigger"
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "BROKEN",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 217.87,
+            "open": 219.67,
+            "high": null,
+            "low": null,
+            "ema9": 226.2396,
+            "ema21": 225.1151,
+            "ema65": 219.2724,
+            "rsi14": 43.7066,
+            "dist_ema9_pct": 3.6994,
+            "dist_ema21_pct": 3.2184,
+            "volume_ratio": 1.11,
+            "atr_pct": 3.79,
+            "high_20d_prior": 247.0,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "BROKEN",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -9.72,
+          "_raw_score": 0,
+          "_raw_features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "_raw_score_track": "trigger"
         }
       ]
     },
     "GS": {
       "first_seen": "2026-05-11",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-11",
@@ -41539,12 +42626,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 1008.37,
+            "open": 986.42,
+            "high": null,
+            "low": null,
+            "ema9": 982.6448,
+            "ema21": 958.7983,
+            "ema65": 916.874,
+            "rsi14": 68.3504,
+            "dist_ema9_pct": 2.618,
+            "dist_ema21_pct": 5.1702,
+            "volume_ratio": 0.8,
+            "atr_pct": 2.59,
+            "high_20d_prior": 1016.54,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 0.87,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "MCHP": {
       "first_seen": "2026-05-12",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-12",
@@ -44381,12 +45563,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 96.04,
+            "open": 96.86,
+            "high": null,
+            "low": null,
+            "ema9": 95.1017,
+            "ema21": 92.8498,
+            "ema65": 83.184,
+            "rsi14": 59.2717,
+            "dist_ema9_pct": 0.9866,
+            "dist_ema21_pct": 3.4359,
+            "volume_ratio": 0.68,
+            "atr_pct": 4.36,
+            "high_20d_prior": 105.38,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 0.86,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "MNST": {
       "first_seen": "2026-05-13",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-13",
@@ -47112,12 +48389,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "BASE_FORMING",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 87.99,
+            "open": 88.48,
+            "high": null,
+            "low": null,
+            "ema9": 87.0036,
+            "ema21": 84.2856,
+            "ema65": 80.0978,
+            "rsi14": 65.6395,
+            "dist_ema9_pct": 1.1337,
+            "dist_ema21_pct": 4.3951,
+            "volume_ratio": 0.81,
+            "atr_pct": 2.3,
+            "high_20d_prior": 89.85,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -0.52,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "MRVL": {
       "first_seen": "2026-05-13",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-13",
@@ -49747,12 +51119,95 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 204.83,
+            "open": 198.75,
+            "high": null,
+            "low": null,
+            "ema9": 192.5451,
+            "ema21": 178.2753,
+            "ema65": 142.7295,
+            "rsi14": 69.4394,
+            "dist_ema9_pct": 6.3803,
+            "dist_ema21_pct": 14.8953,
+            "volume_ratio": 1.94,
+            "atr_pct": 6.09,
+            "high_20d_prior": 218.26,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 4,
+          "score_track": "drift",
+          "score_tier": "WEAK",
+          "rs_tier": "MID",
+          "active_components": 3,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 7.85,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "APP": {
       "first_seen": "2026-05-15",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-15",
@@ -52044,12 +53499,61 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "EXTENDED",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 599.89,
+            "open": 562.16,
+            "high": null,
+            "low": null,
+            "ema9": 523.4607,
+            "ema21": 496.0182,
+            "ema65": 477.6705,
+            "rsi14": 72.4458,
+            "dist_ema9_pct": 14.6008,
+            "dist_ema21_pct": 20.9411,
+            "volume_ratio": 1.11,
+            "atr_pct": 5.66,
+            "high_20d_prior": 581.0,
+            "sector": null,
+            "risk_tags": [
+              "EXTENDED"
+            ]
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": "STRONG",
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "EXTENDED",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 22.59,
+          "_raw_score": 4,
+          "_raw_features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "_raw_score_track": "drift"
         }
       ]
     },
     "CAT": {
       "first_seen": "2026-05-15",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-15",
@@ -54317,12 +55821,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 887.67,
+            "open": 898.56,
+            "high": null,
+            "low": null,
+            "ema9": 889.681,
+            "ema21": 875.7712,
+            "ema65": 804.6788,
+            "rsi14": 55.2295,
+            "dist_ema9_pct": 0.226,
+            "dist_ema21_pct": 1.3587,
+            "volume_ratio": 1.02,
+            "atr_pct": 3.14,
+            "high_20d_prior": 931.35,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -0.07,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "XOM": {
       "first_seen": "2026-05-15",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-15",
@@ -56496,12 +58095,61 @@
             "intraday_reversal": false
           },
           "_raw_score_track": "trigger"
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "BROKEN",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 146.96,
+            "open": 149.34,
+            "high": null,
+            "low": null,
+            "ema9": 151.7009,
+            "ema21": 152.1805,
+            "ema65": 149.9816,
+            "rsi14": 41.6612,
+            "dist_ema9_pct": 3.1252,
+            "dist_ema21_pct": 3.4305,
+            "volume_ratio": 0.81,
+            "atr_pct": 2.99,
+            "high_20d_prior": 163.68,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "BROKEN",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -7.76,
+          "_raw_score": 0,
+          "_raw_features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "_raw_score_track": "trigger"
         }
       ]
     },
     "MET": {
       "first_seen": "2026-05-18",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-18",
@@ -58306,12 +59954,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 81.96,
+            "open": 82.82,
+            "high": null,
+            "low": null,
+            "ema9": 82.1438,
+            "ema21": 80.3795,
+            "ema65": 77.1665,
+            "rsi14": 60.6659,
+            "dist_ema9_pct": 0.2238,
+            "dist_ema21_pct": 1.9663,
+            "volume_ratio": 0.64,
+            "atr_pct": 2.07,
+            "high_20d_prior": 85.29,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -2.47,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "WMT": {
       "first_seen": "2026-05-18",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-18",
@@ -59752,12 +61495,61 @@
             "intraday_reversal": false
           },
           "_raw_score_track": "trigger"
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "BROKEN",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 118.9,
+            "open": 118.94,
+            "high": null,
+            "low": null,
+            "ema9": 123.3058,
+            "ema21": 126.1558,
+            "ema65": 125.4744,
+            "rsi14": 33.024,
+            "dist_ema9_pct": 3.5731,
+            "dist_ema21_pct": 5.7515,
+            "volume_ratio": 1.06,
+            "atr_pct": 2.58,
+            "high_20d_prior": 135.16,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "BROKEN",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -10.93,
+          "_raw_score": 0,
+          "_raw_features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "_raw_score_track": "trigger"
         }
       ]
     },
     "WDC": {
       "first_seen": "2026-05-18",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-18",
@@ -61443,12 +63235,95 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 531.18,
+            "open": 540.82,
+            "high": null,
+            "low": null,
+            "ema9": 501.0668,
+            "ema21": 471.5864,
+            "ema65": 387.0899,
+            "rsi14": 71.7581,
+            "dist_ema9_pct": 6.0098,
+            "dist_ema21_pct": 12.6368,
+            "volume_ratio": 0.73,
+            "atr_pct": 5.39,
+            "high_20d_prior": 546.68,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 4,
+          "score_track": "drift",
+          "score_tier": "WEAK",
+          "rs_tier": "STRONG",
+          "active_components": 3,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 13.77,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "CVS": {
       "first_seen": "2026-05-19",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-19",
@@ -63159,12 +65034,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 92.97,
+            "open": 92.21,
+            "high": null,
+            "low": null,
+            "ema9": 92.6917,
+            "ema21": 90.0739,
+            "ema65": 83.1885,
+            "rsi14": 62.0641,
+            "dist_ema9_pct": 0.3002,
+            "dist_ema21_pct": 3.2152,
+            "volume_ratio": 0.79,
+            "atr_pct": 2.46,
+            "high_20d_prior": 98.43,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": true,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -2.13,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "CVX": {
       "first_seen": "2026-05-19",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-19",
@@ -64749,12 +66719,61 @@
             "intraday_reversal": false
           },
           "_raw_score_track": "trigger"
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "BROKEN",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 183.03,
+            "open": 183.71,
+            "high": null,
+            "low": null,
+            "ema9": 186.8475,
+            "ema21": 187.5003,
+            "ema65": 185.7716,
+            "rsi14": 43.0155,
+            "dist_ema9_pct": 2.0431,
+            "dist_ema21_pct": 2.3842,
+            "volume_ratio": 0.86,
+            "atr_pct": 2.56,
+            "high_20d_prior": 198.87,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "BROKEN",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -6.14,
+          "_raw_score": 0,
+          "_raw_features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "_raw_score_track": "trigger"
         }
       ]
     },
     "GOOG": {
       "first_seen": "2026-05-19",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-19",
@@ -66465,12 +68484,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 386.12,
+            "open": 383.88,
+            "high": null,
+            "low": null,
+            "ema9": 385.4501,
+            "ema21": 378.4863,
+            "ema65": 348.5683,
+            "rsi14": 61.5567,
+            "dist_ema9_pct": 0.1738,
+            "dist_ema21_pct": 2.0169,
+            "volume_ratio": 0.94,
+            "atr_pct": 2.33,
+            "high_20d_prior": 404.47,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": true,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -1.48,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "GOOGL": {
       "first_seen": "2026-05-19",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-19",
@@ -68181,12 +70295,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 390.13,
+            "open": 387.95,
+            "high": null,
+            "low": null,
+            "ema9": 389.2386,
+            "ema21": 381.8648,
+            "ema65": 350.7578,
+            "rsi14": 61.7788,
+            "dist_ema9_pct": 0.229,
+            "dist_ema21_pct": 2.1644,
+            "volume_ratio": 0.73,
+            "atr_pct": 2.39,
+            "high_20d_prior": 408.61,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": true,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -1.49,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "CL": {
       "first_seen": "2026-05-19",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-19",
@@ -69707,12 +71916,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 91.66,
+            "open": 91.67,
+            "high": null,
+            "low": null,
+            "ema9": 90.2152,
+            "ema21": 88.7031,
+            "ema65": 87.1964,
+            "rsi14": 65.9302,
+            "dist_ema9_pct": 1.6015,
+            "dist_ema21_pct": 3.3335,
+            "volume_ratio": 0.72,
+            "atr_pct": 2.04,
+            "high_20d_prior": 92.23,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 0,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 0,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": false,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -0.35,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "MAR": {
       "first_seen": "2026-05-20",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-20",
@@ -71072,12 +73376,95 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 385.76,
+            "open": 384.22,
+            "high": null,
+            "low": null,
+            "ema9": 371.9978,
+            "ema21": 364.0151,
+            "ema65": 349.4143,
+            "rsi14": 72.1264,
+            "dist_ema9_pct": 3.6995,
+            "dist_ema21_pct": 5.9736,
+            "volume_ratio": 1.41,
+            "atr_pct": 2.23,
+            "high_20d_prior": 386.3,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 5,
+          "score_track": "drift",
+          "score_tier": "MID",
+          "rs_tier": "WEAK",
+          "active_components": 4,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": true,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 2.74,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "ARM": {
       "first_seen": "2026-05-21",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-21",
@@ -71553,12 +73940,61 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "EXTENDED",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 335.27,
+            "open": 310.33,
+            "high": null,
+            "low": null,
+            "ema9": 285.9794,
+            "ema21": 249.9268,
+            "ema65": 195.3415,
+            "rsi14": 75.3726,
+            "dist_ema9_pct": 17.2357,
+            "dist_ema21_pct": 34.1473,
+            "volume_ratio": 1.18,
+            "atr_pct": 6.48,
+            "high_20d_prior": 325.0,
+            "sector": null,
+            "risk_tags": [
+              "EXTENDED"
+            ]
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": "STRONG",
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "EXTENDED",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 28.79,
+          "_raw_score": 4,
+          "_raw_features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "_raw_score_track": "drift"
         }
       ]
     },
     "ASML": {
       "first_seen": "2026-05-21",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-21",
@@ -72318,12 +74754,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 1605.77,
+            "open": 1615.68,
+            "high": null,
+            "low": null,
+            "ema9": 1579.5072,
+            "ema21": 1536.7292,
+            "ema65": 1446.5255,
+            "rsi14": 58.8933,
+            "dist_ema9_pct": 1.6627,
+            "dist_ema21_pct": 4.4927,
+            "volume_ratio": 0.59,
+            "atr_pct": 3.85,
+            "high_20d_prior": 1653.53,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 1.79,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "DXCM": {
       "first_seen": "2026-05-21",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-21",
@@ -72845,12 +75376,95 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "WAIT",
+          "decision": "TRENDING",
+          "raw": {
+            "close": 72.34,
+            "open": 70.11,
+            "high": null,
+            "low": null,
+            "ema9": 69.1944,
+            "ema21": 66.0715,
+            "ema65": 65.316,
+            "rsi14": 67.3435,
+            "dist_ema9_pct": 4.546,
+            "dist_ema21_pct": 9.4874,
+            "volume_ratio": 0.78,
+            "atr_pct": 3.72,
+            "high_20d_prior": 73.1,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "drift",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 2,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": false,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -0.54,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "IBM": {
       "first_seen": "2026-05-21",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-21",
@@ -73298,12 +75912,61 @@
             "intraday_reversal": false
           },
           "_raw_score_track": "trigger"
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "BROKEN",
+          "trigger": "WAIT",
+          "decision": "AVOID",
+          "raw": {
+            "close": 264.22,
+            "open": 261.0,
+            "high": null,
+            "low": null,
+            "ema9": 245.5178,
+            "ema21": 237.8976,
+            "ema65": 243.3863,
+            "rsi14": 70.4479,
+            "dist_ema9_pct": 7.6175,
+            "dist_ema21_pct": 11.0646,
+            "volume_ratio": 1.49,
+            "atr_pct": 3.29,
+            "high_20d_prior": 264.38,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": null,
+          "score_track": null,
+          "score_tier": null,
+          "rs_tier": "STRONG",
+          "active_components": null,
+          "features": null,
+          "score_components": null,
+          "decision_badges": [],
+          "veto_reason": "BROKEN",
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 15.63,
+          "_raw_score": 4,
+          "_raw_features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": true,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "_raw_score_track": "trigger"
         }
       ]
     },
     "LRCX": {
       "first_seen": "2026-05-21",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-21",
@@ -74051,12 +76714,95 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 318.0,
+            "open": 317.45,
+            "high": null,
+            "low": null,
+            "ema9": 305.2509,
+            "ema21": 290.9627,
+            "ema65": 259.9316,
+            "rsi14": 66.0081,
+            "dist_ema9_pct": 4.1766,
+            "dist_ema21_pct": 9.2924,
+            "volume_ratio": 0.91,
+            "atr_pct": 4.54,
+            "high_20d_prior": 333.33,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 4,
+          "score_track": "drift",
+          "score_tier": "WEAK",
+          "rs_tier": "MID",
+          "active_components": 3,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 7.07,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "SNDK": {
       "first_seen": "2026-05-21",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-21",
@@ -74804,12 +77550,95 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 1641.64,
+            "open": 1596.31,
+            "high": null,
+            "low": null,
+            "ema9": 1516.5132,
+            "ema21": 1386.8876,
+            "ema65": 1046.5012,
+            "rsi14": 70.3158,
+            "dist_ema9_pct": 8.251,
+            "dist_ema21_pct": 18.3686,
+            "volume_ratio": 0.66,
+            "atr_pct": 6.85,
+            "high_20d_prior": 1658.77,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 4,
+          "score_track": "drift",
+          "score_tier": "WEAK",
+          "rs_tier": "STRONG",
+          "active_components": 3,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 16.09,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "STX": {
       "first_seen": "2026-05-21",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-21",
@@ -75557,12 +78386,95 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 880.72,
+            "open": 889.52,
+            "high": null,
+            "low": null,
+            "ema9": 823.0797,
+            "ema21": 765.1175,
+            "ema65": 606.5813,
+            "rsi14": 74.6766,
+            "dist_ema9_pct": 7.003,
+            "dist_ema21_pct": 15.1091,
+            "volume_ratio": 0.66,
+            "atr_pct": 4.98,
+            "high_20d_prior": 888.95,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 4,
+          "score_track": "drift",
+          "score_tier": "WEAK",
+          "rs_tier": "STRONG",
+          "active_components": 3,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 15.46,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "SNPS": {
       "first_seen": "2026-05-22",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-22",
@@ -76077,12 +78989,95 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "WAIT",
+          "decision": "TRENDING",
+          "raw": {
+            "close": 480.64,
+            "open": 510.0,
+            "high": null,
+            "low": null,
+            "ema9": 507.9551,
+            "ema21": 499.1477,
+            "ema65": 471.475,
+            "rsi14": 45.2875,
+            "dist_ema9_pct": 5.3775,
+            "dist_ema21_pct": 3.7079,
+            "volume_ratio": 2.68,
+            "atr_pct": 3.9,
+            "high_20d_prior": 539.48,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 1,
+          "score_track": "drift",
+          "score_tier": null,
+          "rs_tier": null,
+          "active_components": 1,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": false,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": false,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": -5.47,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "MS": {
       "first_seen": "2026-05-26",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-26",
@@ -76273,12 +79268,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 203.79,
+            "open": 199.92,
+            "high": null,
+            "low": null,
+            "ema9": 199.0591,
+            "ema21": 194.4146,
+            "ema65": 183.8073,
+            "rsi14": 70.5328,
+            "dist_ema9_pct": 2.3766,
+            "dist_ema21_pct": 4.8224,
+            "volume_ratio": 1.14,
+            "atr_pct": 2.24,
+            "high_20d_prior": 203.92,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 1.24,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "ROST": {
       "first_seen": "2026-05-26",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-26",
@@ -76445,12 +79535,107 @@
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 227.2,
+            "open": 232.14,
+            "high": null,
+            "low": null,
+            "ema9": 225.4937,
+            "ema21": 223.0679,
+            "ema65": 215.8674,
+            "rsi14": 55.3534,
+            "dist_ema9_pct": 0.7567,
+            "dist_ema21_pct": 1.8524,
+            "volume_ratio": 1.12,
+            "atr_pct": 2.8,
+            "high_20d_prior": 237.41,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 2.52,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
         }
       ]
     },
     "CDNS": {
       "first_seen": "2026-05-27",
-      "last_seen": "2026-05-27",
+      "last_seen": "2026-05-28",
       "snapshots": [
         {
           "date": "2026-05-27",
@@ -76543,6 +79728,279 @@
           "suggested_entry_tier": null,
           "suggested_size_pct": 0.0,
           "rs_delta_pct": 8.35,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        },
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "PULLBACK",
+          "trigger": "WAIT",
+          "decision": "WATCH",
+          "raw": {
+            "close": 373.85,
+            "open": 374.78,
+            "high": null,
+            "low": null,
+            "ema9": 365.3185,
+            "ema21": 353.0107,
+            "ema65": 327.6229,
+            "rsi14": 65.6691,
+            "dist_ema9_pct": 2.3354,
+            "dist_ema21_pct": 5.9033,
+            "volume_ratio": 0.92,
+            "atr_pct": 3.3,
+            "high_20d_prior": 383.8,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 2,
+          "score_track": "trigger",
+          "score_tier": null,
+          "rs_tier": "WEAK",
+          "active_components": 1,
+          "features": {
+            "ema_reclaim": false,
+            "higher_low": false,
+            "rs_strong": true,
+            "lower_wick": false,
+            "tight_range": false,
+            "vol_expansion": false,
+            "breakout": false,
+            "close_strong": false,
+            "intraday_reversal": false
+          },
+          "score_components": [
+            {
+              "name": "ema_reclaim",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "lower_wick",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_range",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "vol_expansion",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "breakout",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "close_strong",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "intraday_reversal",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": null,
+          "suggested_size_pct": 0.0,
+          "rs_delta_pct": 4.74,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        }
+      ]
+    },
+    "GM": {
+      "first_seen": "2026-05-28",
+      "last_seen": "2026-05-28",
+      "snapshots": [
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 84.35,
+            "open": 83.6,
+            "high": null,
+            "low": null,
+            "ema9": 79.6489,
+            "ema21": 78.1138,
+            "ema65": 77.3366,
+            "rsi14": 66.6575,
+            "dist_ema9_pct": 5.9023,
+            "dist_ema21_pct": 7.9835,
+            "volume_ratio": 1.1,
+            "atr_pct": 2.97,
+            "high_20d_prior": 84.52,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 4,
+          "score_track": "drift",
+          "score_tier": "WEAK",
+          "rs_tier": "MID",
+          "active_components": 3,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": false,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 8.98,
+          "_raw_score": null,
+          "_raw_features": null,
+          "_raw_score_track": null
+        }
+      ]
+    },
+    "ORCL": {
+      "first_seen": "2026-05-28",
+      "last_seen": "2026-05-28",
+      "snapshots": [
+        {
+          "date": "2026-05-28",
+          "engine_version": "score_v1",
+          "setup": "TREND_OK",
+          "trigger": "EARLY_TRIGGER",
+          "decision": "PROBE",
+          "raw": {
+            "close": 203.7,
+            "open": 194.04,
+            "high": null,
+            "low": null,
+            "ema9": 192.6967,
+            "ema21": 186.9279,
+            "ema65": 176.0315,
+            "rsi14": 66.1031,
+            "dist_ema9_pct": 5.7102,
+            "dist_ema21_pct": 8.9725,
+            "volume_ratio": 1.23,
+            "atr_pct": 4.22,
+            "high_20d_prior": 200.71,
+            "sector": null,
+            "risk_tags": []
+          },
+          "score": 5,
+          "score_track": "drift",
+          "score_tier": "MID",
+          "rs_tier": "MID",
+          "active_components": 4,
+          "features": {
+            "ema_alignment": true,
+            "close_above_ema9": true,
+            "higher_low": false,
+            "atr_contraction": true,
+            "rs_strong": true,
+            "low_vol_drift": false,
+            "tight_close_cluster": false
+          },
+          "score_components": [
+            {
+              "name": "ema_alignment",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "close_above_ema9",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "higher_low",
+              "weight": 2,
+              "active": false
+            },
+            {
+              "name": "atr_contraction",
+              "weight": 1,
+              "active": true
+            },
+            {
+              "name": "rs_strong",
+              "weight": 2,
+              "active": true
+            },
+            {
+              "name": "low_vol_drift",
+              "weight": 1,
+              "active": false
+            },
+            {
+              "name": "tight_close_cluster",
+              "weight": 1,
+              "active": false
+            }
+          ],
+          "decision_badges": [],
+          "veto_reason": null,
+          "suggested_entry_tier": "starter",
+          "suggested_size_pct": 0.25,
+          "rs_delta_pct": 6.46,
           "_raw_score": null,
           "_raw_features": null,
           "_raw_score_track": null
@@ -79710,6 +83168,326 @@
       "event": "DECISION_CHANGE",
       "from": "TRENDING",
       "to": "AVOID"
+    },
+    {
+      "event_id": "AMAT_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "AMAT",
+      "event": "SETUP_CHANGE",
+      "from": "TREND_OK",
+      "to": "PULLBACK"
+    },
+    {
+      "event_id": "AMAT_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "AMAT",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "AMAT_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "AMAT",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "WATCH"
+    },
+    {
+      "event_id": "APP_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "APP",
+      "event": "SETUP_CHANGE",
+      "from": "TREND_OK",
+      "to": "EXTENDED"
+    },
+    {
+      "event_id": "APP_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "APP",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "APP_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "APP",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "AVOID"
+    },
+    {
+      "event_id": "APP_2026-05-28_RISK_ESCALATION_v1",
+      "date": "2026-05-28",
+      "ticker": "APP",
+      "event": "RISK_ESCALATION",
+      "from": null,
+      "to": "EXTENDED"
+    },
+    {
+      "event_id": "ARM_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "ARM",
+      "event": "SETUP_CHANGE",
+      "from": "TREND_OK",
+      "to": "EXTENDED"
+    },
+    {
+      "event_id": "ARM_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "ARM",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "ARM_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "ARM",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "AVOID"
+    },
+    {
+      "event_id": "ARM_2026-05-28_RISK_ESCALATION_v1",
+      "date": "2026-05-28",
+      "ticker": "ARM",
+      "event": "RISK_ESCALATION",
+      "from": null,
+      "to": "EXTENDED"
+    },
+    {
+      "event_id": "CSCO_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "CSCO",
+      "event": "SETUP_CHANGE",
+      "from": "TREND_OK",
+      "to": "PULLBACK"
+    },
+    {
+      "event_id": "CSCO_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "CSCO",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "CSCO_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "CSCO",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "WATCH"
+    },
+    {
+      "event_id": "DXCM_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "DXCM",
+      "event": "SETUP_CHANGE",
+      "from": "PULLBACK",
+      "to": "TREND_OK"
+    },
+    {
+      "event_id": "DXCM_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "DXCM",
+      "event": "DECISION_CHANGE",
+      "from": "WATCH",
+      "to": "TRENDING"
+    },
+    {
+      "event_id": "INTC_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "INTC",
+      "event": "SETUP_CHANGE",
+      "from": "TREND_OK",
+      "to": "PULLBACK"
+    },
+    {
+      "event_id": "INTC_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "INTC",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "INTC_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "INTC",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "WATCH"
+    },
+    {
+      "event_id": "INTC_2026-05-28_SCORE_JUMP_v1",
+      "date": "2026-05-28",
+      "ticker": "INTC",
+      "event": "SCORE_JUMP",
+      "from": 5,
+      "to": 0
+    },
+    {
+      "event_id": "KLAC_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "KLAC",
+      "event": "SETUP_CHANGE",
+      "from": "TREND_OK",
+      "to": "PULLBACK"
+    },
+    {
+      "event_id": "KLAC_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "KLAC",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "KLAC_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "KLAC",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "WATCH"
+    },
+    {
+      "event_id": "MNST_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "MNST",
+      "event": "SETUP_CHANGE",
+      "from": "PULLBACK",
+      "to": "BASE_FORMING"
+    },
+    {
+      "event_id": "MNST_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "MNST",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "MNST_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "MNST",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "WATCH"
+    },
+    {
+      "event_id": "MNST_2026-05-28_SCORE_JUMP_v1",
+      "date": "2026-05-28",
+      "ticker": "MNST",
+      "event": "SCORE_JUMP",
+      "from": 4,
+      "to": 0
+    },
+    {
+      "event_id": "MPWR_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "MPWR",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "MPWR_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "MPWR",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "WATCH"
+    },
+    {
+      "event_id": "MS_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "MS",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "MS_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "MS",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "WATCH"
+    },
+    {
+      "event_id": "NVDA_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "NVDA",
+      "event": "SETUP_CHANGE",
+      "from": "TREND_OK",
+      "to": "PULLBACK"
+    },
+    {
+      "event_id": "NVDA_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "NVDA",
+      "event": "DECISION_CHANGE",
+      "from": "TRENDING",
+      "to": "WATCH"
+    },
+    {
+      "event_id": "ROST_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "ROST",
+      "event": "SETUP_CHANGE",
+      "from": "TREND_OK",
+      "to": "PULLBACK"
+    },
+    {
+      "event_id": "ROST_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "ROST",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "ROST_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "ROST",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "WATCH"
+    },
+    {
+      "event_id": "SNPS_2026-05-28_SETUP_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "SNPS",
+      "event": "SETUP_CHANGE",
+      "from": "PULLBACK",
+      "to": "TREND_OK"
+    },
+    {
+      "event_id": "SNPS_2026-05-28_TRIGGER_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "SNPS",
+      "event": "TRIGGER_CHANGE",
+      "from": "EARLY_TRIGGER",
+      "to": "WAIT"
+    },
+    {
+      "event_id": "SNPS_2026-05-28_DECISION_CHANGE_v1",
+      "date": "2026-05-28",
+      "ticker": "SNPS",
+      "event": "DECISION_CHANGE",
+      "from": "PROBE",
+      "to": "TRENDING"
+    },
+    {
+      "event_id": "SNPS_2026-05-28_SCORE_JUMP_v1",
+      "date": "2026-05-28",
+      "ticker": "SNPS",
+      "event": "SCORE_JUMP",
+      "from": 4,
+      "to": 1
     }
   ],
   "_bootstrap_meta": {
