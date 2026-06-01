@@ -1050,3 +1050,102 @@ def test_template_renders_top5_empty_state_kr(tmp_path):
     assert "매수 후보 없음" in html
     assert 'class="top5-table"' not in html
     assert "3.0" in html
+
+
+def test_export_json_includes_top5_array(tmp_path):
+    """_export_json writes top5 array with rank/ticker/decision/score/badges/held_note."""
+    import json
+    import lifecycle_report as lr
+
+    ctx = {
+        "market": "US",
+        "enter": [], "probe": [],
+        "top5_candidates": [
+            {
+                "ticker": "MU", "is_portfolio": False,
+                "snapshot": {"setup": "EXTENDED", "decision": "AVOID"},
+                "final_score": 13.2,
+            },
+            {
+                "ticker": "MSFT", "is_portfolio": True,
+                "snapshot": {"setup": "TREND_OK", "decision": "PROBE"},
+                "final_score": 12.8,
+            },
+        ],
+    }
+    result = {"as_of": "2026-05-29"}
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._export_json(ctx, result, str(out_dir))
+
+    json_path = out_dir / "lifecycle_us_2026-05-29.json"
+    assert json_path.exists()
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+
+    assert "top5" in payload
+    assert len(payload["top5"]) == 2
+
+    first = payload["top5"][0]
+    assert first["rank"] == 1
+    assert first["ticker"] == "MU"
+    assert first["decision"] == "AVOID"
+    assert first["score"] == 13.2
+    assert first["badges"] == ["EXTENDED"]
+    assert first["held_note"] is None
+
+    second = payload["top5"][1]
+    assert second["rank"] == 2
+    assert second["ticker"] == "MSFT"
+    assert second["decision"] == "PROBE"
+    assert second["score"] == 12.8
+    assert second["badges"] == ["TREND_OK"]
+    assert second["held_note"] == "held"
+
+
+def test_export_json_top5_held_note_mapping(tmp_path):
+    """held_note: 'held' when is_portfolio else None."""
+    import json
+    import lifecycle_report as lr
+
+    ctx = {
+        "market": "KR",
+        "enter": [], "probe": [],
+        "top5_candidates": [
+            {"ticker": "005930.KS", "is_portfolio": True,
+             "snapshot": {"setup": "TREND_OK", "decision": "PROBE"},
+             "final_score": 8.0},
+            {"ticker": "035720.KS", "is_portfolio": False,
+             "snapshot": {"setup": "PULLBACK", "decision": "PROBE"},
+             "final_score": 7.0},
+        ],
+    }
+    result = {"as_of": "2026-05-29"}
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._export_json(ctx, result, str(out_dir))
+    payload = json.loads((out_dir / "lifecycle_kr_latest.json").read_text(encoding="utf-8"))
+
+    held_notes = [c["held_note"] for c in payload["top5"]]
+    assert held_notes == ["held", None]
+
+
+def test_export_json_empty_top5_when_no_candidates(tmp_path):
+    """top5_candidates empty → JSON top5: [] (list, not null, not missing)."""
+    import json
+    import lifecycle_report as lr
+
+    ctx = {
+        "market": "US",
+        "enter": [], "probe": [],
+        "top5_candidates": [],
+    }
+    result = {"as_of": "2026-05-29"}
+    out_dir = tmp_path / "out"
+    out_dir.mkdir()
+    lr._export_json(ctx, result, str(out_dir))
+    payload = json.loads((out_dir / "lifecycle_us_latest.json").read_text(encoding="utf-8"))
+
+    assert "top5" in payload
+    assert payload["top5"] == []
+    assert "candidates" in payload
+    assert payload["schema_version"] == 1

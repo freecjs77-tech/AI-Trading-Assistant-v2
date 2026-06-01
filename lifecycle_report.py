@@ -266,8 +266,9 @@ def build_page_context(result: dict,
 def _export_json(ctx: dict, result: dict, output_dir: str) -> None:
     """Emit lifecycle_{market}_{as_of}.json + lifecycle_{market}_latest.json.
 
-    Sister-repo contract: stable JSON of ENTER/PROBE candidates so consumers
-    don't have to parse the 67KB HTML page (template-drift sensitive).
+    Sister-repo contract: stable JSON of ENTER/PROBE candidates + today's
+    Top 5 hybrid-scored buy candidates so consumers don't have to parse the
+    67KB HTML page (template-drift sensitive).
     """
     market = ctx["market"].lower()
     as_of = result.get("as_of")
@@ -281,12 +282,26 @@ def _export_json(ctx: dict, result: dict, output_dir: str) -> None:
                 "institution_score": row.get("score"),
                 "entry_badges":      row.get("decision_badges") or [],
             })
+    # Top 5 (2026-05-27 spec) — sister-repo consumes this to avoid HTML parsing
+    top5 = []
+    for rank, c in enumerate(ctx.get("top5_candidates") or [], start=1):
+        snap = c.get("snapshot") or {}
+        setup = snap.get("setup")
+        top5.append({
+            "rank":       rank,
+            "ticker":     c["ticker"],
+            "decision":   snap.get("decision"),
+            "score":      round(c.get("final_score") or 0.0, 1),
+            "badges":     [setup] if setup else [],
+            "held_note":  "held" if c.get("is_portfolio") else None,
+        })
     payload = {
         "schema_version":   1,
         "publish_complete": True,
         "generated_at":     generated_at,
         "market":           market.upper(),
         "as_of":            as_of,
+        "top5":             top5,
         "candidates":       candidates,
     }
     for fname in (f"lifecycle_{market}_{as_of}.json", f"lifecycle_{market}_latest.json"):
