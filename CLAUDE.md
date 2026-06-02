@@ -20,6 +20,7 @@ GitHub Pages에서 리포트를 서빙하고, GitHub Actions로 파이프라인�
 - [Lifecycle Top 5 Universe Expansion](docs/superpowers/plans/2026-05-22-top5-universe-expansion.md) — Top 5 후보 풀에 오늘 momentum 스캐너 결과 직접 합치기 (active_set 밖 ticker 포함) · `lifecycle_signal.compute_single_snapshot` 헬퍼 추출 후 selector가 momentum-only ticker를 즉석 합성 snapshot으로 pool에 추가 · `🚀 스캐너 신규` 배지 · 5-stage 파이프라인 / lifecycle history 무영향 · KR/Telegram 후속
 - [Lifecycle KR Top 5 Buy Candidates](docs/superpowers/plans/2026-05-26-lifecycle-top5-kr.md) — `lifecycle_kr.html`에 "🎯 오늘의 매수 후보 — Top N/5" 섹션 추가 · KR 전용 threshold 3.0 (US: 5.0) · 종목명 한글 표시 (`_lookup_ticker_name`) · 🏦 보유 중/🚀 스캐너 신규/⚠️ 과열 배지 US와 동일 · Python plumbing 100% 재사용 (변경 표면 = `_render` 분기만)
 - [Sister-Repo Top 5 JSON Field](docs/superpowers/plans/2026-05-27-sister-repo-top5-json.md) — `lifecycle_{us,kr}_latest.json`에 `top5` 배열 추가 (rank/ticker/decision/score/badges/held_note) · Telegram bot 등 sister-repo가 HTML 파싱 없이 폴링 가능 · `_export_json` 한 함수만 ~10줄 변경 · schema_version 1 유지 (backward-compatible) · 기존 `candidates` 필드 무변경
+- [Archive Navigation Hide](docs/superpowers/plans/2026-05-27-archive-nav-hide.md) — 6개 template (`_sidebar.html` partial 포함)에서 Archive nav 링크 제거 · `_generate_archive()` 함수 + `deploy/archive.html` 페이지는 유지 (URL 직접 접근 가능) · `detail_template`의 `nav_archive` ctx 변수 유지 (defensive) · 모든 백엔드/시그널 무영향
 
 ## 배포 (GitHub Pages + Actions)
 - **리포트 URL**: https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/
