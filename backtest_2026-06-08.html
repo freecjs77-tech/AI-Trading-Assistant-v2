@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtest Dashboard — 2026-06-08</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{
+"surface-container":"rgb(var(--c-surface-container)/<alpha-value>)","surface-container-highest":"rgb(var(--c-surface-container-highest)/<alpha-value>)",
+"surface-dim":"rgb(var(--c-surface-dim)/<alpha-value>)","surface":"rgb(var(--c-surface)/<alpha-value>)",
+"surface-container-high":"rgb(var(--c-surface-container-high)/<alpha-value>)","surface-container-low":"rgb(var(--c-surface-container-low)/<alpha-value>)",
+"surface-bright":"rgb(var(--c-surface-bright)/<alpha-value>)","surface-variant":"rgb(var(--c-surface-variant)/<alpha-value>)",
+"background":"rgb(var(--c-background)/<alpha-value>)",
+"primary":"rgb(var(--c-primary)/<alpha-value>)","primary-dim":"rgb(var(--c-primary-dim)/<alpha-value>)",
+"primary-container":"rgb(var(--c-primary-container)/<alpha-value>)","on-primary":"rgb(var(--c-on-primary)/<alpha-value>)",
+"on-primary-container":"rgb(var(--c-on-primary-container)/<alpha-value>)",
+"secondary":"rgb(var(--c-secondary)/<alpha-value>)","secondary-dim":"rgb(var(--c-secondary-dim)/<alpha-value>)",
+"secondary-container":"rgb(var(--c-secondary-container)/<alpha-value>)","on-secondary":"rgb(var(--c-on-secondary)/<alpha-value>)",
+"tertiary":"rgb(var(--c-tertiary)/<alpha-value>)","tertiary-dim":"rgb(var(--c-tertiary-dim)/<alpha-value>)",
+"tertiary-container":"rgb(var(--c-tertiary-container)/<alpha-value>)","on-tertiary":"rgb(var(--c-on-tertiary)/<alpha-value>)",
+"on-surface":"rgb(var(--c-on-surface)/<alpha-value>)","on-surface-variant":"rgb(var(--c-on-surface-variant)/<alpha-value>)",
+"on-background":"rgb(var(--c-on-background)/<alpha-value>)",
+"outline":"rgb(var(--c-outline)/<alpha-value>)","outline-variant":"rgb(var(--c-outline-variant)/<alpha-value>)",
+"error":"rgb(var(--c-error)/<alpha-value>)","error-container":"rgb(var(--c-error-container)/<alpha-value>)",
+"inverse-surface":"rgb(var(--c-inverse-surface)/<alpha-value>)"
+},borderRadius:{DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem"},fontFamily:{headline:["Space Grotesk"],body:["Manrope"],label:["Inter"]}}}}
+</script>
+<style>
+html.dark{--c-surface-container:15 25 48;--c-surface-container-highest:25 37 64;--c-surface-dim:6 14 32;--c-surface:6 14 32;--c-surface-container-high:20 31 56;--c-surface-container-low:9 19 40;--c-surface-bright:31 43 73;--c-surface-variant:25 37 64;--c-background:6 14 32;--c-primary:109 221 255;--c-primary-dim:0 195 235;--c-primary-container:0 210 253;--c-on-primary:0 76 94;--c-on-primary-container:0 67 82;--c-secondary:0 229 188;--c-secondary-dim:0 201 165;--c-secondary-container:16 110 0;--c-on-secondary:11 88 0;--c-tertiary:255 113 102;--c-tertiary-dim:229 26 34;--c-tertiary-container:245 40 43;--c-on-tertiary:74 0 3;--c-on-surface:222 229 255;--c-on-surface-variant:163 170 196;--c-on-background:222 229 255;--c-outline:109 117 140;--c-outline-variant:64 72 93;--c-error:255 113 108;--c-error-container:159 5 25;--c-inverse-surface:250 248 255}
+html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 232 240;--c-surface-dim:226 232 240;--c-surface:241 243 245;--c-surface-container-high:248 250 252;--c-surface-container-low:255 255 255;--c-surface-bright:248 250 252;--c-surface-variant:241 245 249;--c-background:241 243 245;--c-primary:37 99 235;--c-primary-dim:30 64 175;--c-primary-container:219 234 254;--c-on-primary:255 255 255;--c-on-primary-container:30 64 175;--c-secondary:59 130 246;--c-secondary-dim:29 78 216;--c-secondary-container:219 234 254;--c-on-secondary:255 255 255;--c-on-secondary-container:30 64 175;--c-tertiary:225 29 72;--c-tertiary-dim:190 18 60;--c-tertiary-container:255 241 242;--c-on-tertiary:255 255 255;--c-on-tertiary-container:136 19 55;--c-on-surface:15 23 42;--c-on-surface-variant:71 85 105;--c-on-background:15 23 42;--c-outline:100 116 139;--c-outline-variant:148 163 184;--c-error:225 29 72;--c-error-container:255 241 242;--c-on-error-container:136 19 55;--c-surface-tint:37 99 235;--c-inverse-surface:15 23 42;--grad-start:#2563EB;--grad-end:#1E40AF}
+.sig-buy,.sig-buy1,.sig-buy2,.sig-buy3{background:#2563eb;color:#fff;}.sig-buy::before,.sig-buy1::before,.sig-buy2::before,.sig-buy3::before{content:"\25B2 ";}
+.sig-exit,.sig-tp,.sig-tp1,.sig-tp2{background:#e11d48;color:#fff;}.sig-exit::before,.sig-tp::before,.sig-tp1::before,.sig-tp2::before{content:"\25BC ";}
+.sig-watch,.sig-hold,.sig-cash,.sig-bond{background:#d97706;color:#fff;}.sig-watch::before,.sig-hold::before,.sig-cash::before,.sig-bond::before{content:"\25CF ";}
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body">
+
+<!-- Sidebar -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center"><span class="material-symbols-outlined text-[#004352]" style="font-variation-settings:'FILL' 1;">dashboard_customize</span></div>
+    <div><h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2><p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p></div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="report_2026-06-08.html"><span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span></a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="report_wife_2026-06-08.html"><span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span></a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="scanner_2026-06-08.html"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-[#6dddff] bg-[#141f38] rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="backtest_2026-06-08.html"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
+    <a class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all" href="trend_2026-06-08.html"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
+  </div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <button onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left" id="themeToggle"><span class="material-symbols-outlined">light_mode</span><span>Light Mode</span></button>
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">2026년 6월 8일 (월요일)</div>
+  </div>
+</nav>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<main class="md:ml-64 min-h-screen">
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">BACKTEST</span>
+      <span class="text-xs text-outline font-label">1070건 평가</span>
+    </div>
+    <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme"><span class="material-symbols-outlined">light_mode</span></button>
+  </header>
+
+  <div class="p-8 space-y-8 max-w-[1200px] mx-auto">
+
+    <!-- BUY 시그널 성적표 -->
+    <h2 class="text-lg font-headline font-bold flex items-center gap-2">
+      <span class="material-symbols-outlined text-secondary">shopping_cart</span> BUY 시그널 성적표
+    </h2>
+    <p class="text-xs text-on-surface-variant -mt-4">BUY 발생 후 N거래일 내 +3.0% 이상 수익 달성 비율</p>
+
+    
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">1st BUY</span>
+          <span class="text-xs text-outline">338건</span>
+        </div>
+        <div class="space-y-3">
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold text-tertiary text-base">23%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:23%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold text-tertiary text-base">35%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:35%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +3.0% 터치)</span><span class="font-bold text-primary text-base">52%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:52%"></div></div>
+          </div>
+          <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
+            <span class="text-on-surface-variant">평균 수익 (5일)</span>
+            <span class="text-secondary font-bold">0.03%</span>
+          </div>
+        </div>
+      </div>
+      
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">2nd BUY</span>
+          <span class="text-xs text-outline">307건</span>
+        </div>
+        <div class="space-y-3">
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold text-tertiary text-base">32%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:32%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold text-tertiary text-base">36%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:36%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +3.0% 터치)</span><span class="font-bold text-primary text-base">49%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:49%"></div></div>
+          </div>
+          <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
+            <span class="text-on-surface-variant">평균 수익 (5일)</span>
+            <span class="text-secondary font-bold">0.7%</span>
+          </div>
+        </div>
+      </div>
+      
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-secondary/10 text-secondary border border-secondary/20">3rd BUY</span>
+          <span class="text-xs text-outline">222건</span>
+        </div>
+        <div class="space-y-3">
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>5일 승률</span><span class="font-bold text-tertiary text-base">24%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:24%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>10일 승률</span><span class="font-bold text-tertiary text-base">38%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-tertiary h-2 rounded-full" style="width:38%"></div></div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-xs text-on-surface-variant mb-1"><span>도달률 (10일 내 +3.0% 터치)</span><span class="font-bold text-primary text-base">58%</span></div>
+            <div class="w-full bg-surface-bright rounded-full h-2"><div class="bg-primary h-2 rounded-full" style="width:58%"></div></div>
+          </div>
+          <div class="pt-2 border-t border-outline-variant/10 flex justify-between text-xs">
+            <span class="text-on-surface-variant">평균 수익 (5일)</span>
+            <span class="text-tertiary font-bold">-0.14%</span>
+          </div>
+        </div>
+      </div>
+      
+      
+    </div>
+    
+
+    <!-- EXIT 시그널 성적표 -->
+    <h2 class="text-lg font-headline font-bold flex items-center gap-2">
+      <span class="material-symbols-outlined text-tertiary">sell</span> EXIT 시그널 성적표
+    </h2>
+    <p class="text-xs text-on-surface-variant -mt-4">익절 후 10일 내 가격이 +3.0% 넘게 오르지 않으면 성공</p>
+
+    
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-3">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TOP SIGNAL</span>
+          <span class="text-xs text-outline">27건</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-bold text-secondary">59%</span>
+          <span class="text-xs text-on-surface-variant">적중</span>
+        </div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="text-secondary font-bold">-4.37%</span> 하락</div>
+      </div>
+      
+      
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-3">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TAKE PROFIT 2</span>
+          <span class="text-xs text-outline">148건</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-bold text-secondary">83%</span>
+          <span class="text-xs text-on-surface-variant">적중</span>
+        </div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="text-secondary font-bold">-0.24%</span> 하락</div>
+      </div>
+      
+      
+      
+      
+      
+      <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10">
+        <div class="flex justify-between items-start mb-3">
+          <span class="px-2.5 py-1 text-xs rounded font-bold bg-tertiary/10 text-tertiary border border-tertiary/20">TAKE PROFIT 1</span>
+          <span class="text-xs text-outline">28건</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-3xl font-headline font-bold text-secondary">52%</span>
+          <span class="text-xs text-on-surface-variant">적중</span>
+        </div>
+        <div class="text-xs text-on-surface-variant mt-2">익절 후 평균 <span class="text-secondary font-bold">-0.21%</span> 하락</div>
+      </div>
+      
+      
+    </div>
+    
+
+    <div class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
+      2026-02-27 ~ 2026-05-22 | BUY 승리 = N거래일 내 +3.0% 이상 | EXIT 성공 = 10일 내 +3.0% 미만 상승
+    </div>
+  </div>
+</main>
+
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="report_2026-06-08.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px] font-label">Home</span></a>
+  <a href="scanner_2026-06-08.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px] font-label">Scan</span></a>
+  <a href="trend_2026-06-08.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px] font-label">Trend</span></a>
+  <a href="backtest_2026-06-08.html" class="text-primary flex flex-col items-center gap-1"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">history</span><span class="text-[10px] font-label">Backtest</span></a>
+</nav>
+
+<script>
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
+function toggleTheme(){const h=document.documentElement,d=h.classList.contains('dark');h.classList.remove('dark','light');const t=d?'light':'dark';h.classList.add(t);localStorage.setItem('theme',t);updateThemeIcons(t);}
+function updateThemeIcons(t){const i=t==='dark'?'light_mode':'dark_mode',l=t==='dark'?'Light Mode':'Dark Mode';const hb=document.getElementById('themeToggleHeader'),sb=document.getElementById('themeToggle');if(hb)hb.querySelector('.material-symbols-outlined').textContent=i;if(sb){sb.querySelector('.material-symbols-outlined').textContent=i;const ss=sb.querySelectorAll('span');if(ss.length>1)ss[1].textContent=l;}}
+document.addEventListener('DOMContentLoaded',function(){updateThemeIcons(document.documentElement.classList.contains('dark')?'dark':'light');});
+</script>
+</body>
+</html>
