@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔄 Lifecycle KR — 2026-06-18</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('debug') === '1') {
+    document.body.classList.add('debug-mode');
+  }
+})();
+</script>
+<style>
+.advanced-debug { display: none; }
+body.debug-mode .advanced-debug { display: block; }
+.chip-score { font-size: 0.85em; opacity: 0.85; margin-top: 4px; }
+.score-dots { letter-spacing: 1px; color: #4a9eff; }
+.score-num { font-weight: 600; margin-left: 6px; }
+.badge-strong { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; padding: 1px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 6px; }
+  /* Tier badges (Score Tier + RS Tier) — see docs/superpowers/specs/2026-05-14-probe-tiering-design.md */
+  .tier-badge { font-size: 0.75em; margin-left: 4px; padding: 1px 6px; border-radius: 3px; font-weight: 600; }
+  .tier-strong { background: #d4a017; color: #000; }
+  .tier-mid    { background: #4a9eff; color: #fff; }
+  .tier-weak   { background: #555;    color: #ccc; }
+  .tier-null   { background: transparent; color: var(--muted); }
+  .score-num.tier-strong,
+  .rs-num.tier-strong { color: #d4a017; font-weight: 600; background: transparent; padding: 0; }
+  .score-num.tier-mid,
+  .rs-num.tier-mid    { color: #4a9eff; font-weight: 600; background: transparent; padding: 0; }
+  .score-num.tier-weak,
+  .rs-num.tier-weak   { color: #aaa; background: transparent; padding: 0; }
+  .rs-num { margin-left: 10px; font-size: 0.95em; }
+
+  /* Filter toolbar */
+  .filter-toolbar { display: flex; gap: 6px; margin: 6px 0 10px; flex-wrap: wrap; }
+  .filter-btn {
+    background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.1);
+    padding: 3px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: inherit;
+  }
+  .filter-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+  .filter-btn.active { background: rgba(109,221,255,0.12); color: var(--primary-c); border-color: var(--primary-c); }
+</style>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: { extend: {
+    colors: {
+      "surface-container": "rgb(var(--c-surface-container) / <alpha-value>)",
+      "surface-container-high": "rgb(var(--c-surface-container-high) / <alpha-value>)",
+      "surface": "rgb(var(--c-surface) / <alpha-value>)",
+      "primary": "rgb(var(--c-primary) / <alpha-value>)",
+      "on-surface": "rgb(var(--c-on-surface) / <alpha-value>)",
+      "on-surface-variant": "rgb(var(--c-on-surface-variant) / <alpha-value>)",
+      "outline-variant": "rgb(var(--c-outline-variant) / <alpha-value>)",
+    },
+    fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
+  }}
+}
+</script>
+<style>
+  html.dark {
+    --c-surface-container: 15 25 48; --c-surface-container-high: 20 31 56;
+    --c-surface: 6 14 32; --c-background: 6 14 32;
+    --c-primary: 109 221 255;
+    --c-on-surface: 222 229 255; --c-on-surface-variant: 163 170 196;
+    --c-outline-variant: 64 72 93;
+    --bg: #0a1226; --card: #0f1a36; --card-2: #14203f;
+    --border: rgba(148,163,184,0.15); --text: #e2e8f0; --muted: #94a3b8;
+    --primary-c: #6dddff;
+    --green: #22c55e; --yellow: #eab308; --blue: #3b82f6; --gray: #64748b; --red: #ef4444;
+  }
+  html.light {
+    --c-surface-container: 255 255 255; --c-surface-container-high: 248 250 252;
+    --c-surface: 241 245 249; --c-background: 241 245 249;
+    --c-primary: 2 132 199;
+    --c-on-surface: 15 23 42; --c-on-surface-variant: 71 85 105;
+    --c-outline-variant: 148 163 184;
+    --bg: #f1f5f9; --card: #ffffff; --card-2: #f8fafc;
+    --border: rgba(100,116,139,0.2); --text: #0f172a; --muted: #64748b;
+    --primary-c: #0284c7;
+    --green: #16a34a; --yellow: #ca8a04; --blue: #2563eb; --gray: #64748b; --red: #dc2626;
+  }
+  body { background: var(--bg); color: var(--text); }
+
+  .concept-box, .pipeline, section.detail, .glossary > details {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  }
+  .concept-box, .pipeline, section.detail { padding: 18px 22px; margin-bottom: 20px; }
+  .concept-box h3, .pipeline h2, section.detail h2 {
+    margin: 0 0 6px; font-size: 17px; color: var(--primary-c);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .concept-box p { margin: 6px 0; font-size: 14px; }
+  .concept-box b { color: var(--text); }
+  .pipeline .sub, section.detail .sub { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+
+  .summary-box {
+    margin: 20px 0 28px; padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(109,221,255,0.08), rgba(34,197,94,0.04));
+    border: 1px solid rgba(109,221,255,0.25); border-radius: 12px;
+  }
+  .summary-box h2 { margin: 0 0 12px; font-size: 15px; color: var(--primary-c); }
+  .summary-box .big-verdict { font-size: 18px; font-weight: 700; margin: 6px 0 14px; color: #fde047; }
+  .summary-box .verdict { font-size: 14px; line-height: 1.7; color: var(--text); margin: 4px 0; }
+
+  .pipe-flow { display: flex; gap: 12px; align-items: stretch; overflow-x: auto; }
+  .pipe-stage {
+    flex: 1; min-width: 150px;
+    background: var(--card-2); border-radius: 10px; padding: 14px; border-top: 4px solid;
+    display: flex; flex-direction: column;
+  }
+  .stage-trending { border-color: var(--gray); }
+  .stage-watch    { border-color: var(--blue); }
+  .stage-probe    { border-color: var(--yellow); }
+  .stage-enter    { border-color: var(--green); }
+  .stage-avoid    { border-color: var(--red); }
+  .stage-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .stage-name { font-weight: 700; font-size: 14px; }
+  .stage-count { font-size: 22px; font-weight: 800; }
+  .stage-trending .stage-name, .stage-trending .stage-count { color: var(--gray); }
+  .stage-watch    .stage-name, .stage-watch    .stage-count { color: var(--blue); }
+  .stage-probe    .stage-name, .stage-probe    .stage-count { color: var(--yellow); }
+  .stage-enter    .stage-name, .stage-enter    .stage-count { color: var(--green); }
+  .stage-avoid    .stage-name, .stage-avoid    .stage-count { color: var(--red); }
+  .stage-desc { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; min-height: 36px; }
+  .stage-action {
+    font-size: 12px; font-weight: 600;
+    padding: 4px 8px; border-radius: 4px; margin-bottom: 10px; display: inline-block;
+    background: rgba(100,116,139,0.15);
+  }
+  .stage-tickers { font-size: 12px; line-height: 1.55; word-break: break-word; }
+  .stage-tickers .muted { color: var(--muted); }
+  .pipe-arrow { align-self: center; color: var(--muted); font-size: 20px; padding: 0 2px; }
+  .pipe-arrow.invisible { color: transparent; }
+  .flow-narration { margin-top: 18px; padding: 14px 16px; background: rgba(0,0,0,0.15); border-radius: 8px; font-size: 13px; color: var(--text); line-height: 1.7; }
+
+  .action-box {
+    padding: 10px 12px; border-radius: 8px; font-size: 13px; line-height: 1.55;
+    border-left: 3px solid; margin-bottom: 14px;
+  }
+  .action-box .head { display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 4px; }
+  .action-box .desc { color: var(--text); }
+  .action-box .desc b { color: var(--text); font-weight: 700; }
+  .action-danger { background: rgba(239,68,68,0.08); border-color: #ef4444; }
+  .action-danger .head { color: #fca5a5; }
+  .action-watch { background: rgba(59,130,246,0.08); border-color: #3b82f6; }
+  .action-watch .head { color: #93c5fd; }
+  .action-trend { background: rgba(100,116,139,0.1); border-color: #64748b; }
+  .action-trend .head { color: #cbd5e1; }
+  .action-enter { background: rgba(34,197,94,0.08); border-color: #22c55e; }
+  .action-enter .head { color: #86efac; }
+  .action-probe { background: rgba(234,179,8,0.08); border-color: #eab308; }
+  .action-probe .head { color: #fde047; }
+
+  .stock-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+  .stock-chip {
+    background: var(--card-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 10px; font-size: 12px;
+  }
+  .stock-chip .ticker { font-weight: 700; color: var(--primary-c); font-size: 13px; }
+  .stock-chip .ticker .kr-name { font-weight: 400; color: var(--muted); font-size: 11px; margin-left: 4px; }
+  .stock-chip .meta { color: var(--muted); margin-top: 2px; font-size: 11px; line-height: 1.5; }
+  .stock-chip .risk { color: #fca5a5; font-weight: 600; font-size: 11px; margin-top: 2px; }
+  .stock-chip.danger { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+  .stock-chip.new-confirmed { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.05); }
+
+  .tag {
+    display: inline-block; padding: 1px 6px; border-radius: 3px;
+    font-size: 10.5px; font-weight: 700; margin-right: 3px;
+  }
+  .tag-PULLBACK { background: rgba(59,130,246,0.18); color: #93c5fd; }
+  .tag-TREND_OK { background: rgba(100,116,139,0.2); color: #cbd5e1; }
+  .tag-EXTENDED { background: rgba(239,68,68,0.18); color: #fca5a5; }
+  .tag-BASE     { background: rgba(34,197,94,0.18); color: #86efac; }
+  .tag-BROKEN   { background: rgba(239,68,68,0.3);  color: #fca5a5; }
+
+  .glossary > details { padding: 12px 16px; margin-bottom: 8px; }
+  .glossary summary { cursor: pointer; font-weight: 600; color: var(--primary-c); font-size: 14px; }
+  .glossary .gbody { margin-top: 10px; font-size: 13px; line-height: 1.7; color: var(--text); }
+  .glossary table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 13px; }
+  .glossary th, .glossary td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .glossary th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; }
+  .glossary .note { margin-top: 10px; font-size: 12px; color: var(--muted); }
+
+  .matrix-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+  .matrix-table th, .matrix-table td { padding: 8px; text-align: center; border: 1px solid var(--border); }
+  .matrix-table th { background: rgba(0,0,0,0.2); color: var(--muted); }
+  .matrix-table td.setup-name { background: rgba(0,0,0,0.1); font-weight: 600; text-align: left; padding-left: 12px; }
+  .cell-trending { background: rgba(100,116,139,0.12); color: #cbd5e1; }
+  .cell-watch    { background: rgba(59,130,246,0.12); color: #93c5fd; }
+  .cell-probe    { background: rgba(234,179,8,0.12); color: #fde047; }
+  .cell-enter    { background: rgba(34,197,94,0.12); color: #86efac; }
+  .cell-avoid    { background: rgba(239,68,68,0.12); color: #fca5a5; }
+
+  .advanced > details { padding: 12px 16px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+  .advanced summary { cursor: pointer; font-weight: 600; color: var(--primary-c); font-size: 14px; }
+  .advanced .abody { margin-top: 12px; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+  .data-table th, .data-table td { padding: 4px 6px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .data-table th { color: var(--muted); font-size: 10px; text-transform: uppercase; }
+
+  footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+  footer p { margin: 4px 0; }
+
+  @media (max-width: 768px) {
+    .pipe-flow { flex-direction: column; }
+    .pipe-arrow { transform: rotate(90deg); padding: 4px 0; }
+  }
+
+  /* ── Top 5 Buy Candidates (2026-05-26 spec) ── */
+  .top5-section { margin: 20px 0 28px; padding: 18px 22px;
+                   background: var(--card); border: 1px solid var(--border);
+                   border-radius: 12px; }
+  .top5-section h2 { margin: 0 0 6px; font-size: 17px; color: var(--primary-c);
+                      display: flex; align-items: center; gap: 8px; }
+  .top5-section .partial-notice,
+  .top5-section .empty-state { color: var(--muted); font-size: 13px;
+                                 margin: 6px 0 12px; }
+  .top5-table { width: 100%; border-collapse: collapse; margin-top: 10px;
+                 font-size: 13px; }
+  .top5-table th { color: var(--muted); font-weight: 500; font-size: 11px;
+                    text-transform: uppercase; text-align: left;
+                    padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .top5-table td { padding: 8px; border-bottom: 1px solid var(--border);
+                    vertical-align: middle; color: var(--text); }
+  .top5-row.extended-row { background: rgba(239, 68, 68, 0.05); }
+  .top5-table .kr-name { font-weight: 400; color: var(--muted);
+                          font-size: 12px; margin-left: 6px; }
+  .top5-table small { color: var(--muted); display: block; font-size: 11px;
+                       margin-top: 2px; }
+  .top5-section .disclaimer { color: var(--muted); font-size: 12px;
+                                margin-top: 10px; }
+  .badge.portfolio-badge { display: inline-block; padding: 1px 6px;
+                            margin-left: 4px; border-radius: 3px;
+                            font-size: 11px; font-weight: 600;
+                            background: rgba(34,197,94,0.18); color: #86efac; }
+  .badge.scanner-only-badge { display: inline-block; padding: 1px 6px;
+                                margin-left: 4px; border-radius: 3px;
+                                font-size: 11px; font-weight: 600;
+                                background: rgba(59,130,246,0.18); color: #93c5fd; }
+  .chip.overheat-chip { display: inline-block; padding: 1px 6px;
+                         margin-left: 4px; border-radius: 3px;
+                         font-size: 11px; font-weight: 600;
+                         background: rgba(239,68,68,0.18); color: #fca5a5; }
+</style>
+</head>
+<body class="font-body">
+
+<!-- ── Sidebar Partial ── shared by report_template, momentum, lifecycle pages ── -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center">
+      <span class="material-symbols-outlined text-[#004352]" style="font-variation-settings: 'FILL' 1;">dashboard_customize</span>
+    </div>
+    <div>
+      <h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2>
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p>
+    </div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="report_2026-06-18.html">
+      <span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="report_wife_2026-06-18.html">
+      <span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="scanner_2026-06-18.html">
+      <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="backtest_2026-06-18.html">
+      <span class="material-symbols-outlined">history</span><span>Backtest</span>
+    </a>
+    
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="portfolio_stops_2026-06-18.html">
+      <span class="material-symbols-outlined">shield</span><span>My Risk</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="portfolio_stops_wife_2026-06-18.html">
+      <span class="material-symbols-outlined">shield</span><span>Wife Risk</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="trend_2026-06-18.html">
+      <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="momentum_us_2026-06-19.html">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum US</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="momentum_kr_2026-06-19.html">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum KR</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="lifecycle_us_2026-06-18.html">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle US</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="lifecycle_kr_2026-06-18.html">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle KR</span>
+    </a>
+    
+  </div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" class="flex items-center gap-3 px-4 py-3 w-full text-left bg-[#6dddff]/10 text-[#6dddff] hover:bg-[#6dddff]/20 rounded-md transition-all font-bold text-sm">
+      <span class="material-symbols-outlined">rocket_launch</span><span>Run Workflow</span>
+    </a>
+    <button id="themeToggle" onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
+      <span class="material-symbols-outlined">light_mode</span><span>Light Mode</span>
+    </button>
+    
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">
+      2026년 6월 18일 (목요일)<br>
+      
+        
+          <span class="text-[#00E5BC]">CLOSED</span>
+        
+      
+    </div>
+  </div>
+</nav>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<main class="md:ml-64 min-h-screen">
+  <header class="flex justify-between items-center w-full px-8 py-4 bg-surface/60 backdrop-blur-xl z-40 shadow-[0_40px_40px_0_rgba(222,229,255,0.08)] sticky top-0">
+    <div class="flex items-center gap-4">
+      <button class="md:hidden text-on-surface" onclick="toggleSidebar()"><span class="material-symbols-outlined">menu</span></button>
+      <span class="text-xl font-bold text-on-surface uppercase font-headline tracking-tight">🔄 Lifecycle KR</span>
+      <span class="text-xs text-on-surface-variant font-label hidden sm:block">2026-06-18 기준 · lifecycle_phase_a/0.1.0</span>
+    </div>
+    <button onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme"><span class="material-symbols-outlined" id="themeIcon">light_mode</span></button>
+  </header>
+
+  <div class="p-8 space-y-0 max-w-[1100px] mx-auto">
+
+    
+    <div class="concept-box">
+      <h3>📌 이 페이지는 뭐 하는 페이지인가요?</h3>
+      <p>Momentum 스캐너가 추세 후보로 뽑은 종목들이 <b>지금 어느 단계에 있는지</b> 매일 추적하는 페이지입니다. 각 종목을 <b>"사도 되는가 / 기다려야 하는가 / 피해야 하는가"</b> 5단계로 분류합니다.</p>
+      <p>⚠️ <b>매수 판단 보조용</b>이지 자동 매매가 아닙니다. 또한 <b>보유 종목 매도</b>는 Portfolio Risk 페이지에서 별도로 봅니다.</p>
+    </div>
+
+    
+    <div class="summary-box">
+      <h2>📊 오늘의 결론 (2026-06-18)</h2>
+      <div class="big-verdict">⚡ 분할 진입 가능 종목 5개</div>
+      <div class="verdict">삼성생명, SK하이닉스, 삼성전기, 삼성전자, SK이 약한 트리거 — 절반 진입 검토</div>
+      
+      <div class="verdict" style="margin-top: 12px;">💡 <b>오늘 할 일</b>: PROBE 종목 절반 비중 진입 (그중 5건은 drift 트랙)</div>
+      
+      <p class="score-engine-note">📊 Score engine active — 평균 score 1.8, 활성 컴포넌트 평균 1.6</p>
+      
+    </div>
+
+    
+    <section id="top5-buy-candidates" class="top5-section">
+      <h2>🎯 오늘의 매수 후보 (보유 추가 포함) — Top 5/5</h2>
+
+      
+        
+
+        <table class="top5-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Ticker</th><th>Decision</th><th>Setup</th>
+              <th>Score</th><th>RS</th><th>키 지표</th><th>사이즈 hint</th>
+            </tr>
+          </thead>
+          <tbody>
+          
+            <tr class="top5-row">
+              <td>1</td>
+              <td>
+                <strong>032830.KS</strong>
+                <span class="kr-name">삼성생명</span>
+                
+                
+              </td>
+              <td>PROBE</td>
+              <td>
+                TREND_OK
+                
+              </td>
+              <td>
+                <strong>11.2</strong>
+                <small>= 6.2 + 3 + 2</small>
+              </td>
+              <td>+9.8%</td>
+              <td>
+                RSI 69 ·
+                EMA9 +11.3% ·
+                Vol 1.1×
+              </td>
+              <td>신규 50%</td>
+            </tr>
+          
+            <tr class="top5-row">
+              <td>2</td>
+              <td>
+                <strong>009150.KS</strong>
+                <span class="kr-name">삼성전기</span>
+                
+                
+              </td>
+              <td>PROBE</td>
+              <td>
+                TREND_OK
+                
+              </td>
+              <td>
+                <strong>10.2</strong>
+                <small>= 6.2 + 3 + 1</small>
+              </td>
+              <td>+3.2%</td>
+              <td>
+                RSI 71 ·
+                EMA9 +12.8% ·
+                Vol 1.0×
+              </td>
+              <td>신규 50%</td>
+            </tr>
+          
+            <tr class="top5-row">
+              <td>3</td>
+              <td>
+                <strong>000660.KS</strong>
+                <span class="kr-name">SK하이닉스</span>
+                
+                
+              </td>
+              <td>PROBE</td>
+              <td>
+                TREND_OK
+                
+              </td>
+              <td>
+                <strong>8.2</strong>
+                <small>= 6.2 + 0 + 2</small>
+              </td>
+              <td>+9.2%</td>
+              <td>
+                RSI 72 ·
+                EMA9 +14.3% ·
+                Vol 1.1×
+              </td>
+              <td>신규 50%</td>
+            </tr>
+          
+            <tr class="top5-row">
+              <td>4</td>
+              <td>
+                <strong>034730.KS</strong>
+                <span class="kr-name">SK</span>
+                
+                
+              </td>
+              <td>PROBE</td>
+              <td>
+                TREND_OK
+                
+              </td>
+              <td>
+                <strong>8.2</strong>
+                <small>= 6.2 + 1 + 1</small>
+              </td>
+              <td>+0.8%</td>
+              <td>
+                RSI 64 ·
+                EMA9 +5.8% ·
+                Vol 1.1×
+              </td>
+              <td>신규 50%</td>
+            </tr>
+          
+            <tr class="top5-row">
+              <td>5</td>
+              <td>
+                <strong>088350.KS</strong>
+                <span class="kr-name">한화생명</span>
+                
+                
+              </td>
+              <td>TRENDING</td>
+              <td>
+                TREND_OK
+                
+              </td>
+              <td>
+                <strong>7.7</strong>
+                <small>= 4.7 + 3 + 0</small>
+              </td>
+              <td>-4.1%</td>
+              <td>
+                RSI 57 ·
+                EMA9 +3.7% ·
+                Vol 1.0×
+              </td>
+              <td>신규 50%</td>
+            </tr>
+          
+          </tbody>
+        </table>
+        <p class="disclaimer">
+          <small>⚠️ 자동매매 아님 — display only. 매수 결정은 사용자 판단. 사이즈는 권장치이며 강제 아님.</small>
+        </p>
+      
+    </section>
+
+    
+    <div class="pipeline">
+  <h2>🌊 종목 흐름 파이프라인</h2>
+  <p class="sub">왼쪽 → 오른쪽으로 갈수록 "진입 임박". 가장 오른쪽 빨강은 별개로 "위험 상태".</p>
+
+  <div class="pipe-flow">
+    <div class="pipe-stage stage-trending">
+  <div class="stage-head">
+    <span class="stage-name">⚪ TRENDING</span>
+    <span class="stage-count">11</span>
+  </div>
+  <div class="stage-desc">추세 진행 중. 아직 눌림 자리 아님.</div>
+  <div class="stage-action">📍 추격 자제</div>
+  <div class="stage-tickers">삼성물산 · 한화생명 · 대한항공 · 삼성화재 · LG전자 · 한온시스템 · NAVER · 현대모비스 · KT&amp;G · 삼성SDS · 한국타이어앤테크놀로지</div>
+</div>
+    <div class="pipe-arrow">▶</div>
+    <div class="pipe-stage stage-watch">
+  <div class="stage-head">
+    <span class="stage-name">🔵 WATCH</span>
+    <span class="stage-count">5</span>
+  </div>
+  <div class="stage-desc">눌림 자리 도착. 트리거(반등 신호) 대기.</div>
+  <div class="stage-action">👀 반등 신호 관찰</div>
+  <div class="stage-tickers">하나금융지주 · KB금융 · 신한지주 · 코웨이 · 롯데쇼핑</div>
+</div>
+    <div class="pipe-arrow">▶</div>
+    <div class="pipe-stage stage-probe">
+  <div class="stage-head">
+    <span class="stage-name">🟡 PROBE</span>
+    <span class="stage-count">5</span>
+  </div>
+  <div class="stage-desc">약한 트리거 발화. 50% 진입 가능.</div>
+  <div class="stage-action">⚡ 절반 진입</div>
+  <div class="stage-tickers">삼성생명 · SK하이닉스 · 삼성전기 · 삼성전자 · SK</div>
+</div>
+    <div class="pipe-arrow">▶</div>
+    <div class="pipe-stage stage-enter">
+  <div class="stage-head">
+    <span class="stage-name">🟢 ENTER</span>
+    <span class="stage-count">0</span>
+  </div>
+  <div class="stage-desc">확정 트리거 발화. 풀 진입 가능.</div>
+  <div class="stage-action">✅ 풀 진입</div>
+  <div class="stage-tickers"><span class="muted">— 오늘 해당 종목 없음 —</span></div>
+</div>
+    <div class="pipe-arrow invisible">|</div>
+    <div class="pipe-stage stage-avoid">
+  <div class="stage-head">
+    <span class="stage-name">🔴 AVOID</span>
+    <span class="stage-count">0</span>
+  </div>
+  <div class="stage-desc">과확장 · 구조 깨짐. 별도 위험 상태.</div>
+  <div class="stage-action">❌ 매수 금지</div>
+  <div class="stage-tickers"><span class="muted">— 오늘 해당 종목 없음 —</span></div>
+</div>
+  </div>
+
+  <div class="flow-narration">
+    <b>이 흐름의 의미</b>: 추세에 있는 종목(<b>TRENDING</b>)은 일정 기간 오르다가 잠시 쉬는 구간(<b>WATCH</b>=PULLBACK/BASE)으로 들어옵니다. 그 안에서 반등 신호가 살짝 뜨면 <b>PROBE</b>, 거래량 증가까지 확인되면 <b>ENTER</b>로 승격됩니다. 반대로 너무 많이 오르거나 추세가 깨지면 <b>AVOID</b>로 빠집니다 (별도 경로).
+  </div>
+</div>
+
+    
+    
+
+    
+    
+
+    
+    
+    <section class="detail">
+      <h2>🟡 분할 진입 (PROBE) — 5 종목</h2>
+      <p class="sub">PULLBACK/BASE 자리에서 약한 트리거(거래량 미동반) 발화. 50% 비중 진입 검토.</p>
+      <div class="action-box action-probe">
+        <div class="head">⚡ 오늘 할 일</div>
+        <div class="desc">약한 트리거 발화 — 거래량 부족으로 신뢰도가 풀 트리거보다 낮습니다. <b>절반 비중</b>으로 진입하고 다음 거래일 확인 후 추가 진입 결정.</div>
+      </div>
+      <div class="filter-toolbar" data-section="probe">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="s-strong">Score STRONG</button>
+        <button class="filter-btn" data-filter="rs-strong-mid">RS STRONG+MID</button>
+        <button class="filter-btn" data-filter="active-4plus">활성 ≥ 4</button>
+      </div>
+      <div class="stock-list" data-grid="probe">
+        
+        <div class="stock-chip"
+             data-score-tier="WEAK"
+             data-rs-tier="MID"
+             data-active-components="3">
+          <div class="ticker">032830.KS <span class="kr-name">삼성생명</span></div>
+          <div class="meta">9일선 +11.3% · vol 1.1×</div>
+          <div class="meta">EARLY · 4일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="3 components active">●●●○○</span>
+            <span class="score-num tier-weak">4</span>
+            <span class="tier-badge tier-weak">S·WEAK</span>
+            
+              <span class="rs-num tier-mid">RS +9.8%</span>
+              <span class="tier-badge tier-mid">R·MID</span>
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="WEAK"
+             data-rs-tier="MID"
+             data-active-components="3">
+          <div class="ticker">000660.KS <span class="kr-name">SK하이닉스</span></div>
+          <div class="meta">9일선 +14.3% · vol 1.1×</div>
+          <div class="meta">EARLY · 4일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="3 components active">●●●○○</span>
+            <span class="score-num tier-weak">4</span>
+            <span class="tier-badge tier-weak">S·WEAK</span>
+            
+              <span class="rs-num tier-mid">RS +9.2%</span>
+              <span class="tier-badge tier-mid">R·MID</span>
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="WEAK"
+             data-rs-tier="WEAK"
+             data-active-components="3">
+          <div class="ticker">009150.KS <span class="kr-name">삼성전기</span></div>
+          <div class="meta">9일선 +12.8% · vol 1.0×</div>
+          <div class="meta">EARLY · 4일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="3 components active">●●●○○</span>
+            <span class="score-num tier-weak">4</span>
+            <span class="tier-badge tier-weak">S·WEAK</span>
+            
+              <span class="rs-num tier-weak">RS +3.2%</span>
+              <span class="tier-badge tier-weak">R·WEAK</span>
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="WEAK"
+             data-rs-tier="WEAK"
+             data-active-components="3">
+          <div class="ticker">005930.KS <span class="kr-name">삼성전자</span></div>
+          <div class="meta">9일선 +8.1% · vol 1.1×</div>
+          <div class="meta">EARLY · 4일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="3 components active">●●●○○</span>
+            <span class="score-num tier-weak">4</span>
+            <span class="tier-badge tier-weak">S·WEAK</span>
+            
+              <span class="rs-num tier-weak">RS +2.6%</span>
+              <span class="tier-badge tier-weak">R·WEAK</span>
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="WEAK"
+             data-rs-tier="WEAK"
+             data-active-components="3">
+          <div class="ticker">034730.KS <span class="kr-name">SK</span></div>
+          <div class="meta">9일선 +5.8% · vol 1.1×</div>
+          <div class="meta">EARLY · 4일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="3 components active">●●●○○</span>
+            <span class="score-num tier-weak">4</span>
+            <span class="tier-badge tier-weak">S·WEAK</span>
+            
+              <span class="rs-num tier-weak">RS +0.8%</span>
+              <span class="tier-badge tier-weak">R·WEAK</span>
+            
+            
+          </div>
+          
+        </div>
+        
+      </div>
+    </section>
+    
+
+    
+    
+    <section class="detail">
+      <h2>🔵 진입 대기 (WATCH) — 5 종목</h2>
+      <p class="sub">PULLBACK(눌림목) 자리에 도착했지만 반등 신호(트리거)가 아직 안 뜸. <b>매일 다시 평가</b>되며 신호 발화 시 PROBE/ENTER로 자동 승격.</p>
+      <div class="action-box action-watch">
+        <div class="head">👀 오늘 할 일</div>
+        <div class="desc">지금 사지 마세요. 이 종목들이 <b>"반등 신호 + 거래량 증가"</b>를 보이면 시스템이 자동으로 ENTER로 올려줍니다. 다음 거래일에 이 페이지를 다시 확인하세요.<br>👉 <b>관전 포인트</b>: 거래량 평균 대비 1.2배 이상 + 종가가 일중 상위 20% 마감.</div>
+      </div>
+      <div class="filter-toolbar" data-section="watch">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="s-strong">Score STRONG</button>
+        <button class="filter-btn" data-filter="rs-strong-mid">RS STRONG+MID</button>
+        <button class="filter-btn" data-filter="active-4plus">활성 ≥ 4</button>
+      </div>
+      <div class="stock-list" data-grid="watch">
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="0">
+          <div class="ticker">086790.KS <span class="kr-name">하나금융지주</span></div>
+          <div class="meta">9일선 +1.7% · 21일선 +3.6%</div>
+          <div class="meta">PULLBACK · 2일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="0 components active">○○○○○</span>
+            <span class="score-num tier-null">0</span>
+            
+            
+              <span class="rs-num tier-null">RS -8.8%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="0">
+          <div class="ticker">105560.KS <span class="kr-name">KB금융</span></div>
+          <div class="meta">9일선 +0.4% · 21일선 +2.2%</div>
+          <div class="meta">PULLBACK · 2일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="0 components active">○○○○○</span>
+            <span class="score-num tier-null">0</span>
+            
+            
+              <span class="rs-num tier-null">RS -11.0%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="0">
+          <div class="ticker">055550.KS <span class="kr-name">신한지주</span></div>
+          <div class="meta">9일선 -0.7% · 21일선 +1.2%</div>
+          <div class="meta">PULLBACK · 2일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="0 components active">○○○○○</span>
+            <span class="score-num tier-null">0</span>
+            
+            
+              <span class="rs-num tier-null">RS -14.6%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="0">
+          <div class="ticker">021240.KS <span class="kr-name">코웨이</span></div>
+          <div class="meta">9일선 -0.3% · 21일선 +0.2%</div>
+          <div class="meta">PULLBACK · 4일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="0 components active">○○○○○</span>
+            <span class="score-num tier-null">0</span>
+            
+            
+              <span class="rs-num tier-null">RS -19.7%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="0">
+          <div class="ticker">023530.KS <span class="kr-name">롯데쇼핑</span></div>
+          <div class="meta">9일선 -0.1% · 21일선 +7.4%</div>
+          <div class="meta">PULLBACK · 1일 압축</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="0 components active">○○○○○</span>
+            <span class="score-num tier-null">0</span>
+            
+            
+              <span class="rs-num tier-null">RS -25.2%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+      </div>
+    </section>
+    
+
+    
+    
+    <section class="detail">
+      <h2>⚪ 눌림 대기 (TRENDING) — 11 종목</h2>
+      <p class="sub">추세는 살아있으나 아직 눌림 자리가 안 형성됨. 지금 추격 매수는 자제하고, 다음 PULLBACK을 기다림.</p>
+      <div class="action-box action-trend">
+        <div class="head">📍 오늘 할 일</div>
+        <div class="desc">이 종목들은 <b>이미 추세 중</b>이라 따라잡기 매수는 평균단가가 높아질 위험이 있습니다. 다음에 <b>EMA9 근처까지 단기 조정</b>이 오면 그때 WATCH로 이동하고 진입 검토 가능.<br>👉 지금은 <b>관망</b>만, 차트 알람만 걸어두기.</div>
+      </div>
+      <div class="filter-toolbar" data-section="trending">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="s-strong">Score STRONG</button>
+        <button class="filter-btn" data-filter="rs-strong-mid">RS STRONG+MID</button>
+        <button class="filter-btn" data-filter="active-4plus">활성 ≥ 4</button>
+      </div>
+      <div class="stock-list" data-grid="trending">
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="3">
+          <div class="ticker">028260.KS <span class="kr-name">삼성물산</span></div>
+          <div class="meta">9일선 +4.2% · 4일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="3 components active">●●●○○</span>
+            <span class="score-num tier-null">3</span>
+            
+            
+              <span class="rs-num tier-null">RS -0.2%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="3">
+          <div class="ticker">088350.KS <span class="kr-name">한화생명</span></div>
+          <div class="meta">9일선 +3.7% · 2일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="3 components active">●●●○○</span>
+            <span class="score-num tier-null">3</span>
+            
+            
+              <span class="rs-num tier-null">RS -4.1%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="2">
+          <div class="ticker">003490.KS <span class="kr-name">대한항공</span></div>
+          <div class="meta">9일선 +4.4% · 4일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="2 components active">●●○○○</span>
+            <span class="score-num tier-null">2</span>
+            
+            
+              <span class="rs-num tier-null">RS -2.3%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="2">
+          <div class="ticker">000810.KS <span class="kr-name">삼성화재</span></div>
+          <div class="meta">9일선 +4.9% · 1일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="2 components active">●●○○○</span>
+            <span class="score-num tier-null">2</span>
+            
+            
+              <span class="rs-num tier-null">RS -13.1%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="2">
+          <div class="ticker">066570.KS <span class="kr-name">LG전자</span></div>
+          <div class="meta">9일선 -5.8% · 10일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="2 components active">●●○○○</span>
+            <span class="score-num tier-null">2</span>
+            
+            
+              <span class="rs-num tier-null">RS -17.5%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="1">
+          <div class="ticker">018880.KS <span class="kr-name">한온시스템</span></div>
+          <div class="meta">9일선 -4.1% · 1일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="1 components active">●○○○○</span>
+            <span class="score-num tier-null">1</span>
+            
+            
+              <span class="rs-num tier-null">RS -9.0%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="1">
+          <div class="ticker">035420.KS <span class="kr-name">NAVER</span></div>
+          <div class="meta">9일선 -2.9% · 1일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="1 components active">●○○○○</span>
+            <span class="score-num tier-null">1</span>
+            
+            
+              <span class="rs-num tier-null">RS -13.7%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="1">
+          <div class="ticker">012330.KS <span class="kr-name">현대모비스</span></div>
+          <div class="meta">9일선 -4.1% · 1일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="1 components active">●○○○○</span>
+            <span class="score-num tier-null">1</span>
+            
+            
+              <span class="rs-num tier-null">RS -14.0%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="1">
+          <div class="ticker">033780.KS <span class="kr-name">KT&amp;G</span></div>
+          <div class="meta">9일선 -2.1% · 1일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="1 components active">●○○○○</span>
+            <span class="score-num tier-null">1</span>
+            
+            
+              <span class="rs-num tier-null">RS -21.2%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="1">
+          <div class="ticker">018260.KS <span class="kr-name">삼성SDS</span></div>
+          <div class="meta">9일선 -6.5% · 2일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="1 components active">●○○○○</span>
+            <span class="score-num tier-null">1</span>
+            
+            
+              <span class="rs-num tier-null">RS -22.4%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+        <div class="stock-chip"
+             data-score-tier="null"
+             data-rs-tier="null"
+             data-active-components="1">
+          <div class="ticker">161390.KS <span class="kr-name">한국타이어앤테크놀로지</span></div>
+          <div class="meta">9일선 -5.1% · 2일 추세 유지</div>
+          
+          <div class="chip-score">
+            
+            <span class="score-dots" title="1 components active">●○○○○</span>
+            <span class="score-num tier-null">1</span>
+            
+            
+              <span class="rs-num tier-null">RS -26.4%</span>
+              
+            
+            
+          </div>
+          
+        </div>
+        
+      </div>
+    </section>
+    
+
+    
+    
+<section class="glossary">
+  <h2>📖 용어 사전</h2>
+
+  <details open>
+    <summary>왜 5가지 그룹으로 나누나? (결정 매트릭스)</summary>
+    <div class="gbody">
+      시스템은 종목을 두 축으로 보고 최종 그룹을 정합니다:
+      <br><b>① Setup</b> (구조 진단) × <b>② Trigger</b> (진입 신호)
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Setup \ Trigger</th>
+            <th>WAIT<br>(신호 없음)</th>
+            <th>EARLY<br>(약한 신호)</th>
+            <th>CONFIRMED<br>(거래량 동반)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="setup-name">TREND_OK (추세)</td>
+            <td class="cell-trending" colspan="3">⚪ 눌림 대기 (TRENDING)</td>
+          </tr>
+          <tr>
+            <td class="setup-name">PULLBACK (눌림)</td>
+            <td class="cell-watch">🔵 WATCH</td>
+            <td class="cell-probe">🟡 PROBE</td>
+            <td class="cell-enter">🟢 ENTER</td>
+          </tr>
+          <tr>
+            <td class="setup-name">BASE_FORMING (베이스)</td>
+            <td class="cell-watch">🔵 WATCH</td>
+            <td class="cell-probe">🟡 PROBE</td>
+            <td class="cell-enter">🟢 ENTER</td>
+          </tr>
+          <tr>
+            <td class="setup-name">EXTENDED (과확장)</td>
+            <td class="cell-avoid" colspan="3">🔴 AVOID — 트리거 무시</td>
+          </tr>
+          <tr>
+            <td class="setup-name">BROKEN (깨짐)</td>
+            <td class="cell-avoid" colspan="3">🔴 AVOID — 트리거 무시</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="note">※ 추가: <b>FAILED_BREAKOUT</b> 태그가 붙으면 무조건 AVOID로 강제 분류.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Setup (구조 진단) — 5단계</summary>
+    <div class="gbody">
+      종목의 추세 구조를 진단하는 5단계 분류.
+      평가 우선순위: <b>BROKEN &gt; EXTENDED &gt; BASE_FORMING &gt; PULLBACK &gt; TREND_OK</b>
+      <table>
+        <tr><th>단계</th><th>의미</th><th>판정 조건</th></tr>
+        <tr><td><span class="tag tag-TREND_OK">TREND_OK</span></td>
+            <td>정상 상승 추세</td>
+            <td>EMA9 &gt; EMA21 &gt; EMA65 정렬 + EMA65 5일 기울기 양수</td></tr>
+        <tr><td><span class="tag tag-PULLBACK">PULLBACK</span></td>
+            <td>추세 안의 단기 하락 (=진입 자리)</td>
+            <td>TREND_OK 조건 + EMA9 거리 ≤ 3% + EMA21 위</td></tr>
+        <tr><td><span class="tag tag-BASE">BASE_FORMING</span></td>
+            <td>5–15일 횡보 + 변동성 수축 (=VCP)</td>
+            <td>5d ATR &lt; 20d ATR + 거래량 수축 + EMA21 기울기 양수</td></tr>
+        <tr><td><span class="tag tag-EXTENDED">EXTENDED</span></td>
+            <td>과확장</td>
+            <td>정렬 유지 + EMA9 거리 &gt; 12% + RSI &gt; 72</td></tr>
+        <tr><td><span class="tag tag-BROKEN">BROKEN</span></td>
+            <td>구조 깨짐</td>
+            <td>EMA21 &lt; EMA65 또는 종가 &lt; EMA65</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Trigger (진입 신호) — 3단계</summary>
+    <div class="gbody">
+      Setup이 PULLBACK 또는 BASE_FORMING일 때만 의미 있음.
+      <table>
+        <tr><th>신호</th><th>조건</th></tr>
+        <tr><td><b>WAIT</b></td><td>진입 신호 없음 (대다수의 일상)</td></tr>
+        <tr><td><b>EARLY_TRIGGER</b></td><td>EMA9 reclaim 또는 전일 고점 돌파 + 종가가 일중 상위 20%</td></tr>
+        <tr><td><b>CONFIRMED_TRIGGER</b></td><td>EARLY 조건 + 거래량 1.2배 + 종가 일중 상위 20%</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>지표 약어 (테이블 컬럼)</summary>
+    <div class="gbody">
+      <table>
+        <tr><th>약어</th><th>설명</th></tr>
+        <tr><td><b>EMA9 / EMA21 / EMA65</b></td><td>9일, 21일, 65일 지수이동평균</td></tr>
+        <tr><td><b>dist_ema9 / dist_ema21</b></td><td>현재 가격이 해당 이평선보다 얼마나 위 (%)</td></tr>
+        <tr><td><b>vol_ratio</b></td><td>20일 평균 거래량 대비 비율. 1.0 = 평균, 1.2 = 평균의 1.2배</td></tr>
+        <tr><td><b>ATR %</b></td><td>평균 진폭 (변동성). 종가 대비 %</td></tr>
+        <tr><td><b>days_in_pb</b></td><td>PULLBACK/BASE_FORMING에 머문 연속 일수</td></tr>
+        <tr><td><b>setup_streak</b></td><td>같은 setup 유지 연속 일수</td></tr>
+        <tr><td><b>trig_age</b></td><td>마지막 trigger 발화로부터 경과 일수 (0=오늘)</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>위험 태그 (risk_tags)</summary>
+    <div class="gbody">
+      <table>
+        <tr><th>태그</th><th>조건</th></tr>
+        <tr><td><b>OVERHEAT</b></td><td>RSI ≥ 80</td></tr>
+        <tr><td><b>PARABOLIC</b></td><td>1일 수익률 ≥ +8% &amp; 거래량 ≥ 2.0배</td></tr>
+        <tr><td><b>FAILED_BREAKOUT</b></td><td>어제 CONFIRMED → 오늘 종가 &lt; EMA9. 가짜 돌파 → 강제 AVOID</td></tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Score / 점수 시스템</summary>
+    <div class="gbody">
+      <table>
+        <tr><th>용어</th><th>설명</th></tr>
+        <tr>
+          <td><b>Score</b></td>
+          <td>증거 누적 점수. 9개 trigger 컴포넌트 (max 14) 또는 7개 drift 컴포넌트 (max 9) 중 활성화된 항목의 가중치 합. 임계값 이상이면 PROBE/ENTER로 승격.</td>
+        </tr>
+        <tr>
+          <td><b>trigger_score vs drift_score</b></td>
+          <td>trigger는 PULLBACK/BASE_FORMING setup에서 reclaim/breakout/volume 등 expansion 신호를 누적. drift는 TREND_OK setup에서 quiet leader (NVDA/META 류) — volume 폭발 없이 천천히 오르는 종목을 잡기 위한 별도 score.</td>
+        </tr>
+        <tr>
+          <td><b>active_components (●○)</b></td>
+          <td>활성화된 컴포넌트 개수. 같은 score여도 적은 컴포넌트의 큰 가중치보다 많은 컴포넌트의 작은 가중치가 더 broad한 strength를 의미할 수 있음 (calibration 단계 분석 대상).</td>
+        </tr>
+        <tr>
+          <td><b>PROBE_STRONG ⚡ badge</b></td>
+          <td>drift_score ≥ 6 — quiet leader continuation의 강한 신호. 사이즈는 PROBE와 동일 (25%) 이지만 confidence 차이를 보여주는 표식.</td>
+        </tr>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Score Tier + RS Tier (점수 강도 분류)</summary>
+    <div class="gbody">
+      <table>
+        <tr><th>용어</th><th>설명</th></tr>
+        <tr>
+          <td><b>Score Tier (S·WEAK / S·MID / S·STRONG)</b></td>
+          <td>점수의 상대적 강도. trigger 트랙: WEAK=3, MID=4–5, STRONG=6. drift 트랙: WEAK=4, MID=5, STRONG=6+. drift STRONG은 기존 PROBE_STRONG ⚡ badge와 동일.</td>
+        </tr>
+        <tr>
+          <td><b>RS Tier (R·WEAK / R·MID / R·STRONG)</b></td>
+          <td>시장 대비 5일 outperform 정도 (rs_delta_pct). STRONG ≥ 10%, MID 5–9.99%, WEAK 0–4.99%. 같은 점수여도 RS가 높을수록 진짜 leader. SPY (US) / KS200 (KR) 대비.</td>
+        </tr>
+      </table>
+    </div>
+  </details>
+</section>
+
+    
+    <section class="advanced">
+      <details>
+        <summary>⚙ 고급 보기 (디버깅·audit용)</summary>
+        <div class="abody">
+
+          
+          
+          <h3 style="font-size:14px; margin: 10px 0 6px;">최근 상태 전환 (transitions, 최근 30개)</h3>
+          <table class="data-table">
+            <thead><tr><th>ticker</th><th>from → to</th><th>as_of</th></tr></thead>
+            <tbody>
+              
+              <tr>
+                <td><b>088350.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>088350.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>078930.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>078930.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>035420.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>035420.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>033780.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>033780.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>028260.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>028260.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>023530.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>023530.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>018880.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>018880.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>017670.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>017670.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>012330.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>012330.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>011790.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>011790.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>009150.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>009150.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>009150.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>005930.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>005930.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>005930.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>000810.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>000810.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>000150.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>000150.KS</b></td>
+                <td> → </td>
+                <td></td>
+              </tr>
+              
+            </tbody>
+          </table>
+          
+
+          
+          
+          <h3 style="font-size:14px; margin: 16px 0 6px;">BROKEN 종목 — 구조 깨짐 (매수 후보 자격 상실)</h3>
+          <div class="stock-list">
+            
+            <div class="stock-chip danger">
+              <div class="ticker">000150.KS <span class="kr-name">두산</span></div>
+              <div class="meta">BROKEN · 9일선 -3.0%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">003550.KS <span class="kr-name">LG</span></div>
+              <div class="meta">BROKEN · 9일선 -3.8%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">009240.KS <span class="kr-name">한샘</span></div>
+              <div class="meta">BROKEN · 9일선 +1.4%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">011200.KS <span class="kr-name">HMM</span></div>
+              <div class="meta">BROKEN · 9일선 -0.5%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">011790.KS <span class="kr-name">SKC</span></div>
+              <div class="meta">BROKEN · 9일선 -8.8%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">017670.KS <span class="kr-name">SK텔레콤</span></div>
+              <div class="meta">BROKEN · 9일선 -5.6%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">024110.KS <span class="kr-name">기업은행</span></div>
+              <div class="meta">BROKEN · 9일선 +0.4%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">030000.KS <span class="kr-name">제일기획</span></div>
+              <div class="meta">BROKEN · 9일선 -2.2%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">030200.KS <span class="kr-name">KT</span></div>
+              <div class="meta">BROKEN · 9일선 -3.0%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">036570.KS <span class="kr-name">엔씨소프트</span></div>
+              <div class="meta">BROKEN · 9일선 -2.6%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">078930.KS <span class="kr-name">GS</span></div>
+              <div class="meta">BROKEN · 9일선 -3.2%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">096530.KS <span class="kr-name">씨젠</span></div>
+              <div class="meta">BROKEN · 9일선 -0.4%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">251270.KS <span class="kr-name">넷마블</span></div>
+              <div class="meta">BROKEN · 9일선 -2.8%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">316140.KS <span class="kr-name">우리금융지주</span></div>
+              <div class="meta">BROKEN · 9일선 +0.4%</div>
+            </div>
+            
+            <div class="stock-chip danger">
+              <div class="ticker">373220.KS <span class="kr-name">LG에너지솔루션</span></div>
+              <div class="meta">BROKEN · 9일선 -1.8%</div>
+            </div>
+            
+          </div>
+          
+
+          
+          <h3 style="font-size:14px; margin: 16px 0 6px;">전체 종목 상세 데이터</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ticker</th><th>decision</th><th>setup</th><th>trigger</th>
+                <th>dist_ema9</th><th>dist_ema21</th><th>RSI</th>
+                <th>vol_ratio</th><th>setup_streak</th><th>trig_age</th><th>risk_tags</th>
+              </tr>
+            </thead>
+            <tbody>
+              
+              <tr>
+                <td><b>032830.KS</b> <span style="color:var(--muted); font-size:10px;">삼성생명</span></td>
+                <td>PROBE</td>
+                <td>TREND_OK</td>
+                <td>EARLY_TRIGGER</td>
+                <td>+11.3%</td>
+                <td>+20.4%</td>
+                <td>68.5387</td>
+                <td>1.1×</td>
+                <td>4</td>
+                <td>오늘</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>000660.KS</b> <span style="color:var(--muted); font-size:10px;">SK하이닉스</span></td>
+                <td>PROBE</td>
+                <td>TREND_OK</td>
+                <td>EARLY_TRIGGER</td>
+                <td>+14.3%</td>
+                <td>+24.0%</td>
+                <td>71.978</td>
+                <td>1.1×</td>
+                <td>4</td>
+                <td>오늘</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>009150.KS</b> <span style="color:var(--muted); font-size:10px;">삼성전기</span></td>
+                <td>PROBE</td>
+                <td>TREND_OK</td>
+                <td>EARLY_TRIGGER</td>
+                <td>+12.8%</td>
+                <td>+27.8%</td>
+                <td>70.6848</td>
+                <td>1.0×</td>
+                <td>4</td>
+                <td>오늘</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>005930.KS</b> <span style="color:var(--muted); font-size:10px;">삼성전자</span></td>
+                <td>PROBE</td>
+                <td>TREND_OK</td>
+                <td>EARLY_TRIGGER</td>
+                <td>+8.1%</td>
+                <td>+14.3%</td>
+                <td>65.5593</td>
+                <td>1.1×</td>
+                <td>4</td>
+                <td>오늘</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>034730.KS</b> <span style="color:var(--muted); font-size:10px;">SK</span></td>
+                <td>PROBE</td>
+                <td>TREND_OK</td>
+                <td>EARLY_TRIGGER</td>
+                <td>+5.8%</td>
+                <td>+11.6%</td>
+                <td>64.4769</td>
+                <td>1.1×</td>
+                <td>4</td>
+                <td>오늘</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>086790.KS</b> <span style="color:var(--muted); font-size:10px;">하나금융지주</span></td>
+                <td>WATCH</td>
+                <td>PULLBACK</td>
+                <td>WAIT</td>
+                <td>+1.7%</td>
+                <td>+3.6%</td>
+                <td>55.4489</td>
+                <td>0.7×</td>
+                <td>2</td>
+                <td>2일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>105560.KS</b> <span style="color:var(--muted); font-size:10px;">KB금융</span></td>
+                <td>WATCH</td>
+                <td>PULLBACK</td>
+                <td>WAIT</td>
+                <td>+0.4%</td>
+                <td>+2.2%</td>
+                <td>53.684</td>
+                <td>1.0×</td>
+                <td>2</td>
+                <td>2일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>055550.KS</b> <span style="color:var(--muted); font-size:10px;">신한지주</span></td>
+                <td>WATCH</td>
+                <td>PULLBACK</td>
+                <td>WAIT</td>
+                <td>-0.7%</td>
+                <td>+1.2%</td>
+                <td>52.4956</td>
+                <td>0.9×</td>
+                <td>2</td>
+                <td>6일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>021240.KS</b> <span style="color:var(--muted); font-size:10px;">코웨이</span></td>
+                <td>WATCH</td>
+                <td>PULLBACK</td>
+                <td>WAIT</td>
+                <td>-0.3%</td>
+                <td>+0.2%</td>
+                <td>51.7151</td>
+                <td>0.6×</td>
+                <td>4</td>
+                <td>7일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>023530.KS</b> <span style="color:var(--muted); font-size:10px;">롯데쇼핑</span></td>
+                <td>WATCH</td>
+                <td>PULLBACK</td>
+                <td>WAIT</td>
+                <td>-0.1%</td>
+                <td>+7.4%</td>
+                <td>59.4838</td>
+                <td>0.7×</td>
+                <td>1</td>
+                <td>2일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>028260.KS</b> <span style="color:var(--muted); font-size:10px;">삼성물산</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>+4.2%</td>
+                <td>+9.8%</td>
+                <td>59.6042</td>
+                <td>0.7×</td>
+                <td>4</td>
+                <td>어제</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>088350.KS</b> <span style="color:var(--muted); font-size:10px;">한화생명</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>+3.7%</td>
+                <td>+6.0%</td>
+                <td>56.6203</td>
+                <td>1.0×</td>
+                <td>2</td>
+                <td>어제</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>003490.KS</b> <span style="color:var(--muted); font-size:10px;">대한항공</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>+4.4%</td>
+                <td>+8.0%</td>
+                <td>61.0684</td>
+                <td>0.9×</td>
+                <td>4</td>
+                <td>2일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>000810.KS</b> <span style="color:var(--muted); font-size:10px;">삼성화재</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>+4.9%</td>
+                <td>+11.1%</td>
+                <td>66.4669</td>
+                <td>0.6×</td>
+                <td>1</td>
+                <td>7일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>066570.KS</b> <span style="color:var(--muted); font-size:10px;">LG전자</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>-5.8%</td>
+                <td>-5.1%</td>
+                <td>48.8665</td>
+                <td>0.4×</td>
+                <td>10</td>
+                <td>13일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>018880.KS</b> <span style="color:var(--muted); font-size:10px;">한온시스템</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>-4.1%</td>
+                <td>-3.8%</td>
+                <td>47.9905</td>
+                <td>0.4×</td>
+                <td>1</td>
+                <td>2일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>035420.KS</b> <span style="color:var(--muted); font-size:10px;">NAVER</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>-2.9%</td>
+                <td>-0.5%</td>
+                <td>50.6727</td>
+                <td>0.3×</td>
+                <td>1</td>
+                <td>6일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>012330.KS</b> <span style="color:var(--muted); font-size:10px;">현대모비스</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>-4.1%</td>
+                <td>-3.3%</td>
+                <td>48.7946</td>
+                <td>0.4×</td>
+                <td>1</td>
+                <td>2일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>033780.KS</b> <span style="color:var(--muted); font-size:10px;">KT&amp;G</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>-2.1%</td>
+                <td>-1.2%</td>
+                <td>48.5127</td>
+                <td>0.6×</td>
+                <td>1</td>
+                <td>7일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>018260.KS</b> <span style="color:var(--muted); font-size:10px;">삼성SDS</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>-6.5%</td>
+                <td>-4.8%</td>
+                <td>48.4882</td>
+                <td>0.4×</td>
+                <td>2</td>
+                <td>15일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>161390.KS</b> <span style="color:var(--muted); font-size:10px;">한국타이어앤테크놀로지</span></td>
+                <td>TRENDING</td>
+                <td>TREND_OK</td>
+                <td>WAIT</td>
+                <td>-5.1%</td>
+                <td>-3.0%</td>
+                <td>47.6946</td>
+                <td>0.8×</td>
+                <td>2</td>
+                <td>6일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>000150.KS</b> <span style="color:var(--muted); font-size:10px;">두산</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-3.0%</td>
+                <td>-3.1%</td>
+                <td>48.5383</td>
+                <td>0.7×</td>
+                <td>1</td>
+                <td>6일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>003550.KS</b> <span style="color:var(--muted); font-size:10px;">LG</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-3.8%</td>
+                <td>-5.1%</td>
+                <td>47.0476</td>
+                <td>0.3×</td>
+                <td>5</td>
+                <td>15일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>009240.KS</b> <span style="color:var(--muted); font-size:10px;">한샘</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>+1.4%</td>
+                <td>+1.5%</td>
+                <td>50.2648</td>
+                <td>0.7×</td>
+                <td>3</td>
+                <td>—</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>011200.KS</b> <span style="color:var(--muted); font-size:10px;">HMM</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-0.5%</td>
+                <td>+1.2%</td>
+                <td>51.9166</td>
+                <td>0.9×</td>
+                <td>3</td>
+                <td>—</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>011790.KS</b> <span style="color:var(--muted); font-size:10px;">SKC</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-8.8%</td>
+                <td>-8.9%</td>
+                <td>45.0121</td>
+                <td>2.4×</td>
+                <td>1</td>
+                <td>7일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>017670.KS</b> <span style="color:var(--muted); font-size:10px;">SK텔레콤</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-5.6%</td>
+                <td>-6.2%</td>
+                <td>43.945</td>
+                <td>0.6×</td>
+                <td>1</td>
+                <td>9일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>024110.KS</b> <span style="color:var(--muted); font-size:10px;">기업은행</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>+0.4%</td>
+                <td>+2.2%</td>
+                <td>54.9481</td>
+                <td>0.5×</td>
+                <td>3</td>
+                <td>—</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>030000.KS</b> <span style="color:var(--muted); font-size:10px;">제일기획</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-2.2%</td>
+                <td>-0.6%</td>
+                <td>49.0995</td>
+                <td>0.5×</td>
+                <td>5</td>
+                <td>—</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>030200.KS</b> <span style="color:var(--muted); font-size:10px;">KT</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-3.0%</td>
+                <td>-3.7%</td>
+                <td>43.1021</td>
+                <td>0.6×</td>
+                <td>6</td>
+                <td>—</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>036570.KS</b> <span style="color:var(--muted); font-size:10px;">엔씨소프트</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-2.6%</td>
+                <td>-3.8%</td>
+                <td>45.7053</td>
+                <td>0.4×</td>
+                <td>6</td>
+                <td>17일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>078930.KS</b> <span style="color:var(--muted); font-size:10px;">GS</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-3.2%</td>
+                <td>-3.7%</td>
+                <td>45.4861</td>
+                <td>1.5×</td>
+                <td>1</td>
+                <td>2일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>096530.KS</b> <span style="color:var(--muted); font-size:10px;">씨젠</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-0.4%</td>
+                <td>-0.5%</td>
+                <td>50.3666</td>
+                <td>0.6×</td>
+                <td>5</td>
+                <td>30일전</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>251270.KS</b> <span style="color:var(--muted); font-size:10px;">넷마블</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-2.8%</td>
+                <td>-4.8%</td>
+                <td>40.5638</td>
+                <td>1.4×</td>
+                <td>15</td>
+                <td>—</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>316140.KS</b> <span style="color:var(--muted); font-size:10px;">우리금융지주</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>+0.4%</td>
+                <td>+1.1%</td>
+                <td>51.402</td>
+                <td>0.6×</td>
+                <td>3</td>
+                <td>—</td>
+                <td></td>
+              </tr>
+              
+              <tr>
+                <td><b>373220.KS</b> <span style="color:var(--muted); font-size:10px;">LG에너지솔루션</span></td>
+                <td>AVOID</td>
+                <td>BROKEN</td>
+                <td>WAIT</td>
+                <td>-1.8%</td>
+                <td>-3.2%</td>
+                <td>45.4399</td>
+                <td>0.6×</td>
+                <td>13</td>
+                <td>17일전</td>
+                <td></td>
+              </tr>
+              
+            </tbody>
+          </table>
+
+        </div>
+      </details>
+    </section>
+
+    <footer>
+      <p>Lifecycle Phase A · lifecycle_phase_a/0.1.0 · 추적 36 종목</p>
+      <p>※ 시장 국면 분류기(RISK_ON / TRENDING / CHOPPY / RISK_OFF)는 Phase B에서 추가 예정</p>
+      <p>※ 본 문서는 정보 제공용이며 투자 권유가 아닙니다.</p>
+    </footer>
+
+  </div>
+</main>
+
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-high/90 backdrop-blur-xl border-t border-outline-variant/10 z-50 px-6 py-4 flex justify-between items-center">
+  <a href="report_2026-06-18.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">dashboard</span><span class="text-[10px]">Home</span></a>
+  <a href="scanner_2026-06-18.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">analytics</span><span class="text-[10px]">Scan</span></a>
+  <a href="trend_2026-06-18.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">trending_up</span><span class="text-[10px]">Trend</span></a>
+  <a href="backtest_2026-06-18.html" class="text-on-surface-variant flex flex-col items-center gap-1"><span class="material-symbols-outlined">history</span><span class="text-[10px]">Backtest</span></a>
+</nav>
+
+<script>
+function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('hidden');s.classList.toggle('flex');o.classList.toggle('hidden');}
+function toggleTheme(){const h=document.documentElement,d=h.classList.contains('dark');h.classList.remove('dark','light');const t=d?'light':'dark';h.classList.add(t);localStorage.setItem('theme',t);document.getElementById('themeIcon').textContent=t==='dark'?'light_mode':'dark_mode';}
+document.addEventListener('DOMContentLoaded',function(){document.getElementById('themeIcon').textContent=document.documentElement.classList.contains('dark')?'light_mode':'dark_mode';});
+</script>
+<script>
+// Tier filter toolbar — see docs/superpowers/specs/2026-05-14-probe-tiering-design.md §5.4
+(function() {
+  document.querySelectorAll('.filter-toolbar').forEach(function(toolbar) {
+    var section = toolbar.dataset.section;
+    var grid = document.querySelector('[data-grid="' + section + '"]');
+    if (!grid) return;
+    toolbar.addEventListener('click', function(e) {
+      if (!e.target.classList.contains('filter-btn')) return;
+      toolbar.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+      e.target.classList.add('active');
+      var filter = e.target.dataset.filter;
+      grid.querySelectorAll('.stock-chip').forEach(function(chip) {
+        var st = chip.dataset.scoreTier;
+        var rt = chip.dataset.rsTier;
+        var ac = parseInt(chip.dataset.activeComponents || '0', 10);
+        var show = true;
+        if (filter === 's-strong')      show = (st === 'STRONG');
+        if (filter === 'rs-strong-mid') show = (rt === 'STRONG' || rt === 'MID');
+        if (filter === 'active-4plus')  show = (ac >= 4);
+        chip.style.display = show ? '' : 'none';
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
