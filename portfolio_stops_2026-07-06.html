@@ -1,0 +1,1274 @@
+
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛡 Portfolio Risk — me 2026-07-06</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: { extend: {
+    colors: {
+      "surface-container": "rgb(var(--c-surface-container) / <alpha-value>)",
+      "surface-container-high": "rgb(var(--c-surface-container-high) / <alpha-value>)",
+      "surface": "rgb(var(--c-surface) / <alpha-value>)",
+      "primary": "rgb(var(--c-primary) / <alpha-value>)",
+      "on-surface": "rgb(var(--c-on-surface) / <alpha-value>)",
+      "on-surface-variant": "rgb(var(--c-on-surface-variant) / <alpha-value>)",
+      "outline-variant": "rgb(var(--c-outline-variant) / <alpha-value>)",
+    },
+    fontFamily: { headline: ["Space Grotesk"], body: ["Manrope"], label: ["Inter"] },
+  }}
+}
+</script>
+<style>
+  /* ── Dark Theme ── */
+  html.dark {
+    --c-surface-container: 15 25 48;
+    --c-surface-container-highest: 25 37 64;
+    --c-surface-dim: 6 14 32;
+    --c-surface: 6 14 32;
+    --c-surface-container-high: 20 31 56;
+    --c-surface-container-low: 9 19 40;
+    --c-surface-bright: 31 43 73;
+    --c-surface-variant: 25 37 64;
+    --c-background: 6 14 32;
+    --c-primary: 109 221 255;
+    --c-primary-dim: 0 195 235;
+    --c-secondary: 0 229 188;
+    --c-secondary-dim: 0 201 165;
+    --c-tertiary: 255 113 102;
+    --c-tertiary-dim: 229 26 34;
+    --c-on-surface: 222 229 255;
+    --c-on-surface-variant: 163 170 196;
+    --c-outline: 109 117 140;
+    --c-outline-variant: 64 72 93;
+    --c-error: 255 113 108;
+    --c-warning: 251 191 36;
+    --grad-start: #6dddff; --grad-end: #00d2fd;
+  }
+  /* ── Light Theme ── */
+  html.light {
+    --c-surface-container: 255 255 255;
+    --c-surface-container-highest: 226 232 240;
+    --c-surface-dim: 241 245 249;
+    --c-surface: 241 243 245;
+    --c-surface-container-high: 255 255 255;
+    --c-surface-container-low: 248 250 252;
+    --c-surface-bright: 255 255 255;
+    --c-surface-variant: 248 250 252;
+    --c-background: 241 243 245;
+    --c-primary: 37 99 235;
+    --c-primary-dim: 30 64 175;
+    --c-secondary: 5 150 105;
+    --c-secondary-dim: 4 120 87;
+    --c-tertiary: 225 29 72;
+    --c-tertiary-dim: 190 18 60;
+    --c-on-surface: 15 23 42;
+    --c-on-surface-variant: 71 85 105;
+    --c-outline: 100 116 139;
+    --c-outline-variant: 148 163 184;
+    --c-error: 225 29 72;
+    --c-warning: 217 119 6;
+    --grad-start: #2563EB; --grad-end: #1E40AF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: rgb(var(--c-surface));
+    color: rgb(var(--c-on-surface));
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  ::selection { background: rgb(var(--c-primary) / 0.3); color: rgb(var(--c-primary)); }
+
+  /* ── Header (Sidebar 친화) ── */
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 32px;
+    background: rgb(var(--c-surface) / 0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 40px 40px 0 rgba(222, 229, 255, 0.08);
+    position: sticky; top: 0; z-index: 40;
+    border-bottom: 1px solid rgb(var(--c-outline-variant) / 0.1);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .topbar-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: -0.025em;
+    color: rgb(var(--c-on-surface));
+  }
+  .topbar-meta { display: flex; gap: 24px; font-size: 12px; }
+  .topbar-meta-item { display: flex; flex-direction: column; }
+  .topbar-meta-lbl { color: rgb(var(--c-on-surface) / 0.6); }
+  .topbar-meta-val { color: rgb(var(--c-primary)); font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+  .topbar-date { font-size: 11px; color: rgb(var(--c-outline)); font-family: 'Inter', sans-serif; }
+  .topbar-theme-btn {
+    padding: 8px; background: transparent; border: none; cursor: pointer;
+    color: rgb(var(--c-on-surface) / 0.6); display: flex; align-items: center;
+  }
+  .topbar-theme-btn:hover { color: rgb(var(--c-primary)); }
+  .topbar-menu-btn {
+    background: transparent; border: none; cursor: pointer; padding: 4px;
+    color: rgb(var(--c-on-surface)); display: none;
+  }
+  @media (max-width: 768px) {
+    .topbar-meta { display: none; }
+    .topbar { padding: 12px 16px; }
+    .topbar-menu-btn { display: inline-flex; align-items: center; }
+  }
+
+  /* ── Container (사이드바 우측 main 영역) ── */
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px; }
+  @media (max-width: 768px) { .container { padding: 16px; } }
+  /* ── Sidebar 영역 확보 ── */
+  .pr-main { min-height: 100vh; }
+  @media (min-width: 768px) { .pr-main { margin-left: 16rem; } }
+
+  /* ── Page Title ── */
+  .page-head {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+  }
+  .page-title-block .uppercase-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: rgb(var(--c-on-surface-variant));
+    margin-bottom: 8px;
+  }
+  .page-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, var(--grad-start) 0%, var(--grad-end) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    margin: 0;
+  }
+  .page-subtitle {
+    font-size: 13px; color: rgb(var(--c-on-surface-variant));
+    margin-top: 8px; font-family: 'Inter', sans-serif;
+  }
+
+  /* ── Summary cards ── */
+  .pr-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  @media (max-width: 768px) { .pr-summary { grid-template-columns: repeat(2, 1fr); } }
+  .pr-card {
+    background: rgb(var(--c-surface-container-high));
+    border-radius: 8px;
+    padding: 24px;
+    border: 1px solid rgb(var(--c-outline-variant) / 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+  .pr-card .pr-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 48px; font-weight: 700; line-height: 1;
+    color: rgb(var(--c-on-surface));
+  }
+  .pr-card .pr-lbl {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: rgb(var(--c-on-surface-variant));
+    margin-top: 12px;
+  }
+  .pr-card.alert { border-left: 4px solid rgb(var(--c-tertiary)); }
+  .pr-card.alert .pr-num { color: rgb(var(--c-tertiary)); }
+  .pr-card.warn { border-left: 4px solid rgb(var(--c-warning)); }
+  .pr-card.warn .pr-num { color: rgb(var(--c-warning)); }
+  .pr-card.tight-card { border-left: 4px solid rgb(var(--c-warning) / 0.6); }
+  .pr-card.hold-card { border-left: 4px solid rgb(var(--c-secondary)); }
+  .pr-card.hold-card .pr-num { color: rgb(var(--c-secondary)); }
+
+  /* ── Changes ── */
+  .pr-changes {
+    background: rgb(var(--c-primary) / 0.08);
+    border: 1px solid rgb(var(--c-primary) / 0.2);
+    border-radius: 8px;
+    padding: 14px 20px;
+    margin-bottom: 24px;
+  }
+  .pr-changes-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: rgb(var(--c-primary));
+    margin-bottom: 6px;
+  }
+  .pr-changes div {
+    color: rgb(var(--c-on-surface));
+    font-size: 13px;
+    padding: 2px 0;
+    font-family: 'Manrope', sans-serif;
+  }
+
+  /* ── Section ── */
+  .pr-section { margin-bottom: 32px; }
+  .pr-section-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgb(var(--c-outline-variant) / 0.15);
+  }
+  .pr-section-icon {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px; font-weight: 700;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+  }
+  .pr-section-icon.danger {
+    background: rgb(var(--c-tertiary) / 0.15);
+    color: rgb(var(--c-tertiary));
+  }
+  .pr-section-icon.warning {
+    background: rgb(var(--c-warning) / 0.15);
+    color: rgb(var(--c-warning));
+  }
+  .pr-section-icon.success {
+    background: rgb(var(--c-secondary) / 0.15);
+    color: rgb(var(--c-secondary));
+  }
+  .pr-section-titles { flex: 1; }
+  .pr-section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px; font-weight: 700;
+    color: rgb(var(--c-on-surface));
+    margin: 0;
+  }
+  .pr-section-sub {
+    font-size: 11px;
+    color: rgb(var(--c-on-surface-variant));
+    margin-top: 2px;
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Currency band ── */
+  .pr-ccy-band {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px;
+    background: rgb(var(--c-surface-container-low));
+    border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+    margin: 14px 0 8px;
+    color: rgb(var(--c-on-surface-variant));
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Inter', sans-serif;
+  }
+  .pr-ccy-flag {
+    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    background: rgb(var(--c-primary) / 0.15);
+    color: rgb(var(--c-primary));
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Row ── */
+  .pr-row {
+    padding: 14px 18px;
+    border: 1px solid rgb(var(--c-outline-variant) / 0.15);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    background: rgb(var(--c-surface-container));
+    transition: all 0.2s;
+  }
+  .pr-row:hover { background: rgb(var(--c-surface-container-high)); }
+  .pr-row.urgent {
+    border-color: rgb(var(--c-tertiary) / 0.4);
+    background: rgb(var(--c-tertiary) / 0.08);
+    border-left: 4px solid rgb(var(--c-tertiary));
+  }
+  .pr-row.tight {
+    border-color: rgb(var(--c-warning) / 0.4);
+    background: rgb(var(--c-warning) / 0.06);
+    border-left: 4px solid rgb(var(--c-warning));
+  }
+
+  .pr-row-top { display: grid; grid-template-columns: 1.6fr 60px 1fr 100px; gap: 12px; align-items: center; }
+  .pr-name {
+    font-weight: 700;
+    min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 15px;
+    font-family: 'Space Grotesk', sans-serif;
+    color: rgb(var(--c-on-surface));
+  }
+  .pr-mode {
+    font-size: 10px;
+    color: rgb(var(--c-on-surface-variant));
+    display: block;
+    font-weight: 500;
+    margin-top: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .pr-days {
+    font-size: 10px;
+    color: rgb(var(--c-tertiary));
+    font-weight: 700;
+    text-align: center;
+    font-family: 'Space Grotesk', sans-serif;
+    background: rgb(var(--c-tertiary) / 0.15);
+    padding: 4px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .pr-days.amber {
+    color: rgb(var(--c-warning));
+    background: rgb(var(--c-warning) / 0.15);
+  }
+
+  .pr-gap {
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-size: 18px;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .pr-gap.red { color: rgb(var(--c-tertiary)); }
+  .pr-gap.amber { color: rgb(var(--c-warning)); }
+  .pr-gap.green { color: rgb(var(--c-secondary)); }
+  .pr-gap-lbl {
+    display: block;
+    font-size: 9px;
+    color: rgb(var(--c-on-surface-variant) / 0.6);
+    font-weight: 500;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .pr-action {
+    font-size: 11px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .pr-action.exit { background: rgb(var(--c-tertiary)); color: rgb(var(--c-surface)); }
+  .pr-action.trim { background: rgb(var(--c-warning)); color: rgb(var(--c-surface)); }
+
+  /* ── Prices ── */
+  .pr-prices {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed rgb(var(--c-outline-variant) / 0.2);
+  }
+  .pr-row.urgent .pr-prices { border-top-color: rgb(var(--c-tertiary) / 0.3); }
+  .pr-row.tight .pr-prices { border-top-color: rgb(var(--c-warning) / 0.3); }
+  .pr-price-cell { display: flex; flex-direction: column; gap: 2px; }
+  .pr-price-lbl {
+    font-size: 9px;
+    color: rgb(var(--c-on-surface-variant));
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+  }
+  .pr-price-val {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    font-family: 'Space Grotesk', sans-serif;
+    color: rgb(var(--c-on-surface));
+  }
+  .pr-price-sub {
+    font-size: 10px;
+    color: rgb(var(--c-on-surface-variant) / 0.7);
+    font-variant-numeric: tabular-nums;
+    font-family: 'Inter', sans-serif;
+  }
+  .pr-price-cell.stop .pr-price-val { color: rgb(var(--c-tertiary)); }
+  .pr-price-cell.stop .pr-price-sub { color: rgb(var(--c-tertiary) / 0.7); }
+
+  /* ── Hold grid ── */
+  .pr-hold-note {
+    font-size: 11px;
+    color: rgb(var(--c-on-surface-variant));
+    margin: 0 0 10px;
+    font-family: 'Inter', sans-serif;
+  }
+  .pr-hold-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px;
+  }
+  .pr-hold-chip {
+    padding: 12px 14px;
+    background: rgb(var(--c-surface-container));
+    border: 1px solid rgb(var(--c-outline-variant) / 0.12);
+    border-left: 3px solid rgb(var(--c-secondary) / 0.5);
+    border-radius: 6px;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  .pr-hold-chip:hover {
+    background: rgb(var(--c-surface-container-high));
+    border-left-color: rgb(var(--c-secondary));
+  }
+  .pr-hold-chip-top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .pr-hold-tk {
+    font-weight: 700;
+    font-size: 13px;
+    font-family: 'Space Grotesk', sans-serif;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    min-width: 0;
+    color: rgb(var(--c-on-surface));
+  }
+  .pr-hold-gap {
+    color: rgb(var(--c-secondary));
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .pr-hold-chip-bot {
+    display: flex; justify-content: space-between;
+    font-size: 10px;
+    color: rgb(var(--c-on-surface-variant) / 0.8);
+    font-variant-numeric: tabular-nums;
+    gap: 6px;
+    font-family: 'Inter', sans-serif;
+  }
+  .pr-hold-chip-bot span:first-child {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    min-width: 0;
+  }
+  .pr-hold-chip-bot span:last-child {
+    color: rgb(var(--c-tertiary) / 0.8);
+    font-weight: 600;
+  }
+
+  /* ── Footer ── */
+  .pr-footer {
+    color: rgb(var(--c-on-surface-variant));
+    font-size: 11px;
+    margin-top: 40px;
+    padding: 20px 24px;
+    background: rgb(var(--c-surface-container-low));
+    border: 1px solid rgb(var(--c-outline-variant) / 0.1);
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+  }
+  .pr-footer p { margin: 5px 0; line-height: 1.6; }
+  .pr-footer .pr-footer-formula {
+    color: rgb(var(--c-primary));
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+  }
+  .pr-footer .pr-footer-note {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed rgb(var(--c-outline-variant) / 0.2);
+    font-style: italic;
+    color: rgb(var(--c-on-surface-variant) / 0.7);
+  }
+
+  /* ── Mobile responsive ── */
+  @media (max-width: 640px) {
+    .container { padding: 16px 12px; }
+    .page-title { font-size: 28px; }
+    .pr-row-top {
+      grid-template-columns: 1.4fr 60px;
+      row-gap: 8px;
+    }
+    .pr-row-top .pr-gap,
+    .pr-row-top .pr-action {
+      grid-column: span 1;
+      text-align: left;
+    }
+    .pr-prices { grid-template-columns: 1fr; gap: 8px; }
+    .pr-price-cell { flex-direction: row; gap: 10px; align-items: baseline; }
+    .pr-price-lbl { min-width: 50px; }
+    .pr-hold-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body class="font-body">
+
+<!-- ── Sidebar Partial ── shared by report_template, momentum, lifecycle pages ── -->
+<nav class="fixed left-0 top-0 h-full flex flex-col p-6 z-50 bg-[#0f172a] border-r border-white/10 font-body font-medium w-64 transition-all duration-300 ease-in-out md:flex hidden" id="sidebar">
+  <div class="flex items-center gap-3 mb-10">
+    <div class="w-10 h-10 bg-[#00d2fd] rounded flex items-center justify-center">
+      <span class="material-symbols-outlined text-[#004352]" style="font-variation-settings: 'FILL' 1;">dashboard_customize</span>
+    </div>
+    <div>
+      <h2 class="text-lg font-black text-[#6dddff] leading-none">Signal Report</h2>
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Precision Curator</p>
+    </div>
+  </div>
+  <div class="space-y-2 flex-grow">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="report_2026-07-06.html">
+      <span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="report_wife_2026-07-06.html">
+      <span class="material-symbols-outlined">favorite</span><span>Wife Portfolio</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="scanner_2026-07-06.html">
+      <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
+    </a>
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="backtest_2026-07-06.html">
+      <span class="material-symbols-outlined">history</span><span>Backtest</span>
+    </a>
+    
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="portfolio_stops_2026-07-06.html">
+      <span class="material-symbols-outlined">shield</span><span>My Risk</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="portfolio_stops_wife_2026-07-06.html">
+      <span class="material-symbols-outlined">shield</span><span>Wife Risk</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="trend_2026-07-06.html">
+      <span class="material-symbols-outlined">trending_up</span><span>Trend</span>
+    </a>
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="momentum_us_2026-07-07.html">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum US</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="momentum_kr_2026-07-07.html">
+      <span class="material-symbols-outlined">local_fire_department</span><span>Momentum KR</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="lifecycle_us_2026-07-06.html">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle US</span>
+    </a>
+    
+    
+    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all text-slate-400 hover:bg-white/10 hover:text-white" href="lifecycle_kr_2026-07-06.html">
+      <span class="material-symbols-outlined">timeline</span><span>Lifecycle KR</span>
+    </a>
+    
+  </div>
+  <div class="pt-6 mt-6 border-t border-white/10 space-y-2">
+    <a href="https://github.com/freecjs77-tech/AI-Trading-Assistant-v2/actions/workflows/daily-report.yml" target="_blank" class="flex items-center gap-3 px-4 py-3 w-full text-left bg-[#6dddff]/10 text-[#6dddff] hover:bg-[#6dddff]/20 rounded-md transition-all font-bold text-sm">
+      <span class="material-symbols-outlined">rocket_launch</span><span>Run Workflow</span>
+    </a>
+    <button id="themeToggle" onclick="toggleTheme()" class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-white/10 hover:text-white transition-all w-full text-left">
+      <span class="material-symbols-outlined">light_mode</span><span>Light Mode</span>
+    </button>
+    
+    <div class="px-4 py-2 text-[10px] text-slate-500 leading-relaxed">
+      2026년 7월 6일 (월요일)<br>
+      
+        
+          <span class="text-[#00E5BC]">CLOSED</span>
+        
+      
+    </div>
+  </div>
+</nav>
+<div class="fixed inset-0 bg-black/50 z-40 hidden" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<main class="pr-main">
+
+<!-- ── Top Bar ── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <button class="topbar-menu-btn" onclick="toggleSidebar()" title="Open menu"><span class="material-symbols-outlined">menu</span></button>
+    <span class="topbar-title">🛡 Portfolio Risk</span>
+  </div>
+  <div class="topbar-meta">
+    <div class="topbar-meta-item">
+      <span class="topbar-meta-lbl">Tracked</span>
+      <span class="topbar-meta-val">38</span>
+    </div>
+    <div class="topbar-meta-item">
+      <span class="topbar-meta-lbl">Mode</span>
+      <span class="topbar-meta-val">v1.0</span>
+    </div>
+    <div class="topbar-meta-item">
+      <span class="topbar-meta-lbl">Anchor</span>
+      <span class="topbar-meta-val">01-02</span>
+    </div>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px;">
+    <div class="topbar-date">2026-07-06</div>
+    <button class="topbar-theme-btn" onclick="toggleTheme()" title="Toggle Theme"><span class="material-symbols-outlined" id="themeIcon">light_mode</span></button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── Page Head ── -->
+  <div class="page-head">
+    <div class="page-title-block">
+      <div class="uppercase-label">Precision Stop · Trailing</div>
+      <h1 class="page-title">Stop Signal Monitor</h1>
+      <p class="page-subtitle">38 positions · 보조 reference (자동매도 아님)</p>
+    </div>
+  </div>
+
+  <!-- ── Summary ── -->
+  <div class="pr-summary">
+    <div class="pr-card alert">
+      <div class="pr-num">21</div>
+      <div class="pr-lbl">Exit Signal</div>
+    </div>
+    <div class="pr-card warn">
+      <div class="pr-num">01</div>
+      <div class="pr-lbl">Exit Ready</div>
+    </div>
+    <div class="pr-card tight-card">
+      <div class="pr-num">04</div>
+      <div class="pr-lbl">Tight</div>
+    </div>
+    <div class="pr-card hold-card">
+      <div class="pr-num">12</div>
+      <div class="pr-lbl">Hold</div>
+    </div>
+  </div>
+
+  
+  <!-- ── Changes ── -->
+  <div class="pr-changes">
+    <div class="pr-changes-title">Signal Changes — vs Previous Trading Day</div>
+    
+      <div>102110 TIGER 200: Tight → Exit Ready</div>
+    
+      <div>QLD: Tight → Hold</div>
+    
+      <div>QQQ: Tight → Hold</div>
+    
+      <div>SOXX: Exit → Tight</div>
+    
+      <div>TSLA: Exit → Hold</div>
+    
+  </div>
+  
+
+  
+  
+  <div class="pr-section">
+    <div class="pr-section-head">
+      <div class="pr-section-icon danger">!</div>
+      <div class="pr-section-titles">
+        <h2 class="pr-section-title">오늘 액션 · Exit / Exit Ready</h2>
+        <div class="pr-section-sub">22 positions · stop line breached</div>
+      </div>
+    </div>
+
+    
+    <div class="pr-ccy-band">
+      <span class="pr-ccy-flag">USD</span> 미국 종목 · 12개
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">ETHU<span class="pr-mode">HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">88D</div>
+        
+        <div class="pr-gap red">−76.2%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$14.66</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$70.13</span><span class="pr-price-sub">2026-01-14</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$61.71</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">SOXS<span class="pr-mode">HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">35D</div>
+        
+        <div class="pr-gap red">−44.5%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$4.17</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$8.54</span><span class="pr-price-sub">2026-05-20</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$7.52</span><span class="pr-price-sub">High −11.9%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">CRCL<span class="pr-mode">HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">55D</div>
+        
+        <div class="pr-gap red">−41.3%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$68.65</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$132.84</span><span class="pr-price-sub">2026-03-18</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$116.90</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">SLV<span class="pr-mode">HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">88D</div>
+        
+        <div class="pr-gap red">−39.6%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$56.11</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$105.60</span><span class="pr-price-sub">2026-01-28</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$92.93</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">NKE<span class="pr-mode">MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">88D</div>
+        
+        <div class="pr-gap red">−28.9%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$43.34</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$66.30</span><span class="pr-price-sub">2026-01-13</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$61.00</span><span class="pr-price-sub">High −8.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">SOXL<span class="pr-mode">HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">4D</div>
+        
+        <div class="pr-gap red">−26.5%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$194.65</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$300.77</span><span class="pr-price-sub">2026-06-22</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$264.68</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">PLTR<span class="pr-mode">MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">88D</div>
+        
+        <div class="pr-gap red">−17.8%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$132.54</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$181.68</span><span class="pr-price-sub">2026-01-07</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$161.29</span><span class="pr-price-sub">High −11.2%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">MSFT<span class="pr-mode">MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">27D</div>
+        
+        <div class="pr-gap red">−13.1%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$386.74</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$483.47</span><span class="pr-price-sub">2026-01-07</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$444.79</span><span class="pr-price-sub">High −8.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">BMNR<span class="pr-mode">HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">23D</div>
+        
+        <div class="pr-gap red">−9.9%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$15.55</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$19.61</span><span class="pr-price-sub">2026-05-21</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$17.26</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">NVDA<span class="pr-mode">MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">15D</div>
+        
+        <div class="pr-gap red">−9.1%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$195.55</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$235.74</span><span class="pr-price-sub">2026-05-14</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$215.14</span><span class="pr-price-sub">High −8.7%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">AMZN<span class="pr-mode">MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">23D</div>
+        
+        <div class="pr-gap red">−2.7%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$244.16</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$274.99</span><span class="pr-price-sub">2026-05-06</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$251.00</span><span class="pr-price-sub">High −8.7%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">GOOGL<span class="pr-mode">MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">14D</div>
+        
+        <div class="pr-gap red">−0.5%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$366.46</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$402.62</span><span class="pr-price-sub">2026-05-13</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$368.30</span><span class="pr-price-sub">High −8.5%</span></div>
+      </div>
+    </div>
+    
+    
+
+    
+    <div class="pr-ccy-band">
+      <span class="pr-ccy-flag">KRW</span> 한국 종목 · 10개
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">삼성SDI<span class="pr-mode">006400 · MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">28D</div>
+        
+        <div class="pr-gap red">−27.9%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">451,500원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">712,000원</span><span class="pr-price-sub">2026-04-29</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">626,560원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">디아이티<span class="pr-mode">110990 · HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">15D</div>
+        
+        <div class="pr-gap red">−25.9%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">18,220원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">27,950원</span><span class="pr-price-sub">2026-05-15</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">24,596원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">현대차<span class="pr-mode">005380 · MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">22D</div>
+        
+        <div class="pr-gap red">−25.5%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">502,000원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">766,000원</span><span class="pr-price-sub">2026-05-29</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">674,080원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">TIGER 코스닥150<span class="pr-mode">232080 · HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">23D</div>
+        
+        <div class="pr-gap red">−20.8%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">15,005원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">21,525원</span><span class="pr-price-sub">2026-02-27</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">18,942원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">LG에너지솔루션<span class="pr-mode">373220 · MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">25D</div>
+        
+        <div class="pr-gap red">−16.9%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">354,500원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">484,500원</span><span class="pr-price-sub">2026-04-22</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">426,360원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">SOL 조선TOP3플러스<span class="pr-mode">466920 · HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">11D</div>
+        
+        <div class="pr-gap red">−11.2%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">33,055원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">42,325원</span><span class="pr-price-sub">2026-04-27</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">37,246원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">TIGER 반도체TOP10<span class="pr-mode">396500 · HIGH_VOL · ATR×4</span></div>
+        
+        <div class="pr-days">4D</div>
+        
+        <div class="pr-gap red">−9.2%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">44,500원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">55,670원</span><span class="pr-price-sub">2026-06-22</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">48,990원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">SK하이닉스<span class="pr-mode">000660 · MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">4D</div>
+        
+        <div class="pr-gap red">−8.8%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">2,343,000원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">2,919,000원</span><span class="pr-price-sub">2026-06-22</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">2,568,720원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">삼성전자<span class="pr-mode">005930 · MOMENTUM · ATR×3</span></div>
+        
+        <div class="pr-days">4D</div>
+        
+        <div class="pr-gap red">−0.3%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action exit">Exit</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">318,000원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">362,500원</span><span class="pr-price-sub">2026-06-18</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">319,000원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row urgent">
+      <div class="pr-row-top">
+        <div class="pr-name">TIGER 200<span class="pr-mode">102110 · CORE · 12% fix</span></div>
+        
+        <div class="pr-days amber">1D NEW</div>
+        
+        <div class="pr-gap amber">−0.2%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action trim">Trim 30~50%</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">130,120원</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">148,165원</span><span class="pr-price-sub">2026-06-22</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">130,385원</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    
+  </div>
+  
+
+  
+  
+  <div class="pr-section">
+    <div class="pr-section-head">
+      <div class="pr-section-icon warning">~</div>
+      <div class="pr-section-titles">
+        <h2 class="pr-section-title">감시 · Tight</h2>
+        <div class="pr-section-sub">4 positions · within 5% of stop</div>
+      </div>
+    </div>
+
+    
+    <div class="pr-ccy-band">
+      <span class="pr-ccy-flag">USD</span> 미국 종목 · 4개
+    </div>
+    
+    <div class="pr-row tight">
+      <div class="pr-row-top">
+        <div class="pr-name">SOXX<span class="pr-mode">HIGH_VOL · ATR×4</span></div>
+        <div></div>
+        <div class="pr-gap amber">+0.9%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action trim">Trim 10~15%</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$581.51</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$655.01</span><span class="pr-price-sub">2026-06-22</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$576.41</span><span class="pr-price-sub">High −12.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row tight">
+      <div class="pr-row-top">
+        <div class="pr-name">O<span class="pr-mode">MOMENTUM · ATR×3</span></div>
+        <div></div>
+        <div class="pr-gap amber">+1.7%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action trim">Trim 10~15%</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$63.19</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$67.56</span><span class="pr-price-sub">2026-03-02</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$62.16</span><span class="pr-price-sub">High −8.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row tight">
+      <div class="pr-row-top">
+        <div class="pr-name">TLT<span class="pr-mode">DEFENSIVE · 8% fix</span></div>
+        <div></div>
+        <div class="pr-gap amber">+2.3%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action trim">Trim 10~15%</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$85.45</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$90.82</span><span class="pr-price-sub">2026-02-27</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$83.55</span><span class="pr-price-sub">High −8.0%</span></div>
+      </div>
+    </div>
+    
+    <div class="pr-row tight">
+      <div class="pr-row-top">
+        <div class="pr-name">JEPI<span class="pr-mode">MOMENTUM · ATR×3</span></div>
+        <div></div>
+        <div class="pr-gap amber">+3.0%<span class="pr-gap-lbl">Stop Gap</span></div>
+        <div class="pr-action trim">Trim 10~15%</div>
+      </div>
+      <div class="pr-prices">
+        <div class="pr-price-cell"><span class="pr-price-lbl">현재가</span><span class="pr-price-val">$56.75</span></div>
+        <div class="pr-price-cell"><span class="pr-price-lbl">최고가</span><span class="pr-price-val">$59.88</span><span class="pr-price-sub">2026-02-27</span></div>
+        <div class="pr-price-cell stop"><span class="pr-price-lbl">Stop</span><span class="pr-price-val">$55.09</span><span class="pr-price-sub">High −8.0%</span></div>
+      </div>
+    </div>
+    
+    
+
+    
+  </div>
+  
+
+  
+  
+  <div class="pr-section">
+    <div class="pr-section-head">
+      <div class="pr-section-icon success">✓</div>
+      <div class="pr-section-titles">
+        <h2 class="pr-section-title">안전 보유 · Hold</h2>
+        <div class="pr-section-sub">12 positions · safely above stop</div>
+      </div>
+    </div>
+    <p class="pr-hold-note">칩 내부: Stop Gap · 현재가 → Stop · (High − 폭%)</p>
+
+    
+    <div class="pr-ccy-band">
+      <span class="pr-ccy-flag">USD</span> 미국 종목 · 9개
+    </div>
+    <div class="pr-hold-grid">
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">BIL</span><span class="pr-hold-gap">+8.4%</span></div>
+        <div class="pr-hold-chip-bot"><span>$91.43 → $84.33</span><span>−8.0%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">AAPL</span><span class="pr-hold-gap">+8.1%</span></div>
+        <div class="pr-hold-chip-bot"><span>$312.66 → $289.32</span><span>−8.2%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">SPY</span><span class="pr-hold-gap">+7.5%</span></div>
+        <div class="pr-hold-chip-bot"><span>$751.28 → $698.80</span><span>−8.0%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">VOO</span><span class="pr-hold-gap">+7.5%</span></div>
+        <div class="pr-hold-chip-bot"><span>$690.62 → $642.40</span><span>−8.0%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">SCHD</span><span class="pr-hold-gap">+6.8%</span></div>
+        <div class="pr-hold-chip-bot"><span>$32.24 → $30.20</span><span>−8.0%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">UNH</span><span class="pr-hold-gap">+6.2%</span></div>
+        <div class="pr-hold-chip-bot"><span>$417.99 → $393.66</span><span>−8.0%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">TSLA</span><span class="pr-hold-gap">+5.6%</span></div>
+        <div class="pr-hold-chip-bot"><span>$419.77 → $397.47</span><span>−12.0%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">QQQ</span><span class="pr-hold-gap">+5.3%</span></div>
+        <div class="pr-hold-chip-bot"><span>$722.82 → $686.47</span><span>−8.0%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">QLD</span><span class="pr-hold-gap">+5.3%</span></div>
+        <div class="pr-hold-chip-bot"><span>$93.14 → $88.47</span><span>−12.0%</span></div>
+      </div>
+      
+    </div>
+    
+
+    
+    <div class="pr-ccy-band">
+      <span class="pr-ccy-flag">KRW</span> 한국 종목 · 3개
+    </div>
+    <div class="pr-hold-grid">
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">TIGER 미국배당다우존스</span><span class="pr-hold-gap">+12.6%</span></div>
+        <div class="pr-hold-chip-bot"><span>15,740 → 13,974</span><span>−12.0%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">KODEX 미국S&P500</span><span class="pr-hold-gap">+12.4%</span></div>
+        <div class="pr-hold-chip-bot"><span>26,035 → 23,162</span><span>−12.0%</span></div>
+      </div>
+      
+      <div class="pr-hold-chip">
+        <div class="pr-hold-chip-top"><span class="pr-hold-tk">KODEX 미국나스닥100</span><span class="pr-hold-gap">+9.7%</span></div>
+        <div class="pr-hold-chip-bot"><span>30,020 → 27,368</span><span>−12.0%</span></div>
+      </div>
+      
+    </div>
+    
+  </div>
+  
+
+  <!-- ── Footer ── -->
+  <div class="pr-footer">
+    <p>Anchor: 2026-01-02 · Bootstrap: yfinance YTD high · Mode: PortfolioStop v1.0</p>
+    <p>⚠ ⓝ 표시 종목은 신규 진입(entry_date 후 14 calendar days 이내)으로 highest_close 누적 부족 — 시그널 노이즈 가능. EXIT_READY/EXIT는 display 다운그레이드되어 TIGHT (new)로 표기.</p>
+    <p>⚠ 자동 매도 아님 — 매도 판단 보조 reference 시스템</p>
+    <p>Stop 공식: <span class="pr-footer-formula">CORE 12% · DEFENSIVE 8% · MOMENTUM ATR×3 [8%, 20%] · HIGH_VOL ATR×4 [12%, 30%]</span></p>
+    <p class="pr-footer-note">High − 폭%: Stop이 최고가 대비 몇 % 떨어진 위치에 설정되었는지를 나타냄. mode별 공식 클램프 범위 안에서 ATR에 따라 결정됨.</p>
+  </div>
+
+</div>
+
+</main>
+
+<script>
+function toggleTheme(){
+  const html = document.documentElement;
+  const next = html.classList.contains('dark') ? 'light' : 'dark';
+  html.classList.remove('dark','light');
+  html.classList.add(next);
+  localStorage.setItem('theme', next);
+  const icon = document.getElementById('themeIcon');
+  if(icon) icon.textContent = next === 'dark' ? 'light_mode' : 'dark_mode';
+}
+function toggleSidebar(){
+  const s = document.getElementById('sidebar');
+  const o = document.getElementById('sidebarOverlay');
+  if(!s) return;
+  s.classList.toggle('hidden');
+  s.classList.toggle('flex');
+  if(o) o.classList.toggle('hidden');
+}
+(function syncThemeIcon(){
+  const icon = document.getElementById('themeIcon');
+  if(!icon) return;
+  icon.textContent = document.documentElement.classList.contains('dark') ? 'light_mode' : 'dark_mode';
+})();
+</script>
+</body>
+</html>
