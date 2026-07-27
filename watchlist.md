@@ -5,24 +5,4 @@
 > 한 줄에 하나씩. `#` 뒤는 주석. 빈 줄 무시.
 
 META    # Meta Platforms
-AMD     # AMD
-AVGO    # Broadcom
-IONQ    
-ORCL    
-MU
-TQQQ
-XOVR
-INTC
-COHR
-NOW
-SNDK
-SOXS
-SOXL
-005930  # 삼성전자 (KOSPI 시범)
-MP
-VRT
-GRID
-AIPO
-NLR
-487240
-0123G0
+
