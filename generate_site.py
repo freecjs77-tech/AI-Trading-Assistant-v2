@@ -64,33 +64,12 @@ def prepare_deploy():
     if trend_files:
         print(f"trend pages copied ({len(trend_files)} files)")
 
-    # 모멘텀 페이지 복사 (US/KR 별도 페이지)
-    momentum_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "momentum_*.html")))
-    for f in momentum_files:
-        shutil.copy2(f, DEPLOY_DIR)
-    if momentum_files:
-        print(f"momentum pages copied ({len(momentum_files)} files)")
-
     # Portfolio Stop Signal 페이지 복사 (me + wife)
     stop_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "portfolio_stops_*.html")))
     for f in stop_files:
         shutil.copy2(f, DEPLOY_DIR)
     if stop_files:
         print(f"portfolio_stops pages copied ({len(stop_files)} files)")
-
-    # Lifecycle 페이지 복사 (US/KR 별도 페이지)
-    lifecycle_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "lifecycle_*.html")))
-    for f in lifecycle_files:
-        shutil.copy2(f, DEPLOY_DIR)
-    if lifecycle_files:
-        print(f"lifecycle pages copied ({len(lifecycle_files)} files)")
-
-    # Lifecycle JSON 복사 (자매 레포 컨슈머용 — HTML 파싱 대신 안정적 schema)
-    lifecycle_json_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "lifecycle_*.json")))
-    for f in lifecycle_json_files:
-        shutil.copy2(f, DEPLOY_DIR)
-    if lifecycle_json_files:
-        print(f"lifecycle JSON copied ({len(lifecycle_json_files)} files)")
 
     # details/ 복사 (종목 상세 페이지)
     details_src = os.path.join(REPORTS_DIR, "details")

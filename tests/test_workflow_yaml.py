@@ -16,19 +16,6 @@ def _read_workflow():
     return open(path, encoding="utf-8").read()
 
 
-def test_workflow_restores_momentum_history_files():
-    """워크플로우 시작 시 gh-pages에서 momentum history 4개 파일 복원."""
-    yml = _read_workflow()
-    momentum_files = (
-        "scanner_momentum_us_history.json",
-        "scanner_momentum_kr_history.json",
-        "momentum_backtest_us.json",
-        "momentum_backtest_kr.json",
-    )
-    for fname in momentum_files:
-        assert fname in yml, f"missing restore for {fname}"
-
-
 def test_workflow_restores_data_directory():
     """data/ 디렉토리도 복원 (sector ETF holdings 등)."""
     yml = _read_workflow()

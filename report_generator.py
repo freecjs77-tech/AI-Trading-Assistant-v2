@@ -269,11 +269,7 @@ def generate_report(
     nav_portfolio: str | None = None,
     active_nav: str = "portfolio",
     benchmark_data: dict | None = None,
-    momentum_us: dict | None = None,
-    momentum_kr: dict | None = None,
     portfolio_stop_result=None,  # Phase 7 next PR will consume; accepted now to allow pipeline kwargs
-    lifecycle_us: dict | None = None,
-    lifecycle_kr: dict | None = None,
 ) -> str:
     """
     Jinja2 템플릿으로 HTML 리포트 생성.
@@ -492,22 +488,6 @@ def generate_report(
             benchmark_data.get("error_message", "unknown") if benchmark_data else None
         )
 
-    # Momentum scanner nav links (optional)
-    has_momentum_us = momentum_us is not None and momentum_us.get("status") != "failed"
-    has_momentum_kr = momentum_kr is not None and momentum_kr.get("status") != "failed"
-    context["has_momentum_us"] = has_momentum_us
-    context["has_momentum_kr"] = has_momentum_kr
-    context["momentum_us_url"] = (
-        f"momentum_us_{momentum_us.get('as_of', date_str)}.html"
-        if has_momentum_us
-        else ""
-    )
-    context["momentum_kr_url"] = (
-        f"momentum_kr_{momentum_kr.get('as_of', date_str)}.html"
-        if has_momentum_kr
-        else ""
-    )
-
     context["portfolio_stop_summary"] = (
         portfolio_stop_result.get("summary")
         if portfolio_stop_result and portfolio_stop_result.get("status") == "ok"
@@ -534,19 +514,6 @@ def generate_report(
             context[_key] = f"portfolio_stops_{_o}_{date_str}.html"
     except Exception:
         context.setdefault("portfolio_stop_page_wife", None)
-
-    # ── Lifecycle pages ────────────────────────
-    _lc_date = (lifecycle_us or {}).get("as_of") or (lifecycle_kr or {}).get("as_of") or date_str
-    context["lifecycle_us_page"] = (
-        f"lifecycle_us_{_lc_date}.html"
-        if lifecycle_us and lifecycle_us.get("status") == "ok" and lifecycle_us.get("snapshots")
-        else None
-    )
-    context["lifecycle_kr_page"] = (
-        f"lifecycle_kr_{_lc_date}.html"
-        if lifecycle_kr and lifecycle_kr.get("status") == "ok" and lifecycle_kr.get("snapshots")
-        else None
-    )
 
     html = template.render(**context)
 
@@ -710,93 +677,6 @@ def generate_scanner_pages(
         f.write(html)
 
     return [out_path]
-
-
-def generate_momentum_pages(
-    momentum_us: dict | None,
-    momentum_kr: dict | None,
-    output_dir: str,
-    template_dir: str | None = None,
-    nav_ctx: dict | None = None,
-    lifecycle_us_page: str | None = None,
-    lifecycle_kr_page: str | None = None,
-    portfolio_stop_summary=None,
-    portfolio_stop_page: str | None = None,
-    date_ko: str = "",
-    market_status=None,
-) -> list[str]:
-    """모멘텀 스캐너 결과 → momentum_us_<DATE>.html / momentum_kr_<DATE>.html 페이지.
-
-    Args:
-        momentum_us: scan_momentum_us() 결과 dict 또는 None
-        momentum_kr: scan_momentum_kr() 결과 dict 또는 None
-        output_dir: 페이지 출력 디렉토리
-        template_dir: Jinja2 템플릿 디렉토리 (기본: ./templates)
-        nav_ctx: 공통 nav 링크 dict (nav_portfolio, nav_wife, nav_scanner, nav_backtest, nav_trend)
-        lifecycle_us_page: lifecycle US 페이지 파일명 (sidebar 표시용)
-        lifecycle_kr_page: lifecycle KR 페이지 파일명 (sidebar 표시용)
-        portfolio_stop_summary: stop signal 요약 (sidebar Portfolio Risk 표시용)
-        portfolio_stop_page: Portfolio Risk 페이지 파일명
-        date_ko: 한국 날짜 문자열 (sidebar 하단 표시)
-        market_status: {'US': 'open'|'closed', 'KRX': 'open'|'closed'} (sidebar 표시용)
-
-    Returns:
-        생성된 파일 경로 리스트 (None 결과는 스킵).
-    """
-    if template_dir is None:
-        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
-    env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
-    env.filters["f1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
-    env.filters["f2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
-
-    has_momentum_us = momentum_us is not None and momentum_us.get("status") != "failed"
-    has_momentum_kr = momentum_kr is not None and momentum_kr.get("status") != "failed"
-    us_as_of = (momentum_us or {}).get("as_of", "")
-    kr_as_of = (momentum_kr or {}).get("as_of", "")
-    momentum_us_url = f"momentum_us_{us_as_of}.html" if has_momentum_us else ""
-    momentum_kr_url = f"momentum_kr_{kr_as_of}.html" if has_momentum_kr else ""
-
-    # Build shared nav context
-    _nav = dict(nav_ctx or {})
-    _nav.setdefault("nav_portfolio", "index.html")
-    _nav.setdefault("nav_wife", "")
-    _nav.setdefault("nav_scanner", "")
-    _nav.setdefault("nav_backtest", "")
-    _nav.setdefault("nav_trend", "")
-
-    shared_ctx = {
-        **_nav,
-        "has_momentum_us": has_momentum_us,
-        "has_momentum_kr": has_momentum_kr,
-        "momentum_us_url": momentum_us_url,
-        "momentum_kr_url": momentum_kr_url,
-        "lifecycle_us_page": lifecycle_us_page,
-        "lifecycle_kr_page": lifecycle_kr_page,
-        "portfolio_stop_summary": portfolio_stop_summary,
-        "portfolio_stop_page": portfolio_stop_page,
-        "date_ko": date_ko,
-        "market_status": market_status,
-    }
-
-    pairs = [
-        ("US", momentum_us, "momentum_us.html", "🇺🇸 US", "momentum_us"),
-        ("KR", momentum_kr, "momentum_kr.html", "🇰🇷 KR", "momentum_kr"),
-    ]
-    output: list[str] = []
-    for market, result, tmpl, label, nav_key in pairs:
-        if result is None or result.get("status") == "failed":
-            continue
-        as_of = result.get("as_of", "unknown")
-        path = os.path.join(output_dir, f"momentum_{market.lower()}_{as_of}.html")
-        try:
-            ctx = {**shared_ctx, "result": result, "market_label": label, "active_nav": nav_key}
-            html = env.get_template(tmpl).render(**ctx)
-            with open(path, "w", encoding="utf-8") as f:
-                f.write(html)
-            output.append(path)
-        except Exception as e:
-            print(f"[report_generator] WARN momentum {market} render failed: {e}")
-    return output
 
 
 def _series_from_daily(daily: dict) -> list:
@@ -1290,8 +1170,6 @@ def generate_detail_pages(
     scanner_etf_history: dict | None = None,
     scanner_kospi_history: dict | None = None,
     scanner_watchlist_history: dict | None = None,
-    momentum_us_history: dict | None = None,
-    momentum_kr_history: dict | None = None,
 ) -> list[str]:
     """
     포트폴리오 + 스캐너 BUY 종목별 상세 페이지 HTML 생성.
@@ -1319,22 +1197,6 @@ def generate_detail_pages(
     env.filters["shares_fmt"] = lambda x: f"{x:.3f}" if x < 100 else f"{x:,.0f}"
 
     template = env.get_template("detail_template.html")
-
-    # Momentum 데이터 추출 헬퍼
-    def _ticker_momentum(ticker, us_hist, kr_hist):
-        """ticker가 us 또는 kr momentum history에 있으면 dict 반환, 없으면 None."""
-        for hist in (us_hist, kr_hist):
-            if not hist or "data" not in hist:
-                continue
-            td = hist["data"].get(ticker)
-            if not td:
-                continue
-            sorted_dates = sorted(td.keys(), reverse=True)
-            recent_30 = [(d, td[d]) for d in sorted_dates[:30]]
-            recent_30.reverse()  # 시간 순
-            last = td[sorted_dates[0]]
-            return {"last": last, "recent": recent_30}
-        return None
 
     data = market_data.get("data", {})
     meta = market_data.get("_meta", {})
@@ -1387,9 +1249,6 @@ def generate_detail_pages(
 
         history_rows = _build_history_rows(ticker, history)
 
-        # Momentum 데이터 추출
-        momentum_data = _ticker_momentum(ticker, momentum_us_history, momentum_kr_history)
-
         context = {
             "ticker": ticker,
             "name": get_ticker_name(ticker),
@@ -1433,8 +1292,6 @@ def generate_detail_pages(
             "currency": "KRW" if is_kospi_ticker(ticker) else "USD",
             # 이력
             "history_rows": history_rows,
-            # Momentum 데이터
-            "momentum_data": momentum_data,
             # 메타
             "date": date_str,
             "date_ko": _date_ko(date_str),
@@ -1503,9 +1360,6 @@ def generate_detail_pages(
 
         is_kospi = e.get("currency") == "KRW" or is_kospi_ticker(ticker)
 
-        # Momentum 데이터 추출
-        momentum_data = _ticker_momentum(ticker, momentum_us_history, momentum_kr_history)
-
         context = {
             "ticker": ticker,
             "name": e.get("name", ticker),
@@ -1557,8 +1411,6 @@ def generate_detail_pages(
                 else scanner_watchlist_history if ticker in watchlist_tickers
                 else {}
             ) if (scanner_sp100_history or scanner_etf_history or scanner_kospi_history or scanner_watchlist_history) else [],
-            # Momentum 데이터
-            "momentum_data": momentum_data,
             # 메타
             "date": date_str,
             "date_ko": _date_ko(date_str),

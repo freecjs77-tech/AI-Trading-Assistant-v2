@@ -117,11 +117,6 @@ except ImportError as e:
     print("   pip install yfinance pandas numpy\n")
     sys.exit(1)
 
-from lifecycle_config import (
-    EMA_FAST, EMA_MEDIUM, EMA_LONG,
-    EMA_LONG_SLOPE_WINDOW, EMA_MEDIUM_SLOPE_WINDOW,
-)
-
 
 # ── 기술지표 계산 함수 ───────────────────────────────
 
@@ -384,8 +379,7 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
     """Compute all technical indicators from a yfinance-shaped DataFrame.
 
     df must have columns: Open, High, Low, Close, Volume (yfinance Ticker.history shape).
-    Returns the same dict that fetch_ticker returned previously, plus the new
-    Phase A EMA fields (ema9/ema21/ema65/ema21_slope_5d/ema65_slope_5d).
+    Returns the same dict that fetch_ticker returned previously.
     """
     close  = df["Close"]
     high   = df["High"]
@@ -408,29 +402,6 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
         and np.isfinite(atr14_series.iloc[-1])
         else None
     )
-
-    # ── Phase A: lifecycle EMAs ──
-    # EMA9/21/65 + 5-day slopes (used by lifecycle_signal state machine).
-    ema9_series  = close.ewm(span=EMA_FAST,   adjust=False).mean()
-    ema21_series = close.ewm(span=EMA_MEDIUM, adjust=False).mean()
-    ema65_series = close.ewm(span=EMA_LONG,   adjust=False).mean()
-
-    def _slope(series, window: int):
-        if len(series) <= window:
-            return None
-        cur = series.iloc[-1]
-        prev = series.iloc[-1 - window]
-        if pd.isna(cur) or pd.isna(prev) or not np.isfinite(cur) or not np.isfinite(prev):
-            return None
-        return round(float(cur - prev), 6)
-
-    ema21_slope = _slope(ema21_series, EMA_MEDIUM_SLOPE_WINDOW)
-    ema65_slope = _slope(ema65_series, EMA_LONG_SLOPE_WINDOW)
-
-    # ── Momentum v1.5: dist (%) + 3-day slope (%) via shared helper ──
-    # momentum_signal.classify_em / classify_maturity consume these fields.
-    from momentum_data import compute_ema_fields
-    ema_fields = compute_ema_fields(close)
 
     last_close  = float(close.iloc[-1])
 
@@ -576,17 +547,6 @@ def compute_indicators(df: pd.DataFrame, forward_div=None, cached_divs=None) -> 
         "div_yield_annual":  div_yield_annual,
         "div_source":        div_source,    # "forward" | "ttm" | "none"
         "_last_date":        df.index[-1].strftime("%Y-%m-%d"),  # 마지막 거래일
-        # Phase A: lifecycle EMAs (raw values, 5-day slopes)
-        "ema9":              safe(ema9_series),
-        "ema21":             safe(ema21_series),
-        "ema65":             safe(ema65_series),
-        "ema21_slope_5d":    ema21_slope,
-        "ema65_slope_5d":    ema65_slope,
-        # Momentum v1.5: dist (%) + 3-day slope (%) for EM/Maturity gates
-        "dist_ema9_pct":      ema_fields["dist_ema9_pct"],
-        "dist_ema21_pct":     ema_fields["dist_ema21_pct"],
-        "ema21_slope_3d_pct": ema_fields["ema21_slope_3d_pct"],
-        "ema65_slope_5d_pct": ema_fields["ema65_slope_5d_pct"],
         # Score v1 / BASE_FORMING
         "days_sideways":       days_sideways,       # NEW
     }

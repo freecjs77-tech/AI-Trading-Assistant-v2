@@ -82,18 +82,6 @@ def _parse_portfolio_for_report(portfolio_path: str) -> list[dict]:
     return holdings
 
 
-def _load_momentum_history(project_dir: str, market: str) -> dict | None:
-    """history/scanner_momentum_<us|kr>_history.json 로드. 없으면 None."""
-    path = os.path.join(project_dir, "history", f"scanner_momentum_{market}_history.json")
-    if not os.path.exists(path):
-        return None
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return None
-
-
 def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = False, auto: bool = False) -> dict:
     today = date.today().strftime("%Y-%m-%d")
     screenshots_dir = os.path.join(project_dir, "screenshots")
@@ -349,50 +337,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         except Exception as e:
             print(f"  WARN politician trades step failed ({type(e).__name__}: {e}); continuing")
 
-        # Step 4c2: Momentum Scanner (US + KR, 독립 실행, 실패 격리)
-        # 기존 strategy v5.3 시그널과 무관 — 별도 추세 추종 시그널.
-        momentum_us_result = None
-        momentum_kr_result = None
-        _run_momentum = (_mode in ("full", "momentum_only"))
-        if _run_momentum:
-            print("[Step 4c2] Momentum scanners (US + KR)...")
-            try:
-                from momentum_scanner import scan_momentum_us, scan_momentum_kr
-                try:
-                    momentum_us_result = scan_momentum_us(project_dir)
-                    if momentum_us_result and momentum_us_result.get("status") == "ok":
-                        sigs = momentum_us_result.get("signals", {})
-                        print(f"  OK [Step 4c2] Momentum US: "
-                              f"M3={len(sigs.get('MOMENTUM_3', []))} "
-                              f"M2={len(sigs.get('MOMENTUM_2', []))} "
-                              f"M1={len(sigs.get('MOMENTUM_1', []))}")
-                    elif momentum_us_result:
-                        print(f"  WARN [Step 4c2] Momentum US status: "
-                              f"{momentum_us_result.get('status')} "
-                              f"({momentum_us_result.get('error_message', '')})")
-                except Exception as e:
-                    print(f"  WARN [Step 4c2] Momentum US failed: {e}")
-                    momentum_us_result = None
-                try:
-                    momentum_kr_result = scan_momentum_kr(project_dir)
-                    if momentum_kr_result and momentum_kr_result.get("status") == "ok":
-                        sigs = momentum_kr_result.get("signals", {})
-                        print(f"  OK [Step 4c2] Momentum KR: "
-                              f"M3={len(sigs.get('MOMENTUM_3', []))} "
-                              f"M2={len(sigs.get('MOMENTUM_2', []))} "
-                              f"M1={len(sigs.get('MOMENTUM_1', []))}")
-                    elif momentum_kr_result:
-                        print(f"  WARN [Step 4c2] Momentum KR status: "
-                              f"{momentum_kr_result.get('status')} "
-                              f"({momentum_kr_result.get('error_message', '')})")
-                except Exception as e:
-                    print(f"  WARN [Step 4c2] Momentum KR failed: {e}")
-                    momentum_kr_result = None
-            except ImportError as e:
-                print(f"  WARN [Step 4c2] momentum_scanner module unavailable: {e}")
-        else:
-            print(f"[Step 4c2] Skipped (MODE={_mode})")
-
         # Step 4c3: Portfolio Stop Signals (me)
         # 자동매매 ❌ / 매도 판단 보조 ✅. 4c3로 번호 잡아 4c2와 4d 사이.
         skip_stops = os.environ.get("SKIP_STOPS", "").lower() in ("1", "true", "yes")
@@ -420,71 +364,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 _tbs.print_exc()
                 print(f"  WARN [4c3] me stop signals failed: {e}")
                 stop_result_me = None
-
-        # Step 4c4: Lifecycle US (Phase A — Trend Structure + Setup/Trigger)
-        # Pure-additive. Failure must NOT block Step 5.
-        skip_lifecycle = os.environ.get("SKIP_LIFECYCLE", "").lower() in ("1", "true", "yes")
-        lifecycle_us_result = None
-        lifecycle_kr_result = None
-        if not skip_lifecycle:
-            from lifecycle_signal import run_lifecycle
-            # User decision (2026-05-09): include portfolio holdings in
-            # lifecycle's active set. Original spec excluded them on the
-            # principle that portfolio_stops covers the "should I sell?"
-            # question while lifecycle covers "should I buy?" — but both
-            # views are useful for held tickers too (the setup/trigger
-            # state machine answers "is this still in a healthy zone?").
-            # Pass empty set to disable the portfolio-exclusion rule.
-            _portfolio_tickers = set()
-
-        if skip_lifecycle:
-            print("[Step 4c4] SKIP_LIFECYCLE=1 — lifecycle US 스킵")
-        else:
-            print("[Step 4c4] Lifecycle US (setup/trigger/decision)...")
-            try:
-                _mom_us = os.path.join(project_dir, "history", "scanner_momentum_us_history.json")
-                lifecycle_us_result = run_lifecycle(
-                    "US", project_dir=project_dir,
-                    market_data=market_data,
-                    momentum_history_path=_mom_us,
-                    portfolio_tickers=_portfolio_tickers,
-                    today=today,
-                )
-                if lifecycle_us_result.get("status") == "ok":
-                    n_snap = len(lifecycle_us_result["snapshots"])
-                    n_trans = len(lifecycle_us_result["transitions"])
-                    print(f"  OK [4c4] US: snapshots={n_snap} transitions={n_trans} "
-                          f"active_set={lifecycle_us_result['active_set_size']}")
-            except Exception as e:
-                import traceback as _tb
-                _tb.print_exc()
-                print(f"  WARN [4c4] lifecycle US failed: {e}")
-                lifecycle_us_result = None
-
-        # Step 4c5: Lifecycle KR
-        if skip_lifecycle:
-            print("[Step 4c5] SKIP_LIFECYCLE=1 — lifecycle KR 스킵")
-        else:
-            print("[Step 4c5] Lifecycle KR (setup/trigger/decision)...")
-            try:
-                _mom_kr = os.path.join(project_dir, "history", "scanner_momentum_kr_history.json")
-                lifecycle_kr_result = run_lifecycle(
-                    "KR", project_dir=project_dir,
-                    market_data=market_data,
-                    momentum_history_path=_mom_kr,
-                    portfolio_tickers=_portfolio_tickers,
-                    today=today,
-                )
-                if lifecycle_kr_result.get("status") == "ok":
-                    n_snap = len(lifecycle_kr_result["snapshots"])
-                    n_trans = len(lifecycle_kr_result["transitions"])
-                    print(f"  OK [4c5] KR: snapshots={n_snap} transitions={n_trans} "
-                          f"active_set={lifecycle_kr_result['active_set_size']}")
-            except Exception as e:
-                import traceback as _tb
-                _tb.print_exc()
-                print(f"  WARN [4c5] lifecycle KR failed: {e}")
-                lifecycle_kr_result = None
 
         # Step 4d: YTD benchmark (vs S&P KRW) — per owner
         print("[Step 4d] Computing YTD benchmark vs S&P (KRW)...")
@@ -545,7 +424,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         portfolio = _parse_portfolio_for_report(portfolio_path)
         prev_signals = get_previous_signals(history, today)
 
-        # Shared nav context — Step 5의 모든 페이지(risk/momentum/lifecycle)가 공유
+        # Shared nav context — Step 5의 모든 페이지(risk)가 공유
         # 사이드바를 렌더링하려면 risk page render 전에 build 되어 있어야 함.
         _meta = market_data.get("_meta", {})
         _nav_date = _meta.get("date", today)
@@ -556,16 +435,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             "nav_backtest": f"backtest_{_nav_date}.html",
             "nav_trend": f"trend_{_nav_date}.html",
             **_owner_nav_links(_nav_date),
-            "has_momentum_us": momentum_us_result is not None and momentum_us_result.get("status") != "failed",
-            "has_momentum_kr": momentum_kr_result is not None and momentum_kr_result.get("status") != "failed",
-            "momentum_us_url": f"momentum_us_{(momentum_us_result or {}).get('as_of', _nav_date)}.html"
-                               if momentum_us_result and momentum_us_result.get("status") != "failed" else "",
-            "momentum_kr_url": f"momentum_kr_{(momentum_kr_result or {}).get('as_of', _nav_date)}.html"
-                               if momentum_kr_result and momentum_kr_result.get("status") != "failed" else "",
-            "lifecycle_us_page": f"lifecycle_us_{(lifecycle_us_result or {}).get('as_of', _nav_date)}.html"
-                                  if lifecycle_us_result and lifecycle_us_result.get("snapshots") else None,
-            "lifecycle_kr_page": f"lifecycle_kr_{(lifecycle_kr_result or {}).get('as_of', _nav_date)}.html"
-                                  if lifecycle_kr_result and lifecycle_kr_result.get("snapshots") else None,
             "portfolio_stop_summary": stop_result_me.get("summary")
                                        if stop_result_me and stop_result_me.get("status") == "ok" else None,
             "portfolio_stop_page": None,          # legacy (me 우선) — 사이드바 호환용
@@ -618,11 +487,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_etf=scanner_etf_result,
             scanner_kospi=scanner_kospi_result,
             benchmark_data=benchmark_by_owner.get("me"),
-            momentum_us=momentum_us_result,    # Task 21
-            momentum_kr=momentum_kr_result,    # Task 21
             portfolio_stop_result=stop_result_me,
-            lifecycle_us=lifecycle_us_result,
-            lifecycle_kr=lifecycle_kr_result,
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -637,48 +502,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             output_dir=reports_dir,
         )
         print(f"  OK {len(scanner_files)} scanner pages generated")
-
-        # Momentum pages (US + KR)
-        try:
-            from report_generator import generate_momentum_pages
-            momentum_files = generate_momentum_pages(
-                momentum_us=momentum_us_result,
-                momentum_kr=momentum_kr_result,
-                output_dir=reports_dir,
-                nav_ctx=_shared_nav,
-                lifecycle_us_page=_shared_nav.get("lifecycle_us_page"),
-                lifecycle_kr_page=_shared_nav.get("lifecycle_kr_page"),
-                portfolio_stop_summary=_shared_nav.get("portfolio_stop_summary"),
-                portfolio_stop_page=_shared_nav.get("portfolio_stop_page"),
-                date_ko=_shared_nav.get("date_ko", ""),
-                market_status=_shared_nav.get("market_status"),
-            )
-            print(f"  OK {len(momentum_files)} momentum pages generated")
-        except Exception as e:
-            print(f"  WARN momentum pages failed: {e}")
-
-        # Lifecycle pages (US + KR)
-        try:
-            from lifecycle_report import generate_lifecycle_pages
-            _lifecycle_portfolio_tickers = {
-                h["ticker"] for h in _parse_portfolio_for_report(portfolio_path)
-                if h.get("ticker")
-            }
-            _lc_paths = generate_lifecycle_pages(
-                us_result=lifecycle_us_result, kr_result=lifecycle_kr_result,
-                output_dir=os.path.join(project_dir, "reports"),
-                us_state=(lifecycle_us_result or {}).get("state"),
-                kr_state=(lifecycle_kr_result or {}).get("state"),
-                nav_ctx=_shared_nav,
-                portfolio_tickers=_lifecycle_portfolio_tickers,
-                momentum_today_us=momentum_us_result,
-                momentum_today_kr=momentum_kr_result,
-                market_data=market_data,
-            )
-            for m, p in _lc_paths.items():
-                print(f"  Generated {m}: {p}")
-        except Exception as e:
-            print(f"  WARN lifecycle page render failed: {e}")
 
         # Step 5a: Charts + Detail pages
         print("[Step 5a] Generating charts...")
@@ -703,15 +526,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     t = e.get("ticker", "")
                     if t and t not in tickers_list and t not in extra_tickers:
                         extra_tickers.append(t)
-            # 모멘텀 시그널 종목도 차트 생성 대상
-            for mr in (momentum_us_result, momentum_kr_result):
-                if not mr or mr.get("status") != "ok":
-                    continue
-                for stage in ("MOMENTUM_3", "MOMENTUM_2", "MOMENTUM_1"):
-                    for e in mr.get("signals", {}).get(stage, []):
-                        t = e.get("ticker", "")
-                        if t and t not in tickers_list and t not in extra_tickers:
-                            extra_tickers.append(t)
             # Secondary owner(wife 등) 포트폴리오 티커 — primary에 없는 것만
             try:
                 from portfolio_paths import discover_portfolios, PRIMARY_OWNER as _PO
@@ -753,8 +567,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_etf_history=_sc_etf_hist,
             scanner_kospi_history=_sc_kospi_hist,
             scanner_watchlist_history=_sc_watch_hist,
-            momentum_us_history=_load_momentum_history(project_dir, "us"),    # Task 21
-            momentum_kr_history=_load_momentum_history(project_dir, "kr"),    # Task 21
         )
         print(f"  OK {len(detail_files)} detail pages -> {details_dir}")
 
@@ -769,21 +581,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 print("  WARN Telegram partial/failed (pipeline continues)")
         except Exception as e:
             print(f"  WARN Telegram error: {e} (pipeline continues)")
-
-        # Step 5b momentum brief
-        # 사용자 요청에 따라 secondary brief (momentum/risk/lifecycle)는 기본 비활성화.
-        # 재활성화: TELEGRAM_BRIEFS_OFF=0 환경변수 설정.
-        if os.environ.get("TELEGRAM_BRIEFS_OFF", "1") == "1":
-            print("  SKIP momentum brief telegram (TELEGRAM_BRIEFS_OFF=1)")
-        else:
-            try:
-                from telegram_sender import send_momentum_brief
-                if momentum_us_result or momentum_kr_result:
-                    sent = send_momentum_brief(momentum_us_result, momentum_kr_result)
-                    if sent:
-                        print("  OK momentum brief sent to Telegram")
-            except Exception as e:
-                print(f"  WARN momentum brief telegram failed: {e}")
 
         # Step 5c: Portfolio snapshot + Trend page
         print("[Step 5c] Saving portfolio snapshot & trend page...")
@@ -1058,8 +855,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     active_nav=_owner,
                     benchmark_data=benchmark_by_owner.get(_owner),
                     portfolio_stop_result=_owner_stop_result,
-                    lifecycle_us=lifecycle_us_result,
-                    lifecycle_kr=lifecycle_kr_result,
                 )
                 _sz = os.path.getsize(_owner_report)
                 print(f"  OK {_owner} report -> {_owner_report} ({_sz:,} bytes)")
@@ -1118,19 +913,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                 )
             except Exception as e:
                 print(f"  WARN portfolio risk telegram failed: {e} (pipeline continues)")
-
-        # Lifecycle Telegram brief — 사용자 요청에 따라 비활성화.
-        if os.environ.get("TELEGRAM_BRIEFS_OFF", "1") == "1":
-            print("  SKIP lifecycle brief telegram (TELEGRAM_BRIEFS_OFF=1)")
-        else:
-            try:
-                from telegram_sender import send_lifecycle_brief
-                _base = os.environ.get("REPORT_BASE_URL",
-                                      "https://freecjs77-tech.github.io/AI-Trading-Assistant-v2/")
-                send_lifecycle_brief(lifecycle_us_result, lifecycle_kr_result,
-                                      base_url=_base, date_str=today)
-            except Exception as e:
-                print(f"  WARN lifecycle telegram brief failed: {e}")
 
         # Step 6: History update (비거래일 스킵)
         if is_trading_day:
