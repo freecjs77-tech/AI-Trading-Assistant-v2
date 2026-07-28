@@ -198,6 +198,39 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
 
     <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">currency_exchange</span> USD/KRW 환율</h2>
     <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10"><canvas id="fxChart" style="max-height:320px;"></canvas></div>
+
+    {% if has_multi_owner %}
+    <div id="forecastSection" class="hidden space-y-4">
+      <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">trending_up</span> 향후 20년 자산 예측 (복리 시뮬레이션)</h2>
+      <p class="text-[11px] text-outline -mt-2">합산 총자산 기준 · 추가 납입 없음 · 순수 복리</p>
+      <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10 space-y-5">
+        <div class="flex items-center gap-4 flex-wrap">
+          <label for="forecastRate" class="text-sm text-on-surface-variant whitespace-nowrap">연 수익률</label>
+          <input type="range" id="forecastRate" min="1" max="15" step="0.5" value="7" class="flex-1 min-w-[180px] accent-secondary">
+          <span id="forecastRateOut" class="text-base font-bold text-secondary min-w-[64px] text-right">연 7.0%</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="rounded-lg bg-secondary/5 p-4">
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1" id="fcLabel5">5년 후</div>
+            <div class="text-xl font-headline font-bold text-secondary" id="fcVal5">&mdash;</div>
+          </div>
+          <div class="rounded-lg bg-secondary/5 p-4">
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1" id="fcLabel10">10년 후</div>
+            <div class="text-xl font-headline font-bold text-secondary" id="fcVal10">&mdash;</div>
+          </div>
+          <div class="rounded-lg bg-secondary/5 p-4">
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1" id="fcLabel15">15년 후</div>
+            <div class="text-xl font-headline font-bold text-secondary" id="fcVal15">&mdash;</div>
+          </div>
+          <div class="rounded-lg bg-secondary/5 p-4">
+            <div class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1" id="fcLabel20">20년 후</div>
+            <div class="text-xl font-headline font-bold text-secondary" id="fcVal20">&mdash;</div>
+          </div>
+        </div>
+        <div><canvas id="forecastChart" style="max-height:320px;"></canvas></div>
+      </div>
+    </div>
+    {% endif %}
     {% else %}
     <div class="rounded-xl bg-surface-container border border-outline-variant/10 p-12 text-center text-on-surface-variant">데이터가 축적되면 추이 차트가 표시됩니다.</div>
     {% endif %}
@@ -305,6 +338,7 @@ document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
     btn.classList.add('bg-primary/20','text-primary','border-primary/30');
     btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
     _applyOwner(btn.dataset.owner);
+    if (typeof _toggleForecast === 'function') _toggleForecast(btn.dataset.owner);
   });
 });
 
@@ -382,6 +416,41 @@ new Chart(document.getElementById('yieldChart'), { type:'line', data:{ labels:da
 new Chart(document.getElementById('fxChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'USD/KRW', data:fxData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'KRW', color:'#a3aac4' }}}}});
+
+{% if has_multi_owner %}
+// ── 향후 20년 자산 예측 (복리) — 합산 토글 전용 ──
+const _fcStartEok = (ownersPayload.combined && ownersPayload.combined.latest) ? ownersPayload.combined.latest.total_eok : {{ latest.total_eok }};
+const _fcBaseYear = parseInt("{{ date }}".slice(0,4), 10);
+const _fcHorizon = 20;
+const _fcMilestones = [5,10,15,20];
+const _fcYears = Array.from({length:_fcHorizon+1}, (_,y) => String(_fcBaseYear + y));
+function _fcSeries(ratePct){ const k = 1 + ratePct/100; const out = []; for(let y=0;y<=_fcHorizon;y++) out.push(+(_fcStartEok*Math.pow(k,y)).toFixed(2)); return out; }
+function _fcFmt(v){ return '₩' + v.toFixed(1) + '억'; }
+let _forecastChart = null;
+function _ensureForecastChart(){
+  if(_forecastChart) return;
+  _forecastChart = new Chart(document.getElementById('forecastChart'), { type:'line', data:{ labels:_fcYears, datasets:[
+    { label:'예측 자산 (억원)', data:_fcSeries(parseFloat(document.getElementById('forecastRate').value)), borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', borderDash:[6,4], fill:true, tension:0.25, pointRadius:0, pointHoverRadius:4, borderWidth:2 }
+  ]}, options:{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ return _fcFmt(c.parsed.y); }}}}, scales:{ y:{ ...dso, ticks:{ ...dso.ticks, callback:function(v){ return v+'억'; }}, title:{ display:true, text:'억원', color:'#a3aac4' }}, x:{ ...dso }}}});
+}
+function _fcRender(ratePct){
+  document.getElementById('forecastRateOut').textContent = '연 ' + ratePct.toFixed(1) + '%';
+  const k = 1 + ratePct/100;
+  _fcMilestones.forEach(function(n){
+    document.getElementById('fcLabel'+n).textContent = n + '년 후 (' + (_fcBaseYear+n) + ')';
+    document.getElementById('fcVal'+n).textContent = _fcFmt(_fcStartEok*Math.pow(k,n));
+  });
+  if(_forecastChart){ _forecastChart.data.datasets[0].data = _fcSeries(ratePct); _forecastChart.update(); }
+}
+function _toggleForecast(owner){
+  const sec = document.getElementById('forecastSection');
+  if(!sec) return;
+  if(owner === 'combined'){ sec.classList.remove('hidden'); _ensureForecastChart(); _fcRender(parseFloat(document.getElementById('forecastRate').value)); }
+  else { sec.classList.add('hidden'); }
+}
+document.getElementById('forecastRate').addEventListener('input', function(){ _fcRender(parseFloat(this.value)); });
+_fcRender(7);
+{% endif %}
 {% endif %}
 
 const tickerData = {{ ticker_json }};
