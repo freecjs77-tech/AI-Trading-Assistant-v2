@@ -14,7 +14,6 @@
     {% set _dash_active = _active == 'portfolio' %}
     {% set _wife_active = _active == 'wife' %}
     {% set _scanner_active = _active == 'scanner' %}
-    {% set _backtest_active = _active == 'backtest' %}
     {% set _trend_active = _active == 'trend' %}
     {% set _risk_active = _active == 'risk' %}
     {% set _risk_me_active = _active == 'risk_me' %}
@@ -30,9 +29,6 @@
     {% endif %}
     <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _scanner_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ nav_scanner|default('') }}">
       <span class="material-symbols-outlined">analytics</span><span>Scanner</span>
-    </a>
-    <a class="flex items-center gap-3 px-4 py-3 rounded-md transition-all {% if _backtest_active %}text-[#6dddff] bg-[#141f38] shadow-[0_0_15px_rgba(109,221,255,0.1)]{% else %}text-slate-400 hover:bg-white/10 hover:text-white{% endif %}" href="{{ nav_backtest|default('') }}">
-      <span class="material-symbols-outlined">history</span><span>Backtest</span>
     </a>
     {# Risk — me + wife 분리. 신규 키(portfolio_stop_page_me/_wife) 우선, 없으면 legacy fallback. #}
     {% set _risk_me_url = portfolio_stop_page_me or (portfolio_stop_page if portfolio_stop_summary else '') %}

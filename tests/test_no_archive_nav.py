@@ -13,7 +13,6 @@ TEMPLATES_DIR = os.path.join(PROJECT_DIR, "templates")
 # reference archive.html in a clickable nav element.
 USER_FACING_TEMPLATES = [
     "_sidebar.html",
-    "backtest_template.html",
     "trend_template.html",
     "scanner_unified_template.html",
     "scanner_template.html",

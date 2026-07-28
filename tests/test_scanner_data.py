@@ -13,7 +13,7 @@ def test_no_duplicates():
 
 def test_size_in_range():
     n = len(SP100_TICKERS)
-    assert 160 <= n <= 175, f"확장 후 종목 수 {n} (예상 범위 160~175)"
+    assert n == 50, f"축소 후 종목 수 {n} (예상 50)"
 
 def test_every_ticker_has_name():
     missing = [t for t in SP100_TICKERS if t not in SP100_NAMES]

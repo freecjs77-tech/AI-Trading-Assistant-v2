@@ -27,152 +27,65 @@ from signal_judge import (
 )
 from portfolio_data import TICKER_META, is_korean_ticker
 
-# ── 미국 대형주 스캐너 — S&P 100 + NASDAQ 100 합집합 (~169종목) ─────
-# 출처: S&P 100 (OEX) + NASDAQ-100 구성종목 (2026-04-25 기준, https://en.wikipedia.org/wiki/Nasdaq-100 Components)
+# ── 미국 대형주 스캐너 — 실제 시가총액 기준 상위 50종목 (2026-07-27 재선정) ─────
+# 출처: yfinance 실시간 시가총액 랭킹 (기존 SP100∪NASDAQ100 169종목 → 상위 50 축소)
 # 변수명은 호환성을 위해 SP100_TICKERS를 유지 (외부 호출부 영향 없음).
 SP100_TICKERS = [
-    "AAPL", "ABBV", "ABNB", "ABT", "ACN", "ADBE", "ADI", "ADP", "ADSK", "AEP",
-    "AIG", "ALNY", "AMAT", "AMD", "AMGN", "AMZN", "APP", "ARM", "ASML", "AVGO",
-    "AXON", "AXP", "BA", "BAC", "BK", "BKNG", "BKR", "BLK", "BMY", "BRK-B",
-    "C", "CAT", "CCEP", "CDNS", "CEG", "CHTR", "CL", "CMCSA", "COF", "COP",
-    "COST", "CPRT", "CRM", "CRWD", "CSCO", "CSGP", "CSX", "CTAS", "CTSH", "CVS",
-    "CVX", "DASH", "DDOG", "DE", "DHR", "DIS", "DOW", "DUK", "DXCM", "EA",
-    "EMR", "EXC", "F", "FANG", "FAST", "FDX", "FER", "FTNT", "GD", "GE",
-    "GEHC", "GILD", "GM", "GOOG", "GOOGL", "GS", "HD", "HON", "IBM", "IDXX",
-    "INSM", "INTC", "INTU", "ISRG", "JNJ", "JPM", "KDP", "KHC", "KLAC", "KO",
-    "LIN", "LLY", "LMT", "LOW", "LRCX", "MA", "MAR", "MCD", "MCHP", "MDLZ",
-    "MDT", "MELI", "MET", "META", "MMM", "MNST", "MO", "MPWR", "MRK", "MRVL",
-    "MS", "MSFT", "MSTR", "MU", "NEE", "NFLX", "NKE", "NVDA", "NXPI", "ODFL",
-    "ORCL", "ORLY", "PANW", "PAYX", "PCAR", "PDD", "PEP", "PFE", "PG", "PLTR",
-    "PM", "PYPL", "QCOM", "REGN", "ROP", "ROST", "RTX", "SBUX", "SCHW", "SHOP",
-    "SNDK", "SNPS", "SO", "SPG", "STX", "T", "TGT", "TMO", "TMUS", "TRI",
-    "TSLA", "TTWO", "TXN", "UNH", "UNP", "UPS", "USB", "V", "VRSK", "VRTX",
-    "VZ", "WBD", "WDAY", "WDC", "WFC", "WMT", "XEL", "XOM", "ZS",
+    "AAPL", "ABBV", "AMAT", "AMD", "AMZN", "ARM", "ASML", "AVGO", "AXP", "BAC",
+    "BRK-B", "C", "CAT", "COST", "CSCO", "CVX", "GE", "GOOG", "GOOGL", "GS",
+    "HD", "INTC", "JNJ", "JPM", "KLAC", "KO", "LIN", "LLY", "LRCX", "MA",
+    "META", "MRK", "MS", "MSFT", "MU", "NFLX", "NVDA", "ORCL", "PANW", "PG",
+    "PLTR", "PM", "RTX", "TSLA", "TXN", "UNH", "V", "WFC", "WMT", "XOM",
 ]
 
 # 종목 이름 (스캐너 표시용)
 SP100_NAMES = {
-    # ── S&P 100 ─────
-    "AAPL": "Apple", "ABBV": "AbbVie", "ABT": "Abbott Labs", "ACN": "Accenture",
-    "ADBE": "Adobe", "AIG": "AIG", "AMD": "AMD", "AMGN": "Amgen",
-    "AMZN": "Amazon", "AVGO": "Broadcom", "AXP": "American Express", "BA": "Boeing",
-    "BAC": "Bank of America", "BK": "BNY Mellon", "BKNG": "Booking Holdings",
-    "BLK": "BlackRock", "BMY": "Bristol-Myers", "BRK-B": "Berkshire Hathaway",
-    "C": "Citigroup", "CAT": "Caterpillar", "CHTR": "Charter Comm", "CL": "Colgate",
-    "CMCSA": "Comcast", "COF": "Capital One", "COP": "ConocoPhillips",
-    "COST": "Costco", "CRM": "Salesforce", "CSCO": "Cisco", "CVS": "CVS Health",
-    "CVX": "Chevron", "DE": "Deere", "DHR": "Danaher", "DIS": "Disney",
-    "DOW": "Dow Inc", "DUK": "Duke Energy", "EMR": "Emerson", "EXC": "Exelon",
-    "F": "Ford", "FDX": "FedEx", "GD": "General Dynamics", "GE": "GE Aerospace",
-    "GILD": "Gilead", "GM": "GM", "GOOG": "Alphabet C", "GOOGL": "Alphabet A",
-    "GS": "Goldman Sachs", "HD": "Home Depot", "HON": "Honeywell", "IBM": "IBM",
-    "INTC": "Intel", "INTU": "Intuit", "JNJ": "J&J", "JPM": "JPMorgan",
-    "KHC": "Kraft Heinz", "KO": "Coca-Cola", "LIN": "Linde", "LLY": "Eli Lilly",
-    "LMT": "Lockheed Martin", "LOW": "Lowe's", "MA": "Mastercard", "MCD": "McDonald's",
-    "MDLZ": "Mondelez", "MDT": "Medtronic", "MET": "MetLife", "META": "Meta",
-    "MMM": "3M", "MO": "Altria", "MRK": "Merck", "MS": "Morgan Stanley",
-    "MSFT": "Microsoft", "NEE": "NextEra Energy", "NFLX": "Netflix", "NKE": "Nike",
-    "NVDA": "NVIDIA", "ORCL": "Oracle", "PEP": "PepsiCo", "PFE": "Pfizer",
-    "PG": "Procter & Gamble", "PM": "Philip Morris", "PYPL": "PayPal",
-    "QCOM": "Qualcomm", "RTX": "RTX Corp", "SBUX": "Starbucks", "SCHW": "Schwab",
-    "SO": "Southern Co", "SPG": "Simon Property", "T": "AT&T", "TGT": "Target",
-    "TMO": "Thermo Fisher", "TMUS": "T-Mobile", "TSLA": "Tesla", "TXN": "Texas Instruments",
-    "UNH": "UnitedHealth", "UNP": "Union Pacific", "UPS": "UPS", "USB": "US Bancorp",
-    "V": "Visa", "VZ": "Verizon", "WFC": "Wells Fargo", "WMT": "Walmart",
-    "XOM": "ExxonMobil",
-    # ── NASDAQ 100 전용 추가 ─────
-    "ABNB": "Airbnb", "ADI": "Analog Devices", "ADP": "ADP", "ADSK": "Autodesk",
-    "AEP": "American Electric Power", "ALNY": "Alnylam", "AMAT": "Applied Materials",
-    "APP": "AppLovin", "ARM": "Arm Holdings", "ASML": "ASML", "AXON": "Axon",
-    "BKR": "Baker Hughes", "CCEP": "Coca-Cola Europacific", "CDNS": "Cadence",
-    "CEG": "Constellation Energy", "CPRT": "Copart", "CRWD": "CrowdStrike",
-    "CSGP": "CoStar Group", "CSX": "CSX", "CTAS": "Cintas", "CTSH": "Cognizant",
-    "DASH": "DoorDash", "DDOG": "Datadog", "DXCM": "DexCom", "EA": "Electronic Arts",
-    "FANG": "Diamondback Energy", "FAST": "Fastenal", "FER": "Ferrovial",
-    "FTNT": "Fortinet", "GEHC": "GE HealthCare", "IDXX": "IDEXX Labs",
-    "INSM": "Insmed", "ISRG": "Intuitive Surgical", "KDP": "Keurig Dr Pepper",
-    "KLAC": "KLA Corp", "LRCX": "Lam Research", "MAR": "Marriott",
-    "MCHP": "Microchip", "MELI": "MercadoLibre", "MNST": "Monster Beverage",
-    "MPWR": "Monolithic Power", "MRVL": "Marvell", "MSTR": "MicroStrategy",
-    "MU": "Micron", "NXPI": "NXP Semi", "ODFL": "Old Dominion Freight",
-    "ORLY": "O'Reilly Auto", "PANW": "Palo Alto Networks", "PAYX": "Paychex",
-    "PCAR": "PACCAR", "PDD": "PDD Holdings", "PLTR": "Palantir",
-    "REGN": "Regeneron", "ROP": "Roper", "ROST": "Ross Stores",
-    "SHOP": "Shopify", "SNDK": "SanDisk", "SNPS": "Synopsys", "STX": "Seagate",
-    "TRI": "Thomson Reuters", "TTWO": "Take-Two", "VRSK": "Verisk",
-    "VRTX": "Vertex Pharma", "WBD": "Warner Bros Discovery", "WDAY": "Workday",
-    "WDC": "Western Digital", "XEL": "Xcel Energy", "ZS": "Zscaler",
+    "AAPL": "Apple", "ABBV": "AbbVie", "AMAT": "Applied Materials", "AMD": "AMD",
+    "AMZN": "Amazon", "ARM": "Arm Holdings", "ASML": "ASML", "AVGO": "Broadcom",
+    "AXP": "American Express", "BAC": "Bank of America", "BRK-B": "Berkshire Hathaway",
+    "C": "Citigroup", "CAT": "Caterpillar", "COST": "Costco", "CSCO": "Cisco",
+    "CVX": "Chevron", "GE": "GE Aerospace", "GOOG": "Alphabet C", "GOOGL": "Alphabet A",
+    "GS": "Goldman Sachs", "HD": "Home Depot", "INTC": "Intel", "JNJ": "J&J",
+    "JPM": "JPMorgan", "KLAC": "KLA Corp", "KO": "Coca-Cola", "LIN": "Linde",
+    "LLY": "Eli Lilly", "LRCX": "Lam Research", "MA": "Mastercard", "META": "Meta",
+    "MRK": "Merck", "MS": "Morgan Stanley", "MSFT": "Microsoft", "MU": "Micron",
+    "NFLX": "Netflix", "NVDA": "NVIDIA", "ORCL": "Oracle", "PANW": "Palo Alto Networks",
+    "PG": "Procter & Gamble", "PLTR": "Palantir", "PM": "Philip Morris", "RTX": "RTX Corp",
+    "TSLA": "Tesla", "TXN": "Texas Instruments", "UNH": "UnitedHealth", "V": "Visa",
+    "WFC": "Wells Fargo", "WMT": "Walmart", "XOM": "ExxonMobil",
 }
 
 # 종목 GICS 섹터 분류 (한국어 키, SECTOR_KO_TO_EN으로 영문 변환)
 # Tech=Technology, 통신=Communication Services, 소비순환=Consumer Cyclical,
 # 필수소비=Consumer Defensive, 헬스케어=Healthcare, 금융=Financial Services,
-# 산업재=Industrials, 에너지=Energy, 유틸=Utilities, 부동산=Real Estate, 원자재=Basic Materials
+# 산업재=Industrials, 에너지=Energy, 원자재=Basic Materials
 TICKER_SECTORS = {
     # ── Tech (Technology) ─────
-    "AAPL": "Tech", "ACN": "Tech", "ADBE": "Tech", "ADI": "Tech",
-    "ADP": "Tech", "ADSK": "Tech", "AMAT": "Tech", "AMD": "Tech",
-    "APP": "Tech", "ARM": "Tech", "ASML": "Tech", "AVGO": "Tech",
-    "CDNS": "Tech", "CRM": "Tech", "CRWD": "Tech", "CSCO": "Tech",
-    "CTSH": "Tech", "DDOG": "Tech", "FTNT": "Tech", "IBM": "Tech",
-    "INTC": "Tech", "INTU": "Tech", "KLAC": "Tech", "LRCX": "Tech",
-    "MCHP": "Tech", "MPWR": "Tech", "MRVL": "Tech", "MSFT": "Tech",
-    "MSTR": "Tech", "MU": "Tech", "NVDA": "Tech", "NXPI": "Tech",
-    "ORCL": "Tech", "PANW": "Tech", "PAYX": "Tech", "PLTR": "Tech",
-    "QCOM": "Tech", "SNDK": "Tech", "SNPS": "Tech", "STX": "Tech",
-    "TXN": "Tech", "WDAY": "Tech", "WDC": "Tech", "ZS": "Tech",
+    "AAPL": "Tech", "AMAT": "Tech", "AMD": "Tech", "ARM": "Tech",
+    "ASML": "Tech", "AVGO": "Tech", "CSCO": "Tech", "INTC": "Tech",
+    "KLAC": "Tech", "LRCX": "Tech", "MSFT": "Tech", "MU": "Tech",
+    "NVDA": "Tech", "ORCL": "Tech", "PANW": "Tech", "PLTR": "Tech",
+    "TXN": "Tech",
     # ── 통신 (Communication Services) ─────
-    "CHTR": "통신", "CMCSA": "통신", "DIS": "통신", "EA": "통신",
     "GOOG": "통신", "GOOGL": "통신", "META": "통신", "NFLX": "통신",
-    "T": "통신", "TMUS": "통신", "TTWO": "통신", "VZ": "통신",
-    "WBD": "통신",
     # ── 소비순환 (Consumer Cyclical) ─────
-    "ABNB": "소비순환", "AMZN": "소비순환", "BKNG": "소비순환",
-    "DASH": "소비순환", "F": "소비순환", "GM": "소비순환",
-    "HD": "소비순환", "LOW": "소비순환", "MAR": "소비순환",
-    "MCD": "소비순환", "MELI": "소비순환", "NKE": "소비순환",
-    "ORLY": "소비순환", "PDD": "소비순환", "ROST": "소비순환",
-    "SBUX": "소비순환", "SHOP": "소비순환", "TGT": "소비순환",
-    "TSLA": "소비순환",
+    "AMZN": "소비순환", "HD": "소비순환", "TSLA": "소비순환",
     # ── 필수소비 (Consumer Defensive) ─────
-    "CCEP": "필수소비", "CL": "필수소비", "COST": "필수소비",
-    "KDP": "필수소비", "KHC": "필수소비", "KO": "필수소비",
-    "MDLZ": "필수소비", "MNST": "필수소비", "MO": "필수소비",
-    "PEP": "필수소비", "PG": "필수소비", "PM": "필수소비",
-    "WMT": "필수소비",
+    "COST": "필수소비", "KO": "필수소비", "PG": "필수소비",
+    "PM": "필수소비", "WMT": "필수소비",
     # ── 헬스케어 (Healthcare) ─────
-    "ABBV": "헬스케어", "ABT": "헬스케어", "ALNY": "헬스케어",
-    "AMGN": "헬스케어", "BMY": "헬스케어", "CVS": "헬스케어",
-    "DHR": "헬스케어", "DXCM": "헬스케어", "GEHC": "헬스케어",
-    "GILD": "헬스케어", "IDXX": "헬스케어", "INSM": "헬스케어",
-    "ISRG": "헬스케어", "JNJ": "헬스케어", "LLY": "헬스케어",
-    "MDT": "헬스케어", "MRK": "헬스케어", "PFE": "헬스케어",
-    "REGN": "헬스케어", "TMO": "헬스케어", "UNH": "헬스케어",
-    "VRTX": "헬스케어",
-    # ── 금융 (Financial Services) — V/MA/PYPL은 GICS 2023.3 재분류로 Financials ─────
-    "AIG": "금융", "AXP": "금융", "BAC": "금융", "BK": "금융",
-    "BLK": "금융", "BRK-B": "금융", "C": "금융", "COF": "금융",
-    "GS": "금융", "JPM": "금융", "MA": "금융", "MET": "금융",
-    "MS": "금융", "PYPL": "금융", "SCHW": "금융",
-    "USB": "금융", "V": "금융", "WFC": "금융",
+    "ABBV": "헬스케어", "JNJ": "헬스케어", "LLY": "헬스케어",
+    "MRK": "헬스케어", "UNH": "헬스케어",
+    # ── 금융 (Financial Services) — V/MA는 GICS 2023.3 재분류로 Financials ─────
+    "AXP": "금융", "BAC": "금융", "BRK-B": "금융", "C": "금융",
+    "GS": "금융", "JPM": "금융", "MA": "금융", "MS": "금융",
+    "V": "금융", "WFC": "금융",
     # ── 산업재 (Industrials) ─────
-    "AXON": "산업재", "BA": "산업재", "CAT": "산업재", "CPRT": "산업재",
-    "CSGP": "산업재", "CSX": "산업재", "CTAS": "산업재", "DE": "산업재",
-    "EMR": "산업재", "FAST": "산업재", "FDX": "산업재", "FER": "산업재",
-    "GD": "산업재", "GE": "산업재", "HON": "산업재", "LMT": "산업재",
-    "MMM": "산업재", "ODFL": "산업재", "PCAR": "산업재", "ROP": "산업재",
-    "RTX": "산업재", "TRI": "산업재", "UNP": "산업재", "UPS": "산업재",
-    "VRSK": "산업재",
+    "CAT": "산업재", "GE": "산업재", "RTX": "산업재",
     # ── 에너지 (Energy) ─────
-    "BKR": "에너지", "COP": "에너지", "CVX": "에너지",
-    "FANG": "에너지", "XOM": "에너지",
-    # ── 유틸 (Utilities) ─────
-    "AEP": "유틸", "CEG": "유틸", "DUK": "유틸", "EXC": "유틸",
-    "NEE": "유틸", "SO": "유틸", "XEL": "유틸",
-    # ── 부동산 (Real Estate) ─────
-    "SPG": "부동산",
+    "CVX": "에너지", "XOM": "에너지",
     # ── 원자재 (Basic Materials) ─────
-    "DOW": "원자재", "LIN": "원자재",
+    "LIN": "원자재",
 }
 
 
@@ -873,218 +786,37 @@ def scan_etf(project_dir: str) -> dict:
 
 
 # ═══════════════════════════════════════════════════════
-#  KOSPI Scanner — 코스피 시총 상위 100종목
+#  KOSPI Scanner — 코스피 시총 상위 10종목 (2026-07-27 재선정)
 # ═══════════════════════════════════════════════════════
 
 KOSPI_TICKERS = [
-    # ── 반도체/IT/통신 ──
     "005930.KS",  # 삼성전자
     "000660.KS",  # SK하이닉스
-    "009150.KS",  # 삼성전기
-    "018260.KS",  # 삼성SDS
-    "066570.KS",  # LG전자
-    "017670.KS",  # SK텔레콤
-    "030200.KS",  # KT
-    "035420.KS",  # NAVER
-    "035720.KS",  # 카카오
-    "036570.KS",  # 엔씨소프트
-    "251270.KS",  # 넷마블
-    "083790.KS",  # 크래프톤
-    # ── 배터리/에너지/소재 ──
-    "373220.KS",  # LG에너지솔루션
-    "006400.KS",  # 삼성SDI
-    "051910.KS",  # LG화학
-    "096770.KS",  # SK이노베이션
-    "009830.KS",  # 한화솔루션
-    "112610.KS",  # 씨에스윈드
-    "241560.KS",  # 두산퓨얼셀
-    "003670.KS",  # 포스코퓨처엠
-    "066970.KS",  # 엘앤에프
-    "011790.KS",  # SKC
-    # ── 자동차/부품 ──
     "005380.KS",  # 현대자동차
-    "000270.KS",  # 기아
-    "012330.KS",  # 현대모비스
-    "018880.KS",  # 한온시스템
-    "064350.KS",  # 현대로템
-    "086280.KS",  # 현대글로비스
-    "161390.KS",  # 한국타이어앤테크놀로지
-    # ── 철강/금속/화학 ──
-    "005490.KS",  # POSCO홀딩스
-    "004020.KS",  # 현대제철
-    "010130.KS",  # 고려아연
-    "002380.KS",  # KCC
-    "011170.KS",  # 롯데케미칼
-    "298040.KS",  # 효성티앤씨
-    "004800.KS",  # 효성
-    "006260.KS",  # LS
-    "011780.KS",  # 금호석유
-    # ── 금융 ──
-    "105560.KS",  # KB금융
-    "055550.KS",  # 신한지주
-    "086790.KS",  # 하나금융지주
-    "316140.KS",  # 우리금융지주
-    "032830.KS",  # 삼성생명
-    "000810.KS",  # 삼성화재
-    "088350.KS",  # 한화생명
-    "005940.KS",  # NH투자증권
-    "006800.KS",  # 미래에셋증권
-    "071050.KS",  # 한국금융지주
-    "024110.KS",  # 기업은행
-    "138040.KS",  # 메리츠금융지주
-    "138930.KS",  # BNK금융지주
-    "005830.KS",  # DB손해보험
-    # ── 바이오/제약 ──
+    "009150.KS",  # 삼성전기
+    "373220.KS",  # LG에너지솔루션
     "207940.KS",  # 삼성바이오로직스
-    "068270.KS",  # 셀트리온
-    "068760.KS",  # 셀트리온제약
-    "128940.KS",  # 한미약품
-    "000100.KS",  # 유한양행
-    "326030.KS",  # SK바이오사이언스
-    "140490.KS",  # 휴젤
-    "069620.KS",  # 대웅제약
-    "096530.KS",  # 씨젠
-    # ── 건설/조선/방산 ──
-    "000720.KS",  # 현대건설
-    "034020.KS",  # 두산에너빌리티
-    "329180.KS",  # HD한국조선해양
-    "010620.KS",  # 현대미포조선
-    "042660.KS",  # 한화오션
-    "010140.KS",  # 삼성중공업
-    "047810.KS",  # 한국항공우주
-    "006360.KS",  # GS건설
-    "000150.KS",  # 두산
-    "042670.KS",  # 두산밥캣
-    # ── 유통/소비재 ──
-    "139480.KS",  # 이마트
-    "023530.KS",  # 롯데쇼핑
-    "027410.KS",  # BGF리테일
-    "007070.KS",  # GS리테일
-    "097950.KS",  # CJ제일제당
-    "271560.KS",  # 오리온
-    "000080.KS",  # 하이트진로
-    "033780.KS",  # KT&G
-    "007310.KS",  # 오뚜기
-    "009240.KS",  # 한샘
-    "008770.KS",  # 호텔신라
-    "192820.KS",  # 코스맥스
-    # ── 운송/물류/지주/기타 ──
-    "000120.KS",  # CJ대한통운
-    "003550.KS",  # LG
-    "034730.KS",  # SK
+    "105560.KS",  # KB금융
+    "032830.KS",  # 삼성생명
     "028260.KS",  # 삼성물산
-    "001040.KS",  # CJ
-    "078930.KS",  # GS
-    "004990.KS",  # 롯데지주
-    "090430.KS",  # 아모레퍼시픽
-    "002790.KS",  # 아모레G
-    "021240.KS",  # 코웨이
-    "030000.KS",  # 제일기획
-    "035250.KS",  # 강원랜드
-    "010060.KS",  # OCI홀딩스
-    "010950.KS",  # S-Oil
-    "015760.KS",  # 한국전력
-    "003490.KS",  # 대한항공
-    "011200.KS",  # HMM
-    "047050.KS",  # 포스코인터내셔널
+    "329180.KS",  # 한국조선해양
 ]
 
 # ── KOSPI 섹터 매핑 (English, GICS 호환) ──
-# 모멘텀 스캐너 KR 섹터 표시용. KOSPI_TICKERS 그룹 주석을 그대로 영문 섹터로 매핑.
 KOSPI_SECTORS = {
-    # 반도체/IT/통신 → Technology / Communication Services
     "005930.KS": "Technology", "000660.KS": "Technology", "009150.KS": "Technology",
-    "018260.KS": "Technology", "066570.KS": "Technology", "017670.KS": "Communication Services",
-    "030200.KS": "Communication Services", "035420.KS": "Communication Services",
-    "035720.KS": "Communication Services", "036570.KS": "Communication Services",
-    "251270.KS": "Communication Services", "083790.KS": "Communication Services",
-    # 배터리/에너지/소재 → Energy / Basic Materials
-    "373220.KS": "Energy", "006400.KS": "Energy", "051910.KS": "Basic Materials",
-    "096770.KS": "Energy", "009830.KS": "Basic Materials", "112610.KS": "Industrials",
-    "241560.KS": "Energy", "003670.KS": "Basic Materials", "066970.KS": "Basic Materials",
-    "011790.KS": "Basic Materials",
-    # 자동차/부품 → Consumer Cyclical
-    "005380.KS": "Consumer Cyclical", "000270.KS": "Consumer Cyclical",
-    "012330.KS": "Consumer Cyclical", "018880.KS": "Consumer Cyclical",
-    "064350.KS": "Industrials", "086280.KS": "Industrials",
-    "161390.KS": "Consumer Cyclical",
-    # 철강/금속/화학 → Basic Materials
-    "005490.KS": "Basic Materials", "004020.KS": "Basic Materials",
-    "010130.KS": "Basic Materials", "002380.KS": "Basic Materials",
-    "011170.KS": "Basic Materials", "298040.KS": "Basic Materials",
-    "004800.KS": "Basic Materials", "006260.KS": "Industrials",
-    "011780.KS": "Basic Materials",
-    # 금융 → Financial Services
-    "105560.KS": "Financial Services", "055550.KS": "Financial Services",
-    "086790.KS": "Financial Services", "316140.KS": "Financial Services",
-    "032830.KS": "Financial Services", "000810.KS": "Financial Services",
-    "088350.KS": "Financial Services", "005940.KS": "Financial Services",
-    "006800.KS": "Financial Services", "071050.KS": "Financial Services",
-    "024110.KS": "Financial Services", "138040.KS": "Financial Services",
-    "138930.KS": "Financial Services", "005830.KS": "Financial Services",
-    # 바이오/제약 → Healthcare
-    "207940.KS": "Healthcare", "068270.KS": "Healthcare", "068760.KS": "Healthcare",
-    "128940.KS": "Healthcare", "000100.KS": "Healthcare", "326030.KS": "Healthcare",
-    "140490.KS": "Healthcare", "069620.KS": "Healthcare", "096530.KS": "Healthcare",
-    # 건설/조선/방산 → Industrials
-    "000720.KS": "Industrials", "034020.KS": "Industrials", "329180.KS": "Industrials",
-    "010620.KS": "Industrials", "042660.KS": "Industrials", "010140.KS": "Industrials",
-    "047810.KS": "Industrials", "006360.KS": "Industrials", "000150.KS": "Industrials",
-    "042670.KS": "Industrials",
-    # 유통/소비재 → Consumer Defensive / Consumer Cyclical
-    "139480.KS": "Consumer Defensive", "023530.KS": "Consumer Cyclical",
-    "027410.KS": "Consumer Defensive", "007070.KS": "Consumer Defensive",
-    "097950.KS": "Consumer Defensive", "271560.KS": "Consumer Defensive",
-    "000080.KS": "Consumer Defensive", "033780.KS": "Consumer Defensive",
-    "007310.KS": "Consumer Defensive", "009240.KS": "Consumer Cyclical",
-    "008770.KS": "Consumer Cyclical", "192820.KS": "Consumer Defensive",
-    # 운송/물류/지주/기타
-    "000120.KS": "Industrials", "003550.KS": "Industrials", "034730.KS": "Industrials",
-    "028260.KS": "Industrials", "001040.KS": "Consumer Defensive", "078930.KS": "Industrials",
-    "004990.KS": "Industrials", "090430.KS": "Consumer Defensive",
-    "002790.KS": "Consumer Defensive", "021240.KS": "Consumer Defensive",
-    "030000.KS": "Communication Services", "035250.KS": "Consumer Cyclical",
-    "010060.KS": "Basic Materials", "010950.KS": "Energy",
-    "015760.KS": "Utilities", "003490.KS": "Industrials",
-    "011200.KS": "Industrials", "047050.KS": "Industrials",
+    "005380.KS": "Consumer Cyclical",
+    "373220.KS": "Energy",
+    "207940.KS": "Healthcare",
+    "105560.KS": "Financial Services", "032830.KS": "Financial Services",
+    "028260.KS": "Industrials", "329180.KS": "Industrials",
 }
 
 KOSPI_NAMES = {
-    "005930.KS": "삼성전자", "000660.KS": "SK하이닉스", "009150.KS": "삼성전기",
-    "018260.KS": "삼성SDS", "066570.KS": "LG전자", "017670.KS": "SK텔레콤",
-    "030200.KS": "KT", "035420.KS": "NAVER", "035720.KS": "카카오",
-    "036570.KS": "엔씨소프트", "251270.KS": "넷마블", "083790.KS": "크래프톤",
-    "373220.KS": "LG에너지솔루션", "006400.KS": "삼성SDI", "051910.KS": "LG화학",
-    "096770.KS": "SK이노베이션", "009830.KS": "한화솔루션", "112610.KS": "씨에스윈드",
-    "241560.KS": "두산퓨얼셀", "005380.KS": "현대자동차", "000270.KS": "기아",
-    "012330.KS": "현대모비스", "018880.KS": "한온시스템", "064350.KS": "현대로템",
-    "005490.KS": "POSCO홀딩스", "004020.KS": "현대제철", "010130.KS": "고려아연",
-    "002380.KS": "KCC", "011170.KS": "롯데케미칼", "298040.KS": "효성티앤씨",
-    "004800.KS": "효성", "006260.KS": "LS Corp", "105560.KS": "KB금융",
-    "055550.KS": "신한지주", "086790.KS": "하나금융지주", "316140.KS": "우리금융지주",
-    "032830.KS": "삼성생명", "000810.KS": "삼성화재", "088350.KS": "한화생명",
-    "005940.KS": "NH투자증권", "006800.KS": "미래에셋증권", "071050.KS": "한국금융지주",
-    "024110.KS": "기업은행", "207940.KS": "삼성바이오로직스", "068270.KS": "셀트리온",
-    "068760.KS": "셀트리온제약", "128940.KS": "한미약품", "000100.KS": "유한양행",
-    "326030.KS": "SK바이오사이언스", "140490.KS": "휴젤", "069620.KS": "대웅제약",
-    "096530.KS": "씨젠", "000720.KS": "현대건설", "034020.KS": "두산에너빌리티",
-    "329180.KS": "한국조선해양", "010620.KS": "현대미포조선", "042660.KS": "한화오션",
-    "010140.KS": "삼성중공업", "047810.KS": "한국항공우주", "006360.KS": "GS건설",
-    "000150.KS": "두산", "042670.KS": "두산밥캣", "139480.KS": "이마트",
-    "023530.KS": "롯데쇼핑", "027410.KS": "BGF리테일", "007070.KS": "GS리테일",
-    "097950.KS": "CJ제일제당", "271560.KS": "오리온", "000080.KS": "하이트진로",
-    "033780.KS": "KT&G", "007310.KS": "오뚜기", "009240.KS": "한샘",
-    "000120.KS": "CJ대한통운", "003550.KS": "LG", "034730.KS": "SK",
-    "028260.KS": "삼성물산", "001040.KS": "CJ", "078930.KS": "GS",
-    "004990.KS": "롯데지주", "090430.KS": "아모레퍼시픽", "002790.KS": "아모레G",
-    "021240.KS": "코웨이", "030000.KS": "제일기획", "035250.KS": "강원랜드",
-    "010060.KS": "OCI홀딩스", "010950.KS": "S-Oil", "015760.KS": "한국전력",
-    "003490.KS": "대한항공", "011200.KS": "HMM", "047050.KS": "포스코인터내셔널",
-    # 추가 (시총 100위권)
-    "003670.KS": "포스코퓨처엠", "086280.KS": "현대글로비스", "138040.KS": "메리츠금융지주",
-    "011780.KS": "금호석유", "008770.KS": "호텔신라", "161390.KS": "한국타이어앤테크놀로지",
-    "011790.KS": "SKC", "066970.KS": "엘앤에프", "138930.KS": "BNK금융지주",
-    "005830.KS": "DB손해보험", "192820.KS": "코스맥스",
+    "005930.KS": "삼성전자", "000660.KS": "SK하이닉스", "005380.KS": "현대자동차",
+    "009150.KS": "삼성전기", "373220.KS": "LG에너지솔루션", "207940.KS": "삼성바이오로직스",
+    "105560.KS": "KB금융", "032830.KS": "삼성생명", "028260.KS": "삼성물산",
+    "329180.KS": "한국조선해양",
 }
 
 

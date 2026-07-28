@@ -30,10 +30,8 @@ def test_known_ticker_sectors_english():
         "WMT":  "Consumer Defensive",
         "LLY":  "Healthcare",
         "XOM":  "Energy",
-        "NEE":  "Utilities",
-        "SPG":  "Real Estate",
-        "DOW":  "Basic Materials",
-        "BA":   "Industrials",
+        "LIN":  "Basic Materials",
+        "CAT":  "Industrials",
     }
     for tk, want in expected.items():
         got = SECTOR_KO_TO_EN.get(TICKER_SECTORS.get(tk, ""), "—")

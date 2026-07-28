@@ -17,7 +17,7 @@ if sys.platform == "win32":
 from portfolio_data import TICKER_META
 from signal_judge import judge_all
 from history_manager import load_history, save_today, prune_old, save_history, get_previous_signals, backfill_prices
-from report_generator import generate_report, generate_detail_pages, generate_scanner_pages, generate_backtest_page, generate_trend_page
+from report_generator import generate_report, generate_detail_pages, generate_scanner_pages, generate_trend_page
 
 
 def _load_market_data(json_path: str) -> dict:
@@ -432,7 +432,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
         _shared_nav = {
             "nav_portfolio": f"report_{_nav_date}.html",
             "nav_scanner": f"scanner_{_nav_date}.html",
-            "nav_backtest": f"backtest_{_nav_date}.html",
             "nav_trend": f"trend_{_nav_date}.html",
             **_owner_nav_links(_nav_date),
             "portfolio_stop_summary": stop_result_me.get("summary")
@@ -924,37 +923,6 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             print("  OK signals_history.json updated")
         else:
             print("[Step 6] 비거래일 → 히스토리 업데이트 스킵")
-
-        # Step 6b: Backtest evaluation (portfolio + scanner histories)
-        print("[Step 6b] Backtest evaluation...")
-        outcomes_path = os.path.join(project_dir, "history", "outcomes.json")
-        analysis_path = os.path.join(project_dir, "history", "backtest_analysis.json")
-        backtest_analysis = {}
-        try:
-            from backtest_evaluator import evaluate_outcomes, analyze_accuracy, get_pending_signals
-            scanner_histories = {
-                "sp100": _sc_sp100_hist,
-                "etf": _sc_etf_hist,
-                "kospi": _sc_kospi_hist,
-            }
-            outcomes = evaluate_outcomes(history, outcomes_path, scanner_histories=scanner_histories)
-            backtest_analysis = analyze_accuracy(outcomes, analysis_path)
-            pending_signals = get_pending_signals(history, scanner_histories)
-            print(f"  OK backtest: {backtest_analysis.get('total_records', 0)} records, status={backtest_analysis.get('data_status', 'unknown')}")
-
-            # Backtest dashboard page
-            bt_path = generate_backtest_page(
-                backtest_analysis=backtest_analysis,
-                outcomes=outcomes,
-                pending_signals=pending_signals,
-                output_dir=reports_dir,
-                date_str=today,
-            )
-            print(f"  OK backtest page -> {bt_path}")
-        except Exception as e:
-            import traceback as _tb
-            _tb.print_exc()
-            print(f"  WARN backtest evaluation failed: {e} (pipeline continues)")
 
         # Step 7: Smoke test
         print("[Step 7] Running smoke test...")

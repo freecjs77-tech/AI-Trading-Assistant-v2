@@ -265,7 +265,6 @@ def generate_report(
     scanner_sp100: dict | None = None,
     scanner_etf: dict | None = None,
     scanner_kospi: dict | None = None,
-    backtest_analysis: dict | None = None,
     nav_portfolio: str | None = None,
     active_nav: str = "portfolio",
     benchmark_data: dict | None = None,
@@ -462,7 +461,6 @@ def generate_report(
         "nav_portfolio": nav_portfolio,
         "active_nav": active_nav,
         "nav_scanner": f"scanner_{date_str}.html",
-        "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
         "show_currency_toggle": True,
         **_owner_nav_links(date_str),
@@ -593,7 +591,6 @@ def generate_scanner_pages(
     nav = {
         "nav_portfolio": f"report_{date_str}.html",
         "nav_scanner": f"scanner_{date_str}.html",
-        "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
         **_owner_nav_links(date_str),
     }
@@ -963,7 +960,6 @@ def generate_trend_page(
         # Nav
         "nav_portfolio": f"report_{date_str}.html",
         "nav_scanner": f"scanner_{date_str}.html",
-        "nav_backtest": f"backtest_{date_str}.html",
         "nav_trend": f"trend_{date_str}.html",
         **_owner_nav_links(date_str),
         # Meta
@@ -1003,91 +999,6 @@ def generate_trend_page(
 
     os.makedirs(output_dir, exist_ok=True)
     out_path = os.path.join(output_dir, f"trend_{date_str}.html")
-    with open(out_path, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    return out_path
-
-
-def generate_backtest_page(
-    backtest_analysis: dict,
-    outcomes: dict,
-    pending_signals: list,
-    output_dir: str,
-    template_dir: str | None = None,
-    date_str: str | None = None,
-) -> str:
-    """백테스트 대시보드 HTML 페이지 생성. 반환: 저장된 파일 경로"""
-    if template_dir is None:
-        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "templates")
-    if date_str is None:
-        date_str = datetime.now().strftime("%Y-%m-%d")
-
-    env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
-    env.filters["f1"] = lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
-    env.filters["f2"] = lambda x: f"{x:.2f}" if isinstance(x, (int, float)) else str(x)
-    env.filters["comma"] = lambda x: f"{x:,.0f}" if isinstance(x, (int, float)) else str(x)
-    env.filters["badge_class"] = _badge_class
-
-    template = env.get_template("backtest_template.html")
-
-    ba = backtest_analysis or {}
-    by_signal = ba.get("by_signal", {})
-    benchmark = ba.get("benchmark", {})
-
-    # Overall BUY win rate (5d)
-    buy_signals_stats = {k: v for k, v in by_signal.items() if "BUY" in k}
-    total_buy_samples = sum(s.get("samples_5d", 0) for s in buy_signals_stats.values())
-    total_buy_wins = sum(
-        round(s.get("win_rate_5d", 0) * s.get("samples_5d", 0))
-        for s in buy_signals_stats.values()
-    )
-    overall_buy_wr = round(total_buy_wins / total_buy_samples, 3) if total_buy_samples > 0 else None
-
-    # Overall reach rate
-    buy_with_reach = [s for s in buy_signals_stats.values() if "reach_rate_10d" in s]
-    overall_reach_rate = None
-    if buy_with_reach:
-        total_reach_samples = sum(s.get("count", 0) for s in buy_with_reach)
-        total_reached = sum(round(s.get("reach_rate_10d", 0) * s.get("count", 0)) for s in buy_with_reach)
-        if total_reach_samples > 0:
-            overall_reach_rate = round(total_reached / total_reach_samples, 3)
-
-    # Alpha (5d)
-    alpha = benchmark.get("5d", {}).get("alpha") if benchmark else None
-
-    context = {
-        # Nav
-        "nav_portfolio": f"report_{date_str}.html",
-        "nav_scanner": f"scanner_{date_str}.html",
-        "nav_backtest": f"backtest_{date_str}.html",
-        "nav_trend": f"trend_{date_str}.html",
-        **_owner_nav_links(date_str),
-        # Meta
-        "date": date_str,
-        "date_ko": _date_ko(date_str),
-        # Overview
-        "total_records": ba.get("total_records", 0),
-        "period": ba.get("period"),
-        "data_status": ba.get("data_status", "insufficient"),
-        "overall_buy_wr": overall_buy_wr,
-        "overall_reach_rate": overall_reach_rate,
-        "alpha": alpha,
-        "win_threshold": 3.0,
-        "max_eval_days": 10,
-        # Data
-        "by_signal": by_signal,
-        "by_source": ba.get("by_source", {}),
-        "by_condition": ba.get("by_condition", {}),
-        "benchmark": benchmark,
-        "records": outcomes.get("records", []),
-        "recommendations": ba.get("recommendations", []),
-    }
-
-    html = template.render(**context)
-
-    os.makedirs(output_dir, exist_ok=True)
-    out_path = os.path.join(output_dir, f"backtest_{date_str}.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)
 
@@ -1206,7 +1117,6 @@ def generate_detail_pages(
     nav_ctx = {
         "nav_portfolio": f"../report_{date_str}.html",
         "nav_scanner": f"../scanner_{date_str}.html",
-        "nav_backtest": f"../backtest_{date_str}.html",
         "nav_trend": f"../trend_{date_str}.html",
         "nav_archive": "../archive.html",
     }

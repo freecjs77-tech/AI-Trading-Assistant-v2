@@ -26,7 +26,7 @@ def prepare_deploy():
 
     # 모든 report_*.html을 deploy 루트에 펼쳐놓는다.
     # (이전 구조: deploy/reports/*.html → 상대경로로 scanner_*.html 찾을 때 404)
-    # 현재 구조: deploy/report_*.html 과 scanner/backtest/trend가 동일 depth에 위치
+    # 현재 구조: deploy/report_*.html 과 scanner/trend가 동일 depth에 위치
     report_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "report_*.html")))
     if not report_files:
         print("WARNING: No report files found in reports/")
@@ -49,13 +49,6 @@ def prepare_deploy():
         shutil.copy2(f, DEPLOY_DIR)
     if scanner_files:
         print(f"scanner pages copied ({len(scanner_files)} files)")
-
-    # 백테스트 페이지 복사
-    backtest_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "backtest_*.html")))
-    for f in backtest_files:
-        shutil.copy2(f, DEPLOY_DIR)
-    if backtest_files:
-        print(f"backtest pages copied ({len(backtest_files)} files)")
 
     # 트렌드 페이지 복사
     trend_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "trend_*.html")))
@@ -86,7 +79,7 @@ def prepare_deploy():
         print(f"history/ copied ({len(os.listdir(deploy_history))} files)")
 
     # archive.html 생성 (사이드바 전체 링크 통일)
-    _generate_archive(report_files, scanner_files, backtest_files, trend_files)
+    _generate_archive(report_files, scanner_files, trend_files)
 
     print(f"Deploy directory ready: {len(report_files)} reports")
 
@@ -108,14 +101,13 @@ def _latest_date(files, prefix: str) -> str:
     return max(dates) if dates else ""
 
 
-def _generate_archive(report_files, scanner_files=None, backtest_files=None, trend_files=None):
+def _generate_archive(report_files, scanner_files=None, trend_files=None):
     """날짜별 과거 리포트 목록 HTML 생성 + 사이드바 전체 링크 통일.
 
-    다른 페이지(Scanner/Backtest/Trend)로의 이동이 Archive에서 가능해지도록,
+    다른 페이지(Scanner/Trend)로의 이동이 Archive에서 가능해지도록,
     파일시스템에 실제 존재하는 최신 날짜로 링크를 구성.
     """
     scanner_files = scanner_files or []
-    backtest_files = backtest_files or []
     trend_files = trend_files or []
 
     # me 리포트만 (wife 제외) 아카이브에 표시
@@ -123,7 +115,6 @@ def _generate_archive(report_files, scanner_files=None, backtest_files=None, tre
 
     nav_portfolio_latest = _latest_date(me_only, "report_")
     nav_scanner_latest = _latest_date(scanner_files, "scanner_")
-    nav_backtest_latest = _latest_date(backtest_files, "backtest_")
     nav_trend_latest = _latest_date(trend_files, "trend_")
     # wife 포트 최신
     wife_files = [f for f in report_files if "_wife_" in os.path.basename(f)]
@@ -131,7 +122,6 @@ def _generate_archive(report_files, scanner_files=None, backtest_files=None, tre
 
     link_portfolio = f"report_{nav_portfolio_latest}.html" if nav_portfolio_latest else "index.html"
     link_scanner = f"scanner_{nav_scanner_latest}.html" if nav_scanner_latest else "#"
-    link_backtest = f"backtest_{nav_backtest_latest}.html" if nav_backtest_latest else "#"
     link_trend = f"trend_{nav_trend_latest}.html" if nav_trend_latest else "#"
     link_wife = f"report_wife_{nav_wife_latest}.html" if nav_wife_latest else ""
 
@@ -171,7 +161,6 @@ def _generate_archive(report_files, scanner_files=None, backtest_files=None, tre
     <div class="space-y-2 flex-grow">
       <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{link_portfolio}"><span class="material-symbols-outlined">dashboard</span><span>My Portfolio</span></a>
 {wife_link_html}      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{link_scanner}"><span class="material-symbols-outlined">analytics</span><span>Scanner</span></a>
-      <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{link_backtest}"><span class="material-symbols-outlined">history</span><span>Backtest</span></a>
       <a class="flex items-center gap-3 px-4 py-3 text-on-surface/40 hover:bg-surface-container hover:text-on-surface transition-all" href="{link_trend}"><span class="material-symbols-outlined">trending_up</span><span>Trend</span></a>
       <a class="flex items-center gap-3 px-4 py-3 text-primary bg-surface-container-high rounded-md shadow-[0_0_15px_rgba(109,221,255,0.1)]" href="archive.html"><span class="material-symbols-outlined">inventory_2</span><span>Archive</span></a>
     </div>
