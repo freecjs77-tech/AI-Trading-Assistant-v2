@@ -11,9 +11,10 @@
 1. **계산 방식**: 단순 복리 (고정 연 수익률). `value = start × (1 + r)^year`
 2. **추가 납입**: 없음 (순수 복리만). 시작 자산이 그대로 복리 증식.
 3. **연 수익률**: 슬라이더로 조절 (인터랙티브, JS 클라이언트 사이드).
-4. **시작값**: 합산(전체) 총자산 고정. owner 토글과 무관하게 항상 합산 기준.
-5. **예측 기간**: 20년.
-6. **배치**: 트렌드 페이지 (`templates/trend_template.html`).
+4. **시작값**: 합산(전체) 총자산 고정.
+5. **표시 조건**: **합산 토글 선택 시에만** 섹션 표시. 내 포트/와이프 선택 시 숨김.
+6. **예측 기간**: 20년.
+7. **배치**: 트렌드 페이지 (`templates/trend_template.html`).
 
 ## 접근 방식: 순수 클라이언트 사이드 (Approach A)
 
@@ -35,6 +36,11 @@
 `{% if data_days >= 1 %}` 블록 안에 새 섹션을 추가한다 (시작값이 `latest`에 의존하므로
 히스토리가 있을 때만 표시).
 
+섹션 전체는 **합산 토글 선택 시에만** 보이도록 한다. 합산 토글은 멀티 owner 환경에만
+존재하므로 섹션을 `{% if has_multi_owner %}` 로 감싸고, 초기 상태는 `hidden` 클래스로
+숨긴다 (기본 선택 owner는 `me`). 이후 owner 토글 클릭 시 JS가 표시/숨김을 제어한다.
+`id="forecastSection"` 로 감싸 JS가 접근한다.
+
 섹션 구성:
 - 제목: `📈 향후 20년 자산 예측 (복리 시뮬레이션)` — 기존 `<h2>` 헤딩 패턴 재사용
 - 연 수익률 슬라이더: `<input type="range">` 범위 **1~15%, step 0.5**, 기본 **7%**
@@ -45,8 +51,8 @@
 ### 2. 계산 로직 (JS)
 
 ```js
-const startEok = (ownersPayload.combined && ownersPayload.combined.latest.total_eok)
-               ?? {{ latest.total_eok }};   // 합산 총자산 (억원), 폴백: me latest
+// 섹션은 합산 토글 전용이므로 ownersPayload.combined는 항상 존재
+const startEok = ownersPayload.combined.latest.total_eok;  // 합산 총자산 (억원)
 const HORIZON = 20;
 const baseYear = parseInt("{{ date }}".slice(0, 4), 10);  // 2026
 
@@ -70,12 +76,19 @@ function forecastSeries(ratePct) {
   갱신 → `chart.update()` → 라벨(`연 X.X%`)과 readout(10년/20년 값) 갱신
 - readout 포맷: `startEok × (1+r)^10`, `× (1+r)^20` 를 억원으로 표시 (소수점 1자리)
 
-### 4. 시작값 정책 (합산 고정)
+### 4. 표시 조건 & 시작값 정책 (합산 전용)
 
-owner 토글(내 포트/와이프/합산)을 움직여도 이 차트는 **항상 합산 총자산** 기준으로 고정한다.
-즉 `_applyOwner()` 함수의 재렌더 대상에 **포함하지 않는다**. 시작값은 페이지 로드 시
-`ownersPayload.combined.latest.total_eok` 로 한 번 확정하고 이후 변경하지 않는다.
-`combined`가 없는 단일 포트 환경에서는 `{{ latest.total_eok }}` (me 합산)로 폴백.
+이 차트는 **합산 토글이 선택됐을 때만** 보인다. 시작값은 항상 합산 총자산
+`ownersPayload.combined.latest.total_eok` 로 페이지 로드 시 한 번 확정하고 변경하지 않는다.
+
+기존 owner 토글 핸들러(`#ownerToggle .owner-btn` 클릭 리스너)에서 선택된 owner에 따라
+`#forecastSection` 의 `hidden` 클래스를 토글한다:
+- `owner === 'combined'` → `hidden` 제거 (표시) + 최초 표시 시 차트가 아직 생성 안 됐으면 lazy init
+- 그 외(`me`/`wife`) → `hidden` 추가 (숨김)
+
+초기 로드는 `me`가 기본 선택이므로 섹션은 `hidden` 상태로 시작한다.
+Chart.js는 `display:none` 컨테이너에서 크기 측정이 부정확할 수 있으므로,
+차트 인스턴스는 **합산이 처음 선택되어 섹션이 보이게 된 시점에 lazy 생성**한다.
 
 ### 5. 백엔드 영향
 
@@ -92,8 +105,10 @@ owner 토글(내 포트/와이프/합산)을 움직여도 이 차트는 **항상
 
 **Modify:**
 - `templates/trend_template.html`
-  - `#fxChart` 섹션 다음에 예측 섹션 HTML 추가 (슬라이더 + canvas + readout)
-  - `<script>` 하단에 `forecastChart` 생성 + 슬라이더 이벤트 핸들러 추가
+  - `#fxChart` 섹션 다음에 예측 섹션 HTML 추가 (`{% if has_multi_owner %}`,
+    `id="forecastSection"`, 초기 `hidden`, 슬라이더 + canvas + readout)
+  - `<script>` 하단에 `forecastChart` lazy 생성 + 슬라이더 이벤트 핸들러 추가
+  - 기존 owner 토글 클릭 리스너에 `#forecastSection` 표시/숨김 로직 추가
   - `{% if data_days >= 1 %}` 블록 안에 배치
 
 **변경 없음:** `report_generator.py`, `pipeline.py`, 모든 히스토리/데이터 파일.
@@ -101,7 +116,9 @@ owner 토글(내 포트/와이프/합산)을 움직여도 이 차트는 **항상
 ## 검증 계획
 
 - 로컬에서 트렌드 페이지 렌더 후 브라우저 프리뷰로 확인:
+  - 초기 로드(me 선택)에서 예측 섹션이 숨겨져 있는가
+  - 합산 토글 선택 시 예측 섹션이 나타나고 차트가 정상 렌더되는가
+  - 다시 내 포트/와이프 선택 시 섹션이 숨겨지는가
   - 슬라이더 이동 시 라인·라벨·readout이 실시간 갱신되는가
   - 기본 7%에서 20년 후 값이 `start × 1.07^20 ≈ start × 3.87` 와 일치하는가
-  - owner 토글을 움직여도 예측 차트가 합산 기준으로 고정되는가
   - 다크/라이트 테마 전환 시 정상 표시되는가
