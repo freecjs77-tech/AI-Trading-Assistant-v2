@@ -1,33 +1,29 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<script>document.documentElement.classList.add(localStorage.getItem('theme')||'dark')</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>096770 — Detail</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  html.dark {
-    --bg: #060e20; --panel: #091328; --panel2: #0f1930;
-    --accent: #6dddff; --text: #dee5ff; --text-dim: #a3aac4; --sub: #6d758c; --border: #40485d;
-    --green: #00E5BC; --green-bg: #052E16; --red: #ff7166; --red-bg: #2A0A0A;
-    --orange: #fbbf24; --orange-bg: #292524; --cyan: #6dddff; --purple: #a78bfa;
-    --range-bg: #1E293B; --cond-bg: rgba(13,27,44,0.4); --cond-border: rgba(26,48,80,0.5);
-    --row-alt: rgba(13,27,44,0.3); --toggle-icon: 'light_mode'; --toggle-label: 'Light Mode';
+  :root {
+    --bg: #060D18;
+    --panel: #0A1525;
+    --panel2: #0D1B2C;
+    --accent: #3B82F6;
+    --text: #E2E8F0;
+    --text-dim: #B8C5D3;
+    --sub: #8B9CB5;
+    --border: #1A3050;
+    --green: #34D399;
+    --green-bg: #052E16;
+    --red: #F87171;
+    --red-bg: #2A0A0A;
+    --orange: #FBBF24;
+    --orange-bg: #292524;
+    --cyan: #22D3EE;
+    --purple: #A78BFA;
   }
-  html.light {
-    --bg: #f1f5f9; --panel: #ffffff; --panel2: #f8fafc;
-    --accent: #2563eb; --text: #0f172a; --text-dim: #475569; --sub: #64748b; --border: #94a3b8;
-    --green: #16a34a; --green-bg: #a7f3d0; --red: #e11d48; --red-bg: #fecaca;
-    --orange: #d97706; --orange-bg: #fef3c7; --cyan: #00D4FF; --purple: #a78bfa;
-    --range-bg: #e2e8f0; --cond-bg: rgba(248,250,252,0.9); --cond-border: rgba(148,163,184,0.5);
-    --row-alt: rgba(241,245,249,0.6); --toggle-icon: 'dark_mode'; --toggle-label: 'Dark Mode';
-  }
-  /* 테마별 차트 이미지 전환 */
-  html.dark .chart-light { display: none; }
-  html.dark .chart-dark  { display: block; }
-  html.light .chart-dark  { display: none; }
-  html.light .chart-light { display: block; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
   .container { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
@@ -43,16 +39,16 @@
   .ticker-info h1 .ticker-symbol { color: var(--text); }
   .ticker-info h1 .ticker-name { color: var(--text-dim); font-size: 16px; font-weight: 600; margin-left: 10px; }
   .ticker-meta { font-size: 12px; color: var(--sub); margin-top: 4px; }
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; min-width: 90px; text-align: center; }
-  .badge-class { background: rgba(59,130,246,0.25); color: #60A5FA; margin-left: 8px; min-width: auto; }
-  .badge-signal { padding: 4px 14px; font-size: 13px; border-radius: 14px; min-width: 90px; text-align: center; }
-  .badge-BUY { background: #2563eb; color: #fff; }
-  .badge-WATCH { background: #d97706; color: #fff; }
-  .badge-HOLD { background: #d97706; color: #fff; }
-  .badge-exit { background: #e11d48; color: #fff; }
-  .badge-tp1 { background: #e11d48; color: #fff; }
-  .badge-BOND { background: #d97706; color: #fff; }
-  .badge-CASH { background: #d97706; color: #fff; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .badge-class { background: rgba(59,130,246,0.25); color: #60A5FA; margin-left: 8px; }
+  .badge-signal { padding: 4px 14px; font-size: 13px; border-radius: 14px; }
+  .badge-BUY { background: var(--green); color: #000; }
+  .badge-WATCH { background: var(--orange); color: #000; }
+  .badge-HOLD { background: #6B7D95; color: #fff; }
+  .badge-exit { background: var(--red); color: #fff; }
+  .badge-tp1 { background: #E67E22; color: #fff; }
+  .badge-BOND { background: #1ABC9C; color: #fff; }
+  .badge-CASH { background: #5A6B80; color: #fff; }
   .badge-streak { background: var(--orange); color: #000; font-size: 11px; margin-left: 6px; }
   .badge-streak.confirmed { background: var(--green); }
   .price-block { text-align: right; }
@@ -71,7 +67,7 @@
   .range-section { background: var(--panel); border-radius: 10px; padding: 16px 24px; margin-bottom: 16px; border: 1px solid var(--border); }
   .range-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--sub); margin-bottom: 8px; }
   .range-labels .current { color: var(--accent); font-weight: 700; }
-  .range-bar { position: relative; height: 8px; background: var(--range-bg); border-radius: 4px; }
+  .range-bar { position: relative; height: 8px; background: #1E293B; border-radius: 4px; }
   .range-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--red), var(--orange), var(--green)); }
   .range-marker { position: absolute; top: -4px; width: 16px; height: 16px; background: var(--accent); border: 2px solid #fff; border-radius: 50%; transform: translateX(-50%); }
 
@@ -111,7 +107,7 @@
   .judge-group .condition-list { margin: 0; }
   .judge-group .condition-list li { padding: 5px 0; font-size: 12px; }
   /* Card-style condition items (3-tuple) */
-  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: var(--cond-bg); border-radius: 8px; border: 1px solid var(--cond-border); }
+  .cond-card { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: rgba(13,27,44,0.4); border-radius: 8px; border: 1px solid rgba(26,48,80,0.5); }
   .cond-card:last-child { margin-bottom: 0; }
   .cond-card .cond-icon { margin-top: 2px; }
   .cond-card-body { flex: 1; min-width: 0; }
@@ -122,22 +118,17 @@
   .cond-card.cond-card-na .cond-card-title { color: var(--text-dim); }
   .cond-card.cond-card-na .cond-card-desc { color: var(--text-dim); }
 
-  /* Maturity labels */
-  .maturity-early    { color: #22c55e; font-weight: bold; }
-  .maturity-mid      { color: #eab308; }
-  .maturity-extended { color: #ef4444; font-weight: bold; }
-
   /* Signal History */
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .history-table th { text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--sub); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
   .history-table td { padding: 7px 10px; border-bottom: 1px solid rgba(26,48,80,0.4); }
-  .history-table tr:nth-child(even) td { background: var(--row-alt); }
-  .history-table .sig-buy { color: #2563eb; font-weight: 700; }
-  .history-table .sig-watch { color: #d97706; font-weight: 600; }
+  .history-table tr:nth-child(even) td { background: rgba(13,27,44,0.3); }
+  .history-table .sig-buy { color: var(--green); font-weight: 700; }
+  .history-table .sig-watch { color: var(--orange); font-weight: 600; }
   .history-table .sig-hold { color: var(--text-dim); }
-  .history-table .sig-exit { color: #e11d48; font-weight: 700; }
-  .history-table .sig-tp1 { color: #e11d48; font-weight: 700; }
-  .history-table .sig-cash { color: #d97706; }
+  .history-table .sig-exit { color: var(--red); font-weight: 700; }
+  .history-table .sig-tp1 { color: #E67E22; font-weight: 700; }
+  .history-table .sig-cash { color: #94A3B8; }
 
   /* Footer */
   .detail-footer { text-align: center; color: var(--sub); font-size: 11px; padding: 20px 0; border-top: 1px solid var(--border); margin-top: 20px; }
@@ -153,21 +144,8 @@
 <body>
 <div class="container">
 
-  <!-- Top Navigation: 다른 주요 페이지로의 이동 링크 -->
-  <nav class="detail-topnav" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:12px;">
-    <a href="../report_2026-07-27.html" style="color:var(--accent);text-decoration:none;font-weight:600;padding:4px 10px;border-radius:6px;background:var(--panel2);">My Portfolio</a>
-    
-    <a href="../scanner_2026-07-27.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Scanner</a>
-    <a href="../backtest_2026-07-27.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Backtest</a>
-    <a href="../trend_2026-07-27.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Trend</a>
-    <span style="flex:1"></span>
-    <button onclick="toggleTheme()" id="themeToggle" style="background:var(--panel2);border:1px solid var(--border);color:var(--accent);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Light Mode</button>
-  </nav>
-
   <!-- Back Navigation -->
-  <div style="margin-bottom:16px;">
-    <a href="../report_2026-07-27.html" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
-  </div>
+  <a href="../index.html" class="back-link">&#8592; Signal Report</a>
 
   <!-- Header -->
   <div class="detail-header">
@@ -178,32 +156,22 @@
           <span class="ticker-name">SK이노베이션</span>
           <span class="badge badge-class">Unknown</span>
         </h1>
-        <div class="ticker-meta"> &middot; 2026년 7월 27일 (월요일) &middot; Data: yfinance</div>
+        <div class="ticker-meta">₩20조 &middot; 2026년 4월 8일 (수요일) &middot; Data: yfinance</div>
       </div>
       <div class="price-block">
-        <div class="price">₩130,100</div>
-        <div class="change dn">▼ -1.6%</div>
+        <div class="price">₩121,800</div>
+        <div class="change dn">&#9660; -1.1%</div>
       </div>
     </div>
     <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-      <span class="badge badge-signal badge-BUY">3rd_BUY</span>
+      <span class="badge badge-signal badge-BUY">2nd_BUY</span>
       
         
         <span class="badge badge-streak confirmed">2&#51068; &#50672;&#49549; BUY &#10003;</span>
         
       
-      <span style="font-size: 12px; color: var(--text-dim);">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</span>
+      <span style="font-size: 12px; color: var(--text-dim);">[확정 2일 연속] 이중바닥 (차이 ≤ 3%) + RSI > 35 + MACD 골든크로스</span>
     </div>
-    
-    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
-      <div style="background: var(--panel2); border-radius: 8px; padding: 8px 14px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 11px; color: var(--sub);">1일차 매수 (07-24)</span>
-        <span style="font-size: 11px; color: var(--sub);">&#8361;130,100</span>
-        <span style="font-size: 15px; font-weight: 800; color: var(--green);">+0.0%</span>
-      </div>
-      
-    </div>
-    
     
   </div>
 
@@ -211,13 +179,13 @@
   
   <div class="range-section">
     <div class="range-labels">
-      <span>52&#51452; &#51200;&#51216; ₩89,500</span>
-      <span class="current">&#54788;&#51116; &#50948;&#52824; 67%</span>
-      <span>52&#51452; &#44256;&#51216; ₩149,800</span>
+      <span>52&#51452; &#51200;&#51216; ₩81,100</span>
+      <span class="current">&#54788;&#51116; &#50948;&#52824; 50%</span>
+      <span>52&#51452; &#44256;&#51216; ₩137,700</span>
     </div>
     <div class="range-bar">
-      <div class="range-fill" style="width: 67%;"></div>
-      <div class="range-marker" style="left: 67%;"></div>
+      <div class="range-fill" style="width: 50%;"></div>
+      <div class="range-marker" style="left: 50%;"></div>
     </div>
   </div>
   
@@ -226,68 +194,62 @@
   <div class="metric-grid">
     <div class="metric-card">
       <div class="label">RSI (14)</div>
-      <div class="value v-orange">65.8</div>
-      <div class="desc">중립</div>
+      <div class="value v-text">56.1</div>
+      <div class="desc">&#51473;&#47549;</div>
     </div>
     <div class="metric-card">
       <div class="label">MACD Hist</div>
-      <div class="value v-green">3538.1980</div>
+      <div class="value v-green">1234.4957</div>
       <div class="desc">중립</div>
     </div>
     <div class="metric-card">
       <div class="label">ADX</div>
-      <div class="value v-text">32.3</div>
-      <div class="desc">강한 추세</div>
+      <div class="value v-text">14.4</div>
+      <div class="desc">&#52628;&#49464; &#50557;&#54868;</div>
     </div>
     <div class="metric-card">
       <div class="label">BB%</div>
-      <div class="value v-text">96.2%</div>
-      <div class="desc">밴드 중간</div>
+      <div class="value v-text">90.9%</div>
+      <div class="desc">&#48180;&#46300; &#51473;&#44036;</div>
     </div>
     <div class="metric-card">
       <div class="label">&#44144;&#47000;&#47049; &#48708;&#50984;</div>
-      <div class="value v-cyan">1.88x</div>
+      <div class="value v-cyan">1.21x</div>
       <div class="desc">20&#51068; &#54217;&#44512; &#45824;&#48708;</div>
     </div>
     <div class="metric-card">
       <div class="label">Drawdown 20D</div>
-      <div class="value v-text">-1.6%</div>
-      <div class="desc">최근 20일 고점 대비</div>
+      <div class="value v-text">-1.1%</div>
+      <div class="desc">&#52572;&#44540; 20&#51068; &#44256;&#51216; &#45824;&#48708;</div>
     </div>
     <div class="metric-card">
       <div class="label">MA20</div>
-      <div class="value v-green">₩106,965</div>
-      <div class="desc">▲ 가격 상회</div>
+      <div class="value v-green">₩114,015</div>
+      <div class="desc">&#9650; &#44032;&#44201; &#49345;&#54924;</div>
     </div>
     <div class="metric-card">
       <div class="label">MA200</div>
-      <div class="value v-green">₩115,348</div>
-      <div class="desc">▲ 가격 상회</div>
+      <div class="value v-green">₩111,867</div>
+      <div class="desc">&#9650; &#44032;&#44201; &#49345;&#54924;</div>
     </div>
   </div>
 
   <!-- Technical Chart -->
-  
-  <div style="background: var(--panel); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border);">
-    <div class="section-title" style="font-size: 13px; font-weight: 700; color: var(--text-dim); margin-bottom: 12px;">Technical Chart &middot; 120 Days</div>
-    <img src="charts/096770.png" alt="096770 chart" class="chart-dark" style="width: 100%; border-radius: 6px;">
-    <img src="charts/096770_light.png" alt="096770 chart" class="chart-light" style="width: 100%; border-radius: 6px;">
-  </div>
   
 
   <!-- Signal Judgment Detail -->
   <div class="signal-section">
     <div class="section-title">&#128269; &#54032;&#51221; &#44540;&#44144; &#49345;&#49464;</div>
     <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
-      <span class="badge badge-signal badge-BUY" style="font-size: 14px;">3rd_BUY</span>
-      <span style="font-size: 13px; color: var(--text-dim);">[확정 2일 연속] 가격 > MA20 + MACD > 0 + 골든크로스 + 거래량비 >= 1.5x</span>
+      <span class="badge badge-signal badge-BUY" style="font-size: 14px;">2nd_BUY</span>
+      <span style="font-size: 13px; color: var(--text-dim);">[확정 2일 연속] 이중바닥 (차이 ≤ 3%) + RSI > 35 + MACD 골든크로스</span>
     </div>
     
     
     <div class="judge-group entry-group">
       <div class="judge-group-header">
-        <span class="group-name">3차 매수 조건 - 성장주 v2.3 (4개 모두 충족)</span>
-        <span class="group-count cnt-full">4/4 충족</span>
+        <span class="group-name">3차 매수 조건 - 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="group-count cnt-partial">3/4 충족</span>
       </div>
       
       <div class="condition-card-list">
@@ -313,20 +275,20 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">MACD > 0 + 골든크로스</div>
-            <div class="cond-card-desc">MACD 5193.2174 > 0, > signal 1655.0194</div>
+            <div class="cond-card-desc">MACD 566.7540 > 0, > signal -667.7416</div>
           </div>
         </div>
         
         
         
         
-        <div class="cond-card cond-card-ok">
+        <div class="cond-card cond-card-no">
           
-          <span class="cond-icon cond-ok">&#10003;</span>
+          <span class="cond-icon cond-no">&#10007;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">거래량비 >= 1.5x</div>
-            <div class="cond-card-desc">거래량비 1.88x - 평소보다 많아요</div>
+            <div class="cond-card-title">거래량비 >= 1.3x</div>
+            <div class="cond-card-desc">거래량비 1.21x - 아직 부족해요</div>
           </div>
         </div>
         
@@ -339,7 +301,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">RSI > 55</div>
-            <div class="cond-card-desc">RSI 65.8 - 추세 확인이에요</div>
+            <div class="cond-card-desc">RSI 56.1 - 추세 확인이에요</div>
           </div>
         </div>
         
@@ -349,7 +311,7 @@
     
     <div class="judge-group entry-group">
       <div class="judge-group-header">
-        <span class="group-name">2차 매수 조건 - 성장주 v5.3d (4개 모두 충족)</span>
+        <span class="group-name">2차 매수 조건 - 성장주 v2.2 (4개 모두 충족)</span>
         <span class="group-count cnt-full">4/4 충족</span>
       </div>
       
@@ -362,8 +324,8 @@
           <span class="cond-icon cond-ok">&#10003;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">가격 > MA20 (돌파 확인)</div>
-            <div class="cond-card-desc">MA20 위에 있어요 — 추세 전환 확인이에요</div>
+            <div class="cond-card-title">이중바닥 (차이 <= 3%)</div>
+            <div class="cond-card-desc">105600.0(2026-03-23) vs 108700.0(2026-03-31) 차이 2.9% - 이중바닥 확인이에요</div>
           </div>
         </div>
         
@@ -375,8 +337,8 @@
           <span class="cond-icon cond-ok">&#10003;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">RSI > 40</div>
-            <div class="cond-card-desc">RSI 65.8 - 회복 구간이에요</div>
+            <div class="cond-card-title">RSI > 35</div>
+            <div class="cond-card-desc">RSI 56.1 - 과매도를 벗어났어요</div>
           </div>
         </div>
         
@@ -388,8 +350,8 @@
           <span class="cond-icon cond-ok">&#10003;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">MACD 골든크로스 + hist 2일 증가</div>
-            <div class="cond-card-desc">MACD 5193.2174 > signal 1655.0194, hist 증가중이에요</div>
+            <div class="cond-card-title">MACD 골든크로스</div>
+            <div class="cond-card-desc">MACD 566.7540 > signal -667.7416 - 골든크로스 발생이에요</div>
           </div>
         </div>
         
@@ -401,8 +363,8 @@
           <span class="cond-icon cond-ok">&#10003;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">거래량비 >= 1.5x</div>
-            <div class="cond-card-desc">거래량비 1.88x - 충분해요</div>
+            <div class="cond-card-title">거래량비 >= 1.2x</div>
+            <div class="cond-card-desc">거래량비 1.21x - 충분해요</div>
           </div>
         </div>
         
@@ -412,11 +374,11 @@
     
     <div class="judge-group entry-group">
       <div class="judge-group-header">
-        <span class="group-name">1차 매수 조건 — 성장주 v5.3b ([필수] RSI<=45 + 가격<MA20 + MACD hist 2일증가 + DD_52w<=-15%)</span>
-        <span class="group-count cnt-partial">1/4 충족</span>
+        <span class="group-name">1차 매수 조건 — 성장주 v2.2 ([필수] MACD히스토2일증가 + 6개 중 3개 이상)</span>
+        <span class="group-count cnt-partial">2/6 충족</span>
       </div>
       
-      <span class="gate-tag">[거부] RSI 65.8 > 55</span>
+      <span class="gate-tag">[거부] RSI 56.1 > 55</span>
       
       <div class="condition-card-list">
         
@@ -427,8 +389,8 @@
           <span class="cond-icon cond-no">&#10007;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">[필수] RSI <= 45</div>
-            <div class="cond-card-desc">RSI 65.8 - 아직 45 이하가 아니에요</div>
+            <div class="cond-card-title">[필수] RSI <= 38</div>
+            <div class="cond-card-desc">RSI 56.1 - 아직 38 이하가 아니에요</div>
           </div>
         </div>
         
@@ -461,13 +423,39 @@
         
         
         
+        <div class="cond-card cond-card-ok">
+          
+          <span class="cond-icon cond-ok">&#10003;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">ADX <= 25</div>
+            <div class="cond-card-desc">ADX 14.4 - 횡보/약추세 구간이에요</div>
+          </div>
+        </div>
+        
+        
+        
+        
         <div class="cond-card cond-card-no">
           
           <span class="cond-icon cond-no">&#10007;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">[필수] 52주 고점 대비 <= -15%</div>
-            <div class="cond-card-desc">52주 대비 -13.2% - 아직 조정이 부족해요</div>
+            <div class="cond-card-title">종가 <= BB하단x1.02</div>
+            <div class="cond-card-desc">BB 하단 거리 16.6% - 아직 멀어요</div>
+          </div>
+        </div>
+        
+        
+        
+        
+        <div class="cond-card cond-card-no">
+          
+          <span class="cond-icon cond-no">&#10007;</span>
+          
+          <div class="cond-card-body">
+            <div class="cond-card-title">전일 대비 >= +2%</div>
+            <div class="cond-card-desc">변동 -1.1% - 아직 반등이 약해요</div>
           </div>
         </div>
         
@@ -481,7 +469,7 @@
   <!-- Signal History -->
   
   <div class="signal-section">
-    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 13&#51068;)</div>
+    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 2&#51068;)</div>
     <table class="history-table">
       <thead>
         <tr><th>&#45216;&#51676;</th><th>&#49884;&#44536;&#45328;</th><th>&#44032;&#44201;</th><th>RSI</th><th>MACD Hist</th><th>DD</th></tr>
@@ -489,120 +477,21 @@
       <tbody>
         
         <tr>
-          <td>2026-07-27</td>
-          <td class="sig-buy">3rd_BUY</td>
-          <td>₩130,100</td>
-          <td>65.8</td>
-          <td>3538.1980</td>
-          <td>-1.6%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-24</td>
-          <td class="sig-buy">3rd_BUY</td>
-          <td>₩130,100</td>
-          <td>68.0</td>
-          <td>3465.6520</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-21</td>
-          <td class="sig-buy">3rd_BUY</td>
-          <td>₩116,300</td>
-          <td>58.7</td>
-          <td>3233.4789</td>
-          <td>-3.7%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-20</td>
-          <td class="sig-buy">3rd_BUY</td>
-          <td>₩116,900</td>
-          <td>63.2</td>
-          <td>3299.8204</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-17</td>
-          <td class="sig-buy">3rd_BUY</td>
-          <td>₩121,400</td>
-          <td>63.2</td>
-          <td>3299.8204</td>
-          <td>-</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-14</td>
+          <td>2026-04-08</td>
           <td class="sig-buy">2nd_BUY</td>
-          <td>₩104,900</td>
-          <td>56.6</td>
-          <td>2060.7941</td>
-          <td>-2.0%</td>
+          <td>₩121,800</td>
+          <td>56.1</td>
+          <td>1234.4957</td>
+          <td>-1.1%</td>
         </tr>
         
         <tr>
-          <td>2026-07-08</td>
+          <td>2026-04-07</td>
           <td class="sig-buy">2nd_BUY</td>
-          <td>₩99,800</td>
-          <td>50.0</td>
-          <td>1022.6759</td>
-          <td>-7.9%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-07</td>
-          <td class="sig-buy">2nd_BUY</td>
-          <td>₩103,800</td>
-          <td>50.0</td>
-          <td>1022.6758</td>
-          <td>-7.9%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-06</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩96,500</td>
-          <td>41.8</td>
-          <td>368.0259</td>
-          <td>-14.4%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-03</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩95,000</td>
-          <td>39.9</td>
-          <td>124.8658</td>
-          <td>-15.7%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-02</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩94,100</td>
-          <td>38.8</td>
-          <td>-30.6514</td>
-          <td>-18.1%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-07-01</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩98,000</td>
-          <td>41.9</td>
-          <td>-93.9679</td>
-          <td>-16.1%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-06-30</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩94,900</td>
-          <td>38.3</td>
-          <td>-493.7259</td>
-          <td>-18.8%</td>
+          <td>₩121,800</td>
+          <td>56.1</td>
+          <td>1234.4957</td>
+          <td>-1.1%</td>
         </tr>
         
       </tbody>
@@ -612,13 +501,9 @@
 
   <!-- Footer -->
   <div class="detail-footer">
-    AI Trading Assistant v3.0 &middot; 2026-07-27 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
+    AI Trading Assistant v3.0 &middot; 2026-04-08 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
   </div>
 
 </div>
-<script>
-function toggleTheme(){var h=document.documentElement,d=h.classList.contains('dark'),t=d?'light':'dark';h.classList.remove('dark','light');h.classList.add(t);localStorage.setItem('theme',t);var b=document.getElementById('themeToggle');if(b)b.textContent=t==='dark'?'Light Mode':'Dark Mode';}
-document.addEventListener('DOMContentLoaded',function(){var b=document.getElementById('themeToggle');if(b)b.textContent=document.documentElement.classList.contains('dark')?'Light Mode':'Dark Mode';});
-</script>
 </body>
 </html>
