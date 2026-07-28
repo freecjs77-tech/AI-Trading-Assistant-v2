@@ -37,6 +37,10 @@ def test_forecast_section_present_multi_owner():
     assert 'id="forecastSection"' in html
     assert 'id="forecastChart"' in html
     assert 'id="forecastRate"' in html
+    assert "_toggleForecast" in html
+    assert "_ensureForecastChart" in html
+    assert "_fcSeries" in html
+    assert "_toggleForecast(btn.dataset.owner)" in html
 
 
 def test_forecast_section_absent_single_owner():

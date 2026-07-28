@@ -338,6 +338,7 @@ document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
     btn.classList.add('bg-primary/20','text-primary','border-primary/30');
     btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
     _applyOwner(btn.dataset.owner);
+    if (typeof _toggleForecast === 'function') _toggleForecast(btn.dataset.owner);
   });
 });
 
@@ -415,6 +416,41 @@ new Chart(document.getElementById('yieldChart'), { type:'line', data:{ labels:da
 new Chart(document.getElementById('fxChart'), { type:'line', data:{ labels:dates, datasets:[
   { label:'USD/KRW', data:fxData, borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.08)', fill:true, tension:0.3, pointRadius:2, borderWidth:2 }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, title:{ display:true, text:'KRW', color:'#a3aac4' }}}}});
+
+{% if has_multi_owner %}
+// ── 향후 20년 자산 예측 (복리) — 합산 토글 전용 ──
+const _fcStartEok = (ownersPayload.combined && ownersPayload.combined.latest) ? ownersPayload.combined.latest.total_eok : {{ latest.total_eok }};
+const _fcBaseYear = parseInt("{{ date }}".slice(0,4), 10);
+const _fcHorizon = 20;
+const _fcMilestones = [5,10,15,20];
+const _fcYears = Array.from({length:_fcHorizon+1}, (_,y) => String(_fcBaseYear + y));
+function _fcSeries(ratePct){ const k = 1 + ratePct/100; const out = []; for(let y=0;y<=_fcHorizon;y++) out.push(+(_fcStartEok*Math.pow(k,y)).toFixed(2)); return out; }
+function _fcFmt(v){ return '₩' + v.toFixed(1) + '억'; }
+let _forecastChart = null;
+function _ensureForecastChart(){
+  if(_forecastChart) return;
+  _forecastChart = new Chart(document.getElementById('forecastChart'), { type:'line', data:{ labels:_fcYears, datasets:[
+    { label:'예측 자산 (억원)', data:_fcSeries(parseFloat(document.getElementById('forecastRate').value)), borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.08)', borderDash:[6,4], fill:true, tension:0.25, pointRadius:0, pointHoverRadius:4, borderWidth:2 }
+  ]}, options:{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ return _fcFmt(c.parsed.y); }}}}, scales:{ y:{ ...dso, ticks:{ ...dso.ticks, callback:function(v){ return v+'억'; }}, title:{ display:true, text:'억원', color:'#a3aac4' }}, x:{ ...dso }}}});
+}
+function _fcRender(ratePct){
+  document.getElementById('forecastRateOut').textContent = '연 ' + ratePct.toFixed(1) + '%';
+  const k = 1 + ratePct/100;
+  _fcMilestones.forEach(function(n){
+    document.getElementById('fcLabel'+n).textContent = n + '년 후 (' + (_fcBaseYear+n) + ')';
+    document.getElementById('fcVal'+n).textContent = _fcFmt(_fcStartEok*Math.pow(k,n));
+  });
+  if(_forecastChart){ _forecastChart.data.datasets[0].data = _fcSeries(ratePct); _forecastChart.update(); }
+}
+function _toggleForecast(owner){
+  const sec = document.getElementById('forecastSection');
+  if(!sec) return;
+  if(owner === 'combined'){ sec.classList.remove('hidden'); _ensureForecastChart(); _fcRender(parseFloat(document.getElementById('forecastRate').value)); }
+  else { sec.classList.add('hidden'); }
+}
+document.getElementById('forecastRate').addEventListener('input', function(){ _fcRender(parseFloat(this.value)); });
+_fcRender(7);
+{% endif %}
 {% endif %}
 
 const tickerData = {{ ticker_json }};
