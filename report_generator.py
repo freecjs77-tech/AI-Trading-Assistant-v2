@@ -698,6 +698,24 @@ def _series_from_daily(daily: dict) -> list:
     return out
 
 
+def _user_category_rows(snap: dict) -> list[dict]:
+    """최신 스냅샷 weights_by_ticker → 4 사용자 카테고리 rows (고정 순서).
+
+    반환 shape은 ticker rows와 동일: {name, value(pct), amount_man}.
+    합산 스냅샷도 weights_by_ticker(KRW 합산 후 %)를 담으므로 동일 경로로 처리된다.
+    """
+    from portfolio_data import USER_CATEGORIES, category_for_weight_key
+    total = snap.get("total_value_krw", 0) or 0
+    krw = {c: 0.0 for c in USER_CATEGORIES}
+    for key, w in (snap.get("weights_by_ticker") or {}).items():
+        krw[category_for_weight_key(key)] += total * w / 100.0
+    g = sum(krw.values()) or 1
+    return [
+        {"name": c, "value": round(krw[c] / g * 100, 1), "amount_man": round(krw[c] / 1e4)}
+        for c in USER_CATEGORIES
+    ]
+
+
 def _build_owner_payload(daily: dict) -> dict:
     """단일 포트 daily 스냅샷 → {latest, trend, ticker} 페이로드 (트렌드 페이지용)."""
     sorted_dates = sorted([k for k in daily.keys() if not k.startswith("_")])
@@ -735,7 +753,12 @@ def _build_owner_payload(daily: dict) -> dict:
             others_krw += amt_krw
     if others > 0:
         ticker_data.append({"name": "기타", "value": round(others, 1), "amount_man": round(others_krw / 1e4)})
-    return {"latest": latest, "trend": _series_from_daily(daily), "ticker": ticker_data}
+    return {
+        "latest": latest,
+        "trend": _series_from_daily(daily),
+        "ticker": ticker_data,
+        "category": _user_category_rows(latest_snap),
+    }
 
 
 def _build_combined_payload(me_daily: dict, others_daily: dict) -> dict:
@@ -956,6 +979,8 @@ def generate_trend_page(
     if others > 0:
         ticker_data.append({"name": "기타", "value": round(others, 1), "amount_man": round(others_krw / 1e4)})
 
+    user_category_data = _user_category_rows(latest_snap)
+
     context = {
         # Nav
         "nav_portfolio": f"report_{date_str}.html",
@@ -972,6 +997,7 @@ def generate_trend_page(
         "trend_json": _json.dumps(trend_data, ensure_ascii=False),
         "category_json": _json.dumps(category_data, ensure_ascii=False),
         "ticker_json": _json.dumps(ticker_data, ensure_ascii=False),
+        "user_category_json": _json.dumps(user_category_data, ensure_ascii=False),
         # Owner 시계열 (me는 trend_json에 이미 있음, 여기선 wife 등 non-me만)
         "owner_series_json": _json.dumps(
             {
