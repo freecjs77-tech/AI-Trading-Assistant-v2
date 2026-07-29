@@ -72,6 +72,38 @@ TICKER_META = {
     "0183J0": {"name": "TIGER 미국우주테크",   "cls": "ETF",    "cls_tag": "cls-etf"},
 }
 
+# ── 사용자 카테고리 분류 (지수/배당주/개별주/현금) ──────
+# 명시적으로 매핑되지 않은 티커는 기본값 '개별주'.
+USER_CATEGORIES = ["지수", "배당주", "개별주", "현금"]  # 고정 표시 순서
+
+USER_CATEGORY_MAP = {
+    # 지수 (S&P/나스닥/코스피/코스닥 추종 ETF; QLD=2x 나스닥100)
+    "VOO": "지수", "SPY": "지수", "QQQ": "지수", "QLD": "지수",
+    "102110": "지수", "069500": "지수",
+    "379800": "지수", "360750": "지수",
+    "379810": "지수", "133690": "지수",
+    "232080": "지수", "229200": "지수",
+    # 배당주 (배당 ETF + 배당 성격 개별주)
+    "SCHD": "배당주", "JEPI": "배당주", "O": "배당주",
+    "458730": "배당주", "446720": "배당주", "0153K0": "배당주",
+    # 현금
+    "BIL": "현금",
+}
+
+# weights_by_ticker 키가 한글 표시명(me 스냅샷)일 때 티커로 역해소
+_NAME_TO_TICKER = {meta["name"]: t for t, meta in TICKER_META.items()}
+
+
+def get_ticker_category(ticker: str) -> str:
+    """티커 → 4개 사용자 카테고리. 미분류는 '개별주'."""
+    return USER_CATEGORY_MAP.get(ticker, "개별주")
+
+
+def category_for_weight_key(key: str) -> str:
+    """weights_by_ticker 키(티커코드 또는 한글 표시명)를 카테고리로 해소."""
+    ticker = key if key in USER_CATEGORY_MAP else _NAME_TO_TICKER.get(key, key)
+    return get_ticker_category(ticker)
+
 # ── 한국어 종목명 → Ticker 변환맵 (스크린샷 OCR용) ──────
 KR_TO_TICKER = {
     # Growth
