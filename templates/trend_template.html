@@ -157,6 +157,18 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
       </div>
     </div>
 
+    <!-- Category Breakdown -->
+    <div class="rounded-xl bg-surface-container p-6 border border-outline-variant/10">
+      <h2 class="text-lg font-headline font-bold mb-6">카테고리 구성</h2>
+      <div class="flex flex-col lg:flex-row items-center gap-8">
+        <div class="relative" style="width:260px;height:260px;flex-shrink:0;">
+          <canvas id="categoryPie"></canvas>
+          <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" id="catPieCenter"></div>
+        </div>
+        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full" id="categoryCards"></div>
+      </div>
+    </div>
+
     {% if data_days >= 1 %}
     <div class="flex items-center justify-between gap-2 flex-wrap">
       <h2 class="text-xl font-headline font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary">show_chart</span> 총 자산 추이</h2>
@@ -305,6 +317,7 @@ function _applyOwner(owner){
   document.getElementById('allocTitle').textContent = ownerLabel(owner) + ' — Asset Allocation';
   // Ticker pie + cards 재렌더
   _renderTicker(p.ticker);
+  _renderCategory(p.category);
   // Asset chart
   const s = p.trend;
   _assetChart.data.labels = s.map(d => d.date.slice(5));
@@ -468,6 +481,26 @@ function _renderTicker(data){
   document.getElementById('tickerCards').innerHTML=cardsHtml;
 }
 _renderTicker(tickerData);
+
+const categoryData = {{ user_category_json }};
+const catColors = {'지수':'#6dddff','배당주':'#ff716c','개별주':'#00E5BC','현금':'#fbbf24'};
+const catSub = {'지수':'S&P·나스닥·코스피·코스닥','배당주':'SCHD·리얼티인컴·배당ETF','개별주':'디아이티·삼성전자·AAPL','현금':'BIL'};
+let _catCurrent = categoryData;
+let _categoryPie = new Chart(document.getElementById('categoryPie'), { type:'doughnut', data:{ labels:[], datasets:[{ data:[], backgroundColor:[], borderWidth:0, spacing:2 }]}, options:{ responsive:true, cutout:'72%', plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ var shown=_catCurrent.filter(function(x){return x.value>0;}); var d=shown[c.dataIndex],a=d.amount_man,s=a>=10000?'₩'+(a/10000).toFixed(1)+'억':'₩'+a.toLocaleString()+'만'; return d.name+': '+c.parsed.toFixed(1)+'% ('+s+')'; }}}}}});
+function _renderCategory(data){
+  _catCurrent = data;
+  var shown = data.filter(function(d){return d.value>0;});
+  _categoryPie.data.labels = shown.map(function(d){return d.name;});
+  _categoryPie.data.datasets[0].data = shown.map(function(d){return d.value;});
+  _categoryPie.data.datasets[0].backgroundColor = shown.map(function(d){return catColors[d.name];});
+  _categoryPie.update();
+  var top = data.slice().sort(function(a,b){return b.value-a.value;})[0];
+  if(top){ document.getElementById('catPieCenter').innerHTML='<span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">'+top.name+'</span><span class="text-3xl font-headline font-bold text-on-surface">'+Math.round(top.value)+'%</span>'; } else { document.getElementById('catPieCenter').innerHTML=''; }
+  var cardsHtml='';
+  data.forEach(function(d){var a=d.amount_man,s=a>=10000?'₩'+(a/10000).toFixed(1)+'억':'₩'+a.toLocaleString()+'만';var c=catColors[d.name];cardsHtml+='<div class="rounded-lg bg-surface-container-high p-4" style="border-left:4px solid '+c+'"><div class="flex justify-between items-center gap-2"><div class="min-w-0"><div class="font-bold text-sm text-on-surface">'+d.name+'</div><div class="text-[10px] text-outline truncate">'+catSub[d.name]+'</div></div><div class="text-right flex-shrink-0"><div class="font-bold text-sm text-on-surface">'+s+'</div><div class="text-[10px] text-outline">'+d.value.toFixed(1)+'%</div></div></div></div>';});
+  document.getElementById('categoryCards').innerHTML=cardsHtml;
+}
+_renderCategory(categoryData);
 </script>
 </body>
 </html>

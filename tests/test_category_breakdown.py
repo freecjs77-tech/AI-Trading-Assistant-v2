@@ -59,3 +59,17 @@ def test_combined_is_krw_sum_of_owners():
 
     for cat in USER_CATEGORIES:
         assert abs(man(comb, cat) - (man(me_rows, cat) + man(wife_rows, cat))) <= 3
+
+
+def test_category_section_rendered_multi_owner():
+    import tempfile
+    from report_generator import generate_trend_page
+    me = _load("portfolio_daily.json")
+    wife = _load("portfolio_daily_wife.json")
+    with tempfile.TemporaryDirectory() as d:
+        path = generate_trend_page(me, d, owner_daily={"wife": wife}, date_str="2026-07-29")
+        html = open(path, encoding="utf-8").read()
+    assert 'id="categoryPie"' in html
+    assert 'id="categoryCards"' in html
+    assert "_renderCategory" in html
+    assert "_renderCategory(p.category)" in html
