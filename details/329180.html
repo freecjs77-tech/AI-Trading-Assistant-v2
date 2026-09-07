@@ -122,6 +122,11 @@
   .cond-card.cond-card-na .cond-card-title { color: var(--text-dim); }
   .cond-card.cond-card-na .cond-card-desc { color: var(--text-dim); }
 
+  /* Maturity labels */
+  .maturity-early    { color: #22c55e; font-weight: bold; }
+  .maturity-mid      { color: #eab308; }
+  .maturity-extended { color: #ef4444; font-weight: bold; }
+
   /* Signal History */
   .history-table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .history-table th { text-align: left; padding: 8px 10px; background: var(--panel2); color: var(--sub); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
@@ -148,10 +153,19 @@
 <body>
 <div class="container">
 
+  <!-- Top Navigation: 다른 주요 페이지로의 이동 링크 -->
+  <nav class="detail-topnav" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;font-size:12px;">
+    <a href="../report_2026-09-04.html" style="color:var(--accent);text-decoration:none;font-weight:600;padding:4px 10px;border-radius:6px;background:var(--panel2);">My Portfolio</a>
+    
+    <a href="../scanner_2026-09-04.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Scanner</a>
+    <a href="../trend_2026-09-04.html" style="color:var(--text-dim);text-decoration:none;padding:4px 10px;border-radius:6px;">Trend</a>
+    <span style="flex:1"></span>
+    <button onclick="toggleTheme()" id="themeToggle" style="background:var(--panel2);border:1px solid var(--border);color:var(--accent);padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Light Mode</button>
+  </nav>
+
   <!-- Back Navigation -->
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <a href="../index.html" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
-    <button onclick="toggleTheme()" id="themeToggle" style="background:var(--panel);border:1px solid var(--border);color:var(--accent);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;">Light Mode</button>
+  <div style="margin-bottom:16px;">
+    <a href="../report_2026-09-04.html" class="back-link" style="margin-bottom:0;">&#8592; Signal Report</a>
   </div>
 
   <!-- Header -->
@@ -163,36 +177,21 @@
           <span class="ticker-name">한국조선해양</span>
           <span class="badge badge-class">Unknown</span>
         </h1>
-        <div class="ticker-meta">₩50조 &middot; 2026년 4월 15일 (수요일) &middot; Data: yfinance</div>
+        <div class="ticker-meta"> &middot; 2026년 9월 4일 (금요일) &middot; Data: yfinance</div>
       </div>
       <div class="price-block">
-        <div class="price">₩474,500</div>
-        <div class="change dn">&#9660; -0.9%</div>
+        <div class="price">₩438,000</div>
+        <div class="change up">▲ +0.3%</div>
       </div>
     </div>
     <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
       <span class="badge badge-signal badge-BUY">1st_BUY</span>
       
         
-        <span class="badge badge-streak confirmed">5&#51068; &#50672;&#49549; BUY &#10003;</span>
+        <span class="badge badge-streak">&#54869;&#51064; &#45824;&#44592; 1/2&#51068;</span>
         
       
-      <span style="font-size: 12px; color: var(--text-dim);">[확정 5일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</span>
-    </div>
-    
-    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
-      <div style="background: var(--panel2); border-radius: 8px; padding: 8px 14px; border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 11px; color: var(--sub);">1일차 매수 (04-06)</span>
-        <span style="font-size: 11px; color: var(--sub);">&#8361;471,000</span>
-        <span style="font-size: 15px; font-weight: 800; color: var(--green);">+0.74%</span>
-      </div>
-      
-      <div style="background: var(--panel2); border-radius: 8px; padding: 8px 14px; border: 1px solid var(--green); display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 11px; color: var(--green);">&#10003; &#54869;&#51221; &#47588;&#49688; (04-07)</span>
-        <span style="font-size: 11px; color: var(--sub);">&#8361;470,000</span>
-        <span style="font-size: 15px; font-weight: 800; color: var(--green);">+0.96%</span>
-      </div>
-      
+      <span style="font-size: 12px; color: var(--text-dim);">[확인 대기 1/2일] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</span>
     </div>
     
     
@@ -202,13 +201,13 @@
   
   <div class="range-section">
     <div class="range-labels">
-      <span>52&#51452; &#51200;&#51216; ₩348,256</span>
-      <span class="current">&#54788;&#51116; &#50948;&#52824; 50%</span>
-      <span>52&#51452; &#44256;&#51216; ₩643,647</span>
+      <span>52&#51452; &#51200;&#51216; ₩422,000</span>
+      <span class="current">&#54788;&#51116; &#50948;&#52824; 5%</span>
+      <span>52&#51452; &#44256;&#51216; ₩735,980</span>
     </div>
     <div class="range-bar">
-      <div class="range-fill" style="width: 50%;"></div>
-      <div class="range-marker" style="left: 50%;"></div>
+      <div class="range-fill" style="width: 5%;"></div>
+      <div class="range-marker" style="left: 5%;"></div>
     </div>
   </div>
   
@@ -217,43 +216,43 @@
   <div class="metric-grid">
     <div class="metric-card">
       <div class="label">RSI (14)</div>
-      <div class="value v-text">42.1</div>
-      <div class="desc">&#51473;&#47549;</div>
+      <div class="value v-text">39.7</div>
+      <div class="desc">중립</div>
     </div>
     <div class="metric-card">
       <div class="label">MACD Hist</div>
-      <div class="value v-green">2038.9310</div>
+      <div class="value v-red">-1871.6021</div>
       <div class="desc">중립</div>
     </div>
     <div class="metric-card">
       <div class="label">ADX</div>
-      <div class="value v-text">33.5</div>
-      <div class="desc">&#44053;&#54620; &#52628;&#49464;</div>
+      <div class="value v-text">25.8</div>
+      <div class="desc">강한 추세</div>
     </div>
     <div class="metric-card">
       <div class="label">BB%</div>
-      <div class="value v-text">39.1%</div>
-      <div class="desc">&#48180;&#46300; &#51473;&#44036;</div>
+      <div class="value v-text">22.5%</div>
+      <div class="desc">밴드 중간</div>
     </div>
     <div class="metric-card">
       <div class="label">&#44144;&#47000;&#47049; &#48708;&#50984;</div>
-      <div class="value v-cyan">0.81x</div>
+      <div class="value v-cyan">0.24x</div>
       <div class="desc">20&#51068; &#54217;&#44512; &#45824;&#48708;</div>
     </div>
     <div class="metric-card">
       <div class="label">Drawdown 20D</div>
-      <div class="value v-red">-16.3%</div>
+      <div class="value v-red">-16.7%</div>
       <div class="desc">최근 20일 고점 대비</div>
     </div>
     <div class="metric-card">
       <div class="label">MA20</div>
-      <div class="value v-red">₩488,900</div>
-      <div class="desc">&#9660; &#44032;&#44201; &#54616;&#54924;</div>
+      <div class="value v-red">₩468,098</div>
+      <div class="desc">▼ 가격 하회</div>
     </div>
     <div class="metric-card">
       <div class="label">MA200</div>
-      <div class="value v-red">₩516,551</div>
-      <div class="desc">&#9660; &#44032;&#44201; &#54616;&#54924;</div>
+      <div class="value v-red">₩553,327</div>
+      <div class="desc">▼ 가격 하회</div>
     </div>
   </div>
 
@@ -271,13 +270,13 @@
     <div class="section-title">&#128269; &#54032;&#51221; &#44540;&#44144; &#49345;&#49464;</div>
     <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 10px;">
       <span class="badge badge-signal badge-BUY" style="font-size: 14px;">1st_BUY</span>
-      <span style="font-size: 13px; color: var(--text-dim);">[확정 5일 연속] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</span>
+      <span style="font-size: 13px; color: var(--text-dim);">[확인 대기 1/2일] [필수] RSI <= 45 + [필수] 가격 < MA20 + [필수] MACD hist 2일 증가</span>
     </div>
     
     
     <div class="judge-group entry-group">
       <div class="judge-group-header">
-        <span class="group-name">3차 매수 조건 - 성장주 v2.2 (4개 모두 충족)</span>
+        <span class="group-name">3차 매수 조건 - 성장주 v2.3 (4개 모두 충족)</span>
         <span class="group-count cnt-none">0/4 충족</span>
       </div>
       
@@ -304,7 +303,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">MACD > 0 + 골든크로스</div>
-            <div class="cond-card-desc">MACD -22228.1217 < 0, > signal -24267.0527</div>
+            <div class="cond-card-desc">MACD -16724.1193 < 0, < signal -14852.5171</div>
           </div>
         </div>
         
@@ -317,7 +316,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">거래량비 >= 1.5x</div>
-            <div class="cond-card-desc">거래량비 0.81x - 아직 부족해요</div>
+            <div class="cond-card-desc">거래량비 0.24x - 아직 부족해요</div>
           </div>
         </div>
         
@@ -330,7 +329,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">RSI > 55</div>
-            <div class="cond-card-desc">RSI 42.1 - 아직 55 이하예요</div>
+            <div class="cond-card-desc">RSI 39.7 - 아직 55 이하예요</div>
           </div>
         </div>
         
@@ -340,8 +339,8 @@
     
     <div class="judge-group entry-group">
       <div class="judge-group-header">
-        <span class="group-name">2차 매수 조건 - 성장주 v2.2 (4개 모두 충족)</span>
-        <span class="group-count cnt-partial">2/4 충족</span>
+        <span class="group-name">2차 매수 조건 - 성장주 v5.3d (4개 모두 충족)</span>
+        <span class="group-count cnt-none">0/4 충족</span>
       </div>
       
       <div class="condition-card-list">
@@ -353,34 +352,34 @@
           <span class="cond-icon cond-no">&#10007;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">이중바닥 (차이 <= 3%)</div>
-            <div class="cond-card-desc">502000.0(2026-03-23) vs 439000.0(2026-04-02) 차이 12.6% - 이중바닥이 아니에요</div>
+            <div class="cond-card-title">가격 > MA20 (돌파 확인)</div>
+            <div class="cond-card-desc">MA20 아래에 있어요 — 아직 MA20 돌파 전이에요</div>
           </div>
         </div>
         
         
         
         
-        <div class="cond-card cond-card-ok">
+        <div class="cond-card cond-card-no">
           
-          <span class="cond-icon cond-ok">&#10003;</span>
+          <span class="cond-icon cond-no">&#10007;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">RSI > 35</div>
-            <div class="cond-card-desc">RSI 42.1 - 과매도를 벗어났어요</div>
+            <div class="cond-card-title">RSI > 40</div>
+            <div class="cond-card-desc">RSI 39.7 - 아직 회복 전이에요</div>
           </div>
         </div>
         
         
         
         
-        <div class="cond-card cond-card-ok">
+        <div class="cond-card cond-card-no">
           
-          <span class="cond-icon cond-ok">&#10003;</span>
+          <span class="cond-icon cond-no">&#10007;</span>
           
           <div class="cond-card-body">
-            <div class="cond-card-title">MACD 골든크로스</div>
-            <div class="cond-card-desc">MACD -22228.1217 > signal -24267.0527 - 골든크로스 발생이에요</div>
+            <div class="cond-card-title">MACD 골든크로스 + hist 2일 증가</div>
+            <div class="cond-card-desc">MACD -16724.1193 < signal -14852.5171, hist 증가중이에요</div>
           </div>
         </div>
         
@@ -393,7 +392,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">거래량비 >= 1.5x</div>
-            <div class="cond-card-desc">거래량비 0.81x - 아직 부족해요</div>
+            <div class="cond-card-desc">거래량비 0.24x - 아직 부족해요</div>
           </div>
         </div>
         
@@ -417,7 +416,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">[필수] RSI <= 45</div>
-            <div class="cond-card-desc">RSI 42.1 - 조정 구간이에요</div>
+            <div class="cond-card-desc">RSI 39.7 - 조정 구간이에요</div>
           </div>
         </div>
         
@@ -456,7 +455,7 @@
           
           <div class="cond-card-body">
             <div class="cond-card-title">[필수] 52주 고점 대비 <= -15%</div>
-            <div class="cond-card-desc">52주 대비 -26.3% - 충분히 조정됐어요</div>
+            <div class="cond-card-desc">52주 대비 -40.5% - 충분히 조정됐어요</div>
           </div>
         </div>
         
@@ -470,7 +469,7 @@
   <!-- Signal History -->
   
   <div class="signal-section">
-    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 7&#51068;)</div>
+    <div class="section-title">&#128197; &#49884;&#44536;&#45328; &#51060;&#47141; (&#52572;&#44540; 3&#51068;)</div>
     <table class="history-table">
       <thead>
         <tr><th>&#45216;&#51676;</th><th>&#49884;&#44536;&#45328;</th><th>&#44032;&#44201;</th><th>RSI</th><th>MACD Hist</th><th>DD</th></tr>
@@ -478,66 +477,30 @@
       <tbody>
         
         <tr>
-          <td>2026-04-15</td>
+          <td>2026-09-07</td>
           <td class="sig-buy">1st_BUY</td>
-          <td>₩474,500</td>
-          <td>42.1</td>
-          <td>2038.9310</td>
-          <td>-16.3%</td>
+          <td>₩438,000</td>
+          <td>39.7</td>
+          <td>-1871.6021</td>
+          <td>-16.7%</td>
         </tr>
         
         <tr>
-          <td>2026-04-13</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩463,500</td>
-          <td>38.3</td>
-          <td>-150.2914</td>
-          <td>-21.4%</td>
+          <td>2026-08-11</td>
+          <td class="sig-buy">2nd_BUY</td>
+          <td>₩496,910</td>
+          <td>55.1</td>
+          <td>12511.1539</td>
+          <td>-</td>
         </tr>
         
         <tr>
-          <td>2026-04-10</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩475,000</td>
-          <td>40.5</td>
-          <td>-358.7124</td>
-          <td>-19.5%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-09</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩470,500</td>
-          <td>39.2</td>
-          <td>-1640.5845</td>
-          <td>-21.1%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-08</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩484,500</td>
-          <td>41.9</td>
-          <td>-2720.7848</td>
-          <td>-19.8%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-07</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩470,000</td>
-          <td>37.8</td>
-          <td>-5278.4850</td>
-          <td>-22.2%</td>
-        </tr>
-        
-        <tr>
-          <td>2026-04-06</td>
-          <td class="sig-buy">1st_BUY</td>
-          <td>₩471,000</td>
-          <td>37.9</td>
-          <td>-7087.6279</td>
-          <td>-22.0%</td>
+          <td>2026-08-10</td>
+          <td class="sig-buy">2nd_BUY</td>
+          <td>₩525,559</td>
+          <td>49.6</td>
+          <td>10786.8553</td>
+          <td>-0.6%</td>
         </tr>
         
       </tbody>
@@ -547,7 +510,7 @@
 
   <!-- Footer -->
   <div class="detail-footer">
-    AI Trading Assistant v3.0 &middot; 2026-04-15 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
+    AI Trading Assistant v3.0 &middot; 2026-09-04 &middot; Data: yfinance &middot; &#48376; &#47532;&#54252;&#53944;&#45716; &#44060;&#51064; &#53804;&#51088; &#52280;&#44256;&#50857;&#51060;&#47728; &#53804;&#51088; &#44428;&#50976;&#44032; &#50500;&#45765;&#45768;&#45796;.
   </div>
 
 </div>
