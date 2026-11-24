@@ -51,6 +51,64 @@ def _date_ko(date_str: str) -> str:
         return date_str
 
 
+# ── 포트폴리오 데이터 기준일(as-of) 파싱 + 노후도 ──────
+import re as _re
+
+# 노후도 임계값(일). 포트폴리오는 스크린샷에서 수동 갱신되므로 월 단위 cadence 가정.
+PORTFOLIO_STALE_WARN_DAYS = 21   # 이 이상이면 주의(amber)
+PORTFOLIO_STALE_ALERT_DAYS = 45  # 이 이상이면 경고(red)
+
+
+def parse_portfolio_as_of(portfolio_path: str | None) -> str | None:
+    """portfolios/*.md 상단의 `> 최종 업데이트: YYYY-MM-DD ...` 에서 기준일 추출.
+
+    파일/날짜가 없으면 None. report_generator 와 pipeline 양쪽에서 재사용.
+    """
+    if not portfolio_path or not os.path.exists(portfolio_path):
+        return None
+    try:
+        with open(portfolio_path, encoding="utf-8") as fh:
+            # 상단 몇 줄만 확인하면 충분 (헤더 블록)
+            head = fh.read(2000)
+    except OSError:
+        return None
+    m = _re.search(r"(?:최종\s*업데이트|as[- ]?of)\s*[:：]?\s*(\d{4}-\d{2}-\d{2})",
+                   head, _re.IGNORECASE)
+    return m.group(1) if m else None
+
+
+def _staleness_ctx(as_of: str | None, ref_date: str | None) -> dict:
+    """기준일(as_of)과 리포트 날짜(ref_date) 차이로 노후도 컨텍스트 계산.
+
+    반환 키: portfolio_as_of, portfolio_stale_days, portfolio_stale_level
+    (level: 'ok' | 'warn' | 'alert' | None). as_of 가 없으면 전부 None.
+    """
+    ctx = {"portfolio_as_of": as_of, "portfolio_stale_days": None,
+           "portfolio_stale_level": None}
+    if not as_of:
+        return ctx
+    try:
+        d_asof = datetime.strptime(as_of, "%Y-%m-%d")
+    except (ValueError, TypeError):
+        return ctx
+    try:
+        d_ref = datetime.strptime(ref_date, "%Y-%m-%d") if ref_date else datetime.now()
+    except (ValueError, TypeError):
+        d_ref = datetime.now()
+    days = (d_ref - d_asof).days
+    if days < 0:
+        days = 0
+    if days >= PORTFOLIO_STALE_ALERT_DAYS:
+        level = "alert"
+    elif days >= PORTFOLIO_STALE_WARN_DAYS:
+        level = "warn"
+    else:
+        level = "ok"
+    ctx["portfolio_stale_days"] = days
+    ctx["portfolio_stale_level"] = level
+    return ctx
+
+
 def _master_info(macro: dict, market_data: dict) -> dict:
     """Master switch 관련 정보 계산"""
     data = market_data.get("data", {})
@@ -269,6 +327,7 @@ def generate_report(
     active_nav: str = "portfolio",
     benchmark_data: dict | None = None,
     portfolio_stop_result=None,  # Phase 7 next PR will consume; accepted now to allow pipeline kwargs
+    portfolio_as_of: str | None = None,  # 포트폴리오 데이터 기준일(YYYY-MM-DD); 노후도 배지용
 ) -> str:
     """
     Jinja2 템플릿으로 HTML 리포트 생성.
@@ -408,6 +467,8 @@ def generate_report(
         "fetched_at": meta.get("generated_at", ""),
         "market_status": meta.get("market_status"),
         "portfolio_source": meta.get("ticker_source", "portfolio.md"),
+        # 포트폴리오 데이터 기준일 + 노후도 배지
+        **_staleness_ctx(portfolio_as_of, date_str),
         # 매크로
         **master,
         "vix": vix,

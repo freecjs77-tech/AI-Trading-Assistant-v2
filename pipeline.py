@@ -17,7 +17,7 @@ if sys.platform == "win32":
 from portfolio_data import TICKER_META
 from signal_judge import judge_all
 from history_manager import load_history, save_today, prune_old, save_history, get_previous_signals, backfill_prices
-from report_generator import generate_report, generate_detail_pages, generate_scanner_pages, generate_trend_page
+from report_generator import generate_report, generate_detail_pages, generate_scanner_pages, generate_trend_page, parse_portfolio_as_of
 
 
 def _load_market_data(json_path: str) -> dict:
@@ -487,6 +487,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
             scanner_kospi=scanner_kospi_result,
             benchmark_data=benchmark_by_owner.get("me"),
             portfolio_stop_result=stop_result_me,
+            portfolio_as_of=parse_portfolio_as_of(portfolio_path),
         )
         size = os.path.getsize(report_path)
         print(f"  OK report -> {report_path} ({size:,} bytes)")
@@ -854,6 +855,7 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
                     active_nav=_owner,
                     benchmark_data=benchmark_by_owner.get(_owner),
                     portfolio_stop_result=_owner_stop_result,
+                    portfolio_as_of=parse_portfolio_as_of(_opath),
                 )
                 _sz = os.path.getsize(_owner_report)
                 print(f"  OK {_owner} report -> {_owner_report} ({_sz:,} bytes)")
@@ -953,7 +955,20 @@ def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = Fa
 
 if __name__ == "__main__":
     project_dir = os.path.dirname(os.path.abspath(__file__))
-    result = run_pipeline(project_dir, skip_ocr="--skip-ocr" in sys.argv, skip_fetch="--skip-fetch" in sys.argv, auto="--auto" in sys.argv)
+    auto = "--auto" in sys.argv
+    result = run_pipeline(project_dir, skip_ocr="--skip-ocr" in sys.argv, skip_fetch="--skip-fetch" in sys.argv, auto=auto)
     if result["status"] != "ok":
         print(f"\nERROR: {result.get('error')}")
         sys.exit(1)
+    # CI 배포 게이트: auto(=CI) 모드에서 스모크 critical 이슈가 있으면 non-zero 종료.
+    # GitHub Actions 는 이 스텝 실패 시 후속 deploy 스텝을 건너뛰므로, 깨진
+    # 리포트($→₩ 통화 오류 / N/A 잔류 / 전부 HOLD 등)가 gh-pages 에 게시되지 않는다.
+    # SKIP_DEPLOY_GATE=1 로 긴급 우회 가능.
+    if auto:
+        _smoke = result.get("smoke_test") or {}
+        _crit = _smoke.get("critical", 0)
+        _gate_off = os.environ.get("SKIP_DEPLOY_GATE", "").lower() in ("1", "true", "yes")
+        if _crit > 0 and not _gate_off:
+            print(f"\nERROR: 스모크 테스트에서 critical 이슈 {_crit}건 발견 — 배포를 중단합니다.")
+            print("       (의도적 배포가 필요하면 SKIP_DEPLOY_GATE=1 설정 후 재실행)")
+            sys.exit(3)

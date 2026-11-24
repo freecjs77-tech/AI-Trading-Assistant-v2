@@ -182,6 +182,22 @@ tailwind.config = {
       </nav>
     </div>
     <div class="flex items-center gap-4">
+      {% if portfolio_as_of %}
+      {% set _lv = portfolio_stale_level %}
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-label border
+        {% if _lv == 'alert' %}bg-error-container/30 border-error/50 text-error
+        {% elif _lv == 'warn' %}bg-tertiary-container/30 border-tertiary/50 text-tertiary
+        {% else %}bg-surface/40 border-outline/30 text-outline{% endif %}"
+        title="포트폴리오 보유 데이터 기준일 (수동 갱신). {{ portfolio_stale_days }}일 경과.">
+        <span class="material-symbols-outlined text-[14px] leading-none">
+          {% if _lv in ('alert', 'warn') %}warning{% else %}inventory_2{% endif %}</span>
+        <span class="hidden sm:inline">보유 기준</span>
+        <span class="font-bold">{{ portfolio_as_of }}</span>
+        {% if portfolio_stale_days is not none and portfolio_stale_days > 0 %}
+        <span class="opacity-70">(+{{ portfolio_stale_days }}d)</span>
+        {% endif %}
+      </div>
+      {% endif %}
       <div class="text-xs text-outline font-label hidden sm:block">{{ fetched_at }}</div>
       <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme">
         <span class="material-symbols-outlined">light_mode</span>
