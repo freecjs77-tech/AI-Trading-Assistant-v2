@@ -89,11 +89,21 @@ python app.py
 - Signal Reference Index: 모든 시그널의 상세 판정 조건 테이블
 
 ## 포트폴리오 업데이트 방법
-portfolio.md를 직접 편집한다. 형식:
+### 방법 A — 편집기 UI (권장, 로컬 전용)
+`python app.py` 실행 후 http://localhost:5000/edit 접속 → 종목 추가·삭제, 수량·매수 평균가 수정.
+- 코어: `portfolio_store.py` (parse→변경→재작성). API: `/api/portfolio[/add|/update|/remove]`.
+- 저장은 로컬 `portfolios/<owner>.md`만 수정 (GitHub Pages 배포본은 백엔드 없음).
+- 반영 흐름: 편집 → "변경 반영"(파이프라인 재실행) → git commit/push → Actions 재배포.
+
+### 방법 B — md 직접 편집
+`portfolios/<owner>.md` 표를 직접 편집한다. 형식 (2026-11 `평균단가` 컬럼 추가):
 ```
-| Ticker | 종목명 | 보유수량 | 평가금액 | 수익금액 | 수익률 |
+| Ticker | 종목명 | 보유수량 | 평균단가 | 평가금액 | 수익금액 | 수익률 |
 ```
-맨 아래 Ticker 목록도 함께 갱신해야 fetch_market_data가 올바른 종목을 수집한다.
+- **평균단가**: 파서(`portfolio_store.parse_holdings_from_path`, `pipeline._parse_portfolio_for_report`)는
+  `평균단가` 컬럼이 있으면 그 값을 avg_cost로 쓰고, 없으면 `(평가금액−수익금액)/보유수량`으로 역산한다(하위 호환).
+- 리포트/텔레그램/stop은 avg_cost+보유수량과 실시간가로 모든 값을 재계산하므로 평가금액·수익금액은 참고용이다.
+- 맨 아래 Ticker 목록은 편집기가 자동 재생성한다(직접 편집 시에도 동기 권장).
 
 ## 로컬 테스트 옵션
 ```bash

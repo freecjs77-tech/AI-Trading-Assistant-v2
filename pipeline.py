@@ -27,59 +27,15 @@ def _load_market_data(json_path: str) -> dict:
 
 
 def _parse_portfolio_for_report(portfolio_path: str) -> list[dict]:
-    import re
-    holdings = []
-    row_pat = re.compile(r"^\|\s*([A-Z0-9]{1,10})\s*\|")
-    shares_pat = re.compile(r"([\d,]+\.?\d*)\s*\uc8fc")
-    value_pat = re.compile(r"[\$\u20a9]([\d,]+\.?\d+)")
-    pnl_pat = re.compile(r"([+-])[\$\u20a9]([\d,]+\.?\d+)")
+    """portfolios/<owner>.md \ud45c\uc5d0\uc11c \ubcf4\uc720\uc885\ubaa9 \ud30c\uc2f1.
 
-    try:
-        with open(portfolio_path, "r", encoding="utf-8") as f:
-            in_table = False
-            for line in f:
-                line = line.rstrip()
-                if "| Ticker |" in line:
-                    in_table = True
-                    continue
-                if in_table and line.startswith("|---"):
-                    continue
-                if in_table:
-                    if not line.startswith("|"):
-                        in_table = False
-                        continue
-                    m = row_pat.match(line)
-                    if m and m.group(1) not in ("Ticker",):
-                        ticker = m.group(1).strip()
-
-                        shares = 0
-                        sm = shares_pat.search(line)
-                        if sm:
-                            shares = float(sm.group(1).replace(",", ""))
-
-                        values = value_pat.findall(line)
-                        value = float(values[0].replace(",", "")) if values else 0
-
-                        pnl = 0
-                        pm = pnl_pat.search(line)
-                        if pm:
-                            pnl = float(pm.group(2).replace(",", ""))
-                            if pm.group(1) == "-":
-                                pnl = -pnl
-
-                        avg_cost = (value - pnl) / shares if shares > 0 else 0
-
-                        holdings.append({
-                            "ticker": ticker,
-                            "shares": shares,
-                            "value": value,
-                            "pnl": pnl,
-                            "avg_cost": avg_cost,
-                        })
-    except FileNotFoundError:
-        pass
-
-    return holdings
+    \uceec\ub7fc \uc778\uc2dd \ud30c\uc11c(portfolio_store)\uc5d0 \uc704\uc784\ud55c\ub2e4. `\ud3c9\uade0\ub2e8\uac00` \uceec\ub7fc\uc774 \uc788\uc73c\uba74 \uadf8
+    \uac12\uc744 avg_cost \ub85c \uc0ac\uc6a9\ud558\uace0, \uc5c6\uc73c\uba74 (\ud3c9\uac00\uae08\uc561-\uc218\uc775\uae08\uc561)/\uc218\ub7c9 \uc73c\ub85c \uc5ed\uc0b0\ud55c\ub2e4
+    (\uae30\uc874 \ub3d9\uc791\uacfc bit-\ub3d9\uc77c, \uac80\uc99d \uc644\ub8cc). \ub9ac\ud3ec\ud2b8/\ud154\ub808\uadf8\ub7a8/stop \uc740 avg_cost+shares
+    \uc640 \uc2e4\uc2dc\uac04\uac00\ub85c \ubaa8\ub4e0 \uac12\uc744 \uc7ac\uacc4\uc0b0\ud558\ubbc0\ub85c value/pnl \uc740 \ucc38\uace0\uc6a9\uc774\ub2e4.
+    """
+    from portfolio_store import parse_holdings_from_path
+    return parse_holdings_from_path(portfolio_path)
 
 
 def run_pipeline(project_dir: str, skip_ocr: bool = False, skip_fetch: bool = False, auto: bool = False) -> dict:

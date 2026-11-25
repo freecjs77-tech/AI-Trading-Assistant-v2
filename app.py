@@ -20,6 +20,7 @@ from jinja2 import Environment, FileSystemLoader
 from pipeline import run_pipeline
 from market_scanner import scan_sp100, scan_etf, scan_kospi, scan_watchlist
 from watchlist_store import load_watchlist, add_ticker as wl_add, remove_ticker as wl_remove
+import portfolio_store as pf_store
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPORTS_DIR = os.path.join(PROJECT_DIR, "reports")
@@ -187,6 +188,85 @@ def api_watchlist_remove():
         if not ticker:
             return jsonify({"status": "error", "error": "ticker required"}), 400
         ok, msg = wl_remove(PROJECT_DIR, ticker)
+        return jsonify({"status": "ok" if ok else "error", "message": msg})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
+# ── Portfolio 편집 API (보유종목 추가/삭제/수량·평균단가 수정) ──
+#    로컬 `python app.py` 실행 시에만 portfolios/<owner>.md 를 수정한다.
+#    (GitHub Pages 배포본은 정적이라 백엔드가 없음 — 편집은 로컬 전용.
+#     편집 후 '변경 반영' 버튼으로 파이프라인을 재실행하고, git push 하면
+#     Actions 가 Pages 를 재배포한다.)
+@app.route("/edit")
+def portfolio_edit_page():
+    """보유종목 편집 페이지"""
+    owners = pf_store.list_owners(PROJECT_DIR) or ["me"]
+    return render_template("portfolio_edit.html", owners=owners)
+
+
+@app.route("/api/portfolio", methods=["GET"])
+def api_portfolio_list():
+    """owner 보유종목 + 카테고리 목록 반환. query: ?owner=me"""
+    owner = (request.args.get("owner") or "me").strip()
+    try:
+        return jsonify({
+            "status": "ok",
+            "owner": owner,
+            "owners": pf_store.list_owners(PROJECT_DIR),
+            "categories": pf_store.list_categories(PROJECT_DIR, owner),
+            "holdings": pf_store.load_holdings(PROJECT_DIR, owner),
+        })
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
+@app.route("/api/portfolio/add", methods=["POST"])
+def api_portfolio_add():
+    """보유종목 추가. body: {owner, ticker, shares, avg_cost, category, name?}"""
+    try:
+        d = request.get_json(silent=True) or {}
+        ok, msg = pf_store.add_holding(
+            PROJECT_DIR,
+            (d.get("owner") or "me").strip(),
+            (d.get("ticker") or "").strip(),
+            d.get("shares"),
+            d.get("avg_cost"),
+            category=(d.get("category") or None),
+            name=(d.get("name") or None),
+        )
+        return jsonify({"status": "ok" if ok else "error", "message": msg})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
+@app.route("/api/portfolio/update", methods=["POST"])
+def api_portfolio_update():
+    """수량/평균단가 수정. body: {owner, ticker, shares?, avg_cost?}"""
+    try:
+        d = request.get_json(silent=True) or {}
+        ok, msg = pf_store.update_holding(
+            PROJECT_DIR,
+            (d.get("owner") or "me").strip(),
+            (d.get("ticker") or "").strip(),
+            shares=d.get("shares"),
+            avg_cost=d.get("avg_cost"),
+        )
+        return jsonify({"status": "ok" if ok else "error", "message": msg})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 500
+
+
+@app.route("/api/portfolio/remove", methods=["POST", "DELETE"])
+def api_portfolio_remove():
+    """보유종목 삭제. body: {owner, ticker}"""
+    try:
+        d = request.get_json(silent=True) or {}
+        ok, msg = pf_store.remove_holding(
+            PROJECT_DIR,
+            (d.get("owner") or "me").strip(),
+            (d.get("ticker") or "").strip(),
+        )
         return jsonify({"status": "ok" if ok else "error", "message": msg})
     except Exception as e:
         return jsonify({"status": "error", "error": str(e)}), 500

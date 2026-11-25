@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>포트폴리오 편집</title>
+<style>
+  :root {
+    --bg:#0f1117; --panel:#1a1d27; --line:#2a2f3d; --fg:#e6e9f0;
+    --muted:#9aa3b5; --accent:#4f7cff; --danger:#ff5d6c; --ok:#35c28e;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f4f6fb; --panel:#fff; --line:#e3e8f2; --fg:#1a1d27;
+            --muted:#5b6478; --accent:#2f5fe0; --danger:#d23146; --ok:#17916a; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font-family:system-ui,-apple-system,"Segoe UI",sans-serif; font-size:14px; }
+  .wrap { max-width:1000px; margin:0 auto; padding:16px; }
+  h1 { font-size:20px; margin:8px 0 4px; }
+  .sub { color:var(--muted); font-size:12px; margin-bottom:16px; }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; }
+  select, input, button { font:inherit; color:var(--fg); background:var(--panel);
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
+  input { width:100%; }
+  button { cursor:pointer; background:var(--accent); color:#fff; border:none; white-space:nowrap; }
+  button.ghost { background:transparent; color:var(--fg); border:1px solid var(--line); }
+  button.danger { background:transparent; color:var(--danger); border:1px solid var(--danger); padding:4px 8px; }
+  button:disabled { opacity:.5; cursor:default; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px;
+           padding:14px; margin-bottom:16px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  td .num { width:120px; }
+  .cat { color:var(--muted); font-size:11px; }
+  .tk { font-weight:700; }
+  .cur { color:var(--muted); font-size:11px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; align-items:end; }
+  .fld label { display:block; color:var(--muted); font-size:11px; margin-bottom:4px; }
+  #msg { position:sticky; top:0; padding:10px 14px; border-radius:8px; margin-bottom:12px;
+         display:none; font-size:13px; }
+  #msg.ok { display:block; background:color-mix(in srgb,var(--ok) 18%,transparent); border:1px solid var(--ok); }
+  #msg.err { display:block; background:color-mix(in srgb,var(--danger) 18%,transparent); border:1px solid var(--danger); }
+  .note { font-size:12px; color:var(--muted); line-height:1.5; }
+  .row-actions { display:flex; gap:6px; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📝 포트폴리오 편집</h1>
+  <div class="sub">보유종목 추가·삭제, 수량·매수 평균가 수정. 로컬 전용 — 저장 후 <b>변경 반영</b>으로 리포트를 재생성하세요.</div>
+
+  <div id="msg"></div>
+
+  <div class="bar">
+    <label>소유자
+      <select id="owner"></select>
+    </label>
+    <button class="ghost" id="reload">새로고침</button>
+    <span style="flex:1"></span>
+    <button id="runPipeline">🔄 변경 반영 (파이프라인 재실행)</button>
+    <a href="/" style="margin-left:4px">리포트 보기 →</a>
+  </div>
+
+  <div class="panel">
+    <h2 style="font-size:15px;margin:0 0 10px">➕ 종목 추가</h2>
+    <div class="grid">
+      <div class="fld"><label>Ticker</label><input id="a_ticker" placeholder="예: AAPL / 005930"></div>
+      <div class="fld"><label>종목명(선택)</label><input id="a_name" placeholder="자동 조회"></div>
+      <div class="fld"><label>보유수량</label><input id="a_shares" type="number" step="any" placeholder="10"></div>
+      <div class="fld"><label>매수 평균가</label><input id="a_avg" type="number" step="any" placeholder="150.00"></div>
+      <div class="fld"><label>카테고리</label>
+        <select id="a_cat"></select>
+      </div>
+      <div class="fld"><label>새 카테고리(선택)</label><input id="a_newcat" placeholder="비우면 위 선택 사용"></div>
+      <div class="fld"><button id="addBtn">추가</button></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 style="font-size:15px;margin:0 0 10px">보유종목 <span id="count" class="cat"></span></h2>
+    <table>
+      <thead><tr>
+        <th>Ticker</th><th>종목명</th><th>카테고리</th>
+        <th>보유수량</th><th>평균단가</th><th></th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <div class="note panel">
+    ⚠️ 이 편집기는 <b>로컬 실행(app.py)</b>에서만 <code>portfolios/&lt;owner&gt;.md</code>를 수정합니다.
+    GitHub Pages 배포본에는 백엔드가 없어 반영되지 않습니다.<br>
+    반영 흐름: <b>편집 → 변경 반영(파이프라인 재실행) → git commit/push → Actions 재배포</b>.<br>
+    평균단가를 직접 입력하면 테이블의 평가금액·수익금액은 참고용(실시간가로 리포트에서 재계산)으로 재설정됩니다.
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let state = { owner:"me", holdings:[], categories:[], owners:[] };
+
+function msg(text, kind) {
+  const m = $("#msg"); m.textContent = text; m.className = kind;
+  if (kind === "ok") setTimeout(() => { m.className = ""; }, 4000);
+}
+
+async function api(url, opts) {
+  const r = await fetch(url, opts);
+  return r.json();
+}
+
+function fmtNum(x) {
+  if (x === null || x === undefined) return "";
+  return Number.isInteger(x) ? x.toLocaleString() : x.toLocaleString(undefined,{maximumFractionDigits:6});
+}
+
+async function load() {
+  const owner = $("#owner").value || state.owner;
+  const d = await api(`/api/portfolio?owner=${encodeURIComponent(owner)}`);
+  if (d.status !== "ok") { msg(d.error || "load 실패", "err"); return; }
+  state = { owner, holdings:d.holdings, categories:d.categories, owners:d.owners };
+  renderOwners(); renderCats(); renderRows();
+}
+
+function renderOwners() {
+  const sel = $("#owner");
+  if (sel.options.length !== state.owners.length) {
+    sel.innerHTML = state.owners.map(o => `<option value="${o}">${o}</option>`).join("");
+  }
+  sel.value = state.owner;
+}
+
+function renderCats() {
+  $("#a_cat").innerHTML = state.categories.map(c => `<option value="${c}">${c}</option>`).join("");
+}
+
+function renderRows() {
+  $("#count").textContent = `(${state.holdings.length})`;
+  $("#rows").innerHTML = state.holdings.map(h => {
+    const sym = h.currency === "KRW" ? "₩" : "$";
+    return `<tr data-ticker="${h.ticker}">
+      <td class="tk">${h.ticker} <span class="cur">${sym}</span></td>
+      <td>${h.name || ""}</td>
+      <td class="cat">${h.category || ""}</td>
+      <td><input class="num" data-f="shares" type="number" step="any" value="${h.shares}"></td>
+      <td><input class="num" data-f="avg_cost" type="number" step="any" value="${h.avg_cost}"></td>
+      <td class="row-actions">
+        <button class="ghost" data-act="save">저장</button>
+        <button class="danger" data-act="remove">삭제</button>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+$("#rows").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  const tr = e.target.closest("tr"); const ticker = tr.dataset.ticker;
+  if (btn.dataset.act === "remove") {
+    if (!confirm(`${ticker} 삭제?`)) return;
+    const d = await api("/api/portfolio/remove", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ owner: state.owner, ticker })
+    });
+    d.status === "ok" ? (msg(d.message, "ok"), load()) : msg(d.message || d.error, "err");
+  } else if (btn.dataset.act === "save") {
+    const shares = parseFloat(tr.querySelector('[data-f="shares"]').value);
+    const avg_cost = parseFloat(tr.querySelector('[data-f="avg_cost"]').value);
+    const d = await api("/api/portfolio/update", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ owner: state.owner, ticker, shares, avg_cost })
+    });
+    d.status === "ok" ? (msg(d.message, "ok"), load()) : msg(d.message || d.error, "err");
+  }
+});
+
+$("#addBtn").addEventListener("click", async () => {
+  const ticker = $("#a_ticker").value.trim();
+  const shares = parseFloat($("#a_shares").value);
+  const avg_cost = parseFloat($("#a_avg").value);
+  const category = ($("#a_newcat").value.trim() || $("#a_cat").value);
+  const name = $("#a_name").value.trim();
+  if (!ticker || !(shares > 0) || !(avg_cost >= 0)) { msg("Ticker / 수량(>0) / 평균가(>=0) 확인", "err"); return; }
+  const d = await api("/api/portfolio/add", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ owner: state.owner, ticker, shares, avg_cost, category, name })
+  });
+  if (d.status === "ok") {
+    msg(d.message, "ok");
+    $("#a_ticker").value = $("#a_name").value = $("#a_shares").value = $("#a_avg").value = $("#a_newcat").value = "";
+    load();
+  } else { msg(d.message || d.error, "err"); }
+});
+
+$("#owner").addEventListener("change", () => { state.owner = $("#owner").value; load(); });
+$("#reload").addEventListener("click", load);
+
+$("#runPipeline").addEventListener("click", async () => {
+  const b = $("#runPipeline"); b.disabled = true; const t = b.textContent;
+  b.textContent = "실행 중... (수 분 소요)";
+  try {
+    const d = await api("/api/run-pipeline", { method:"POST" });
+    d.status === "ok" ? msg("파이프라인 완료 — 리포트가 갱신되었습니다.", "ok")
+                      : msg("파이프라인 오류: " + (d.error || ""), "err");
+  } catch (e) { msg("요청 실패: " + e, "err"); }
+  b.disabled = false; b.textContent = t;
+});
+
+// 초기 owner 세팅
+(async () => {
+  const d = await api("/api/portfolio?owner=me");
+  if (d.status === "ok") {
+    state.owners = d.owners.length ? d.owners : ["me"];
+    state.owner = state.owners.includes("me") ? "me" : state.owners[0];
+    renderOwners();
+  }
+  await load();
+})();
+</script>
+</body>
+</html>
