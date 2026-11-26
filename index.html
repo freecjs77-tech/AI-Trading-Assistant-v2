@@ -147,7 +147,7 @@ tailwind.config = {
   .stop-badge.stop-none { background: #334155; color: #94a3b8; }
 </style>
 </head>
-<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="1342.8199">
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30 selection:text-primary" data-usdkrw="1342.9301">
 
 <!-- ── Sidebar ── -->
 <!-- ── Sidebar Partial ── shared by report_template and related pages ── -->
@@ -246,12 +246,32 @@ tailwind.config = {
         </div>
         <div class="flex items-center gap-2">
           <span class="text-on-surface/60 text-xs">USD/KRW</span>
-          <span class="text-primary font-bold">1,342.82</span>
+          <span class="text-primary font-bold">1,342.93</span>
         </div>
       </nav>
     </div>
     <div class="flex items-center gap-4">
-      <div class="text-xs text-outline font-label hidden sm:block">2026-11-26 15:07:20</div>
+      
+      
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-label border
+        bg-error-container/30 border-error/50 text-error
+        "
+        title="포트폴리오 보유 데이터 기준일 (수동 갱신). 119일 경과.">
+        <span class="material-symbols-outlined text-[14px] leading-none">
+          warning</span>
+        <span class="hidden sm:inline">보유 기준</span>
+        <span class="font-bold">2026-07-29</span>
+        
+        <span class="opacity-70">(+119d)</span>
+        
+      </div>
+      
+      <div class="text-xs text-outline font-label hidden sm:block">2026-11-26 15:21:13</div>
+      <!-- 로컬(Flask) 전용 편집 링크: GitHub Pages 정적 배포본에서는 JS로 숨김 -->
+      <a id="editLink" href="/edit" style="display:none"
+         class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="포트폴리오 편집 (로컬 전용)">
+        <span class="material-symbols-outlined">edit</span>
+      </a>
       <button id="themeToggleHeader" onclick="toggleTheme()" class="p-2 text-on-surface/60 hover:text-primary transition-colors" title="Toggle Theme">
         <span class="material-symbols-outlined">light_mode</span>
       </button>
@@ -278,25 +298,25 @@ tailwind.config = {
         <div class="relative z-10 flex flex-col h-full justify-between gap-8">
           <div>
             <p class="text-on-surface-variant font-label text-sm uppercase tracking-widest mb-2">Total Equity Value</p>
-            <h1 class="text-5xl md:text-6xl font-headline font-bold gradient-text money" data-usd="1189560.8760992375" data-krw="1597366016.6874905">$1,189,561</h1>
+            <h1 class="text-5xl md:text-6xl font-headline font-bold gradient-text money" data-usd="1185073.2426401842" data-krw="1591470528.2461066">$1,185,073</h1>
           </div>
           <div class="flex flex-wrap gap-12">
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Unrealized P&amp;L</p>
               <p class="text-2xl font-headline font-semibold text-secondary">
-                <span class="money" data-usd="386016.69089774997" data-krw="518350894.2696476" data-signed="1">+$386,017</span>
+                <span class="money" data-usd="381554.8773063095" data-krw="512401529.53644943" data-signed="1">+$381,555</span>
               </p>
-              <p class="text-xs font-label text-secondary/60">▲ +48.0% vs Principal</p>
+              <p class="text-xs font-label text-secondary/60">▲ +47.5% vs Principal</p>
               
               <div class="mt-2 pt-2 border-t border-outline-variant/10 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-label">
                 <span class="text-on-surface-variant uppercase tracking-widest">2026 YTD</span>
-                <span class="font-bold text-tertiary">-14.97%</span>
+                <span class="font-bold text-tertiary">-15.28%</span>
                 <span class="text-outline">·</span>
                 <span class="text-on-surface-variant">S&amp;P (₩)</span>
-                <span class="font-bold text-tertiary">-1.66%</span>
+                <span class="font-bold text-tertiary">-1.65%</span>
                 <span class="text-outline">·</span>
                 <span class="text-on-surface-variant">α</span>
-                <span class="font-bold text-tertiary">-13.31pp</span>
+                <span class="font-bold text-tertiary">-13.63pp</span>
                 <span class="ml-1 cursor-help text-outline" title="2026-01-02 기준 baseline. 보유 종목/수량이 변경되면 baseline도 자동 재계산됩니다. 1월 이후 신규 매수 종목은 1월~매수일 가격 변동분이 함께 반영되어 실제 거래 성과와 차이가 있을 수 있습니다.">ⓘ</span>
               </div>
               
@@ -304,7 +324,7 @@ tailwind.config = {
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Cash Reserve</p>
               <p class="text-2xl font-headline font-semibold text-on-surface">
-                <span class="money" data-usd="83392.4" data-krw="111980974.22875999">$83,392</span>
+                <span class="money" data-usd="83392.4" data-krw="111990164.07124">$83,392</span>
               </p>
               <p class="text-on-surface-variant/60 text-xs font-label">7.0% of portfolio</p>
             </div>
@@ -321,12 +341,12 @@ tailwind.config = {
           <div class="space-y-6">
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Annual Total</p>
-              <p class="text-3xl font-headline font-bold text-on-surface money" data-usd="33949.86" data-krw="45588547.610214">$33,950</p>
-              <p class="text-primary text-xs font-label mt-1">Yield 2.85%</p>
+              <p class="text-3xl font-headline font-bold text-on-surface money" data-usd="33947.86" data-krw="45589603.024586">$33,948</p>
+              <p class="text-primary text-xs font-label mt-1">Yield 2.86%</p>
             </div>
             <div>
               <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Monthly Average</p>
-              <p class="text-2xl font-headline font-bold text-on-surface money" data-usd="2829.15" data-krw="3799038.920085">$2,829</p>
+              <p class="text-2xl font-headline font-bold text-on-surface money" data-usd="2828.99" data-krw="3799135.823599">$2,829</p>
               <p class="text-on-surface-variant/60 text-[10px] font-label mt-1">110990 $1677/mo · BIL $255/mo · 005930 $218/mo</p>
             </div>
           </div>
@@ -419,7 +439,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (2d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (3d)</span>
                   
                 </td>
               </tr>
@@ -437,7 +457,7 @@ tailwind.config = {
                   <span class="block money" data-usd="113309.44505000999">$113,309</span>
                   <span class="block text-[10px] money text-secondary" data-usd="11809.585050009975" data-signed="1">+$11,810</span>
                 </td>
-                <td class="px-6 py-4">9.5%</td>
+                <td class="px-6 py-4">9.6%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+11.6%</td>
                 <td class="px-6 py-4 text-on-surface">$552</td>
                 <td class="px-6 py-4">
@@ -454,7 +474,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (23d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (24d)</span>
                   
                 </td>
               </tr>
@@ -505,7 +525,7 @@ tailwind.config = {
                   <span class="block money" data-usd="59938.69924171">$59,939</span>
                   <span class="block text-[10px] money text-secondary" data-usd="15587.039241709996" data-signed="1">+$15,587</span>
                 </td>
-                <td class="px-6 py-4">5.0%</td>
+                <td class="px-6 py-4">5.1%</td>
                 <td class="px-6 py-4 font-bold text-secondary">+35.1%</td>
                 <td class="px-6 py-4 text-on-surface">$1,792</td>
                 <td class="px-6 py-4">
@@ -590,7 +610,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (73d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (74d)</span>
                   
                 </td>
               </tr>
@@ -660,7 +680,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (23d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (24d)</span>
                   
                 </td>
               </tr>
@@ -695,7 +715,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (121d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (122d)</span>
                   
                 </td>
               </tr>
@@ -730,7 +750,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (29d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (30d)</span>
                   
                 </td>
               </tr>
@@ -763,7 +783,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (92d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (93d)</span>
                   
                 </td>
               </tr>
@@ -798,7 +818,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (2d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (3d)</span>
                   
                 </td>
               </tr>
@@ -833,7 +853,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (9d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
                   
                 </td>
               </tr>
@@ -866,7 +886,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (39d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (40d)</span>
                   
                 </td>
               </tr>
@@ -901,7 +921,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (9d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (10d)</span>
                   
                 </td>
               </tr>
@@ -936,7 +956,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (4d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (5d)</span>
                   
                 </td>
               </tr>
@@ -969,7 +989,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (129d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (130d)</span>
                   
                 </td>
               </tr>
@@ -1002,16 +1022,16 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">디아이티</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;11,240</span>
+                  <span class="block">&#8361;11,160</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;2,942 avg</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;723,395,160</span>
-                  <span class="block text-[10px] text-secondary">+&#8361;534,070,420</span>
+                  <span class="block">&#8361;718,246,440</span>
+                  <span class="block text-[10px] text-secondary">+&#8361;528,921,700</span>
                 </td>
-                <td class="px-6 py-4">45.3%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+282.1%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;27,030,777</td>
+                <td class="px-6 py-4">45.1%</td>
+                <td class="px-6 py-4 font-bold text-secondary">+279.4%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;27,030,779</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-watch">WATCH</span>
@@ -1024,7 +1044,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (140d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (141d)</span>
                   
                 </td>
               </tr>
@@ -1035,16 +1055,16 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">TIGER 200</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;73,995</span>
+                  <span class="block">&#8361;73,580</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;101,049 avg</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;39,217,350</span>
-                  <span class="block text-[10px] text-tertiary">&#8361;-14,338,446</span>
+                  <span class="block">&#8361;38,997,400</span>
+                  <span class="block text-[10px] text-tertiary">&#8361;-14,558,396</span>
                 </td>
                 <td class="px-6 py-4">2.5%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-26.8%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;799,246</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-27.2%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;799,245</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-watch">WATCH</span>
@@ -1059,7 +1079,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (123d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (124d)</span>
                   
                 </td>
               </tr>
@@ -1070,16 +1090,16 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">삼성전자</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;173,700</span>
+                  <span class="block">&#8361;172,800</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;262,813 avg</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;33,176,700</span>
-                  <span class="block text-[10px] text-tertiary">&#8361;-17,020,638</span>
+                  <span class="block">&#8361;33,004,800</span>
+                  <span class="block text-[10px] text-tertiary">&#8361;-17,192,538</span>
                 </td>
                 <td class="px-6 py-4">2.1%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-33.9%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;3,515,167</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-34.2%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;3,515,160</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-watch">WATCH</span>
@@ -1094,7 +1114,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (129d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (130d)</span>
                   
                 </td>
               </tr>
@@ -1105,16 +1125,16 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">SK하이닉스</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;1,064,000</span>
+                  <span class="block">&#8361;1,056,000</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;2,090,619 avg</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;26,600,000</span>
-                  <span class="block text-[10px] text-tertiary">&#8361;-25,665,470</span>
+                  <span class="block">&#8361;26,400,000</span>
+                  <span class="block text-[10px] text-tertiary">&#8361;-25,865,470</span>
                 </td>
                 <td class="px-6 py-4">1.7%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-49.1%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;74,996</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-49.5%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;75,003</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-watch">WATCH</span>
@@ -1127,7 +1147,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (129d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (130d)</span>
                   
                 </td>
               </tr>
@@ -1138,16 +1158,16 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">TIGER 미국배당다우존스</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;15,020</span>
+                  <span class="block">&#8361;15,005</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;11,807 avg</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;12,767,000</span>
-                  <span class="block text-[10px] text-secondary">+&#8361;2,730,915</span>
+                  <span class="block">&#8361;12,754,250</span>
+                  <span class="block text-[10px] text-secondary">+&#8361;2,718,165</span>
                 </td>
                 <td class="px-6 py-4">0.8%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+27.2%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;373,156</td>
+                <td class="px-6 py-4 font-bold text-secondary">+27.1%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;373,147</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-hold">HOLD</span>
@@ -1171,16 +1191,16 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">KODEX 미국S&P500</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;21,820</span>
+                  <span class="block">&#8361;21,785</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;20,131 avg</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;8,728,000</span>
-                  <span class="block text-[10px] text-secondary">+&#8361;675,760</span>
+                  <span class="block">&#8361;8,714,000</span>
+                  <span class="block text-[10px] text-secondary">+&#8361;661,760</span>
                 </td>
                 <td class="px-6 py-4">0.5%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+8.4%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;194,400</td>
+                <td class="px-6 py-4 font-bold text-secondary">+8.2%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;194,403</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-buy1">1st_BUY</span>
@@ -1195,7 +1215,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (19d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (20d)</span>
                   
                 </td>
               </tr>
@@ -1206,16 +1226,16 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">TIGER 반도체TOP10</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;23,280</span>
+                  <span class="block">&#8361;23,135</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;36,738 avg</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;8,520,480</span>
-                  <span class="block text-[10px] text-tertiary">&#8361;-4,925,495</span>
+                  <span class="block">&#8361;8,467,410</span>
+                  <span class="block text-[10px] text-tertiary">&#8361;-4,978,565</span>
                 </td>
                 <td class="px-6 py-4">0.5%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-36.6%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;62,226</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-37.0%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;62,218</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-watch">WATCH</span>
@@ -1230,7 +1250,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (127d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (128d)</span>
                   
                 </td>
               </tr>
@@ -1241,152 +1261,16 @@ tailwind.config = {
                   <span class="text-[10px] text-on-surface-variant">KODEX 미국나스닥100</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;23,345</span>
+                  <span class="block">&#8361;23,280</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;18,783 avg</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;7,003,500</span>
-                  <span class="block text-[10px] text-secondary">+&#8361;1,368,625</span>
+                  <span class="block">&#8361;6,984,000</span>
+                  <span class="block text-[10px] text-secondary">+&#8361;1,349,125</span>
                 </td>
                 <td class="px-6 py-4">0.4%</td>
-                <td class="px-6 py-4 font-bold text-secondary">+24.3%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;87,001</td>
-                <td class="px-6 py-4">
-                  
-                  <span class="sig sig-watch">WATCH</span>
-                  
-                  
-                </td>
-                <td class="px-6 py-4 stop-cell">
-                  
-                    
-                    
-                    
-                    
-                    <span class="stop-badge stop-exit">🔴 EXIT (37d)</span>
-                  
-                </td>
-              </tr>
-              
-              <tr class="hover:bg-surface-container-high/50 transition-colors">
-                <td class="px-6 py-4">
-                  <a href="details/005380.html" class="block font-headline font-bold text-primary hover:underline">005380</a>
-                  <span class="text-[10px] text-on-surface-variant">현대차</span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="block">&#8361;262,000</span>
-                  <span class="text-[10px] text-on-surface-variant">&#8361;637,530 avg</span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="block">&#8361;6,550,000</span>
-                  <span class="block text-[10px] text-tertiary">&#8361;-9,388,250</span>
-                </td>
-                <td class="px-6 py-4">0.4%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-58.9%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;250,006</td>
-                <td class="px-6 py-4">
-                  
-                  <span class="sig sig-watch">WATCH</span>
-                  
-                  
-                </td>
-                <td class="px-6 py-4 stop-cell">
-                  
-                    
-                    
-                    
-                    
-                    <span class="stop-badge stop-exit">🔴 EXIT (147d)</span>
-                  
-                </td>
-              </tr>
-              
-              <tr class="hover:bg-surface-container-high/50 transition-colors">
-                <td class="px-6 py-4">
-                  <a href="details/466920.html" class="block font-headline font-bold text-primary hover:underline">466920</a>
-                  <span class="text-[10px] text-on-surface-variant">SOL 조선TOP3플러스</span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="block">&#8361;16,365</span>
-                  <span class="text-[10px] text-on-surface-variant">&#8361;32,567 avg</span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="block">&#8361;6,546,000</span>
-                  <span class="block text-[10px] text-tertiary">&#8361;-6,480,956</span>
-                </td>
-                <td class="px-6 py-4">0.4%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-49.8%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;20,800</td>
-                <td class="px-6 py-4">
-                  
-                  <span class="sig sig-watch">WATCH</span>
-                  
-                  
-                  <span class="text-[10px] text-outline ml-1">(1st_BUY)</span>
-                  
-                </td>
-                <td class="px-6 py-4 stop-cell">
-                  
-                    
-                    
-                    
-                    
-                    <span class="stop-badge stop-exit">🔴 EXIT (135d)</span>
-                  
-                </td>
-              </tr>
-              
-              <tr class="hover:bg-surface-container-high/50 transition-colors">
-                <td class="px-6 py-4">
-                  <a href="details/006400.html" class="block font-headline font-bold text-primary hover:underline">006400</a>
-                  <span class="text-[10px] text-on-surface-variant">삼성SDI</span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="block">&#8361;424,500</span>
-                  <span class="text-[10px] text-on-surface-variant">&#8361;576,196 avg</span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="block">&#8361;3,396,000</span>
-                  <span class="block text-[10px] text-tertiary">&#8361;-1,213,567</span>
-                </td>
-                <td class="px-6 py-4">0.2%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-26.3%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
-                <td class="px-6 py-4">
-                  
-                  <span class="sig sig-buy1">1st_BUY</span>
-                  
-                  
-                  <span class="text-[10px] text-outline ml-1">(HOLD)</span>
-                  
-                </td>
-                <td class="px-6 py-4 stop-cell">
-                  
-                    
-                    
-                    
-                    
-                    <span class="stop-badge stop-exit">🔴 EXIT (153d)</span>
-                  
-                </td>
-              </tr>
-              
-              <tr class="hover:bg-surface-container-high/50 transition-colors">
-                <td class="px-6 py-4">
-                  <a href="details/487240.html" class="block font-headline font-bold text-primary hover:underline">487240</a>
-                  <span class="text-[10px] text-on-surface-variant">KODEX AI전력핵심설비</span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="block">&#8361;20,520</span>
-                  <span class="text-[10px] text-on-surface-variant">&#8361;37,989 avg</span>
-                </td>
-                <td class="px-6 py-4">
-                  <span class="block">&#8361;2,052,000</span>
-                  <span class="block text-[10px] text-tertiary">&#8361;-1,746,904</span>
-                </td>
-                <td class="px-6 py-4">0.1%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-46.0%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;4,404</td>
+                <td class="px-6 py-4 font-bold text-secondary">+23.9%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;86,995</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-watch">WATCH</span>
@@ -1406,20 +1290,156 @@ tailwind.config = {
               
               <tr class="hover:bg-surface-container-high/50 transition-colors">
                 <td class="px-6 py-4">
+                  <a href="details/005380.html" class="block font-headline font-bold text-primary hover:underline">005380</a>
+                  <span class="text-[10px] text-on-surface-variant">현대차</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;260,500</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;637,530 avg</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;6,512,500</span>
+                  <span class="block text-[10px] text-tertiary">&#8361;-9,425,750</span>
+                </td>
+                <td class="px-6 py-4">0.4%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-59.1%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;250,000</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-watch">WATCH</span>
+                  
+                  
+                </td>
+                <td class="px-6 py-4 stop-cell">
+                  
+                    
+                    
+                    
+                    
+                    <span class="stop-badge stop-exit">🔴 EXIT (148d)</span>
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/466920.html" class="block font-headline font-bold text-primary hover:underline">466920</a>
+                  <span class="text-[10px] text-on-surface-variant">SOL 조선TOP3플러스</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;16,280</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;32,567 avg</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;6,512,000</span>
+                  <span class="block text-[10px] text-tertiary">&#8361;-6,514,956</span>
+                </td>
+                <td class="px-6 py-4">0.4%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-50.0%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;20,802</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-watch">WATCH</span>
+                  
+                  
+                  <span class="text-[10px] text-outline ml-1">(1st_BUY)</span>
+                  
+                </td>
+                <td class="px-6 py-4 stop-cell">
+                  
+                    
+                    
+                    
+                    
+                    <span class="stop-badge stop-exit">🔴 EXIT (136d)</span>
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/006400.html" class="block font-headline font-bold text-primary hover:underline">006400</a>
+                  <span class="text-[10px] text-on-surface-variant">삼성SDI</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;422,000</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;576,196 avg</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;3,376,000</span>
+                  <span class="block text-[10px] text-tertiary">&#8361;-1,233,567</span>
+                </td>
+                <td class="px-6 py-4">0.2%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-26.8%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;0</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-buy1">1st_BUY</span>
+                  
+                  
+                  <span class="text-[10px] text-outline ml-1">(HOLD)</span>
+                  
+                </td>
+                <td class="px-6 py-4 stop-cell">
+                  
+                    
+                    
+                    
+                    
+                    <span class="stop-badge stop-exit">🔴 EXIT (154d)</span>
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
+                  <a href="details/487240.html" class="block font-headline font-bold text-primary hover:underline">487240</a>
+                  <span class="text-[10px] text-on-surface-variant">KODEX AI전력핵심설비</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;20,410</span>
+                  <span class="text-[10px] text-on-surface-variant">&#8361;37,989 avg</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="block">&#8361;2,041,000</span>
+                  <span class="block text-[10px] text-tertiary">&#8361;-1,757,904</span>
+                </td>
+                <td class="px-6 py-4">0.1%</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-46.3%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;4,405</td>
+                <td class="px-6 py-4">
+                  
+                  <span class="sig sig-watch">WATCH</span>
+                  
+                  
+                </td>
+                <td class="px-6 py-4 stop-cell">
+                  
+                    
+                    
+                    
+                    
+                    <span class="stop-badge stop-exit">🔴 EXIT (39d)</span>
+                  
+                </td>
+              </tr>
+              
+              <tr class="hover:bg-surface-container-high/50 transition-colors">
+                <td class="px-6 py-4">
                   <a href="details/232080.html" class="block font-headline font-bold text-primary hover:underline">232080</a>
                   <span class="text-[10px] text-on-surface-variant">TIGER 코스닥150</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;11,205</span>
+                  <span class="block">&#8361;11,125</span>
                   <span class="text-[10px] text-on-surface-variant">&#8361;17,535 avg</span>
                 </td>
                 <td class="px-6 py-4">
-                  <span class="block">&#8361;1,680,750</span>
-                  <span class="block text-[10px] text-tertiary">&#8361;-949,476</span>
+                  <span class="block">&#8361;1,668,750</span>
+                  <span class="block text-[10px] text-tertiary">&#8361;-961,476</span>
                 </td>
                 <td class="px-6 py-4">0.1%</td>
-                <td class="px-6 py-4 font-bold text-tertiary">-36.1%</td>
-                <td class="px-6 py-4 text-on-surface">&#8361;6,002</td>
+                <td class="px-6 py-4 font-bold text-tertiary">-36.6%</td>
+                <td class="px-6 py-4 text-on-surface">&#8361;6,003</td>
                 <td class="px-6 py-4">
                   
                   <span class="sig sig-buy2">2nd_BUY</span>
@@ -1434,7 +1454,7 @@ tailwind.config = {
                     
                     
                     
-                    <span class="stop-badge stop-exit">🔴 EXIT (147d)</span>
+                    <span class="stop-badge stop-exit">🔴 EXIT (148d)</span>
                   
                 </td>
               </tr>
@@ -1453,9 +1473,9 @@ tailwind.config = {
             </thead>
             <tbody class="divide-y divide-outline-variant/10 text-on-surface-variant">
               <tr><td class="px-6 py-2">Portfolio</td><td class="px-6 py-2">portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolios/me.md)</td><td class="px-6 py-2">Screenshot date</td></tr>
-              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-11-26 15:07:20</td></tr>
-              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-11-26 15:07:20</td></tr>
-              <tr><td class="px-6 py-2">Dividends (Forward 우선, TTM 폴백)</td><td class="px-6 py-2">yfinance (dividendRate / history)</td><td class="px-6 py-2">2026-11-26 15:07:20</td></tr>
+              <tr><td class="px-6 py-2">Technical Indicators</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-11-26 15:21:13</td></tr>
+              <tr><td class="px-6 py-2">Macro (VIX/30Y/FX)</td><td class="px-6 py-2">yfinance</td><td class="px-6 py-2">2026-11-26 15:21:13</td></tr>
+              <tr><td class="px-6 py-2">Dividends (Forward 우선, TTM 폴백)</td><td class="px-6 py-2">yfinance (dividendRate / history)</td><td class="px-6 py-2">2026-11-26 15:21:13</td></tr>
             </tbody>
           </table>
         </div>
@@ -1567,7 +1587,7 @@ tailwind.config = {
     <!-- Footer -->
     <p class="text-[10px] text-outline mt-8 pt-4 border-t border-outline-variant/10 leading-relaxed">
       This report is for personal reference only. Trading signals are generated from technical indicators (RSI, MACD, MA, BB, ADX, Volume) and do not constitute investment advice.<br>
-      Generated by Trading Assistant v5.0 | 2026-11-25 | Data: yfinance (2026-11-26 15:07:20) | Portfolio: portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolios/me.md)
+      Generated by Trading Assistant v5.0 | 2026-11-25 | Data: yfinance (2026-11-26 15:21:13) | Portfolio: portfolio.md (/home/runner/work/AI-Trading-Assistant-v2/AI-Trading-Assistant-v2/portfolios/me.md)
     </p>
   </div>
 </main>
@@ -1660,6 +1680,12 @@ function updateThemeIcons(theme) {
 document.addEventListener('DOMContentLoaded', function() {
   isKRW = false; toggleCurrency();
   updateThemeIcons(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+  // 편집 링크는 로컬(Flask) 실행 시에만 노출 — GitHub Pages 배포본에는 /edit 백엔드가 없음
+  var _h = location.hostname;
+  if (_h === 'localhost' || _h === '127.0.0.1' || _h === '' || _h === '0.0.0.0') {
+    var el = document.getElementById('editLink');
+    if (el) el.style.display = '';
+  }
 });
 </script>
 </body>
