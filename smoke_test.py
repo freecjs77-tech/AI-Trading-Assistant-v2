@@ -116,7 +116,9 @@ def check_signal_distribution(reports_dir: str, today: str) -> list:
         return errors
 
     html = _load_html(report_path)
-    signals = re.findall(r'class="badge badge-\w+"[^>]*>([^<]+)', html)
+    # 현재 템플릿은 시그널을 <span class="sig sig-XXX">LABEL</span> 로 렌더한다.
+    # (구 템플릿의 'badge badge-XXX' 도 하위호환으로 함께 매칭)
+    signals = re.findall(r'class="(?:sig sig-|badge badge-)[\w-]+"[^>]*>([^<]+)', html)
 
     if not signals:
         errors.append("[CRITICAL] 시그널 배지를 찾을 수 없음")
