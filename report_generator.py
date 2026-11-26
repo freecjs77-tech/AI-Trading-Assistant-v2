@@ -737,15 +737,30 @@ def generate_scanner_pages(
     return [out_path]
 
 
+# 디아이티(110990) 식별 키 — owner별로 weights_by_ticker 키가 다름
+# (me는 종목명 "디아이티", wife는 티커 "110990"으로 저장됨). 둘 다 매칭한다.
+DIT_WEIGHT_KEYS = ("디아이티", "110990")
+
+
 def _series_from_daily(daily: dict) -> list:
-    """portfolio_daily 스냅샷 → 트렌드 시계열 dict 리스트 (date/total_eok/pnl_eok 등)."""
+    """portfolio_daily 스냅샷 → 트렌드 시계열 dict 리스트 (date/total_eok/pnl_eok 등).
+
+    디아이티 제외 토글용으로 total_ex_dit_eok / cost_ex_dit_eok 도 포함한다
+    (rest_now_krw/rest_v0_krw 기반; 해당 필드가 없으면 전체값으로 폴백).
+    """
     out = []
     for d in sorted([k for k in daily.keys() if not k.startswith("_")]):
         snap = daily[d]
+        total_krw = snap.get("total_value_krw", 0) or 0
+        cost_krw = snap.get("cost_basis_krw", 0) or 0
+        rest_now = snap.get("rest_now_krw")
+        rest_v0 = snap.get("rest_v0_krw")
+        total_ex = rest_now if rest_now is not None else total_krw
+        cost_ex = rest_v0 if rest_v0 is not None else cost_krw
         out.append({
             "date": d,
-            "total_eok": round(snap.get("total_value_krw", 0) / 1e8, 2),
-            "cost_eok": round(snap.get("cost_basis_krw", 0) / 1e8, 2),
+            "total_eok": round(total_krw / 1e8, 2),
+            "cost_eok": round(cost_krw / 1e8, 2),
             "pnl_eok": round(snap.get("pnl_krw", 0) / 1e8, 2),
             "pnl_pct": snap.get("pnl_pct", 0),
             "div_annual_man": round(snap.get("div_annual_krw", 0) / 1e4),
@@ -755,26 +770,60 @@ def _series_from_daily(daily: dict) -> list:
             "alpha_pp": snap.get("alpha_pp"),
             "dit_ytd_pct": snap.get("dit_ytd_pct"),
             "rest_ytd_pct": snap.get("rest_ytd_pct"),
+            # 디아이티 제외 버전
+            "total_ex_dit_eok": round(total_ex / 1e8, 2),
+            "cost_ex_dit_eok": round(cost_ex / 1e8, 2),
         })
     return out
 
 
-def _user_category_rows(snap: dict) -> list[dict]:
+def _user_category_rows(snap: dict, exclude_dit: bool = False) -> list[dict]:
     """최신 스냅샷 weights_by_ticker → 4 사용자 카테고리 rows (고정 순서).
 
     반환 shape은 ticker rows와 동일: {name, value(pct), amount_man}.
     합산 스냅샷도 weights_by_ticker(KRW 합산 후 %)를 담으므로 동일 경로로 처리된다.
+    exclude_dit=True면 디아이티 비중을 제외하고 % 를 재정규화한다(금액은 실제값 유지).
     """
     from portfolio_data import USER_CATEGORIES, category_for_weight_key
     total = snap.get("total_value_krw", 0) or 0
     krw = {c: 0.0 for c in USER_CATEGORIES}
     for key, w in (snap.get("weights_by_ticker") or {}).items():
+        if exclude_dit and key in DIT_WEIGHT_KEYS:
+            continue
         krw[category_for_weight_key(key)] += total * w / 100.0
     g = sum(krw.values()) or 1
     return [
         {"name": c, "value": round(krw[c] / g * 100, 1), "amount_man": round(krw[c] / 1e4)}
         for c in USER_CATEGORIES
     ]
+
+
+def _ticker_rows(snap: dict, exclude_dit: bool = False) -> list[dict]:
+    """최신 스냅샷 weights_by_ticker → 상위 10 + 기타 rows (금액 포함).
+
+    exclude_dit=True면 디아이티를 빼고 % 를 재정규화한다(금액은 실제값 유지).
+    """
+    total = snap.get("total_value_krw", 0) or 0
+    pairs = []
+    for name, weight in (snap.get("weights_by_ticker") or {}).items():
+        if exclude_dit and name in DIT_WEIGHT_KEYS:
+            continue
+        pairs.append((name, total * weight / 100.0))  # KRW 금액(실제값)
+    denom = sum(amt for _n, amt in pairs) or 1
+    pairs.sort(key=lambda x: -x[1])
+    rows = []
+    others_pct = 0.0
+    others_krw = 0.0
+    for i, (name, amt_krw) in enumerate(pairs):
+        pct = amt_krw / denom * 100
+        if i < 10:
+            rows.append({"name": name, "value": round(pct, 1), "amount_man": round(amt_krw / 1e4)})
+        else:
+            others_pct += pct
+            others_krw += amt_krw
+    if others_pct > 0:
+        rows.append({"name": "기타", "value": round(others_pct, 1), "amount_man": round(others_krw / 1e4)})
+    return rows
 
 
 def _build_owner_payload(daily: dict) -> dict:
@@ -800,25 +849,32 @@ def _build_owner_payload(daily: dict) -> dict:
         "dit_ytd_pct": latest_snap.get("dit_ytd_pct"),
         "rest_ytd_pct": latest_snap.get("rest_ytd_pct"),
     }
-    ticker_weights = latest_snap.get("weights_by_ticker", {}) or {}
-    sorted_tickers = sorted(ticker_weights.items(), key=lambda x: -x[1])
-    ticker_data = []
-    others = 0
-    others_krw = 0
-    for i, (name, weight) in enumerate(sorted_tickers):
-        amt_krw = round(latest_total * weight / 100)
-        if i < 10:
-            ticker_data.append({"name": name, "value": round(weight, 1), "amount_man": round(amt_krw / 1e4)})
-        else:
-            others += weight
-            others_krw += amt_krw
-    if others > 0:
-        ticker_data.append({"name": "기타", "value": round(others, 1), "amount_man": round(others_krw / 1e4)})
+    # 디아이티 제외 요약 (rest_now_krw/rest_v0_krw 기반; 없으면 전체값 폴백)
+    rest_now = latest_snap.get("rest_now_krw")
+    rest_v0 = latest_snap.get("rest_v0_krw")
+    cash_krw = latest_snap.get("cash_value_krw", 0) or 0
+    if rest_now is not None and rest_v0 is not None:
+        ex_pnl = rest_now - rest_v0
+        latest["total_ex_dit_eok"] = f"{rest_now / 1e8:.2f}"
+        latest["cost_ex_dit_eok"] = f"{rest_v0 / 1e8:.2f}"
+        latest["pnl_ex_dit_krw"] = ex_pnl
+        latest["pnl_ex_dit_eok"] = f"{ex_pnl / 1e8:.2f}"
+        latest["pnl_ex_dit_pct"] = round((rest_now / rest_v0 - 1) * 100, 2) if rest_v0 > 0 else 0
+        latest["cash_pct_ex_dit"] = round(cash_krw / rest_now * 100, 1) if rest_now > 0 else 0
+    else:
+        latest["total_ex_dit_eok"] = latest["total_eok"]
+        latest["cost_ex_dit_eok"] = latest["cost_eok"]
+        latest["pnl_ex_dit_krw"] = latest_pnl
+        latest["pnl_ex_dit_eok"] = latest["pnl_eok"]
+        latest["pnl_ex_dit_pct"] = latest_snap.get("pnl_pct", 0)
+        latest["cash_pct_ex_dit"] = latest_snap.get("cash_pct", 0)
     return {
         "latest": latest,
         "trend": _series_from_daily(daily),
-        "ticker": ticker_data,
-        "category": _user_category_rows(latest_snap),
+        "ticker": _ticker_rows(latest_snap, exclude_dit=False),
+        "category": _user_category_rows(latest_snap, exclude_dit=False),
+        "ticker_ex_dit": _ticker_rows(latest_snap, exclude_dit=True),
+        "category_ex_dit": _user_category_rows(latest_snap, exclude_dit=True),
     }
 
 

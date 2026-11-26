@@ -79,6 +79,14 @@ html.light{--c-surface-container:255 255 255;--c-surface-container-highest:226 2
     </div>
     {% endif %}
 
+    <!-- 디아이티(110990) 포함/제외 토글 — 포트폴리오 값/비중/YTD 차트에 전역 적용 -->
+    <div class="flex gap-2 items-center flex-wrap" id="ditToggle" role="tablist">
+      <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mr-2">디아이티(110990)</span>
+      <button data-dit="include" class="dit-btn px-4 py-2 rounded-md text-sm font-bold bg-primary/20 text-primary border border-primary/30">포함</button>
+      <button data-dit="exclude" class="dit-btn px-4 py-2 rounded-md text-sm font-bold bg-surface-container-high text-on-surface-variant border border-outline-variant/20">제외</button>
+      <span class="text-[10px] text-outline ml-1">※ 배당 차트는 종목별 분해 불가로 변동 없음</span>
+    </div>
+
     <!-- Summary Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="rounded-xl bg-surface-container p-5 border border-outline-variant/10 border-l-4 border-l-secondary flex items-center gap-4">
@@ -296,34 +304,45 @@ let _divChart = new Chart(document.getElementById('divTrendChart'), { type:'line
   { label:'배당수익률 (%)', data:divYieldData, borderColor:'#00E5BC', backgroundColor:'rgba(0,229,188,0.05)', fill:true, tension:0.3, pointRadius:2, yAxisID:'y1' }
 ]}, options:{ responsive:true, plugins:{ legend:{ position:'top' }}, scales:{ y:{ ...dso, position:'left', title:{ display:true, text:'만원', color:'#a3aac4' }}, y1:{ ...dso, position:'right', title:{ display:true, text:'%', color:'#a3aac4' }, grid:{ drawOnChartArea:false }}}}});
 
+let _currentOwner = 'me';
+let _exDit = false;  // dit(110990) exclude mode
+const _ditSuffix = (ex) => ex ? ' · 디아이티 제외' : '';
 function _applyOwner(owner){
   const p = ownersPayload[owner];
   if(!p) return;
+  _currentOwner = owner;
+  const ex = _exDit;
   // Summary cards
   const l = p.latest;
-  document.getElementById('sumTotal').innerHTML = '\u20a9' + l.total_eok + '억';
-  const pnlSign = l.pnl_krw >= 0 ? '+' : '';
-  const pctSign = l.pnl_pct >= 0 ? '+' : '';
+  const _total  = ex ? l.total_ex_dit_eok : l.total_eok;
+  const _cost   = ex ? l.cost_ex_dit_eok  : l.cost_eok;
+  const _pnlKrw = ex ? l.pnl_ex_dit_krw   : l.pnl_krw;
+  const _pnlEok = ex ? l.pnl_ex_dit_eok   : l.pnl_eok;
+  const _pnlPct = ex ? l.pnl_ex_dit_pct   : l.pnl_pct;
+  const _cashPct = ex ? l.cash_pct_ex_dit : l.cash_pct;
+  document.getElementById('sumTotal').innerHTML = '\u20a9' + _total + '억';
+  const pnlSign = _pnlKrw >= 0 ? '+' : '';
+  const pctSign = _pnlPct >= 0 ? '+' : '';
   const pnlEl = document.getElementById('sumPnl');
-  pnlEl.innerHTML = '\u2197 ' + pnlSign + '\u20a9' + l.pnl_eok + '억 (' + pctSign + l.pnl_pct + '%)';
+  pnlEl.innerHTML = '\u2197 ' + pnlSign + '\u20a9' + _pnlEok + '억 (' + pctSign + _pnlPct + '%)';
   pnlEl.classList.remove('text-secondary','text-tertiary');
-  pnlEl.classList.add(l.pnl_krw >= 0 ? 'text-secondary' : 'text-tertiary');
-  document.getElementById('sumCost').innerHTML = '\u20a9' + l.cost_eok + '억';
+  pnlEl.classList.add(_pnlKrw >= 0 ? 'text-secondary' : 'text-tertiary');
+  document.getElementById('sumCost').innerHTML = '\u20a9' + _cost + '억';
   document.getElementById('sumDivAnnual').innerHTML = '\u20a9' + l.div_annual_man + '만';
   document.getElementById('sumDivYield').innerHTML = 'Yield: ' + l.div_yield + '%';
   document.getElementById('sumCash').innerHTML = '\u20a9' + l.cash_eok + '억';
-  document.getElementById('sumCashPct').innerHTML = '\u25cf ' + l.cash_pct + '% Allocation';
+  document.getElementById('sumCashPct').innerHTML = '\u25cf ' + _cashPct + '% Allocation';
   // Asset Allocation title
-  document.getElementById('allocTitle').textContent = ownerLabel(owner) + ' — Asset Allocation';
+  document.getElementById('allocTitle').textContent = ownerLabel(owner) + ' — Asset Allocation' + _ditSuffix(ex);
   // Ticker pie + cards 재렌더
-  _renderTicker(p.ticker);
-  _renderCategory(p.category);
+  _renderTicker(ex ? p.ticker_ex_dit : p.ticker);
+  _renderCategory(ex ? p.category_ex_dit : p.category);
   // Asset chart
   const s = p.trend;
   _assetChart.data.labels = s.map(d => d.date.slice(5));
-  _assetChart.data.datasets[0].data = s.map(d => d.total_eok);
-  _assetChart.data.datasets[1].data = s.map(d => d.cost_eok);
-  _assetChart.data.datasets[0].label = ownerLabel(owner) + ' 총 자산 (억원)';
+  _assetChart.data.datasets[0].data = s.map(d => ex ? d.total_ex_dit_eok : d.total_eok);
+  _assetChart.data.datasets[1].data = s.map(d => ex ? d.cost_ex_dit_eok : d.cost_eok);
+  _assetChart.data.datasets[0].label = ownerLabel(owner) + ' 총 자산 (억원)' + _ditSuffix(ex);
   _assetChart.data.datasets[1].label = ownerLabel(owner) + ' 투자 원금 (억원)';
   _assetChart.update();
   // Div chart
@@ -336,9 +355,12 @@ function _applyOwner(owner){
   const spyEl = document.getElementById('sumSpy');
   const alphaEl = document.getElementById('sumAlpha');
   const fmt = (v) => v == null ? 'N/A' : ((v >= 0 ? '+' : '') + v.toFixed(2));
-  if (ytdEl) ytdEl.textContent = fmt(p.latest.ytd_pct) + (p.latest.ytd_pct == null ? '' : '%');
-  if (spyEl) spyEl.textContent = fmt(p.latest.spy_ytd_pct) + (p.latest.spy_ytd_pct == null ? '' : '%');
-  if (alphaEl) alphaEl.textContent = fmt(p.latest.alpha_pp) + (p.latest.alpha_pp == null ? '' : 'pp');
+  const _ytdVal = ex ? l.rest_ytd_pct : l.ytd_pct;
+  const _spyVal = l.spy_ytd_pct;
+  const _alphaVal = ex ? ((_ytdVal != null && _spyVal != null) ? +(_ytdVal - _spyVal).toFixed(2) : null) : l.alpha_pp;
+  if (ytdEl) ytdEl.textContent = fmt(_ytdVal) + (_ytdVal == null ? '' : '%');
+  if (spyEl) spyEl.textContent = fmt(_spyVal) + (_spyVal == null ? '' : '%');
+  if (alphaEl) alphaEl.textContent = fmt(_alphaVal) + (_alphaVal == null ? '' : 'pp');
   // YTD comparison chart
   if (typeof _updateYtdChart === 'function') _updateYtdChart(p.trend);
 }
@@ -352,6 +374,20 @@ document.querySelectorAll('#ownerToggle .owner-btn').forEach(btn => {
     btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
     _applyOwner(btn.dataset.owner);
     if (typeof _toggleForecast === 'function') _toggleForecast(btn.dataset.owner);
+  });
+});
+
+// ── 디아이티 포함/제외 토글 ──
+document.querySelectorAll('#ditToggle .dit-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#ditToggle .dit-btn').forEach(b => {
+      b.classList.remove('bg-primary/20','text-primary','border-primary/30');
+      b.classList.add('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+    });
+    btn.classList.add('bg-primary/20','text-primary','border-primary/30');
+    btn.classList.remove('bg-surface-container-high','text-on-surface-variant','border-outline-variant/20');
+    _exDit = (btn.dataset.dit === 'exclude');
+    _applyOwner(_currentOwner);
   });
 });
 
@@ -414,6 +450,9 @@ function _updateYtdChart(trendArr){
   ytdChart.data.datasets[1].data = ditSeries;
   ytdChart.data.datasets[2].data = restSeries;
   ytdChart.data.datasets[3].data = spySeries;
+  // 디아이티 제외 시: 전체 포트 + 디아이티 라인 숨김 → '나머지' vs S&P 만 비교
+  ytdChart.data.datasets[0].hidden = _exDit;
+  ytdChart.data.datasets[1].hidden = _exDit;
   ytdChart.update();
 }
 

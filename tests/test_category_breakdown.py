@@ -72,4 +72,5 @@ def test_category_section_rendered_multi_owner():
     assert 'id="categoryPie"' in html
     assert 'id="categoryCards"' in html
     assert "_renderCategory" in html
-    assert "_renderCategory(p.category)" in html
+    # 디아이티 포함/제외 토글 도입 후 호출 형태 변경
+    assert "_renderCategory(ex ? p.category_ex_dit : p.category)" in html
